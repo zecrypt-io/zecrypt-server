@@ -1,0 +1,5 @@
+fastapi
+gunicorn
+pymongo
+structlog
+uvicorn
