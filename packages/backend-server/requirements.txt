@@ -3,3 +3,11 @@ gunicorn
 pymongo
 structlog
 uvicorn
+redis
+pydantic
+pydantic-settings
+firebase-admin
+pycryptodome
+pytz
+jinja2
+logfire[fastapi]

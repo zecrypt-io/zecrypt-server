@@ -1,0 +1,5 @@
+USER="user"
+ACCOUNTS="accounts"
+PROJECTS="projects"
+API_KEYS="api_keys"
+WORK_SPACES="work_spaces"
