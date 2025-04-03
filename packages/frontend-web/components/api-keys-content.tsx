@@ -43,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+import { cn } from "@/libs/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface ApiKey {
@@ -216,7 +216,7 @@ export function ApiKeysContent() {
       return
     }
 
-    const permissions = []
+    const permissions: string[] = []
     if (readPermission) permissions.push("read")
     if (writePermission) permissions.push("write")
     if (deletePermission) permissions.push("delete")
@@ -283,7 +283,7 @@ export function ApiKeysContent() {
       return
     }
 
-    const permissions = []
+    const permissions: string[] = []
     if (editReadPermission) permissions.push("read")
     if (editWritePermission) permissions.push("write")
     if (editDeletePermission) permissions.push("delete")
@@ -772,7 +772,7 @@ export function ApiKeysContent() {
               <Label htmlFor="newApiKey" className="sr-only">
                 API Key
               </Label>
-              <Input id="newApiKey" value={newlyCreatedKey} readOnly className="font-mono text-sm" />
+              <Input id="newApiKey" value={newlyCreatedKey || ''} readOnly className="font-mono text-sm" />
             </div>
             <Button
               type="button"

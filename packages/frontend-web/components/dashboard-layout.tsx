@@ -25,7 +25,7 @@ import {
   Plus,
   X,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/libs/utils"
 import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav"
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
