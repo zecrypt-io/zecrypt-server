@@ -7,11 +7,40 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "./theme-toggle"
 import { MonochromeGoogleIcon } from "./monochrome-google-icon"
 import { useState } from "react"
+import { auth } from "@/libs/firebase"
+import { GoogleAuthProvider, signInWithPopup, getAdditionalUserInfo } from "firebase/auth"
 
 export function LoginPage() {
   const router = useRouter()
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoggingIn(true)
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      
+      // User signed in successfully
+      const user = result.user
+      const additionalInfo = getAdditionalUserInfo(result)
+      const isNewUser = additionalInfo?.isNewUser || false
+      
+      // Set a flag in sessionStorage to indicate we need to show the encryption key modal
+      sessionStorage.setItem("showEncryptionKeyModal", "true")
+      
+      // Store if this is a new user
+      sessionStorage.setItem("isNewUser", isNewUser ? "true" : "false")
+      
+      // Navigate to dashboard
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Error signing in with Google:", error)
+    } finally {
+      setIsLoggingIn(false)
+    }
+  }
+
+  // Keeping this for GitHub login or any other login methods
   const handleLogin = () => {
     // Set a flag in sessionStorage to indicate we need to show the encryption key modal
     sessionStorage.setItem("showEncryptionKeyModal", "true")
@@ -109,7 +138,7 @@ export function LoginPage() {
             <Button
               variant="outline"
               className="w-full flex items-center gap-2 h-12 hover:theme-accent-bg hover:text-white"
-              onClick={handleLogin}
+              onClick={handleGoogleLogin}
               disabled={isLoggingIn}
             >
               <MonochromeGoogleIcon className="h-5 w-5" />
