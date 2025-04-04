@@ -6,7 +6,7 @@ import string
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
-from app.core.db import get_db
+from app.framework.mongo_db.db import get_db
 
 db = get_db()
 

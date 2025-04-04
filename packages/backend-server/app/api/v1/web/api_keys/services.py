@@ -1,37 +1,38 @@
-from app.managers import accounts as accounts_manager
 from app.utils.date_utils import create_timestamp
-from app.utils.utils import response_helper, filter_payload, create_uuid
+from app.utils.utils import create_uuid, response_helper, filter_payload
+from app.managers import api_keys as api_key_manager
 
 
-def get_account_details(db, doc_id):
+
+def get_api_key_details(db, doc_id):
     return response_helper(
         status_code=200,
-        message="Account details loaded successfully",
-        data=accounts_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
+        message="API Key details loaded successfully",
+        data=api_key_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
     )
 
 
-def get_accounts(db, query, sort=None, projection=None, page=1, limit=20):
+def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
     skip = (page - 1) * limit
     if not sort:
         sort = ("_id", 1)
 
-    accounts = accounts_manager.find(
+    api_keys = api_key_manager.find(
         db, query, projection, sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(
         status_code=200,
-        message="Accounts loaded successfully",
-        data=accounts,
+        message="API Keys loaded successfully",
+        data=api_keys,
         page=page,
         limit=limit,
-        count=len(accounts),
+        count=len(api_keys),
     )
 
 
-def add_account(db, payload):
-    existing_account = accounts_manager.find_one(
+def add_api_key(db, payload):
+    api_key = api_key_manager.find_one(
         db,
         {
             "lower_name": payload.get("lower_name").strip().lower(),
@@ -39,8 +40,8 @@ def add_account(db, payload):
             "project_id": payload.get("project_id"),
         },
     )
-    if existing_account:
-        return response_helper(status_code=400, message="Account already exists")
+    if api_key:
+        return response_helper(status_code=400, message="Project already exists")
 
     timestamp = create_timestamp()
     payload.update(
@@ -52,14 +53,16 @@ def add_account(db, payload):
             "updated_at": timestamp,
         }
     )
+    api_key_manager.insert_one(db, payload)
+
     return response_helper(
         status_code=201,
-        message="Account added successfully",
-        data={},
+        message="API Key added successfully",
+        data=payload,
     )
 
 
-def update_account(db, doc_id, payload):
+def update_api_key(db, doc_id, payload):
     payload = filter_payload(payload)
     payload["updated_at"] = create_timestamp()
     # Process name if it exists in the payload
@@ -67,7 +70,7 @@ def update_account(db, doc_id, payload):
         lower_name = payload["name"].strip().lower()
         payload["lower_name"] = lower_name
 
-        existing_account = accounts_manager.find_one(
+        existing_account = api_key_manager.find_one(
             db,
             {
                 "project_id": payload.get("project_id"),
@@ -76,9 +79,9 @@ def update_account(db, doc_id, payload):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="Account already exists")
+            return response_helper(status_code=400, message="API Key already exists")
     # Update account
-    accounts_manager.update_one(
+    api_key_manager.update_one(
         db,
         {"doc_id": doc_id},
         {
@@ -87,20 +90,19 @@ def update_account(db, doc_id, payload):
     )
     return response_helper(
         status_code=200,
-        message="Account updated successfully",
-        data={},
+        message="API Key updated successfully",
     )
 
 
-def delete_account(db, doc_id):
-    if not accounts_manager.find_one(db, {"doc_id": doc_id}):
+def delete_api_key(db, doc_id):
+    if not api_key_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(
             status_code=404,
-            message="Account details not found",
+            message="API Key details not found",
         )
-    accounts_manager.delete_one(db, {"doc_id": doc_id})
+    api_key_manager.delete_one(db, {"doc_id": doc_id})
     return response_helper(
         status_code=200,
-        message="Account deleted successfully",
+        message="API Key deleted successfully",
         data={},
     )

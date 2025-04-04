@@ -1,50 +1,74 @@
-from fastapi import APIRouter, Request, Query
+from fastapi import APIRouter, Request, Query, Depends
 
-from app.framework.mongo_db.db import get_db
+from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
+from app.api.v1.web.accounts.service import (
+    get_accounts,
+    get_account_details,
+    add_account,
+    update_account,
+    delete_account,
+)
+from app.api.v1.web.auth.schema import UserDetails
+from app.framework.permission_services.service import get_current_user
+from app.utils.utils import filter_payload
 
 router = APIRouter()
-db = get_db()
-ACCOUNTS = "/accounts"
-ACCOUNT_DETAILS = "/accounts/{doc_id}"
+ACCOUNTS = "/{project_id}/accounts"
+ACCOUNT_DETAILS = "/{project_id}/accounts/{doc_id}"
 
 
 @router.get(ACCOUNTS)
 async def get_accounts_api(
-        request: Request,
-        search_query: str = Query(None, description="Search query"),
-        project_id: str = Query(None, description="Project ID"),
-        page: int = Query(1, description="Page number", ge=1),
-        limit: int = Query(20, description="Items per page", ge=1),
+    request: Request,
+    project_id: str,
+    page: int = Query(1, description="Page number", ge=1),
+    limit: int = Query(20, description="Items per page", ge=1),
+    user: UserDetails = Depends(get_current_user),
 ):
-    return {}
+    query = {"project_id": project_id}
+    return get_accounts(user.get("db"), query, sort=("name", 1), page=page, limit=limit)
 
 
 @router.get(ACCOUNT_DETAILS)
 async def get_account_details_api(
-        request: Request,
-        doc_id: str,
+    request: Request,
+    project_id: str,
+    doc_id: str,
+    user: UserDetails = Depends(get_current_user),
 ):
-    return {}
+    return get_account_details(user.get("db"), doc_id)
 
 
 @router.post(ACCOUNTS)
 async def create_account_api(
-        request: Request,
+    request: Request,
+    project_id: str,
+    payload: AddAccount,
+    user: UserDetails = Depends(get_current_user),
 ):
-    return {}
+    payload = payload.model_dump()
+    payload.update({"project_id": project_id, "created_by": user.get("user_id")})
+    return add_account(user.get("db"), payload.model_dump())
 
 
 @router.put(ACCOUNT_DETAILS)
 async def update_account_api(
-        request: Request,
-        doc_id: str,
+    request: Request,
+    project_id: str,
+    doc_id: str,
+    payload: UpdateAccount,
+    user: UserDetails = Depends(get_current_user),
 ):
-    return {}
+    payload = filter_payload(payload.model_dump())
+    payload.update({"project_id": project_id, "last_updated_by": user.get("user_id")})
+    return update_account(user.get("db"), doc_id, payload)
 
 
 @router.delete(ACCOUNT_DETAILS)
 async def delete_account_api(
-        request: Request,
-        doc_id: str,
+    request: Request,
+    project_id: str,
+    doc_id: str,
+    user: UserDetails = Depends(get_current_user),
 ):
-    return {}
+    return delete_account(user.get("db"),doc_id,)

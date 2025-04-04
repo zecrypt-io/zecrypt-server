@@ -6,12 +6,11 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ALGORITHM: str
     ENV: str
-    REDIS_HOST: str
-    REDIS_PORT: int
-    REDIS_PASSWORD: str
-    FIREBASE_ACCESS_KEY: str
     PUBLIC_KEY: str
     PRIVATE_KEY: str
+    STACK_AUTH_PROJECT_ID: str
+    STACK_AUTH_CLIENT_ID: str
+    STACK_AUTH_CLIENT_SECRET: str
 
     class Config:
         case_sensitive = True

@@ -1,8 +1,8 @@
 from app.framework.mongo_db import base_manager as db_manager
-from app.managers.collection_names import ACCOUNTS
+from app.managers.collection_names import ACCOUNT
 
 
-collection_name = ACCOUNTS
+collection_name = ACCOUNT
 
 
 def insert_one(db, data):

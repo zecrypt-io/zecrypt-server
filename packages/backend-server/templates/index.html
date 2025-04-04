@@ -5,15 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔒 zecrypt-server - Secure Encryption API</title>
     <style>
-        /* Embedded CSS */
+        /* Modern CSS Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* Custom Properties */
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-100: #f5f5f5;
+            --gray-200: #e5e5e5;
+            --gray-300: #d4d4d4;
+            --gray-400: #a3a3a3;
+            --gray-500: #737373;
+            --gray-600: #525252;
+            --gray-700: #404040;
+            --gray-800: #262626;
+            --gray-900: #171717;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Base Styles */
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: #f8fafc;
+            background-color: var(--white);
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            color: #334155;
+            color: var(--gray-800);
+            min-height: 100vh;
         }
+
         .container {
             min-height: 100vh;
             display: flex;
@@ -22,94 +47,371 @@
             justify-content: center;
             padding: 2rem;
         }
+
         .card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 42rem;
+            max-width: 48rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--gray-200);
         }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--black);
+        }
+
+        /* Typography */
         h1 {
-            color: #2563eb;
-            font-size: 2.25rem;
+            color: var(--black);
+            font-size: 2.5rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
         }
+
+        .subtitle {
+            color: var(--gray-700);
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .description {
+            color: var(--gray-700);
+            font-size: 1.125rem;
+            max-width: 36rem;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* Buttons */
         .btn {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 0.625rem 1.5rem;
-            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--black);
+            color: var(--white);
+            padding: 0.75rem 1.75rem;
+            border-radius: 0.5rem;
             text-decoration: none;
-            font-weight: 500;
-            margin-top: 1rem;
-            transition: background-color 0.2s;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
+
         .btn:hover {
-            background: #1d4ed8;
+            background: var(--gray-800);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform 0.5s, opacity 1s;
+        }
+
+        .btn:active::after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+
+        /* Code */
         code {
-            background: #e2e8f0;
+            background: var(--gray-100);
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
             font-family: 'Courier New', monospace;
             font-size: 0.875rem;
+            color: var(--black);
+            border: 1px solid var(--gray-300);
         }
+
+        /* Features */
         .features {
-            margin: 2rem 0;
+            margin: 2.5rem 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
             text-align: left;
         }
+
         .feature-item {
-            margin-bottom: 1rem;
+            background: var(--gray-100);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--gray-200);
+            height: 100%;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            background: var(--white);
+        }
+
+        .feature-icon {
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            min-width: 2.5rem; /* Ensure fixed width */
+            background: var(--white);
+            border-radius: 50%;
+            margin-right: 1rem;
+            color: var(--black);
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+            border: 1px solid var(--gray-200);
         }
-        .feature-icon {
-            margin-right: 0.75rem;
-            color: #2563eb;
+
+        .feature-content {
+            flex: 1;
         }
+
+        .feature-content h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.125rem;
+            color: var(--black);
+        }
+
+        .feature-content p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* API Example */
+        .api-example {
+            margin-top: 2.5rem;
+            background: var(--black);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .api-example::before {
+            content: '// API Example';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .api-example code {
+            display: block;
+            background: transparent;
+            color: var(--white);
+            border: none;
+            padding: 0;
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+
+        .api-example .comment {
+            color: var(--gray-400);
+        }
+
+        .api-example .string {
+            color: var(--gray-300);
+        }
+
+        .api-example .keyword {
+            color: var(--white);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card {
+                padding: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-item {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate {
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="card">
+        <div class="card animate">
             <h1>🔒 zecrypt-server</h1>
-            <p>A high-performance encryption API built with FastAPI and AES-256</p>
+            <div class="subtitle animate delay-1">Secure Encryption API</div>
+            <p class="description animate delay-1">
+                A high-performance encryption service built with FastAPI and AES-256 for secure data transmission and storage.
+            </p>
 
-            <div class="features">
+            <div class="features animate delay-2">
                 <div class="feature-item">
-                    <span class="feature-icon">✓</span>
-                    <span>End-to-end encryption</span>
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-content">
+                        <h3>End-to-end Encryption</h3>
+                        <p>Military-grade AES-256 encryption for maximum data security</p>
+                    </div>
                 </div>
                 <div class="feature-item">
-                    <span class="feature-icon">✓</span>
-                    <span>Zero-downtime deployments</span>
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-content">
+                        <h3>High Performance</h3>
+                        <p>Zero-downtime deployments with optimized response times</p>
+                    </div>
                 </div>
                 <div class="feature-item">
-                    <span class="feature-icon">✓</span>
-                    <span>OpenAPI documentation</span>
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-content">
+                        <h3>API Documentation</h3>
+                        <p>Comprehensive OpenAPI documentation and examples</p>
+                    </div>
                 </div>
             </div>
 
-            <a href="/docs" class="btn">Explore API Docs</a>
+            <a href="/docs" class="btn animate delay-3">
+                Explore API Docs
+            </a>
 
-            <p style="margin-top: 2rem; font-size: 0.875rem;">
+            <div class="api-example animate delay-4">
+                <code><span class="comment">// Example API request</span></code>
+                <code><span class="keyword">fetch</span>('/api/encrypt', {</code>
+                <code>  method: <span class="string">'POST'</span>,</code>
+                <code>  headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },</code>
+                <code>  body: <span class="keyword">JSON.stringify</span>({</code>
+                <code>    data: <span class="string">'Your sensitive data'</span>,</code>
+                <code>    key: <span class="string">'your-secret-key'</span></code>
+                <code>  })</code>
+                <code>})</code>
+                <code>.<span class="keyword">then</span>(res => res.json())</code>
+                <code>.<span class="keyword">then</span>(data => console.log(data));</code>
+            </div>
+
+            <div class="footer">
                 Try the test endpoint: <code>GET /api/hello</code>
-            </p>
+            </div>
         </div>
     </div>
 
-    <!-- Embedded JavaScript -->
     <script>
-        // Simple interactive example
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Landing page loaded!');
+            console.log('zecrypt-server landing page loaded!');
 
-            // You could add API call examples here
-            // fetch('/api/hello').then(...)
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const x = e.clientX - e.target.getBoundingClientRect().left;
+                    const y = e.clientY - e.target.getBoundingClientRect().top;
+
+                    const ripple = document.createElement('span');
+                    ripple.style.position = 'absolute';
+                    ripple.style.width = '1px';
+                    ripple.style.height = '1px';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.transform = 'scale(0)';
+                    ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    ripple.style.animation = 'ripple 0.6s linear';
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Add keyframe animation for ripple effect
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes ripple {
+                    to {
+                        transform: scale(100);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Simulate API call for demo purposes
+            setTimeout(() => {
+                console.log('API test response:', { status: 'success', message: 'Hello from zecrypt-server!' });
+            }, 1000);
         });
     </script>
 </body>

@@ -10,6 +10,7 @@ def get_expire_timestamp(ttl, days=None):
         d = datetime.now() + timedelta(days=days)
     return pytz.timezone("UTC").localize(d)
 
+
 def create_timestamp():
     date_time = datetime.now()
     pst = pytz.timezone("UTC")

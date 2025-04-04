@@ -1,16 +1,22 @@
-import uuid
+import string
+from uuid_extensions import uuid7
+import random
 
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 
+def id_generator(size=10, chars=string.ascii_uppercase + string.digits + string.digits):
+    return "".join(random.choice(chars) for _ in range(size))
+
+
 def response_helper(
-        status_code,
-        message: any,
-        data=None,
-        description: str = None,
-        error: str = None,
-        **kwargs
+    status_code,
+    message: any,
+    data=None,
+    description: str = None,
+    error: str = None,
+    **kwargs
 ):
     result = {"status_code": status_code, "message": message}
     if description:
@@ -30,15 +36,4 @@ def filter_payload(data):
 
 
 def create_uuid():
-    return str(uuid.uuid5())
-
-
-def is_uuid(uuid_string, version=5):
-    try:
-        # Convert the string to a UUID and check if it's version 4
-        val = uuid.UUID(uuid_string, version=version)
-    except ValueError:
-        # If it's a ValueError, then the string is not a valid UUID4
-        return False
-
-    return str(val) == uuid_string.lower()
+    return str(uuid7())

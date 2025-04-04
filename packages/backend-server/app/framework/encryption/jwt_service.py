@@ -8,8 +8,6 @@ jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
 
 
-
-
 def encode_token(userid, days=7, ttl=None):
     user_id = userid
     payload = {

@@ -2,10 +2,6 @@ import hashlib
 import json
 from functools import wraps
 
-from app.framework.redis_client.redis import RedisClient
-
-redis = RedisClient()
-
 
 # Cache invalidation decorator
 def clear_cache_after(func):
@@ -15,7 +11,7 @@ def clear_cache_after(func):
         result = func(db, collection_name, *args, **kwargs)
 
         # Clear cache using db and collection_name
-        delete_repo_hash( collection_name)
+        delete_repo_hash(collection_name)
         return result
 
     return wrapper
@@ -27,7 +23,8 @@ def delete_repo_hash(collection_name):
         f"{collection_name}_details",
         f"{collection_name}_list",
     ]
-    redis.delete_hash(hashes)
+    # redis.delete_hash(hashes)
+
 
 def generate_query_hash(query, projection=None, sort=None, skip=0, limit=0):
 
@@ -126,32 +123,12 @@ def find(
 
 
 def redis_find(db, collection_name, query, projection=None, sort=None, skip=0, limit=0):
-    query_hash = generate_query_hash(query, projection, sort, skip, limit)
-    list_hash_name = f"{db.name}_{collection_name}_list"
-
-    if redis.field_exists_in_hash(list_hash_name, query_hash):
-        return redis.get_from_hash(list_hash_name, query_hash)
-    else:
-        cursor = find(db, collection_name, query, projection, sort, skip, limit)
-        redis.add_key_to_hash(list_hash_name, query_hash, cursor)
-        return cursor
+    cursor = find(db, collection_name, query, projection, sort, skip, limit)
+    return cursor
 
 
 def redis_find_one(db, collection_name, query, projection=None):
-    DETAILS_HASH = f"{db.name}_{collection_name}_details"
-    query_hash = generate_query_hash(query, projection)
-
-    # Try to get from cache first
-    cached_data = redis.get_from_hash(DETAILS_HASH, query_hash)
-
-    if cached_data is not None:
-        return cached_data
-
     data = find_one(db, collection_name, query, projection)
-
-    if data:
-        redis.add_key_to_hash(DETAILS_HASH, query_hash, data)
-
     return data
 
 
