@@ -45,6 +45,8 @@ import { CommandPalette } from "@/components/command-palette"
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
 import { EncryptionKeyModal } from "@/components/encryption-key-modal"
 import { useRouter } from "next/navigation"
+import { auth } from "@/libs/firebase"
+import { signOut } from "firebase/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -195,6 +197,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     // If user cancels, redirect back to login
     setShowEncryptionKeyModal(false)
     router.push("/")
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      router.push("/")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
   }
 
   return (
@@ -382,7 +393,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
