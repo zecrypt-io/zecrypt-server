@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./packages/backend-server 
-        file: ./Dockerfile  
+        file: Dockerfile  
         push: true
         tags: |
           registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:latest
