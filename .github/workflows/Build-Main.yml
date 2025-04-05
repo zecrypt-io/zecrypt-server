@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY_NAME: ${{ secrets.REGISTRY_NAME }}  
-
+  IMAGE_NAME: zec-backend
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -29,13 +29,13 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: ./packages/backend-server 
-        file: Dockerfile  
+        context: ./packages/backend-server
+        file: ./packages/backend-server/Dockerfile
         push: true
         tags: |
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:latest
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.sha }}
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.ref_name }}
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:latest
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
