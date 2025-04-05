@@ -12,8 +12,10 @@ class CreateUser(BaseModel):
 class Login(BaseModel):
     uid: str
 
+
 class SignUp(BaseModel):
     uid: str
+
 
 class UserDetails(BaseModel):
     user_id: str

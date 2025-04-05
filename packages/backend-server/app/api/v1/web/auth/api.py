@@ -36,14 +36,14 @@ async def login_api(
             message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"uid": payload.get("uid")}, {"_id": False})
+    user = user_manager.find_one(db, {"email": res.get("primary_email")}, {"_id": False})
     if not user:
         return response_helper(
             status_code=400,
             message="User not found, Please signup",
         )
 
-    token = create_jwt_token({"user_id": user.get("user_id"), "role": user.get("role")})
+    token = create_jwt_token({"user_id": user.get("user_id")})
     token_data = {
         "user_id": user.get("user_id"),
         "profile_url": user.get("profile_url"),
@@ -62,9 +62,7 @@ async def login_api(
             }
         },
     )
-    back_ground_tasks.add_task(
-        record_login_event,request, db, user.get("user_id")
-    )
+    back_ground_tasks.add_task(record_login_event, request, db, user.get("user_id"))
     return response_helper(
         status_code=200, message="User logged in successfully", data=token_data
     )
@@ -82,7 +80,7 @@ async def signup_api(
             message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"uid": payload.get("uid")}, {"_id": False})
+    user = user_manager.find_one(db, {"email": payload.get("primary_email")}, {"_id": False})
 
     if user:
         return response_helper(
@@ -101,20 +99,18 @@ async def signup_api(
         "user_id": user_id,
         "profile_url": res.get("profile_image_url"),
         "token": token,
-        "auth":{
-            "has_password":res.get("has_password"),
+        "auth": {
+            "has_password": res.get("has_password"),
             "otp_auth_enabled": res.get("otp_auth_enabled"),
             "auth_with_email": res.get("auth_with_email"),
             "requires_totp_mfa": res.get("requires_totp_mfa"),
             "passkey_auth_enabled": res.get("passkey_auth_enabled"),
             "oauth_providers": res.get("oauth_providers"),
         },
-        }
-
-
+    }
 
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_project_at_signup,db, user_id)
+    back_ground_tasks.add_task(create_project_at_signup, db, user_id)
     token_data = {
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
@@ -122,5 +118,5 @@ async def signup_api(
         "token": token,
     }
     return response_helper(
-        status_code=200, message="User signed up  successfully", data=token_data
+        status_code=200, message="User signed up successfully", data=token_data
     )

@@ -3,7 +3,6 @@ from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import api_keys as api_key_manager
 
 
-
 def get_api_key_details(db, doc_id):
     return response_helper(
         status_code=200,
