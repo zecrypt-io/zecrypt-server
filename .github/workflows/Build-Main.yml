@@ -3,9 +3,10 @@ name: Build and Push to DigitalOcean Container Registry
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
 
-# env:
-#   REGISTRY_NAME: "your-registry-name"  # Update with your DOCR registry name
+env:
+  REGISTRY_NAME: ${{ secrets.REGISTRY_NAME }}  # Update with your DOCR registry name
 #   IMAGE_NAME: "your-image-name"       # Update with your image name
 
 jobs:
@@ -27,3 +28,15 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./packages/backend-server/Dockerfile  # Update path if Dockerfile is in different location
+        push: true
+        tags: |
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:latest
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.sha }}
+          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.ref_name }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
