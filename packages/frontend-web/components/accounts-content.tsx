@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,8 +14,9 @@ import {
   EyeOff,
   ExternalLink,
   MoreHorizontal,
-  Filter,
-  SortDesc,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react"
 import { AddAccountDialog } from "@/components/add-account-dialog"
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
 import { EditAccountDialog } from "@/components/edit-account-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function AccountsContent() {
   const [showAddAccount, setShowAddAccount] = useState(false)
@@ -34,16 +35,16 @@ export function AccountsContent() {
   const [viewPassword, setViewPassword] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(5)
 
-  // Add event listeners to handle the add account shortcut
-
-  // Add this useEffect at the beginning of the component function, after the useState declarations
   useEffect(() => {
     const handleAddAccount = () => setShowAddAccount(true)
 
     document.addEventListener("toggle-add-account", handleAddAccount)
 
-    // Also handle Cmd++ shortcut directly
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "+") {
         e.preventDefault()
@@ -144,6 +145,62 @@ export function AccountsContent() {
       tags: ["Work", "Productivity"],
       isFavorite: false,
     },
+    {
+      id: 7,
+      name: "Twitter",
+      username: "tweeter@example.com",
+      password: "••••••••••",
+      actualPassword: "twitter123!",
+      url: "https://twitter.com",
+      logo: "T",
+      category: "personal",
+      created: "02/09/2024",
+      modified: "04/09/2024",
+      tags: ["Social", "Personal"],
+      isFavorite: false,
+    },
+    {
+      id: 8,
+      name: "LinkedIn",
+      username: "professional@example.com",
+      password: "••••••••••••",
+      actualPassword: "linkedIn2024!",
+      url: "https://linkedin.com",
+      logo: "L",
+      category: "work",
+      created: "02/09/2024",
+      modified: "04/09/2024",
+      tags: ["Work", "Networking"],
+      isFavorite: true,
+    },
+    {
+      id: 9,
+      name: "Dropbox",
+      username: "files@example.com",
+      password: "••••••••••",
+      actualPassword: "dropboxFiles!",
+      url: "https://dropbox.com",
+      logo: "D",
+      category: "work",
+      created: "03/09/2024",
+      modified: "05/09/2024",
+      tags: ["Work", "Storage"],
+      isFavorite: false,
+    },
+    {
+      id: 10,
+      name: "Slack",
+      username: "team@example.com",
+      password: "••••••••••",
+      actualPassword: "slackTeam123!",
+      url: "https://slack.com",
+      logo: "S",
+      category: "work",
+      created: "03/09/2024",
+      modified: "05/09/2024",
+      tags: ["Work", "Communication"],
+      isFavorite: false,
+    },
   ]
 
   const copyToClipboard = async (id: number, field: string, value: string) => {
@@ -160,6 +217,12 @@ export function AccountsContent() {
     setViewPassword(viewPassword === id ? null : id)
   }
 
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategory("all")
+    setCurrentPage(1)
+  }
+
   const filteredAccounts = accounts.filter((account) => {
     const matchesSearch =
       account.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -168,58 +231,78 @@ export function AccountsContent() {
     return matchesSearch && matchesCategory
   })
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentItems = filteredAccounts.slice(indexOfFirstItem, indexOfLastItem)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Accounts</h1>
-          <p className="text-muted-foreground">Manage your saved accounts and passwords</p>
-        </div>
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Accounts</h1>
+        <p className="text-muted-foreground">Manage your saved accounts and passwords</p>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <select
-            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="all">All Accounts</option>
-            <option value="personal">Personal</option>
-            <option value="work">Work</option>
-            <option value="finance">Finance</option>
-          </select>
-
-          <Button variant="outline" size="icon" className="h-9 w-9">
-            <Filter className="h-4 w-4" />
-          </Button>
-
-          <Button variant="outline" size="icon" className="h-9 w-9">
-            <SortDesc className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-64">
+      {/* Search Bar and Action Buttons */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-1 gap-4 w-full md:w-auto">
+          <div className="relative w-full md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search accounts..."
-              className="pl-8"
+              className="pl-8 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
             />
           </div>
+          
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Select
+              value={selectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value)
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="All Accounts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Accounts</SelectItem>
+                <SelectItem value="personal">Personal</SelectItem>
+                <SelectItem value="work">Work</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+              </SelectContent>
+            </Select>
 
+            {(searchQuery || selectedCategory !== "all") && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
+                <X className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
           <Button
             variant="default"
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 theme-button"
             onClick={() => setShowGeneratePassword(true)}
           >
             <Key className="h-4 w-4" />
             Generate
           </Button>
-
           <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
             <Plus className="h-4 w-4" />
             Add
@@ -227,6 +310,7 @@ export function AccountsContent() {
         </div>
       </div>
 
+      {/* Table */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -242,63 +326,31 @@ export function AccountsContent() {
               </tr>
             </thead>
             <tbody>
-              {filteredAccounts.map((account) => (
-                <tr key={account.id} className="border-t border-border hover:bg-muted/20 transition-colors">
-                  <td className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                        {account.logo}
+              {currentItems.length > 0 ? (
+                currentItems.map((account) => (
+                  <tr key={account.id} className="border-t border-border hover:bg-muted/20 transition-colors">
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
+                          {account.logo}
+                        </div>
+                        <div>
+                          <p className="font-medium">{account.name}</p>
+                          <a
+                            href={account.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+                          >
+                            {account.url.replace("https://", "")}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{account.name}</p>
-                        <a
-                          href={account.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
-                        >
-                          {account.url.replace("https://", "")}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{account.username}</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => copyToClipboard(account.id, "username", account.username)}
-                            >
-                              {copiedField?.id === account.id && copiedField?.field === "username" ? (
-                                <Check className="h-3.5 w-3.5 text-green-500" />
-                              ) : (
-                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {copiedField?.id === account.id && copiedField?.field === "username"
-                                ? "Copied!"
-                                : "Copy username"}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono">
-                        {viewPassword === account.id ? account.actualPassword : account.password}
-                      </span>
-                      <div className="flex items-center">
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{account.username}</span>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -306,31 +358,9 @@ export function AccountsContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7"
-                                onClick={() => togglePasswordVisibility(account.id)}
+                                onClick={() => copyToClipboard(account.id, "username", account.username)}
                               >
-                                {viewPassword === account.id ? (
-                                  <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-                                ) : (
-                                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{viewPassword === account.id ? "Hide password" : "Show password"}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => copyToClipboard(account.id, "password", account.actualPassword)}
-                              >
-                                {copiedField?.id === account.id && copiedField?.field === "password" ? (
+                                {copiedField?.id === account.id && copiedField?.field === "username" ? (
                                   <Check className="h-3.5 w-3.5 text-green-500" />
                                 ) : (
                                   <Copy className="h-3.5 w-3.5 text-muted-foreground" />
@@ -339,10 +369,65 @@ export function AccountsContent() {
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>
-                                {copiedField?.id === account.id && copiedField?.field === "password"
+                                {copiedField?.id === account.id && copiedField?.field === "username"
                                   ? "Copied!"
-                                  : "Copy password"}
+                                  : "Copy username"}
                               </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono">
+                          {viewPassword === account.id ? account.actualPassword : account.password}
+                        </span>
+                        <div className="flex items-center">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => togglePasswordVisibility(account.id)}
+                                >
+                                  {viewPassword === account.id ? (
+                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{viewPassword === account.id ? "Hide password" : "Show password"}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => copyToClipboard(account.id, "password", account.actualPassword)}
+                                >
+                                  {copiedField?.id === account.id && copiedField?.field === "password" ? (
+                                    <Check className="h-3.5 w-3.5 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {copiedField?.id === account.id && copiedField?.field === "password"
+                                    ? "Copied!"
+                                    : "Copy password"}
+                                </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -395,44 +480,120 @@ export function AccountsContent() {
                     </DropdownMenu>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="text-center py-10 text-muted-foreground">
+                  {filteredAccounts.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-10 w-10 text-muted-foreground/50" />
+                      <h3 className="font-medium">No accounts found</h3>
+                      <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
+                      <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                        Clear filters
+                      </Button>
+                    </div>
+                  ) : (
+                    "No accounts found. Create one to get started."
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {filteredAccounts.length === 0 && (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">No accounts found. Try adjusting your search or filters.</p>
+      {/* Pagination */}
+      {filteredAccounts.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-4 border-t">
+          <div className="text-sm text-muted-foreground">
+            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAccounts.length)} of{" "}
+            {filteredAccounts.length} accounts
           </div>
-        )}
-      </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 mr-4">
+              <span className="text-sm text-muted-foreground">Rows per page:</span>
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(Number(value))
+                  setCurrentPage(1)
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue placeholder={itemsPerPage.toString()} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum = i + 1
 
-      <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredAccounts.length} of {accounts.length} accounts
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            Next
-          </Button>
+                // If we have more than 5 pages and we're not at the beginning
+                if (totalPages > 5 && currentPage > 3) {
+                  pageNum = currentPage - 3 + i
+
+                  // Don't go beyond the total pages
+                  if (pageNum > totalPages) {
+                    pageNum = totalPages - (4 - i)
+                  }
+                }
+
+                return (
+                  <Button
+                    key={i}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handlePageChange(pageNum)}
+                    disabled={currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
-
-      {showAddAccount && <AddAccountDialog onClose={() => setShowAddAccount(false)} />}
-      {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
-      {showEditAccount && selectedAccount && (
-        <EditAccountDialog
-          account={selectedAccount}
-          onClose={() => {
-            setShowEditAccount(false)
-            setSelectedAccount(null)
-          }}
-        />
       )}
     </div>
+
+    {showAddAccount && <AddAccountDialog onClose={() => setShowAddAccount(false)} />}
+    {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
+    {showEditAccount && selectedAccount && (
+      <EditAccountDialog
+        account={selectedAccount}
+        onClose={() => {
+          setShowEditAccount(false)
+          setSelectedAccount(null)
+        }}
+      />
+    )}
+  </div>
   )
 }
 
@@ -454,4 +615,3 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-

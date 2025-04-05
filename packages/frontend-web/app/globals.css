@@ -1,3 +1,4 @@
+/* Tailwind Directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,6 +26,12 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /* Button specific variables (light mode) */
+    --button-bg: 0 0% 100%; /* White */
+    --button-text: 240 5.9% 10%; /* Black */
+    --animation-color: hsl(240 5.9% 10%); /* Black */
+    --animation-transparent: hsla(240 5.9% 10% / 0.1); /* Transparent black */
   }
 
   .dark {
@@ -48,61 +55,93 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* Button specific variables (dark mode) */
+    --button-bg: 240 10% 3.9%; /* Dark (matches theme background) */
+    --button-text: 0 0% 98%; /* White */
+    --animation-color: hsl(0 0% 98%); /* White */
+    --animation-transparent: hsla(0 0% 98% / 0.1); /* Transparent white */
   }
 }
 
+/* CSS property for animation */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Base styles */
 body {
   @apply bg-background text-foreground;
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Custom glow effect for the purple button border */
-.glow-purple {
-  box-shadow: 0 0 15px 2px rgba(91, 3, 227, 0.7), 0 0 30px 4px rgba(255, 1, 255, 0.4);
-}
-
-/* Animated border line that circles the button */
-@keyframes borderRotate {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 400% 0%;
-  }
-}
-
-.border-line-animation {
+/* Animated theme button */
+.theme-button {
   position: relative;
   border-radius: var(--radius);
-  z-index: 0;
-  /* Remove any default border */
-  border: none;
+  isolation: isolate;
+  background-color: hsl(var(--button-bg));
+  color: hsl(var(--button-text));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition-property: transform; /* Only transform transitions, no color changes */
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
 
-.border-line-animation::after {
+.theme-button:active {
+  transform: scale(0.95);
+}
+
+/* Explicitly disable hover changes */
+.theme-button:hover {
+  background-color: hsl(var(--button-bg)) !important; /* Lock to default bg */
+  color: hsl(var(--button-text)) !important; /* Lock to default text */
+}
+
+.theme-button::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: -1;
+  margin: -2px;
   border-radius: inherit;
-  padding: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    transparent 40%,
-    #0062ff 45%,
-    #00b7ff 50%,
-    #0062ff 55%,
-    transparent 60%,
-    transparent 100%
+  background: conic-gradient(
+    from var(--angle),
+    var(--animation-transparent),
+    var(--animation-color) 0.2turn,
+    var(--animation-color) 0.3turn,
+    var(--animation-transparent) 0.4turn
   );
-  background-size: 400% 100%;
-  /* Change the mask to only show the moving gradient border */
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  /* Slow animation to circle the button */
-  animation: borderRotate 8s linear infinite;
-  pointer-events: none;
+  padding: 2px;
+  animation: borderRotate 3s linear infinite;
 }
 
+@keyframes borderRotate {
+  to {
+    --angle: 1turn;
+  }
+}
+
+/* Smooth transitions for theme changes (excluding hover) */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    transition: color 300ms, background-color 300ms;
+  }
+
+  .theme-button {
+    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1); /* Only transform */
+  }
+
+  .theme-button::before {
+    transition: background 300ms;
+  }
+}

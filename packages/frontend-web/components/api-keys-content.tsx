@@ -1,8 +1,6 @@
 "use client"
 
-import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +12,6 @@ import {
   Trash2,
   Key,
   AlertCircle,
-  Check,
   X,
   Search,
   ChevronLeft,
@@ -42,6 +39,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/libs/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -59,7 +57,6 @@ interface ApiKey {
 }
 
 export function ApiKeysContent() {
-  // Sample API keys data
   const allApiKeys: ApiKey[] = [
     {
       id: "1",
@@ -151,14 +148,11 @@ export function ApiKeysContent() {
     },
   ]
 
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(5)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
-
-  // New API Key form state
   const [showAddKeyModal, setShowAddKeyModal] = useState(false)
   const [newKeyName, setNewKeyName] = useState("")
   const [readPermission, setReadPermission] = useState(true)
@@ -168,27 +162,41 @@ export function ApiKeysContent() {
   const [keyExpiration, setKeyExpiration] = useState<"never" | "30days" | "90days" | "1year">("never")
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null)
   const [showKeyDialog, setShowKeyDialog] = useState(false)
-
-  // Edit API Key state
-  const [editingKeyId, setEditingKeyId] = useState<string | null>(null)
+  const [showEditKeyModal, setShowEditKeyModal] = useState(false)
+  const [editingKey, setEditingKey] = useState<ApiKey | null>(null)
   const [editKeyName, setEditKeyName] = useState("")
   const [editReadPermission, setEditReadPermission] = useState(false)
   const [editWritePermission, setEditWritePermission] = useState(false)
   const [editDeletePermission, setEditDeletePermission] = useState(false)
-
-  // State for API keys with CRUD operations
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(allApiKeys)
 
-  // Filter and paginate API keys
+  useEffect(() => {
+    const handleAddKey = () => setShowAddKeyModal(true)
+
+    document.addEventListener("toggle-add-key", handleAddKey)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "+") {
+        e.preventDefault()
+        setShowAddKeyModal(true)
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("toggle-add-key", handleAddKey)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
+
   const filteredApiKeys = apiKeys.filter((key) => {
     const matchesSearch =
       searchQuery === "" ||
       key.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       key.key.toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesStatus = statusFilter === null || key.status === statusFilter
-    const matchesType = typeFilter === null || key.type === typeFilter
-
+    const matchesStatus = statusFilter === null || statusFilter === "all" || key.status === statusFilter
+    const matchesType = typeFilter === null || typeFilter === "all" || key.type === typeFilter
     return matchesSearch && matchesStatus && matchesType
   })
 
@@ -230,12 +238,10 @@ export function ApiKeysContent() {
       return
     }
 
-    // Generate a fake API key
     const generatedKey = `zk_${keyType}_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
     setNewlyCreatedKey(generatedKey)
     setShowKeyDialog(true)
 
-    // Map expiration selection to display text
     let expiresIn = "Never"
     if (keyExpiration === "30days") expiresIn = "30 days"
     if (keyExpiration === "90days") expiresIn = "90 days"
@@ -262,18 +268,15 @@ export function ApiKeysContent() {
     const keyToEdit = apiKeys.find((key) => key.id === id)
     if (!keyToEdit) return
 
-    setEditingKeyId(id)
+    setEditingKey(keyToEdit)
     setEditKeyName(keyToEdit.name)
     setEditReadPermission(keyToEdit.permissions.includes("read"))
     setEditWritePermission(keyToEdit.permissions.includes("write"))
     setEditDeletePermission(keyToEdit.permissions.includes("delete"))
+    setShowEditKeyModal(true)
   }
 
-  const cancelEditingKey = () => {
-    setEditingKeyId(null)
-  }
-
-  const saveEditedKey = (id: string) => {
+  const saveEditedKey = () => {
     if (!editKeyName.trim()) {
       toast({
         title: "Error",
@@ -297,29 +300,28 @@ export function ApiKeysContent() {
       return
     }
 
-    setApiKeys(
-      apiKeys.map((key) =>
-        key.id === id
-          ? {
-              ...key,
-              name: editKeyName,
-              permissions,
-            }
-          : key,
-      ),
-    )
-
-    setEditingKeyId(null)
-
-    toast({
-      title: "API Key Updated",
-      description: "The API key has been successfully updated.",
-    })
+    if (editingKey) {
+      setApiKeys(
+        apiKeys.map((key) =>
+          key.id === editingKey.id
+            ? {
+                ...key,
+                name: editKeyName,
+                permissions,
+              }
+            : key,
+        ),
+      )
+      toast({
+        title: "API Key Updated",
+        description: "The API key has been successfully updated.",
+      })
+      setShowEditKeyModal(false)
+    }
   }
 
   const handleRevokeKey = (id: string) => {
     setApiKeys(apiKeys.map((key) => (key.id === id ? { ...key, status: "revoked" } : key)))
-
     toast({
       title: "API Key Revoked",
       description: "The API key has been successfully revoked.",
@@ -374,46 +376,143 @@ export function ApiKeysContent() {
     setSearchQuery("")
     setStatusFilter(null)
     setTypeFilter(null)
+    setCurrentPage(1)
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
 
-  return (
-    <div className="h-full flex-1 flex-col space-y-4 p-4 md:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">API Keys</h2>
-          <p className="text-muted-foreground">Manage your API keys for programmatic access to Zecrypt services.</p>
+  const EditApiKeyDialog = () => {
+    if (!editingKey) return null
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-foreground">Edit API Key</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => setShowEditKeyModal(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="edit-key-name" className="text-sm font-medium text-foreground">
+                API Key Name
+              </Label>
+              <Input
+                id="edit-key-name"
+                placeholder="Enter API key name"
+                value={editKeyName}
+                onChange={(e) => setEditKeyName(e.target.value)}
+                className="h-10 border-border focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-foreground">Permissions</Label>
+              <div className="space-y-4 rounded-md border p-4 bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="read"
+                    checked={editReadPermission}
+                    onChange={(e) => setEditReadPermission(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                  />
+                  <Label htmlFor="read" className="text-sm font-normal text-foreground cursor-pointer">
+                    Read
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="write"
+                    checked={editWritePermission}
+                    onChange={(e) => setEditWritePermission(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                  />
+                  <Label htmlFor="write" className="text-sm font-normal text-foreground cursor-pointer">
+                    Write
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="delete"
+                    checked={editDeletePermission}
+                    onChange={(e) => setEditDeletePermission(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                  />
+                  <Label htmlFor="delete" className="text-sm font-normal text-foreground cursor-pointer">
+                    Delete
+                  </Label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex justify-end gap-3">
+            <Button
+              variant="outline"
+              className="h-10 px-4 text-muted-foreground hover:text-foreground hover:border-foreground"
+              onClick={() => setShowEditKeyModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={saveEditedKey}
+            >
+              Save Changes
+            </Button>
+          </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex flex-1 gap-4 w-full md:w-auto">
+  return (
+    <div className="flex-1 flex-col space-y-6 p-6 md:p-8">
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold tracking-tight">API Keys</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Manage your API keys for programmatic access to Zecrypt services.
+        </p>
+      </div>
+
+      {/* Filters and Actions */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
           <div className="relative w-full md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search API keys..."
-              className="pl-8 bg-background w-full"
+              className="pl-8 w-full h-10"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
-                setCurrentPage(1) // Reset to first page on search
+                setCurrentPage(1)
               }}
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Select
-              value={statusFilter || ""}
+              value={statusFilter || "all"}
               onValueChange={(value) => {
-                setStatusFilter(value || null)
+                setStatusFilter(value === "all" ? null : value)
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[150px] h-10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -425,13 +524,13 @@ export function ApiKeysContent() {
             </Select>
 
             <Select
-              value={typeFilter || ""}
+              value={typeFilter || "all"}
               onValueChange={(value) => {
-                setTypeFilter(value || null)
+                setTypeFilter(value === "all" ? null : value)
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[150px] h-10">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -451,91 +550,26 @@ export function ApiKeysContent() {
         </div>
         <Button
           onClick={() => setShowAddKeyModal(true)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          className="w-full md:w-auto flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10"
         >
           <Plus className="h-4 w-4" />
-          Add
+          Add Key
         </Button>
       </div>
 
-      {/* Add API Key Modal */}
-      <Dialog open={showAddKeyModal} onOpenChange={setShowAddKeyModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create New API Key</DialogTitle>
-            <DialogDescription>Enter the details for your new API key.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="key-name">API Key Name</Label>
-              <Input
-                id="key-name"
-                placeholder="e.g., Production Backend"
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
-                className="mt-1.5"
-              />
-            </div>
-
-            <div>
-              <Label>Key Type</Label>
-              <RadioGroup
-                value={keyType}
-                onValueChange={(value) => setKeyType(value as "test" | "live")}
-                className="flex gap-4 mt-1.5"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem id="test-key" value="test" />
-                  <Label htmlFor="test-key" className="font-normal">
-                    Test
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem id="live-key" value="live" />
-                  <Label htmlFor="live-key" className="font-normal">
-                    Live
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Label>Key Preview</Label>
-              <div className="mt-1.5 border rounded-md bg-muted/30 overflow-hidden">
-                <div className="p-3 h-20 flex items-center">
-                  <code className="text-sm font-mono w-full break-all">{`zk_${keyType}_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`}</code>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                The actual key will be generated when you click "Create API Key"
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddKeyModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateKey} className="bg-primary text-primary-foreground">
-              <Key className="mr-2 h-4 w-4" />
-              Create API Key
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* API Keys Table */}
-      <div className="rounded-md border bg-card overflow-hidden">
+      {/* Table and Pagination */}
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="w-[200px]">Name</TableHead>
-                <TableHead>Key</TableHead>
-                <TableHead className="w-[100px]">Type</TableHead>
-                <TableHead className="w-[120px]">Created</TableHead>
-                <TableHead className="w-[120px]">Expires</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[80px] text-right">Actions</TableHead>
+                <TableHead className="w-[200px] p-3 font-medium text-sm">Name</TableHead>
+                <TableHead className="p-3 font-medium text-sm">Key</TableHead>
+                <TableHead className="w-[100px] p-3 font-medium text-sm">Type</TableHead>
+                <TableHead className="w-[120px] p-3 font-medium text-sm">Created</TableHead>
+                <TableHead className="w-[120px] p-3 font-medium text-sm">Expires</TableHead>
+                <TableHead className="w-[100px] p-3 font-medium text-sm">Status</TableHead>
+                <TableHead className="w-[80px] p-3 font-medium text-sm text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -544,19 +578,14 @@ export function ApiKeysContent() {
                   <TableRow
                     key={key.id}
                     className={cn(
-                      "group hover:bg-muted/50 transition-colors",
+                      "group hover:bg-muted/50 transition-colors border-t border-border",
                       key.status !== "active" && "opacity-60",
-                      editingKeyId === key.id && "bg-blue-50/50 dark:bg-blue-900/20",
                     )}
                   >
-                    <TableCell>
-                      {editingKeyId === key.id ? (
-                        <Input value={editKeyName} onChange={(e) => setEditKeyName(e.target.value)} className="h-8" />
-                      ) : (
-                        <div className="font-medium">{key.name}</div>
-                      )}
+                    <TableCell className="p-3">
+                      <div className="font-medium">{key.name}</div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm">{key.key}</span>
                         {key.status === "active" && (
@@ -571,7 +600,7 @@ export function ApiKeysContent() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                       <div className="flex items-center gap-1.5">
                         {key.type === "live" ? (
                           <Shield className="h-3.5 w-3.5 text-blue-500" />
@@ -581,78 +610,53 @@ export function ApiKeysContent() {
                         {getTypeBadge(key.type)}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                       <div className="flex items-center gap-1.5 text-sm">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                         {key.created}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-3">
                       <div className="flex items-center gap-1.5 text-sm">
                         <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                         {key.expiresIn}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(key.status)}</TableCell>
-                    <TableCell className="text-right">
-                      {editingKeyId === key.id ? (
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={cancelEditingKey}
-                            className="h-8 px-2 text-muted-foreground"
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => saveEditedKey(key.id)}
-                            className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <Check className="h-4 w-4 mr-1" />
-                            Save
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end">
-                          {key.status === "active" && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-[160px]">
-                                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                                  API Key Options
-                                </DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => startEditingKey(key.id)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  <span>Edit</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleCopyKey(key.key)}>
-                                  <Copy className="mr-2 h-4 w-4" />
-                                  <span>Copy Key</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleRevokeKey(key.id)}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  <span>Revoke</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                        </div>
+                    <TableCell className="p-3">{getStatusBadge(key.status)}</TableCell>
+                    <TableCell className="p-3 text-right">
+                      {key.status === "active" && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-[160px]">
+                            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                              API Key Options
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => startEditingKey(key.id)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleCopyKey(key.key)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              <span>Copy Key</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleRevokeKey(key.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Revoke</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </TableCell>
                   </TableRow>
@@ -679,9 +683,9 @@ export function ApiKeysContent() {
           </Table>
         </div>
 
-        {/* Pagination */}
+        {/* Updated Pagination */}
         {filteredApiKeys.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-4 border-t">
+          <div className="flex items-center justify-between px-4 py-4 border-t bg-card">
             <div className="text-sm text-muted-foreground">
               Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredApiKeys.length)} of{" "}
               {filteredApiKeys.length} keys
@@ -719,17 +723,12 @@ export function ApiKeysContent() {
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                   let pageNum = i + 1
-
-                  // If we have more than 5 pages and we're not at the beginning
                   if (totalPages > 5 && currentPage > 3) {
                     pageNum = currentPage - 3 + i
-
-                    // Don't go beyond the total pages
                     if (pageNum > totalPages) {
                       pageNum = totalPages - (4 - i)
                     }
                   }
-
                   return (
                     <Button
                       key={i}
@@ -758,6 +757,71 @@ export function ApiKeysContent() {
         )}
       </div>
 
+      {/* Add API Key Modal */}
+      <Dialog open={showAddKeyModal} onOpenChange={setShowAddKeyModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New API Key</DialogTitle>
+            <DialogDescription>Enter the details for your new API key.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="key-name">API Key Name</Label>
+              <Input
+                id="key-name"
+                placeholder="e.g., Production Backend"
+                value={newKeyName}
+                onChange={(e) => setNewKeyName(e.target.value)}
+                className="mt-1.5 h-10"
+              />
+            </div>
+
+            <div>
+              <Label>Key Type</Label>
+              <RadioGroup
+                value={keyType}
+                onValueChange={(value) => setKeyType(value as "test" | "live")}
+                className="flex gap-4 mt-1.5"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem id="test-key" value="test" />
+                  <Label htmlFor="test-key" className="font-normal">
+                    Test
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem id="live-key" value="live" />
+                  <Label htmlFor="live-key" className="font-normal">
+                    Live
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Key Preview</Label>
+              <div className="mt-1.5 border rounded-md bg-muted/30 overflow-hidden">
+                <div className="p-3 h-20 flex items-center">
+                  <code className="text-sm font-mono w-full break-all">{`zk_${keyType}_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`}</code>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                The actual key will be generated when you click &quot;Create API Key&quot;
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddKeyModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateKey} className="bg-primary text-primary-foreground">
+              <Key className="mr-2 h-4 w-4" />
+              Create API Key
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* New API Key Dialog */}
       <Dialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
         <DialogContent className="sm:max-w-md">
@@ -772,7 +836,7 @@ export function ApiKeysContent() {
               <Label htmlFor="newApiKey" className="sr-only">
                 API Key
               </Label>
-              <Input id="newApiKey" value={newlyCreatedKey || ''} readOnly className="font-mono text-sm" />
+              <Input id="newApiKey" value={newlyCreatedKey || ""} readOnly className="font-mono text-sm h-10" />
             </div>
             <Button
               type="button"
@@ -806,7 +870,8 @@ export function ApiKeysContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showEditKeyModal && <EditApiKeyDialog />}
     </div>
   )
 }
-

@@ -137,8 +137,8 @@ export function LoginPage() {
           </div>
 
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>We've set your account name based on your social account.</p>
-            <p>Don't worry, you can easily update it later on your profile page.</p>
+            <p>We&apos;ve set your account name based on your social account.</p>
+            <p>Don&apos;t worry, you can easily update it later on your profile page.</p>
           </div>
         </div>
       </div>
