@@ -1,0 +1,51 @@
+name: Build and Push to DigitalOcean Container Registry
+
+on:
+  push:
+    branches: [ main, sit, dev ]
+
+env:
+  REGISTRY_NAME: ${{ secrets.REGISTRY_NAME }}  
+  IMAGE_NAME: zec-backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Log in to DOCR
+      run: doctl registry login
+
+    - name: Build Docker image
+      working-directory: ./packages/backend-server
+      run: |
+        BRANCH_NAME=${{ github.ref_name }}
+        IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}
+        
+        docker build -t zec-backend:$IMAGE_TAG .
+        
+    - name: Slim the image using DockerSlim
+      run: |
+        curl -sL https://raw.githubusercontent.com/slimtoolkit/slim/master/scripts/install-slim.sh | sudo -E bash -
+        BRANCH_NAME=${{ github.ref_name }}
+        IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}
+        docker-slim build --tag zec-backend-slim:$IMAGE_TAG zec-backend:$IMAGE_TAG
+
+    - name: Tag and push slimmed image
+      run: |
+        BRANCH_NAME=${{ github.ref_name }}
+        IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}
+
+        docker tag zec-backend-slim:$IMAGE_TAG registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
+        docker push registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
+
+        # docker tag zec-backend:$IMAGE_TAG registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
+        # docker push registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
