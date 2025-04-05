@@ -34,9 +34,9 @@ jobs:
           context: ./packages/backend-server 
           file: ./Dockerfile 
           push: true
-        tags: |
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:latest
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.sha }}
-          registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.ref_name }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+          tags: |
+            registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:latest
+            registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.sha }}
+            registry.digitalocean.com/${{ env.REGISTRY_NAME }}/zec-backend:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
