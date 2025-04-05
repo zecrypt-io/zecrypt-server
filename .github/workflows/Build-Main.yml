@@ -1,0 +1,29 @@
+name: Build and Push to DigitalOcean Container Registry
+
+on:
+  push:
+    branches: [ main ]
+
+# env:
+#   REGISTRY_NAME: "your-registry-name"  # Update with your DOCR registry name
+#   IMAGE_NAME: "your-image-name"       # Update with your image name
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Log in to DOCR
+      run: doctl registry login
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔒 zecrypt-server - Secure Encryption API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* Modern CSS Reset */
         *, *::before, *::after {
@@ -23,9 +26,36 @@
             --gray-700: #404040;
             --gray-800: #262626;
             --gray-900: #171717;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --accent: #f43f5e;
+            --accent-dark: #e11d48;
+            --success: #10b981;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --gradient: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --black: #ffffff;
+                --white: #121212;
+                --gray-100: #1e1e1e;
+                --gray-200: #2d2d2d;
+                --gray-300: #3d3d3d;
+                --gray-400: #5c5c5c;
+                --gray-500: #7e7e7e;
+                --gray-600: #a1a1a1;
+                --gray-700: #d1d1d1;
+                --gray-800: #e5e5e5;
+                --gray-900: #f5f5f5;
+                --primary: #3b82f6;
+                --primary-dark: #60a5fa;
+                --primary-light: #2563eb;
+            }
         }
 
         /* Base Styles */
@@ -37,6 +67,8 @@
             line-height: 1.6;
             color: var(--gray-800);
             min-height: 100vh;
+            background-image: radial-gradient(var(--gray-200) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
         .container {
@@ -51,7 +83,7 @@
         .card {
             background: var(--white);
             padding: 3rem;
-            border-radius: 1rem;
+            border-radius: 1.5rem;
             box-shadow: var(--shadow-lg);
             width: 100%;
             max-width: 48rem;
@@ -60,6 +92,8 @@
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 1px solid var(--gray-200);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .card:hover {
@@ -74,16 +108,22 @@
             left: 0;
             width: 100%;
             height: 6px;
-            background: var(--black);
+            background: var(--gradient);
         }
 
         /* Typography */
         h1 {
             color: var(--black);
-            font-size: 2.5rem;
+            font-size: 2.75rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.025em;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            display: inline-block;
         }
 
         .subtitle {
@@ -105,23 +145,25 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--black);
+            background: var(--primary);
             color: var(--white);
-            padding: 0.75rem 1.75rem;
-            border-radius: 0.5rem;
+            padding: 0.85rem 2rem;
+            border-radius: 0.75rem;
             text-decoration: none;
             font-weight: 600;
             font-size: 1.125rem;
-            transition: all 0.2s;
-            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
             position: relative;
             overflow: hidden;
+            border: none;
+            cursor: pointer;
         }
 
         .btn:hover {
-            background: var(--gray-800);
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.15);
         }
 
         .btn:active {
@@ -155,7 +197,7 @@
             background: var(--gray-100);
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 0.875rem;
             color: var(--black);
             border: 1px solid var(--gray-300);
@@ -165,7 +207,7 @@
         .features {
             margin: 2.5rem 0;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1.5rem;
             text-align: left;
         }
@@ -173,83 +215,108 @@
         .feature-item {
             background: var(--gray-100);
             padding: 1.5rem;
-            border-radius: 0.75rem;
+            border-radius: 1rem;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: flex-start;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
             border: 1px solid var(--gray-200);
             height: 100%;
+            overflow: hidden;
+            position: relative;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .feature-item:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow);
             background: var(--white);
+            border-color: var(--primary-light);
+        }
+
+        .feature-item:hover .feature-icon {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            width: 100%;
         }
 
         .feature-icon {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            min-width: 2.5rem; /* Ensure fixed width */
+            width: 3rem;
+            height: 3rem;
+            min-width: 3rem;
             background: var(--white);
-            border-radius: 50%;
+            border-radius: 12px;
             margin-right: 1rem;
-            color: var(--black);
-            font-size: 1.25rem;
+            color: var(--primary);
+            font-size: 1.5rem;
             box-shadow: var(--shadow-sm);
             flex-shrink: 0;
             border: 1px solid var(--gray-200);
+            transition: all 0.3s;
+        }
+
+        .feature-header h3 {
+            margin: 0.5rem 0 0;
+            font-size: 1.125rem;
+            color: var(--black);
+            font-weight: 700;
         }
 
         .feature-content {
             flex: 1;
-        }
-
-        .feature-content h3 {
-            margin: 0 0 0.5rem;
-            font-size: 1.125rem;
-            color: var(--black);
+            width: 100%;
         }
 
         .feature-content p {
             margin: 0;
             font-size: 0.875rem;
             color: var(--gray-600);
+            line-height: 1.5;
         }
 
         /* API Example */
         .api-example {
             margin-top: 2.5rem;
-            background: var(--black);
+            background: var(--gray-900);
             color: var(--white);
-            padding: 1.5rem;
-            border-radius: 0.75rem;
+            padding: 1.75rem;
+            border-radius: 1rem;
             text-align: left;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-800);
         }
 
         .api-example::before {
             content: '// API Example';
             position: absolute;
-            top: 0.5rem;
+            top: 0.75rem;
             right: 1rem;
             color: rgba(255, 255, 255, 0.5);
-            font-family: monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 0.75rem;
         }
 
         .api-example code {
             display: block;
             background: transparent;
-            color: var(--white);
+            color: var(--gray-300);
             border: none;
             padding: 0;
-            font-family: 'Fira Code', 'Courier New', monospace;
+            font-family: 'Fira Code', monospace;
+            line-height: 1.6;
         }
 
         .api-example .comment {
@@ -257,25 +324,41 @@
         }
 
         .api-example .string {
-            color: var(--gray-300);
+            color: var(--accent);
         }
 
         .api-example .keyword {
-            color: var(--white);
-            font-weight: bold;
+            color: var(--primary-light);
+            font-weight: 500;
         }
 
         /* Footer */
         .footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             font-size: 0.875rem;
             color: var(--gray-600);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .footer code {
+            transition: all 0.3s;
+        }
+
+        .footer code:hover {
+            background: var(--primary-light);
+            color: var(--white);
+            border-color: var(--primary-light);
+            cursor: pointer;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .card {
-                padding: 2rem;
+                padding: 2rem 1.5rem;
+                border-radius: 1.25rem;
             }
 
             h1 {
@@ -287,8 +370,16 @@
             }
 
             .feature-item {
-                flex-direction: row;
-                align-items: flex-start;
+                flex-direction: column;
+            }
+            
+            .feature-header {
+                width: 100%;
+            }
+            
+            .api-example {
+                padding: 1.5rem 1rem;
+                font-size: 0.8rem;
             }
         }
 
@@ -298,15 +389,36 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
         .animate {
             animation: fadeIn 0.6s ease forwards;
             opacity: 0;
+        }
+
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
         }
 
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
         .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
     </style>
 </head>
 <body>
@@ -320,29 +432,35 @@
 
             <div class="features animate delay-2">
                 <div class="feature-item">
-                    <div class="feature-icon">🔐</div>
-                    <div class="feature-content">
+                    <div class="feature-header">
+                        <div class="feature-icon float">🔐</div>
                         <h3>End-to-end Encryption</h3>
+                    </div>
+                    <div class="feature-content">
                         <p>Military-grade AES-256 encryption for maximum data security</p>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-content">
+                    <div class="feature-header">
+                        <div class="feature-icon float delay-1">⚡</div>
                         <h3>High Performance</h3>
+                    </div>
+                    <div class="feature-content">
                         <p>Zero-downtime deployments with optimized response times</p>
                     </div>
                 </div>
-                <div class="feature-item">
-                    <div class="feature-icon">📚</div>
-                    <div class="feature-content">
+                <a href="/docs" class="feature-item">
+                    <div class="feature-header">
+                        <div class="feature-icon float delay-2">📚</div>
                         <h3>API Documentation</h3>
+                    </div>
+                    <div class="feature-content">
                         <p>Comprehensive OpenAPI documentation and examples</p>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <a href="/docs" class="btn animate delay-3">
+            <a href="/docs" class="btn animate delay-3 pulse">
                 Explore API Docs
             </a>
 
@@ -360,8 +478,8 @@
                 <code>.<span class="keyword">then</span>(data => console.log(data));</code>
             </div>
 
-            <div class="footer">
-                Try the test endpoint: <code>GET /api/hello</code>
+            <div class="footer animate delay-5">
+                Try the test endpoint: <code class="endpoint-test">GET /api/hello</code>
             </div>
         </div>
     </div>
@@ -396,6 +514,42 @@
                 });
             });
 
+            // Add endpoint test interaction
+            const endpointTest = document.querySelector('.endpoint-test');
+            if (endpointTest) {
+                endpointTest.addEventListener('click', async () => {
+                    try {
+                        endpointTest.style.background = 'var(--primary)';
+                        endpointTest.style.color = 'var(--white)';
+                        endpointTest.style.borderColor = 'var(--primary)';
+                        endpointTest.textContent = 'Testing...';
+                        
+                        // Simulate API call
+                        const response = await new Promise(resolve => {
+                            setTimeout(() => {
+                                resolve({ status: 'success', message: 'Hello from zecrypt-server!' });
+                            }, 800);
+                        });
+                        
+                        // Show result with animation
+                        endpointTest.textContent = `Success: ${response.message}`;
+                        endpointTest.style.background = 'var(--success)';
+                        
+                        // Reset after delay
+                        setTimeout(() => {
+                            endpointTest.textContent = 'GET /api/hello';
+                            endpointTest.style.background = '';
+                            endpointTest.style.color = '';
+                            endpointTest.style.borderColor = '';
+                        }, 3000);
+                        
+                    } catch (error) {
+                        endpointTest.textContent = 'Error: Failed to test endpoint';
+                        endpointTest.style.background = 'var(--accent)';
+                    }
+                });
+            }
+
             // Add keyframe animation for ripple effect
             const style = document.createElement('style');
             style.textContent = `
@@ -408,10 +562,48 @@
             `;
             document.head.appendChild(style);
 
-            // Simulate API call for demo purposes
-            setTimeout(() => {
-                console.log('API test response:', { status: 'success', message: 'Hello from zecrypt-server!' });
-            }, 1000);
+            // Add hover effects for feature items
+            const featureItems = document.querySelectorAll('.feature-item');
+            featureItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                });
+            });
+
+            // Add dark mode toggle
+            const toggleDarkMode = () => {
+                document.body.classList.toggle('dark-mode');
+            };
+            
+            // Check for system dark mode preference
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+            if (prefersDarkMode.matches) {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Add feature animation on scroll for mobile
+            const observeElements = () => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.feature-item').forEach(item => {
+                    observer.observe(item);
+                });
+            };
+
+            if ('IntersectionObserver' in window) {
+                observeElements();
+            }
         });
     </script>
 </body>
