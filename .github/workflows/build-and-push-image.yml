@@ -31,7 +31,7 @@ jobs:
         IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}
         
         docker build -t zec-backend:$IMAGE_TAG .
-        
+
     - name: Slim the image using DockerSlim
       run: |
         curl -sL https://raw.githubusercontent.com/slimtoolkit/slim/master/scripts/install-slim.sh | sudo -E bash -
@@ -47,5 +47,3 @@ jobs:
         docker tag zec-backend-slim:$IMAGE_TAG registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
         docker push registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
 
-        # docker tag zec-backend:$IMAGE_TAG registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
-        # docker push registry.digitalocean.com/${{ env.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-latest
