@@ -24,6 +24,20 @@ jobs:
     - name: Log in to DOCR
       run: doctl registry login
 
+    - name: Create .env file
+      run: |
+        cat > ./packages/backend-server/.env << EOF
+        MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
+        ENV=${{ secrets.ENV }}
+        PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}
+        PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}
+        STACK_AUTH_PROJECT_ID=${{ secrets.STACK_AUTH_PROJECT_ID }}
+        STACK_AUTH_CLIENT_ID=${{ secrets.STACK_AUTH_CLIENT_ID }}
+        STACK_AUTH_CLIENT_SECRET=${{ secrets.STACK_AUTH_CLIENT_SECRET }}
+        EOF
+
     - name: Build Docker image
       working-directory: ./packages/backend-server
       run: |
