@@ -4,19 +4,22 @@ import random
 import re
 import string
 from base64 import b64encode, b64decode
+import os
+import logging
+import hmac
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+from Crypto.Hash import HMAC, SHA256
 
 from app.core.config import settings
-from app.framework.redis_client.redis import RedisClient
-from app.utils.logger import get_logger
 
 jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
 
-logger = get_logger("Security")
-redis = RedisClient()
+logger = logging.getLogger(__name__)
+
+
 
 
 def generate_passphrase(length=16):
@@ -26,76 +29,91 @@ def generate_passphrase(length=16):
     return "".join(random.choice(chars) for _ in range(length))
 
 
-def generate_key(company_id):
-    """Generates a key and save it into a file"""
-    passphrase = generate_passphrase(length=10)
+def generate_key():
+    """Generates a secure 256-bit (32-byte) key using OS randomness"""
     try:
-        key = hashlib.md5(bytes(passphrase, "utf-8")).digest()
-        base64_data = base64.b64encode(key).decode("utf-8")
-        secrets_manager.add_secret(f"encryption_keys/{company_id}", base64_data)
+        return base64.b64encode(os.urandom(32)).decode('utf-8')
     except Exception as e:
-        logger.error(e.__str__())
+        raise
 
 
-cipher_cache = {}
+def get_hmac(key, ciphertext):
+    """Generate HMAC for message authentication"""
+    hmac = HMAC.new(key, digestmod=SHA256)
+    hmac.update(ciphertext)
+    return hmac.digest()
 
 
-def get_cipher(company_id):
-    """Retrieve or create a cipher instance for the given company ID."""
-    if company_id not in cipher_cache:
-        key = secrets_manager.read_secret(f"encryption_keys/{company_id}")
-        key = base64.b64decode(key)
-        cipher_cache[company_id] = AES.new(key, AES.MODE_ECB)
-    return cipher_cache[company_id]
-
-
-def encrypt_message(message, company_id):
-    """
-    Encrypts a message using AES encryption for a specific company.
-
-    Parameters:
-    message (str): The message to be encrypted.
-    company_id (str): The ID of the company for which the message is encrypted.
-
-    Returns:
-    str: The encrypted message in base64 encoding or None if message is None.
-    """
+def encrypt_message(message):
     if message is None:
         return None
 
     try:
-        cipher = get_cipher(company_id)
-        data = message.encode()
-        ct_bytes = cipher.encrypt(pad(data, AES.block_size))
-        return b64encode(ct_bytes).decode("utf-8")
-    except Exception:
-        # Log the exception e
+        key = base64.b64decode(settings.AES_KEY)
+        iv = os.urandom(16)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        
+        padded_data = pad(message.encode(), AES.block_size)
+        ciphertext = cipher.encrypt(padded_data)
+        hmac = get_hmac(key, iv + ciphertext)
+        
+        combined = iv + ciphertext + hmac
+        return b64encode(combined).decode('utf-8')
+    except Exception as e:
         return None
 
 
-def decrypt_message(encrypted_message, company_id):
-    """Decrypts an encrypted message"""
-    hash_name = f"{DECRYPTION_HASH}_{company_id}"
-    if not encrypted_message:
-        return encrypted_message
-
-    if encrypted_message.startswith("FR_"):
-        return encrypted_message
-
+def decrypt_message(encrypted_message):
     try:
-        if redis.field_exists_in_hash(hash_name, encrypted_message):
-            return redis.get_from_hash(hash_name, encrypted_message)
-    except Exception:
-        pass
-
-    try:
-        key = secrets_manager.read_secret(f"encryption_keys/{company_id}")
-        key = base64.b64decode(key.encode("utf-8"))
-        ct = b64decode(encrypted_message)
-        cipher = AES.new(key, AES.MODE_ECB)
-        pt = unpad(cipher.decrypt(ct), AES.block_size)
-        response = pt.decode("utf-8")
-        redis.add_key_to_hash(hash_name, encrypted_message, response)
-        return response
-    except Exception:
+        if not encrypted_message:
+            raise ValueError("Empty ciphertext received")
+            
+        key = base64.b64decode(settings.AES_KEY)
+        combined = b64decode(encrypted_message)
+        
+        if len(combined) < 48:  # IV(16) + HMAC(32) + minimum 1 byte ciphertext
+            raise ValueError("Invalid ciphertext length")
+            
+        iv = combined[:16]
+        ciphertext = combined[16:-32]
+        received_hmac = combined[-32:]
+        
+        # Verify HMAC first
+        expected_hmac = get_hmac(key, iv + ciphertext)
+        if not hmac.compare_digest(received_hmac, expected_hmac):
+            raise ValueError("HMAC validation failed")
+            
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
+        return plaintext.decode('utf-8')
+        
+    except Exception as e:
+        logger.error(f"Decryption failed: {str(e)}")
+        # Return original message if decryption fails
         return encrypted_message
+
+
+def encrypt_payload(payload):
+    """
+    Encrypts a payload using AES encryption for a specific company.
+
+    Parameters:
+    payload (dict): The payload to be encrypted.
+    """
+    for key, value in payload.items():
+        if key in ["user_name","password","api_key","phrase","wallet_address"]:
+            payload[key] = encrypt_message(value)
+    return payload
+
+
+def decrypt_payload(payload):
+    """
+    Decrypts a payload using AES encryption for a specific company.
+    payload (dict): The payload to be decrypted.
+    """
+    for key, value in payload.items():
+        if key in ["user_name","password","api_key","phrase","wallet_address"]:
+            payload[key] = decrypt_message(value)
+    return payload
+
+
