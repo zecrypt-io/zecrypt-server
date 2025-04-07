@@ -36,6 +36,7 @@ jobs:
         STACK_AUTH_PROJECT_ID=${{ secrets.STACK_AUTH_PROJECT_ID }}
         STACK_AUTH_CLIENT_ID=${{ secrets.STACK_AUTH_CLIENT_ID }}
         STACK_AUTH_CLIENT_SECRET=${{ secrets.STACK_AUTH_CLIENT_SECRET }}
+        AES_KEY=${{ secrets.AES_KEY }}
         EOF
 
     - name: Build Docker image
