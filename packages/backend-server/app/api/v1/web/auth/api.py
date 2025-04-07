@@ -4,6 +4,7 @@ from app.api.v1.web.auth.schema import (
     Login,
     SignUp,
 )
+from app.api.v1.web.auth.services import validate_stack_auth_token, record_login_event
 from app.api.v1.web.projects.services import create_project_at_signup
 from app.framework.mongo_db.db import get_db
 from app.managers import user as user_manager
@@ -27,21 +28,22 @@ async def login_api(
     request: Request, payload: Login, back_ground_tasks: BackgroundTasks
 ):
     payload = payload.model_dump()
-
-    user = user_manager.find_one(db, {"uid": payload.get("uid")}, {"_id": False})
-
-    if user and user.get("is_blocked"):
+    res = validate_stack_auth_token(payload.get("uid"))
+    print(res)
+    if not res:
         return response_helper(
             status_code=400,
-            message="Your account is blocked, Please contact Zecrypt team to resolve the issue. contact@zecrypt.io",
+            message="Authentication failed, Please try again",
         )
+
+    user = user_manager.find_one(db, {"email": res.get("primary_email")}, {"_id": False})
     if not user:
         return response_helper(
             status_code=400,
             message="User not found, Please signup",
         )
 
-    token = create_jwt_token({"user_id": user.get("user_id"), "role": user.get("role")})
+    token = create_jwt_token({"user_id": user.get("user_id")})
     token_data = {
         "user_id": user.get("user_id"),
         "profile_url": user.get("profile_url"),
@@ -60,7 +62,7 @@ async def login_api(
             }
         },
     )
-
+    back_ground_tasks.add_task(record_login_event, request, db, user.get("user_id"))
     return response_helper(
         status_code=200, message="User logged in successfully", data=token_data
     )
@@ -71,8 +73,14 @@ async def signup_api(
     request: Request, payload: SignUp, back_ground_tasks: BackgroundTasks
 ):
     payload = payload.model_dump()
+    res = validate_stack_auth_token(payload.get("uid"))
+    if not res:
+        return response_helper(
+            status_code=400,
+            message="Authentication failed, Please try again",
+        )
 
-    user = user_manager.find_one(db, {"uid": payload.get("uid")}, {"_id": False})
+    user = user_manager.find_one(db, {"email": payload.get("primary_email")}, {"_id": False})
 
     if user:
         return response_helper(
@@ -80,26 +88,29 @@ async def signup_api(
             message="User already exists, Please login",
         )
 
-    user_id = f"USR{id_generator(10)}"
+    user_id = f"ZEC{id_generator(10)}"
     token = create_jwt_token({"user_id": user_id})
+
     new_user_data = {
-        "uid": payload.get("uid"),
-        "role": "user",
         "name": res.get("display_name"),
         "created_at": create_timestamp(),
         "updated_at": create_timestamp(),
-        "email": payload.get("email"),
-        "device_id": payload.get("device_id"),
+        "email": payload.get("primary_email"),
         "user_id": user_id,
-        "profile_url": res.get("profile_url"),
+        "profile_url": res.get("profile_image_url"),
         "token": token,
-        "user_name": None,
-        "login_method": res.get("provider_id"),
-        "is_blocked": False,
+        "auth": {
+            "has_password": res.get("has_password"),
+            "otp_auth_enabled": res.get("otp_auth_enabled"),
+            "auth_with_email": res.get("auth_with_email"),
+            "requires_totp_mfa": res.get("requires_totp_mfa"),
+            "passkey_auth_enabled": res.get("passkey_auth_enabled"),
+            "oauth_providers": res.get("oauth_providers"),
+        },
     }
 
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_project_at_signup,db, user_id)
+    back_ground_tasks.add_task(create_project_at_signup, db, user_id)
     token_data = {
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
@@ -107,5 +118,5 @@ async def signup_api(
         "token": token,
     }
     return response_helper(
-        status_code=200, message="User signed up  successfully", data=token_data
+        status_code=200, message="User signed up successfully", data=token_data
     )
