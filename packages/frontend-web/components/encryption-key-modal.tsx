@@ -233,7 +233,7 @@ export function EncryptionKeyModal({ isNewUser = false, onClose, onCancel }: Enc
                 />
                 {error && activeTab === "existing" && <p className="text-xs text-red-500">{error}</p>}
                 <p className="text-xs text-muted-foreground">
-                  Enter the encryption key you previously saved. If you've lost your key, you'll need to reset your
+                  Enter the encryption key you previously saved. If you&apos;ve lost your key, you&apos;ll need to reset your
                   account.
                 </p>
               </div>

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import {
   ChevronDown,
   Command,
-  FileText,
   Home,
   Key,
   Lock,
@@ -19,9 +18,6 @@ import {
   Settings,
   User,
   Bell,
-  Clock,
-  HardDrive,
-  Share,
   Plus,
   X,
 } from "lucide-react"
@@ -416,23 +412,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </form>
           </div>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="default"
-                  onClick={() => setShowGeneratePassword(true)}
-                  className="relative flex items-center gap-2 bg-primary hover:bg-primary/90 border-line-animation"
-                >
-                  <Key className="h-5 w-5 z-10 relative" />
-                  <span className="text-primary-foreground z-10 relative">Generate Password</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Generate Password</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="default"
+        onClick={() => setShowGeneratePassword(true)}
+        className="theme-button flex items-center gap-2 px-4 py-2"
+      >
+        <Key className="h-5 w-5" />
+        <span>Generate Password</span>
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Generate Password</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
 
           {/* Workspace Switcher in top nav */}
           <WorkspaceSwitcherNav />

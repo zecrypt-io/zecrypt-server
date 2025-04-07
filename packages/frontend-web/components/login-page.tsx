@@ -35,8 +35,6 @@ export function LoginPage() {
   }
   
 
-  
-
   // const handleLogin = () => {
   //   // Set a flag in sessionStorage to indicate we need to show the encryption key modal
   //   sessionStorage.setItem("showEncryptionKeyModal", "true")
@@ -132,50 +130,11 @@ export function LoginPage() {
         firstTab='password'
         extraInfo={<>When signing in, you agree to our <a href="/terms">Terms</a></>}
       />
-
-          {/* <div className="text-center space-y-2 mb-8">
-            <h2 className="text-2xl font-bold">Sign In</h2>
-            <p className="text-sm text-muted-foreground">Your secure password manager</p>
-          </div>
-
-          <div className="space-y-4">
-            <Button
-              variant="outline"
-              className="w-full flex items-center gap-2 h-12 hover:theme-accent-bg hover:text-white"
-              onClick={handleLogin}
-              disabled={isLoggingIn}
-            >
-              <MonochromeGoogleIcon className="h-5 w-5" />
-              Sign in with Google
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border"></span>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">OR</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full flex items-center gap-2 h-12 hover:theme-accent-bg hover:text-white"
-              onClick={handleLogin}
-              disabled={isLoggingIn}
-            >
-              <Github className="h-5 w-5" />
-              Sign in with GitHub
-            </Button>
-          </div>
-
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>We've set your account name based on your social account.</p>
-            <p>Don't worry, you can easily update it later on your profile page.</p>
-          </div> */}
-        </div>
       </div>
-    </div>
+      </div>
+      </div>
+
+
   )
 }
 
