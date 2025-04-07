@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Request, BackgroundTasks, Response
 
 from app.api.v1.web.auth.schema import (
     Login,
@@ -14,6 +14,7 @@ from app.utils.utils import (
     response_helper,
     id_generator,
 )
+from app.utils.jwt_utils import encode_token
 
 db = get_db()
 router = APIRouter()
@@ -25,7 +26,7 @@ PROFILE = "/profile"
 
 @router.post(LOGIN)
 async def login_api(
-    request: Request, payload: Login, back_ground_tasks: BackgroundTasks
+    request: Request, payload: Login, back_ground_tasks: BackgroundTasks, response: Response
 ):
     payload = payload.model_dump()
     res = validate_stack_auth_token(payload.get("uid"))
@@ -50,7 +51,6 @@ async def login_api(
         "user_id": user.get("user_id"),
         "profile_url": user.get("profile_url"),
         "name": user.get("name"),
-        "token": token,
     }
 
     user_manager.update_one(
@@ -65,6 +65,9 @@ async def login_api(
         },
     )
     back_ground_tasks.add_task(record_login_event, request, db, user.get("user_id"))
+    refresh_token = encode_token(user.get("user_id"))
+    response.set_cookie(key="access_token", value=token, httponly=True, secure=True, samesite="strict")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="strict")
     return response_helper(
         status_code=200, message="User logged in successfully", data=token_data
     )
@@ -72,7 +75,7 @@ async def login_api(
 
 @router.post(SIGNUP)
 async def signup_api(
-    request: Request, payload: SignUp, back_ground_tasks: BackgroundTasks
+    request: Request, payload: SignUp, back_ground_tasks: BackgroundTasks, response: Response
 ):
     payload = payload.model_dump()
     res = validate_stack_auth_token(payload.get("uid"))
@@ -120,8 +123,11 @@ async def signup_api(
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
         "name": res.get("display_name"),
-        "token": token,
     }
+    refresh_token = encode_token(user_id)
+    response.set_cookie(key="accesstoken", value=token, httponly=True, secure=True, samesite="strict")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="strict")
     return response_helper(
         status_code=200, message="User signed up successfully", data=token_data
     )
+
