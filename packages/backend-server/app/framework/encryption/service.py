@@ -20,6 +20,7 @@ jwt_algo = settings.JWT_ALGORITHM
 logger = logging.getLogger(__name__)
 
 
+sensitive_fields = ["user_name", "password", "api_key", "phrase", "wallet_address"]
 
 
 def generate_passphrase(length=16):
@@ -32,7 +33,7 @@ def generate_passphrase(length=16):
 def generate_key():
     """Generates a secure 256-bit (32-byte) key using OS randomness"""
     try:
-        return base64.b64encode(os.urandom(32)).decode('utf-8')
+        return base64.b64encode(os.urandom(32)).decode("utf-8")
     except Exception as e:
         raise
 
@@ -50,70 +51,45 @@ def encrypt_message(message):
 
     try:
         key = base64.b64decode(settings.AES_KEY)
-        iv = os.urandom(16)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        
-        padded_data = pad(message.encode(), AES.block_size)
-        ciphertext = cipher.encrypt(padded_data)
-        hmac = get_hmac(key, iv + ciphertext)
-        
-        combined = iv + ciphertext + hmac
-        return b64encode(combined).decode('utf-8')
+        cipher = AES.new(key, AES.MODE_GCM)
+        ciphertext, tag = cipher.encrypt_and_digest(message.encode())
+        return b64encode(cipher.nonce + tag + ciphertext).decode("utf-8")
     except Exception as e:
+        logger.error(f"Encryption error: {e}")
         return None
 
 
 def decrypt_message(encrypted_message):
     try:
-        if not encrypted_message:
-            raise ValueError("Empty ciphertext received")
-            
         key = base64.b64decode(settings.AES_KEY)
-        combined = b64decode(encrypted_message)
-        
-        if len(combined) < 48:  # IV(16) + HMAC(32) + minimum 1 byte ciphertext
-            raise ValueError("Invalid ciphertext length")
-            
-        iv = combined[:16]
-        ciphertext = combined[16:-32]
-        received_hmac = combined[-32:]
-        
-        # Verify HMAC first
-        expected_hmac = get_hmac(key, iv + ciphertext)
-        if not hmac.compare_digest(received_hmac, expected_hmac):
-            raise ValueError("HMAC validation failed")
-            
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
-        return plaintext.decode('utf-8')
-        
+        data = b64decode(encrypted_message)
+
+        if len(data) < 28:  # 16-byte nonce + 16-byte tag + minimum ciphertext
+            raise ValueError("Invalid ciphertext")
+
+        nonce = data[:16]
+        tag = data[16:32]
+        ciphertext = data[32:]
+
+        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+        return plaintext.decode("utf-8")
     except Exception as e:
-        logger.error(f"Decryption failed: {str(e)}")
-        # Return original message if decryption fails
-        return encrypted_message
+        logger.error(f"Decryption error: {e}")
+        return None
 
 
 def encrypt_payload(payload):
-    """
-    Encrypts a payload using AES encryption for a specific company.
-
-    Parameters:
-    payload (dict): The payload to be encrypted.
-    """
-    for key, value in payload.items():
-        if key in ["user_name","password","api_key","phrase","wallet_address"]:
-            payload[key] = encrypt_message(value)
-    return payload
+    """Returns new dict instead of modifying in-place"""
+    return {
+        key: encrypt_message(value) if key in sensitive_fields else value
+        for key, value in payload.items()
+    }
 
 
 def decrypt_payload(payload):
-    """
-    Decrypts a payload using AES encryption for a specific company.
-    payload (dict): The payload to be decrypted.
-    """
-    for key, value in payload.items():
-        if key in ["user_name","password","api_key","phrase","wallet_address"]:
-            payload[key] = decrypt_message(value)
-    return payload
-
-
+    """Returns new dict with decrypted values"""
+    return {
+        key: decrypt_message(value) if key in sensitive_fields else value
+        for key, value in payload.items()
+    }

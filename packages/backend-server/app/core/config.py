@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import validator
 
 
 class Settings(BaseSettings):
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
     STACK_AUTH_CLIENT_ID: str
     STACK_AUTH_CLIENT_SECRET: str
     AES_KEY: str
-    
+
     class Config:
         case_sensitive = True
         env_file = ".env"

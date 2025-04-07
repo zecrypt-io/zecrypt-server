@@ -31,7 +31,7 @@ async def create_wallet_phrase_api(
     payload: WalletPhrase,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload=payload.model_dump()
+    payload = payload.model_dump()
     payload.update({"project_id": project_id, "created_by": user.get("user_id")})
     return add_wallet_phrase(user.get("db"), payload)
 
@@ -51,5 +51,5 @@ async def update_wallet_phrase_api(
 @router.delete(WALLET_PHRASE_DETAILS)
 async def delete_wallet_phrase_api(
     project_id: str, doc_id: str, user: UserDetails = Depends(get_current_user)
-):  
+):
     return delete_wallet_phrase(user.get("db"), doc_id)

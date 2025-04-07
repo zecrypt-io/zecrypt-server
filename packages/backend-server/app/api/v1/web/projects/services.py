@@ -1,17 +1,31 @@
 from app.utils.date_utils import create_timestamp
-from app.utils.utils import create_uuid, response_helper, filter_payload
+from app.utils.utils import create_uuid, response_helper
 from app.managers import project as project_manager
+from app.managers import workspace as workspace_manager
 
 
 def create_project_at_signup(db, user_id):
+    workspace_id = create_uuid()
+    timestamp = create_timestamp()
+    workspace_manager.insert_one(
+        db,
+        {
+            "created_by": user_id,
+            "workspace_id": workspace_id,
+            "name": "Personal Workspace",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+        },
+    )
     data = {
         "created_by": user_id,
         "name": "Primary Vault",
         "lower_name": "primary vault",
-        "created_at": create_timestamp(),
-        "updated_at": create_timestamp(),
+        "created_at": timestamp,
+        "updated_at": timestamp,
         "is_default": True,
         "doc_id": create_uuid(),
+        "workspace_id": workspace_id,
     }
     project_manager.insert_one(db, data)
 
@@ -47,6 +61,7 @@ def add_project(db, payload):
     project = project_manager.find_one(
         db,
         {
+            "workspace_id": payload.get("workspace_id"),
             "lower_name": payload.get("lower_name").strip().lower(),
             "created_by": payload.get("created_by"),
             "project_id": payload.get("project_id"),
@@ -84,7 +99,7 @@ def update_project(db, doc_id, payload):
         existing_account = project_manager.find_one(
             db,
             {
-                "work_space_id": payload.get("work_space_id"),
+                "workspace_id": payload.get("workspace_id"),
                 "lower_name": lower_name,
                 "doc_id": {"$ne": doc_id},
             },

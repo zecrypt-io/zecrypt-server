@@ -13,4 +13,3 @@ def get_password_hash(password: str):
 
 def check_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
-

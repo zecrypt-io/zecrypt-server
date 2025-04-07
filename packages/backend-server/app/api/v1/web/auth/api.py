@@ -36,7 +36,9 @@ async def login_api(
             message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"email": res.get("primary_email")}, {"_id": False})
+    user = user_manager.find_one(
+        db, {"email": res.get("primary_email")}, {"_id": False}
+    )
     if not user:
         return response_helper(
             status_code=400,
@@ -80,7 +82,9 @@ async def signup_api(
             message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"email": payload.get("primary_email")}, {"_id": False})
+    user = user_manager.find_one(
+        db, {"email": payload.get("primary_email")}, {"_id": False}
+    )
 
     if user:
         return response_helper(
