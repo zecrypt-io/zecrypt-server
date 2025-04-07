@@ -4,19 +4,23 @@ import random
 import re
 import string
 from base64 import b64encode, b64decode
+import os
+import logging
+import hmac
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+from Crypto.Hash import HMAC, SHA256
 
 from app.core.config import settings
-from app.framework.redis_client.redis import RedisClient
-from app.utils.logger import get_logger
 
 jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
 
-logger = get_logger("Security")
-redis = RedisClient()
+logger = logging.getLogger(__name__)
+
+
+sensitive_fields = ["user_name", "password", "api_key", "phrase", "wallet_address"]
 
 
 def generate_passphrase(length=16):
@@ -26,76 +30,66 @@ def generate_passphrase(length=16):
     return "".join(random.choice(chars) for _ in range(length))
 
 
-def generate_key(company_id):
-    """Generates a key and save it into a file"""
-    passphrase = generate_passphrase(length=10)
+def generate_key():
+    """Generates a secure 256-bit (32-byte) key using OS randomness"""
     try:
-        key = hashlib.md5(bytes(passphrase, "utf-8")).digest()
-        base64_data = base64.b64encode(key).decode("utf-8")
-        secrets_manager.add_secret(f"encryption_keys/{company_id}", base64_data)
+        return base64.b64encode(os.urandom(32)).decode("utf-8")
     except Exception as e:
-        logger.error(e.__str__())
+        raise
 
 
-cipher_cache = {}
+def get_hmac(key, ciphertext):
+    """Generate HMAC for message authentication"""
+    hmac = HMAC.new(key, digestmod=SHA256)
+    hmac.update(ciphertext)
+    return hmac.digest()
 
 
-def get_cipher(company_id):
-    """Retrieve or create a cipher instance for the given company ID."""
-    if company_id not in cipher_cache:
-        key = secrets_manager.read_secret(f"encryption_keys/{company_id}")
-        key = base64.b64decode(key)
-        cipher_cache[company_id] = AES.new(key, AES.MODE_ECB)
-    return cipher_cache[company_id]
-
-
-def encrypt_message(message, company_id):
-    """
-    Encrypts a message using AES encryption for a specific company.
-
-    Parameters:
-    message (str): The message to be encrypted.
-    company_id (str): The ID of the company for which the message is encrypted.
-
-    Returns:
-    str: The encrypted message in base64 encoding or None if message is None.
-    """
+def encrypt_message(message):
     if message is None:
         return None
 
     try:
-        cipher = get_cipher(company_id)
-        data = message.encode()
-        ct_bytes = cipher.encrypt(pad(data, AES.block_size))
-        return b64encode(ct_bytes).decode("utf-8")
-    except Exception:
-        # Log the exception e
+        key = base64.b64decode(settings.AES_KEY)
+        cipher = AES.new(key, AES.MODE_GCM)
+        ciphertext, tag = cipher.encrypt_and_digest(message.encode())
+        return b64encode(cipher.nonce + tag + ciphertext).decode("utf-8")
+    except Exception as e:
+        logger.error(f"Encryption error: {e}")
         return None
 
 
-def decrypt_message(encrypted_message, company_id):
-    """Decrypts an encrypted message"""
-    hash_name = f"{DECRYPTION_HASH}_{company_id}"
-    if not encrypted_message:
-        return encrypted_message
-
-    if encrypted_message.startswith("FR_"):
-        return encrypted_message
-
+def decrypt_message(encrypted_message):
     try:
-        if redis.field_exists_in_hash(hash_name, encrypted_message):
-            return redis.get_from_hash(hash_name, encrypted_message)
-    except Exception:
-        pass
+        key = base64.b64decode(settings.AES_KEY)
+        data = b64decode(encrypted_message)
 
-    try:
-        key = secrets_manager.read_secret(f"encryption_keys/{company_id}")
-        key = base64.b64decode(key.encode("utf-8"))
-        ct = b64decode(encrypted_message)
-        cipher = AES.new(key, AES.MODE_ECB)
-        pt = unpad(cipher.decrypt(ct), AES.block_size)
-        response = pt.decode("utf-8")
-        redis.add_key_to_hash(hash_name, encrypted_message, response)
-        return response
-    except Exception:
-        return encrypted_message
+        if len(data) < 28:  # 16-byte nonce + 16-byte tag + minimum ciphertext
+            raise ValueError("Invalid ciphertext")
+
+        nonce = data[:16]
+        tag = data[16:32]
+        ciphertext = data[32:]
+
+        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+        return plaintext.decode("utf-8")
+    except Exception as e:
+        logger.error(f"Decryption error: {e}")
+        return None
+
+
+def encrypt_payload(payload):
+    """Returns new dict instead of modifying in-place"""
+    return {
+        key: encrypt_message(value) if key in sensitive_fields else value
+        for key, value in payload.items()
+    }
+
+
+def decrypt_payload(payload):
+    """Returns new dict with decrypted values"""
+    return {
+        key: decrypt_message(value) if key in sensitive_fields else value
+        for key, value in payload.items()
+    }

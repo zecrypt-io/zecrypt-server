@@ -6,24 +6,49 @@ import { Check, Github } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "./theme-toggle"
 import { MonochromeGoogleIcon } from "./monochrome-google-icon"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { SignIn,useUser } from '@stackframe/stack';
+
 
 export function LoginPage() {
   const router = useRouter()
+
+  const user = useUser(); // Check if the user is already signed in
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
-  const handleLogin = () => {
-    // Set a flag in sessionStorage to indicate we need to show the encryption key modal
-    sessionStorage.setItem("showEncryptionKeyModal", "true")
+  useEffect(() => {
+    if (user) {
+      handleAccessToken
+      router.push("/dashboard")
+    }
+  }, [user, router])
 
-    // Set a flag to indicate if this is a new user (for demo purposes, we'll use a random value)
-    // In a real app, this would be determined by your authentication system
-    const isNewUser = Math.random() > 0.7 // 30% chance of being a new user for demo
-    sessionStorage.setItem("isNewUser", isNewUser ? "true" : "false")
-
-    // Navigate to dashboard
-    router.push("/dashboard")
+  async function handleAccessToken() {
+    if (user) {
+      const authDetails = await user.getAuthJson();
+      const accessToken = authDetails.accessToken;
+      console.log('Access Token:', accessToken);
+      // You can now use the access token as needed
+    } else {
+      console.log('User is not authenticated');
+    }
   }
+  
+
+  
+
+  // const handleLogin = () => {
+  //   // Set a flag in sessionStorage to indicate we need to show the encryption key modal
+  //   sessionStorage.setItem("showEncryptionKeyModal", "true")
+
+  //   // Set a flag to indicate if this is a new user (for demo purposes, we'll use a random value)
+  //   // In a real app, this would be determined by your authentication system
+  //   const isNewUser = Math.random() > 0.7 // 30% chance of being a new user for demo
+  //   sessionStorage.setItem("isNewUser", isNewUser ? "true" : "false")
+
+  //   // Navigate to dashboard
+  //   router.push("/dashboard")
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -99,8 +124,16 @@ export function LoginPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-8 flex flex-col border border-border shadow-md">
-          <div className="text-center space-y-2 mb-8">
+        <div className="bg-card rounded-lg p-1 flex flex-col border border-border shadow-md">
+
+        <SignIn
+        fullPage={true}
+        automaticRedirect={false}
+        firstTab='password'
+        extraInfo={<>When signing in, you agree to our <a href="/terms">Terms</a></>}
+      />
+
+          {/* <div className="text-center space-y-2 mb-8">
             <h2 className="text-2xl font-bold">Sign In</h2>
             <p className="text-sm text-muted-foreground">Your secure password manager</p>
           </div>
@@ -136,7 +169,7 @@ export function LoginPage() {
             </Button>
           </div>
 
-          <div className="mt-6 text-center text-xs text-muted-foreground">
+          <div className="mt-6 text-center text-xs text-muted-foreground"
             <p>We&apos;ve set your account name based on your social account.</p>
             <p>Don&apos;t worry, you can easily update it later on your profile page.</p>
           </div>

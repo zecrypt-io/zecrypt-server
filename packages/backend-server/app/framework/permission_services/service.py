@@ -1,6 +1,7 @@
 import jwt
 from fastapi import Header, HTTPException, Response
 from pydantic import ValidationError
+from typing import Dict, Any, Optional
 
 from app.core.config import settings
 from app.framework.mongo_db.db import get_db
@@ -8,14 +9,12 @@ from app.managers import user as user_manager
 
 jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
-
-db = get_db()
-
+db=get_db()
 
 def get_current_user(response: Response, token: str = Header(...)):
     if not token:
         raise HTTPException(status_code=401, detail="invalid_header")
-
+    user_id = None
     try:
         user_id = jwt.decode(
             token,
@@ -24,23 +23,19 @@ def get_current_user(response: Response, token: str = Header(...)):
         ).get("user")
     except ValidationError:
         response.delete_cookie("refresh_token")
-        raise HTTPException(status_code=401, detail="Invalid Token, Please login Again")
+        raise HTTPException(status_code=401, detail="invalid_token")
     except jwt.ExpiredSignatureError:
         response.delete_cookie("refresh_token")
-        raise HTTPException(status_code=401, detail="Session Expired, Please login Again")
+        raise HTTPException(status_code=401, detail="new_token_required")
     except jwt.PyJWTError:
         response.delete_cookie("refresh_token")
-        raise HTTPException(status_code=401, detail="Unable to decode JWT token, Please login Again")
+        raise HTTPException(status_code=401, detail="Unable to decode JWT token")
 
-    user = user_manager.find(db, {"user_id": user_id})
+    user = user_manager.find_one(db, {"user_id": user_id})
     if not user:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=404, detail="User details not found")
-
+    
     # adding customer db to user object
     user["db"] = get_db()
-    if token == user.get("token"):
-        return user
-    else:
-        response.delete_cookie("refresh_token")
-        raise HTTPException(status_code=401, detail="Session Expired, Please login Again")
+    return user

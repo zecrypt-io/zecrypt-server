@@ -6,8 +6,10 @@ uvicorn
 redis
 pydantic
 pydantic-settings
-firebase-admin
 pycryptodome
 pytz
 jinja2
 logfire[fastapi]
+user-agents
+uuid7
+PyJWT

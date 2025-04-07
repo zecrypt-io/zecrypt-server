@@ -2,8 +2,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react"
+import { useUser } from '@stackframe/stack';
+// import Cookies from "js-cookie";
 
 export function OverviewContent() {
+
+  const user = useUser();
+
+  const authDetails = user?.getAuthJson();
+  // const accessToken = authDetails.accessToken;
+  // console.log('Access Token:', accessToken);
+    console.log('Access Token:', authDetails);
+
+//   const token = localStorage.getItem("accessToken");
+// console.log("Access Token:", token);
+
+// const token = Cookies.get("accessToken");
+// console.log("Access Token:", token);
+
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">

@@ -1,46 +1,46 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
-from app.managers import api_keys as api_key_manager
+from app.managers import wallet_phrase as wallet_phrase_manager
 
 
-def get_api_key_details(db, doc_id):
+def get_wallet_phrase_details(db, doc_id):
     return response_helper(
         status_code=200,
-        message="API Key details loaded successfully",
-        data=api_key_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
+        message="Wallet phrase details loaded successfully",
+        data=wallet_phrase_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
     )
 
 
-def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
+def get_wallet_phrases(db, query, sort=None, projection=None, page=1, limit=20):
     skip = (page - 1) * limit
     if not sort:
         sort = ("_id", 1)
 
-    api_keys = api_key_manager.find(
+    wallet_phrases = wallet_phrase_manager.find(
         db, query, projection, sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(
         status_code=200,
-        message="API Keys loaded successfully",
-        data=api_keys,
+        message="Wallet phrases loaded successfully",
+        data=wallet_phrases,
         page=page,
         limit=limit,
-        count=len(api_keys),
+        count=len(wallet_phrases),
     )
 
 
-def add_api_key(db, payload):
-    api_key = api_key_manager.find_one(
+def add_wallet_phrase(db, payload):
+    wallet_phrase = wallet_phrase_manager.find_one(
         db,
         {
-            "lower_name": payload.get("lower_name").strip().lower(),
+            "lower_name": payload.get("name").strip().lower(),
             "created_by": payload.get("created_by"),
             "project_id": payload.get("project_id"),
         },
     )
-    if api_key:
-        return response_helper(status_code=400, message="Project already exists")
+    if wallet_phrase:
+        return response_helper(status_code=400, message="Wallet phrase already exists")
 
     timestamp = create_timestamp()
     payload.update(
@@ -52,16 +52,16 @@ def add_api_key(db, payload):
             "updated_at": timestamp,
         }
     )
-    api_key_manager.insert_one(db, payload)
+    wallet_phrase_manager.insert_one(db, payload)
 
     return response_helper(
         status_code=201,
-        message="API Key added successfully",
+        message="Wallet phrase added successfully",
         data=payload,
     )
 
 
-def update_api_key(db, doc_id, payload):
+def update_wallet_phrase(db, doc_id, payload):
     payload = filter_payload(payload)
     payload["updated_at"] = create_timestamp()
     # Process name if it exists in the payload
@@ -69,7 +69,7 @@ def update_api_key(db, doc_id, payload):
         lower_name = payload["name"].strip().lower()
         payload["lower_name"] = lower_name
 
-        existing_account = api_key_manager.find_one(
+        existing_wallet_phrase = wallet_phrase_manager.find_one(
             db,
             {
                 "project_id": payload.get("project_id"),
@@ -77,10 +77,12 @@ def update_api_key(db, doc_id, payload):
                 "doc_id": {"$ne": doc_id},
             },
         )
-        if existing_account:
-            return response_helper(status_code=400, message="API Key already exists")
-    # Update account
-    api_key_manager.update_one(
+        if existing_wallet_phrase:
+            return response_helper(
+                status_code=400, message="Wallet phrase already exists"
+            )
+    # Update wallet phrase
+    wallet_phrase_manager.update_one(
         db,
         {"doc_id": doc_id},
         {
@@ -89,19 +91,19 @@ def update_api_key(db, doc_id, payload):
     )
     return response_helper(
         status_code=200,
-        message="API Key updated successfully",
+        message="Wallet phrase updated successfully",
     )
 
 
-def delete_api_key(db, doc_id):
-    if not api_key_manager.find_one(db, {"doc_id": doc_id}):
+def delete_wallet_phrase(db, doc_id):
+    if not wallet_phrase_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(
             status_code=404,
-            message="API Key details not found",
+            message="Wallet phrase details not found",
         )
-    api_key_manager.delete_one(db, {"doc_id": doc_id})
+    wallet_phrase_manager.delete_one(db, {"doc_id": doc_id})
     return response_helper(
         status_code=200,
-        message="API Key deleted successfully",
+        message="Wallet phrase deleted successfully",
         data={},
     )

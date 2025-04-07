@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Request, Query, Depends
 
 from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey
-from app.api.v1.web.api_keys.services import (delete_api_key, update_api_key,add_api_key,get_api_keys, get_api_key_details)
+from app.api.v1.web.api_keys.services import (
+    delete_api_key,
+    update_api_key,
+    add_api_key,
+    get_api_keys,
+    get_api_key_details,
+)
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 
@@ -42,10 +48,8 @@ async def create_api_keys_api(
     user: UserDetails = Depends(get_current_user),
 ):
     payload = payload.model_dump()
-    payload.update(
-        {"project_id":project_id, "created_by": user.get("user_id")}
-    )
-    return add_api_key(user.get("db"),payload)
+    payload.update({"project_id": project_id, "created_by": user.get("user_id")})
+    return add_api_key(user.get("db"), payload)
 
 
 @router.put(API_KEY_DETAILS)
@@ -57,9 +61,7 @@ async def update_api_key_api(
     user: UserDetails = Depends(get_current_user),
 ):
     payload = filter_payload(payload.model_dump())
-    payload.update(
-        {"project_id": project_id, "last_updated_by": user.get("user_id")}
-    )
+    payload.update({"project_id": project_id, "updated_by": user.get("user_id")})
     return update_api_key(user.get("db"), doc_id, payload)
 
 
@@ -70,4 +72,4 @@ async def delete_api_keys_api(
     doc_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_api_key(user.get("db"),doc_id)
+    return delete_api_key(user.get("db"), doc_id)
