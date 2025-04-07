@@ -10,7 +10,8 @@ router = APIRouter()
 async def get_workspace_api(
     request: Request, user: UserDetails = Depends(get_current_user)
 ):
+    
     query = {
-        "user_id": user.user_id,
+        "created_by": user.get("user_id"),
     }
-    return get_workspace(query)
+    return get_workspace(query, user.get("db"))

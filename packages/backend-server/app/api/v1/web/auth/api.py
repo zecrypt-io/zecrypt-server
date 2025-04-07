@@ -29,23 +29,23 @@ async def login_api(
 ):
     payload = payload.model_dump()
     res = validate_stack_auth_token(payload.get("uid"))
-    print(res)
     if not res:
         return response_helper(
             status_code=400,
             message="Authentication failed, Please try again",
         )
-
+    print(res)
     user = user_manager.find_one(
-        db, {"email": res.get("primary_email")}, {"_id": False}
+        db, {"uid": res.get("id")}, {"_id": False}
     )
+    print(user)
     if not user:
         return response_helper(
             status_code=400,
             message="User not found, Please signup",
         )
 
-    token = create_jwt_token({"user_id": user.get("user_id")})
+    token = create_jwt_token({"user": user.get("user_id")})
     token_data = {
         "user_id": user.get("user_id"),
         "profile_url": user.get("profile_url"),
@@ -55,7 +55,7 @@ async def login_api(
 
     user_manager.update_one(
         db,
-        {"uid": payload.get("uid")},
+        {"uid": res.get("id")},
         {
             "$set": {
                 "token": token,
@@ -83,7 +83,7 @@ async def signup_api(
         )
 
     user = user_manager.find_one(
-        db, {"email": payload.get("primary_email")}, {"_id": False}
+        db, {"uid": res.get("id")}, {"_id": False}
     )
 
     if user:
@@ -93,9 +93,10 @@ async def signup_api(
         )
 
     user_id = f"ZEC{id_generator(10)}"
-    token = create_jwt_token({"user_id": user_id})
+    token = create_jwt_token({"user": user_id})
 
     new_user_data = {
+        "uid": res.get("id"),
         "name": res.get("display_name"),
         "created_at": create_timestamp(),
         "updated_at": create_timestamp(),

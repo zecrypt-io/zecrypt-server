@@ -14,7 +14,7 @@ def _get_client():
     return _client
 
 
-def get_db(db_name="PolymerizeLab"):
+def get_db(db_name="ZecryptDev"):
     """Get a specific database."""
     client = _get_client()
     return client[db_name]

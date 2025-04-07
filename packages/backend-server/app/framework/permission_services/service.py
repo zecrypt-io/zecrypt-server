@@ -9,58 +9,33 @@ from app.managers import user as user_manager
 
 jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
+db=get_db()
 
-
-def _handle_auth_error(
-    response: Response, message: str, status_code: int = 401
-) -> None:
-    """Helper function to handle authentication errors consistently"""
-    response.delete_cookie("refresh_token")
-    raise HTTPException(status_code=status_code, detail=message)
-
-
-def get_current_user(response: Response, token: str = Header(...)) -> Dict[str, Any]:
-    """
-    Validate JWT token and return the current user
-
-    Args:
-        response: FastAPI response object for cookie management
-        token: JWT token from request header
-
-    Returns:
-        User object with database connection
-
-    Raises:
-        HTTPException: For any authentication or user lookup failures
-    """
+def get_current_user(response: Response, token: str = Header(...)):
     if not token:
         raise HTTPException(status_code=401, detail="invalid_header")
-
+    user_id = None
     try:
-        payload = jwt.decode(
+        user_id = jwt.decode(
             token,
             jwt_secret,
             algorithms=[str(jwt_algo)],
-        )
-        user_id = payload.get("user")
-        if not user_id:
-            _handle_auth_error(response, "Invalid token payload")
-
+        ).get("user")
+    except ValidationError:
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=401, detail="invalid_token")
     except jwt.ExpiredSignatureError:
-        _handle_auth_error(response, "Session Expired, Please login Again")
-    except (jwt.PyJWTError, ValidationError):
-        _handle_auth_error(response, "Invalid Token, Please login Again")
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=401, detail="new_token_required")
+    except jwt.PyJWTError:
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=401, detail="Unable to decode JWT token")
 
-    # Get DB connection only when needed
-    db = get_db()
-    user = user_manager.find(db, {"user_id": user_id})
-
+    user = user_manager.find_one(db, {"user_id": user_id})
     if not user:
-        _handle_auth_error(response, "User details not found", 404)
-
-    if token != user.get("token"):
-        _handle_auth_error(response, "Session Expired, Please login Again")
-
-    # Add DB to user object for downstream operations
-    user["db"] = db
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=404, detail="User details not found")
+    
+    # adding customer db to user object
+    user["db"] = get_db()
     return user
