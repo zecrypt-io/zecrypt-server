@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function WalletPassphrasesPage() {
   return (
     <DashboardLayout>
-      <div className="flex flex-col space-y-8 p-8">
+      <div className="flex flex-col space-y-2 p-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Wallet Passphrases</h2>
           <p className="text-muted-foreground">Securely store and manage your cryptocurrency wallet passphrases.</p>

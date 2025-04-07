@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,7 +45,7 @@ export function EditAccountDialog({ onClose, account }: EditAccountDialogProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg">
+      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold">Edit account</h2>
         </div>
@@ -179,4 +178,3 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-
