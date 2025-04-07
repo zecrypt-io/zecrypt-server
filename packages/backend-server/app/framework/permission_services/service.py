@@ -1,5 +1,5 @@
 import jwt
-from fastapi import Header, HTTPException, Response
+from fastapi import Header, HTTPException, Response,Cookie
 from pydantic import ValidationError
 from typing import Dict, Any, Optional
 
@@ -11,7 +11,8 @@ jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
 db=get_db()
 
-def get_current_user(response: Response, token: str = Header(...)):
+def get_current_user(response: Response, access_token: str = Cookie(...)):
+    token=access_token
     if not token:
         raise HTTPException(status_code=401, detail="invalid_header")
     user_id = None
