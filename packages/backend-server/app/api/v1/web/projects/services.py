@@ -83,9 +83,7 @@ def add_project(db, payload):
     project_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="Project added successfully",
-        data=payload,
+        status_code=201, message="Project added successfully", data=payload,
     )
 
 
@@ -108,27 +106,15 @@ def update_project(db, doc_id, payload):
             return response_helper(status_code=400, message="project already exists")
     # Update account
     project_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {
-            "$set": payload,
-        },
+        db, {"doc_id": doc_id}, {"$set": payload,},
     )
-    return response_helper(
-        status_code=200,
-        message="Project updated successfully",
-    )
+    return response_helper(status_code=200, message="Project updated successfully",)
 
 
 def delete_project(db, doc_id):
     if not project_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(
-            status_code=404,
-            message="Project details not found",
-        )
+        return response_helper(status_code=404, message="Project details not found",)
     project_manager.delete_one(db, {"doc_id": doc_id})
     return response_helper(
-        status_code=200,
-        message="Project deleted successfully",
-        data={},
+        status_code=200, message="Project deleted successfully", data={},
     )

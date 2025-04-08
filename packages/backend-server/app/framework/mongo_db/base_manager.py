@@ -1,70 +1,21 @@
-import hashlib
-import json
-from functools import wraps
-
-
-# Cache invalidation decorator
-def clear_cache_after(func):
-    @wraps(func)
-    def wrapper(db, collection_name, *args, **kwargs):
-        # Call the original function
-        result = func(db, collection_name, *args, **kwargs)
-
-        # Clear cache using db and collection_name
-        delete_repo_hash(collection_name)
-        return result
-
-    return wrapper
-
-
-def delete_repo_hash(collection_name):
-    """Batch delete all related cache entries"""
-    hashes = [
-        f"{collection_name}_details",
-        f"{collection_name}_list",
-    ]
-    # redis.delete_hash(hashes)
-
-
-def generate_query_hash(query, projection=None, sort=None, skip=0, limit=0):
-
-    # Convert all parameters to a string representation
-    query_str = json.dumps(query, sort_keys=True)
-    projection_str = json.dumps(projection, sort_keys=True) if projection else ""
-    sort_str = json.dumps(sort, sort_keys=True) if sort else ""
-    skip_str = str(skip) if skip else ""
-    limit_str = str(limit) if limit else ""
-
-    # Combine all parts into a single string
-    combined_str = f"{query_str}-{projection_str}-{sort_str}-{skip_str}-{limit_str}"
-
-    # Generate a hash from the combined string
-    return hashlib.sha256(combined_str.encode()).hexdigest()
-
-
-@clear_cache_after
 def insert_one(db, collection_name, data):
     return db[collection_name].insert_one(data)
 
 
-@clear_cache_after
 def insert_many(db, collection_name, data_list):
     db[collection_name].insert_many(data_list)
 
 
-@clear_cache_after
 def update_one(db, collection_name, query, payload, upsert=False, array_filters=None):
     db[collection_name].update_one(
         query, payload, upsert=upsert, array_filters=array_filters
     )
 
 
-@clear_cache_after
 def update_many(db, collection_name, query, payload):
     db[collection_name].update_many(query, payload)
 
 
-@clear_cache_after
 def find_one_and_update(
     db, collection_name, query, update_query, return_document=False
 ):
@@ -73,17 +24,14 @@ def find_one_and_update(
     )
 
 
-@clear_cache_after
 def delete_one(db, collection_name, query):
     db[collection_name].update_one(query, {"$set": {"is_active": False}})
 
 
-@clear_cache_after
 def delete_many(db, collection_name, query):
     db[collection_name].update_many(query, {"$set": {"is_active": False}})
 
 
-@clear_cache_after
 def bulk_write(db, collection_name, data):
     db[collection_name].bulk_write(data)
 
@@ -120,16 +68,6 @@ def find(
             sort = [sort]
         cursor = cursor.sort(sort)
     return list(cursor)
-
-
-def redis_find(db, collection_name, query, projection=None, sort=None, skip=0, limit=0):
-    cursor = find(db, collection_name, query, projection, sort, skip, limit)
-    return cursor
-
-
-def redis_find_one(db, collection_name, query, projection=None):
-    data = find_one(db, collection_name, query, projection)
-    return data
 
 
 def count_documents(db, collection_name, query, collation=None):

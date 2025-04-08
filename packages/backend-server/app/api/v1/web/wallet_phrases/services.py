@@ -55,9 +55,7 @@ def add_wallet_phrase(db, payload):
     wallet_phrase_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="Wallet phrase added successfully",
-        data=payload,
+        status_code=201, message="Wallet phrase added successfully", data=payload,
     )
 
 
@@ -83,27 +81,19 @@ def update_wallet_phrase(db, doc_id, payload):
             )
     # Update wallet phrase
     wallet_phrase_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {
-            "$set": payload,
-        },
+        db, {"doc_id": doc_id}, {"$set": payload,},
     )
     return response_helper(
-        status_code=200,
-        message="Wallet phrase updated successfully",
+        status_code=200, message="Wallet phrase updated successfully",
     )
 
 
 def delete_wallet_phrase(db, doc_id):
     if not wallet_phrase_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(
-            status_code=404,
-            message="Wallet phrase details not found",
+            status_code=404, message="Wallet phrase details not found",
         )
     wallet_phrase_manager.delete_one(db, {"doc_id": doc_id})
     return response_helper(
-        status_code=200,
-        message="Wallet phrase deleted successfully",
-        data={},
+        status_code=200, message="Wallet phrase deleted successfully", data={},
     )

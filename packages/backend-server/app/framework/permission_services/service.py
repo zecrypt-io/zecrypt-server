@@ -1,5 +1,5 @@
 import jwt
-from fastapi import Header, HTTPException, Response,Cookie
+from fastapi import Header, HTTPException, Response, Cookie
 from pydantic import ValidationError
 from typing import Dict, Any, Optional
 
@@ -9,19 +9,16 @@ from app.managers import user as user_manager
 
 jwt_secret = settings.JWT_SECRET
 jwt_algo = settings.JWT_ALGORITHM
-db=get_db()
+db = get_db()
+
 
 def get_current_user(response: Response, access_token: str = Cookie(...)):
-    token=access_token
+    token = access_token
     if not token:
         raise HTTPException(status_code=401, detail="invalid_header")
     user_id = None
     try:
-        user_id = jwt.decode(
-            token,
-            jwt_secret,
-            algorithms=[str(jwt_algo)],
-        ).get("user")
+        user_id = jwt.decode(token, jwt_secret, algorithms=[str(jwt_algo)],).get("user")
     except ValidationError:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=401, detail="invalid_token")
@@ -36,7 +33,7 @@ def get_current_user(response: Response, access_token: str = Cookie(...)):
     if not user:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=404, detail="User details not found")
-    
+
     # adding customer db to user object
     user["db"] = get_db()
     return user

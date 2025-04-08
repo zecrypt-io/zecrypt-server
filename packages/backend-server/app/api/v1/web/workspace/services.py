@@ -8,5 +8,5 @@ def get_workspace(query, db):
     return response_helper(
         status_code=200,
         message="Workspace details loaded successfully",
-        data=workspace_manager.find(db,query, {"_id": 0}),
+        data=workspace_manager.find(db, query, {"_id": 0}),
     )
