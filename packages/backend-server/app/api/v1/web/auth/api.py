@@ -8,8 +8,8 @@ from app.api.v1.web.auth.schema import (
 from app.api.v1.web.auth.services import (
     validate_stack_auth_token,
     record_login_event,
-    get_current_user,
 )
+from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.projects.services import create_project_at_signup
 from app.framework.mongo_db.db import get_db
 from app.managers import user as user_manager
