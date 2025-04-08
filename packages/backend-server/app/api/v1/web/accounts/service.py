@@ -1,6 +1,7 @@
 from app.managers import accounts as accounts_manager
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import response_helper, filter_payload, create_uuid
+from app.api.v1.web.auditlogs.services import add_audit_log
 
 
 def get_account_details(db, doc_id):
@@ -30,7 +31,7 @@ def get_accounts(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_account(db, payload):
+def add_account(db, payload, background_tasks):
     existing_account = accounts_manager.find_one(
         db,
         {
@@ -52,12 +53,22 @@ def add_account(db, payload):
             "updated_at": timestamp,
         }
     )
+    accounts_manager.insert_one(db, payload)
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        "account",
+        "created",
+        payload.get("doc_id"),
+        payload.get("created_by"),
+    )
     return response_helper(
         status_code=201, message="Account added successfully", data={},
     )
 
 
-def update_account(db, doc_id, payload):
+def update_account(db, doc_id, payload, background_tasks):
     payload = filter_payload(payload)
     payload["updated_at"] = create_timestamp()
     # Process name if it exists in the payload
@@ -75,21 +86,29 @@ def update_account(db, doc_id, payload):
         )
         if existing_account:
             return response_helper(status_code=400, message="Account already exists")
-    
+
     # Update account
     accounts_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload,},
+    )
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log, db, "account", "updated", doc_id, payload.get("updated_by")
     )
     return response_helper(
         status_code=200, message="Account updated successfully", data={},
     )
 
 
-def delete_account(db, doc_id):
-    
+def delete_account(db, doc_id, user_id, background_tasks):
+
     if not accounts_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="Account details not found",)
     accounts_manager.delete_one(db, {"doc_id": doc_id})
+
+    # Add audit log
+    background_tasks.add_task(add_audit_log, db, "account", "deleted", doc_id, user_id)
+
     return response_helper(
         status_code=200, message="Account deleted successfully", data={},
     )

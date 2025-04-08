@@ -8,6 +8,7 @@ router = APIRouter()
 WORKSPACE_DETAILS = "/workspace"
 LOAD_INITIAL_DATA = "/load-initial-data"
 
+
 @router.get(WORKSPACE_DETAILS)
 async def get_workspace_api(
     request: Request, user: UserDetails = Depends(get_current_user)

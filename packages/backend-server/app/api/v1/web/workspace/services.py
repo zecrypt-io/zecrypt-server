@@ -18,9 +18,10 @@ def load_initial_data(db, query):
     for workspace in workspaces:
         projects = project_manager.find(db, {"workspace_id": workspace["_id"]})
         workspace["projects"] = projects
-    
+
     return response_helper(
-        status_code=200, message="Initial data loaded successfully", data=workspaces,
+        status_code=200,
+        message="Initial data loaded successfully",
+        data=workspaces,
         count=len(workspaces),
     )
-

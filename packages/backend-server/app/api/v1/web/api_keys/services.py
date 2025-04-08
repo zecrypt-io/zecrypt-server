@@ -1,6 +1,7 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import api_keys as api_key_manager
+from app.api.v1.web.auditlogs.services import add_audit_log
 
 
 def get_api_key_details(db, doc_id):
@@ -8,7 +9,6 @@ def get_api_key_details(db, doc_id):
         status_code=200,
         message="API Key details loaded successfully",
         data=api_key_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
-        
     )
 
 
@@ -31,7 +31,7 @@ def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_api_key(db, payload):
+def add_api_key(db, payload, background_tasks):
     lower_name = payload.get("name").strip().lower()
     api_key = api_key_manager.find_one(
         db,
@@ -56,12 +56,22 @@ def add_api_key(db, payload):
     )
     api_key_manager.insert_one(db, payload)
 
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        "api_key",
+        "created",
+        payload.get("doc_id"),
+        payload.get("created_by"),
+    )
+
     return response_helper(
         status_code=201, message="API Key added successfully", data=payload,
     )
 
 
-def update_api_key(db, doc_id, payload):
+def update_api_key(db, doc_id, payload, background_tasks):
     payload = filter_payload(payload)
     payload["updated_at"] = create_timestamp()
     # Process name if it exists in the payload
@@ -83,13 +93,24 @@ def update_api_key(db, doc_id, payload):
     api_key_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
+
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log, db, "api_key", "updated", doc_id, payload.get("updated_by")
+    )
+
     return response_helper(status_code=200, message="API Key updated successfully",)
 
 
-def delete_api_key(db, doc_id):
+def delete_api_key(db, doc_id, user_id, background_tasks):
+
     if not api_key_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="API Key details not found",)
     api_key_manager.delete_one(db, {"doc_id": doc_id})
+    
+    # Add audit log
+    background_tasks.add_task(add_audit_log, db, "api_key", "deleted", doc_id, user_id)
+
     return response_helper(
         status_code=200, message="API Key deleted successfully", data={},
     )

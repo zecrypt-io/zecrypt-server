@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Query, Depends
+from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
 
 from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
 from app.api.v1.web.accounts.service import (
@@ -44,11 +44,12 @@ async def create_account_api(
     request: Request,
     project_id: str,
     payload: AddAccount,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
     payload = payload.model_dump()
     payload.update({"project_id": project_id, "created_by": user.get("user_id")})
-    return add_account(user.get("db"), payload.model_dump())
+    return add_account(user.get("db"), payload, background_tasks)
 
 
 @router.put(ACCOUNT_DETAILS)
@@ -57,11 +58,12 @@ async def update_account_api(
     project_id: str,
     doc_id: str,
     payload: UpdateAccount,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
     payload = payload.model_dump()
     payload.update({"project_id": project_id, "updated_by": user.get("user_id")})
-    return update_account(user.get("db"), doc_id, payload)
+    return update_account(user.get("db"), doc_id, payload, background_tasks)
 
 
 @router.delete(ACCOUNT_DETAILS)
@@ -69,6 +71,7 @@ async def delete_account_api(
     request: Request,
     project_id: str,
     doc_id: str,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_account(user.get("db"), doc_id,)
+    return delete_account(user.get("db"), doc_id, user.get("user_id"), background_tasks)

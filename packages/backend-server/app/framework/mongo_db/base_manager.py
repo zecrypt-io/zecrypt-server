@@ -1,4 +1,3 @@
-
 def insert_one(db, collection_name, data):
     return db[collection_name].insert_one(data)
 

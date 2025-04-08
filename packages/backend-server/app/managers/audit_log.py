@@ -1,13 +1,11 @@
 from app.framework.mongo_db import base_manager as db_manager
-from app.managers.collection_names import API_KEY
+from app.managers.collection_names import AUDIT_LOG
 
-
-collection_name = API_KEY
+collection_name = AUDIT_LOG
 
 
 def insert_one(db, data):
     db_manager.insert_one(db, collection_name, data)
-    payload.pop("_id", None)
 
 
 def insert_many(db, data_list):

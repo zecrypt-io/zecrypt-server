@@ -10,7 +10,7 @@ import hmac
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-from Crypto.Hash import HMAC, SHA256
+from Crypto.Hash import HMAC, SHA256, SHA512
 
 from app.core.config import settings
 
@@ -40,7 +40,7 @@ def generate_key():
 
 def get_hmac(key, ciphertext):
     """Generate HMAC for message authentication"""
-    hmac = HMAC.new(key, digestmod=SHA256)
+    hmac = HMAC.new(key, digestmod=SHA512)
     hmac.update(ciphertext)
     return hmac.digest()
 
