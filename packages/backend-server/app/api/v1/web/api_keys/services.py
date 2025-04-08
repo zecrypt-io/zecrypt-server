@@ -55,9 +55,7 @@ def add_api_key(db, payload):
     api_key_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="API Key added successfully",
-        data=payload,
+        status_code=201, message="API Key added successfully", data=payload,
     )
 
 
@@ -81,27 +79,15 @@ def update_api_key(db, doc_id, payload):
             return response_helper(status_code=400, message="API Key already exists")
     # Update account
     api_key_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {
-            "$set": payload,
-        },
+        db, {"doc_id": doc_id}, {"$set": payload,},
     )
-    return response_helper(
-        status_code=200,
-        message="API Key updated successfully",
-    )
+    return response_helper(status_code=200, message="API Key updated successfully",)
 
 
 def delete_api_key(db, doc_id):
     if not api_key_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(
-            status_code=404,
-            message="API Key details not found",
-        )
+        return response_helper(status_code=404, message="API Key details not found",)
     api_key_manager.delete_one(db, {"doc_id": doc_id})
     return response_helper(
-        status_code=200,
-        message="API Key deleted successfully",
-        data={},
+        status_code=200, message="API Key deleted successfully", data={},
     )

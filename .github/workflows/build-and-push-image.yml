@@ -54,7 +54,7 @@ jobs:
     #     IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}
     #     # docker-slim build --tag zec-backend-slim:$IMAGE_TAG zec-backend:$IMAGE_TAG
 
-    - name: Tag and push slimmed image
+    - name: Tag and push image
       run: |
         BRANCH_NAME=${{ github.ref_name }}
         IMAGE_TAG=${BRANCH_NAME}-${GITHUB_SHA::7}

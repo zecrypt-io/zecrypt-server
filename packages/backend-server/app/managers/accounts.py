@@ -1,7 +1,6 @@
 from app.framework.mongo_db import base_manager as db_manager
 from app.managers.collection_names import ACCOUNT
 
-
 collection_name = ACCOUNT
 
 
@@ -46,12 +45,6 @@ def find_one(db, query, projection=None):
 def find(db, query, projection=None, sort=None, skip=0, limit=0):
     cursor = db_manager.find(db, collection_name, query, projection, sort, skip, limit)
     return cursor
-
-
-def redis_find(db, query, projection=None, sort=None, skip=0, limit=0):
-    return db_manager.redis_find(
-        db, collection_name, query, projection, sort, skip, limit
-    )
 
 
 def count_documents(db, query):

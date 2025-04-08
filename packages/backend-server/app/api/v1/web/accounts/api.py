@@ -71,7 +71,4 @@ async def delete_account_api(
     doc_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_account(
-        user.get("db"),
-        doc_id,
-    )
+    return delete_account(user.get("db"), doc_id,)

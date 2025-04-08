@@ -48,11 +48,5 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
     return cursor
 
 
-def redis_find(db, query, projection=None, sort=None, skip=0, limit=0):
-    return db_manager.redis_find(
-        db, collection_name, query, projection, sort, skip, limit
-    )
-
-
 def count_documents(db, query):
     return db_manager.count_documents(db, collection_name, query)
