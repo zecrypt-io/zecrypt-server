@@ -12,27 +12,27 @@ import { SignIn,useUser } from '@stackframe/stack';
 
 export function LoginPage() {
   const router = useRouter()
-
+ 
   const user = useUser(); // Check if the user is already signed in
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   useEffect(() => {
     if (user) {
-      handleAccessToken
+      // handleAccessToken
       router.push("/dashboard")
     }
   }, [user, router])
 
-  async function handleAccessToken() {
-    if (user) {
-      const authDetails = await user.getAuthJson();
-      const accessToken = authDetails.accessToken;
-      console.log('Access Token:', accessToken);
-      // You can now use the access token as needed
-    } else {
-      console.log('User is not authenticated');
-    }
-  }
+  // async function handleAccessToken() {
+  //   if (user) {
+  //     const authDetails = await user.getAuthJson();
+  //     const accessToken = authDetails.accessToken;
+  //     console.log('Access Token:', accessToken);
+  //     // You can now use the access token as needed
+  //   } else {
+  //     console.log('User is not authenticated');
+  //   }
+  // }
   
 
   // const handleLogin = () => {
