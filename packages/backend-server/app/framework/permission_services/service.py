@@ -12,7 +12,7 @@ jwt_algo = settings.JWT_ALGORITHM
 db = get_db()
 
 
-def get_current_user(response: Response, access_token: str = Cookie(...)):
+def get_current_user(response: Response, access_token: str = Header(...)):
     token = access_token
     if not token:
         raise HTTPException(status_code=401, detail="invalid_header")

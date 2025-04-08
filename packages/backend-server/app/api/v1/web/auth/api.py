@@ -55,6 +55,7 @@ async def login_api(
         "user_id": user.get("user_id"),
         "profile_url": user.get("profile_url"),
         "name": user.get("name"),
+        "access_token": token,
     }
 
     user_manager.update_one(
@@ -134,6 +135,7 @@ async def signup_api(
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
         "name": res.get("display_name"),
+        "access_token": token,
     }
     refresh_token = encode_token(user_id)
     response.set_cookie(
