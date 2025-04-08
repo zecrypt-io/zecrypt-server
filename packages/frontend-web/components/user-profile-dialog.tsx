@@ -4,10 +4,12 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { X, Camera, Upload, Trash } from "lucide-react"
+import { X, Camera, Upload, Trash, LogOut } from "lucide-react" // Added LogOut icon
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { useUser } from '@stackframe/stack' // Import useUser for authentication
+import { useRouter } from "next/navigation" // Import useRouter for redirection
 
 interface UserProfileDialogProps {
   onClose: () => void
@@ -18,6 +20,8 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
   const [email, setEmail] = useState("sadik@example.com")
   const [avatarSrc, setAvatarSrc] = useState("/placeholder.svg?height=128&width=128")
   const [showImageOptions, setShowImageOptions] = useState(false)
+  const user = useUser() // Get the current user
+  const router = useRouter() // Initialize router for redirection
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -36,6 +40,24 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
   const removeImage = () => {
     setAvatarSrc("/placeholder.svg?height=128&width=128")
     setShowImageOptions(false)
+  }
+
+  // Handle logout functionality
+  const handleLogout = async () => {
+    if (user) {
+      try {
+        await user.signOut()
+         // Assumed method; check Stack docs for exact method
+        // Clear any stored tokens (e.g., from localStorage)
+        localStorage.removeItem('authToken')
+        // Redirect to login page
+        router.push('/login')
+        onClose() // Close the dialog
+      } catch (error) {
+        console.error('Error during logout:', error)
+        // Optionally show an error message to the user
+      }
+    }
   }
 
   return (
@@ -108,10 +130,13 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
               Cancel
             </Button>
             <Button>Save Changes</Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
     </div>
   )
 }
-

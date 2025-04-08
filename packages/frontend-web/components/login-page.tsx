@@ -8,6 +8,7 @@ import { ThemeToggle } from "./theme-toggle"
 import { MonochromeGoogleIcon } from "./monochrome-google-icon"
 import { useState, useEffect } from "react"
 import { SignIn,useUser } from '@stackframe/stack';
+import { stackAuthHandler } from "@/libs/stack-auth-handler"
 
 
 export function LoginPage() {
@@ -17,11 +18,51 @@ export function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   useEffect(() => {
+    const authenticateUser = async () => {
+      try {
+        const authDetails = await user?.getAuthJson();
+        const accessToken = authDetails?.accessToken;
+
+        if (!accessToken) return;
+
+        // 1. Try login
+        const loginResponse = await stackAuthHandler(accessToken, "login");
+        console.log("Login response:", loginResponse);
+
+        if (loginResponse?.status_code === 200) {
+          router.push("/dashboard");
+        } else if (
+          loginResponse?.status_code === 400 &&
+          loginResponse?.message?.toLowerCase().includes("user not found")
+        ) {
+          // 2. Fallback to signup if login fails with "User not found"
+          const signupResponse = await stackAuthHandler(accessToken, "signup");
+          console.log("Signup response:", signupResponse);
+
+          if (signupResponse?.status_code === 200) {
+            router.push("/dashboard");
+          } else {
+            console.error("Signup failed:", signupResponse);
+          }
+        } else {
+          console.error("Login failed:", loginResponse);
+        }
+      } catch (err) {
+        console.error("Auth flow error:", err);
+      }
+    };
+
     if (user) {
-      // handleAccessToken
-      router.push("/dashboard")
+      authenticateUser();
     }
-  }, [user, router])
+  }, [user, router]);
+
+  // useEffect(() => {
+  //   if (user) {
+  //     // handleAccessToken
+  //     router.push("/dashboard")
+  //   }
+  // }, [user, router])
 
   // async function handleAccessToken() {
   //   if (user) {
