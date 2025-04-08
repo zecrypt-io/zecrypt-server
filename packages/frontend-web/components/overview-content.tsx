@@ -5,6 +5,7 @@ import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react"
 import { useUser } from '@stackframe/stack';
 import { useEffect } from "react";
 import { access } from "fs";
+import { getWorkspace } from "../libs/getWorkspace";
 // import Cookies from "js-cookie";
 
 export function OverviewContent() {
@@ -24,6 +25,21 @@ export function OverviewContent() {
   
     fetchAuthDetails();
   }, [user]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const workspaceData = await getWorkspace();
+  
+      if (workspaceData) {
+        console.log("✅ Project ID:", workspaceData.project_id);
+        // use projectId to fetch passwords, etc.
+      } else {
+        console.error("❌ Failed to fetch workspace. Auth might have failed.");
+      }
+    };
+  
+    fetchData();
+  }, []);
   
 
   return (
