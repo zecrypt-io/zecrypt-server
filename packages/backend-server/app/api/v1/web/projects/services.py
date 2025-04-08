@@ -1,5 +1,5 @@
 from app.utils.date_utils import create_timestamp
-from app.utils.utils import create_uuid, response_helper
+from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import project as project_manager
 from app.managers import workspace as workspace_manager
 
@@ -88,6 +88,7 @@ def add_project(db, payload):
 
 
 def update_project(db, doc_id, payload):
+    payload = filter_payload(payload)
     payload["updated_at"] = create_timestamp()
     # Process name if it exists in the payload
     if payload.get("name"):

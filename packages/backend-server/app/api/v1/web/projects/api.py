@@ -17,7 +17,7 @@ PROJECTS = "/{workspace_id}/projects"
 PROJECT_DETAILS = "/{workspace_id}/projects/{doc_id}"
 
 
-@router.get(PROJECT_DETAILS)
+@router.get(PROJECTS)
 async def get_project_api(
     request: Request,
     workspace_id: str,
@@ -59,7 +59,7 @@ async def update_project_api(
     payload: UpdateProject,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = filter_payload(payload.model_dump())
+    payload = payload.model_dump()
     payload.update({"workspace_id": workspace_id, "updated_by": user.get("user_id")})
     return update_project(user.get("db"), doc_id, payload)
 

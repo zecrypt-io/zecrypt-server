@@ -59,8 +59,8 @@ async def update_account_api(
     payload: UpdateAccount,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = filter_payload(payload.model_dump())
-    payload.update({"project_id": project_id, "last_updated_by": user.get("user_id")})
+    payload = payload.model_dump()
+    payload.update({"project_id": project_id, "updated_by": user.get("user_id")})
     return update_account(user.get("db"), doc_id, payload)
 
 

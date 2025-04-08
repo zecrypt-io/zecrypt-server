@@ -75,6 +75,7 @@ def update_account(db, doc_id, payload):
         )
         if existing_account:
             return response_helper(status_code=400, message="Account already exists")
+    
     # Update account
     accounts_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload,},
@@ -85,6 +86,7 @@ def update_account(db, doc_id, payload):
 
 
 def delete_account(db, doc_id):
+    
     if not accounts_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="Account details not found",)
     accounts_manager.delete_one(db, {"doc_id": doc_id})

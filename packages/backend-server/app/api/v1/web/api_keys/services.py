@@ -8,6 +8,7 @@ def get_api_key_details(db, doc_id):
         status_code=200,
         message="API Key details loaded successfully",
         data=api_key_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
+        
     )
 
 
@@ -31,10 +32,11 @@ def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
 
 
 def add_api_key(db, payload):
+    lower_name = payload.get("name").strip().lower()
     api_key = api_key_manager.find_one(
         db,
         {
-            "lower_name": payload.get("lower_name").strip().lower(),
+            "lower_name": lower_name,
             "created_by": payload.get("created_by"),
             "project_id": payload.get("project_id"),
         },
@@ -47,7 +49,7 @@ def add_api_key(db, payload):
         {
             "doc_id": create_uuid(),
             "updated_by": payload.get("created_by"),
-            "lower_name": payload.get("name").strip().lower(),
+            "lower_name": lower_name,
             "created_at": timestamp,
             "updated_at": timestamp,
         }

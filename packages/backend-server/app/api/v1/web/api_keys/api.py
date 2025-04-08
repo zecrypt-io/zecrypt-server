@@ -60,7 +60,7 @@ async def update_api_key_api(
     payload: UpdateApiKey,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = filter_payload(payload.model_dump())
+    payload = payload.model_dump()
     payload.update({"project_id": project_id, "updated_by": user.get("user_id")})
     return update_api_key(user.get("db"), doc_id, payload)
 
