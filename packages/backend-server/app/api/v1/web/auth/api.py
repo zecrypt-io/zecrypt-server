@@ -137,7 +137,7 @@ async def signup_api(
     }
     refresh_token = encode_token(user_id)
     response.set_cookie(
-        key="accesstoken", value=token, httponly=True, secure=True, samesite="strict"
+        key="access_token", value=token, httponly=True, secure=True, samesite="strict"
     )
     response.set_cookie(
         key="refresh_token",
