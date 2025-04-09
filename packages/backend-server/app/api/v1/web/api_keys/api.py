@@ -14,13 +14,14 @@ from app.framework.permission_services.service import get_current_user
 from app.utils.utils import filter_payload
 
 router = APIRouter()
-API_KEYS = "/{project_id}/api-keys"
-API_KEY_DETAILS = "/{project_id}/api-keys/{doc_id}"
+API_KEYS = "/{workspace_id}/{project_id}/api-keys"
+API_KEY_DETAILS = "/{workspace_id}/{project_id}/api-keys/{doc_id}"
 
 
 @router.get(API_KEYS)
 async def get_api_key_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     page: int = Query(1, description="Page number", ge=1),
     limit: int = Query(20, description="Items per page", ge=1),
@@ -33,6 +34,7 @@ async def get_api_key_api(
 @router.get(API_KEY_DETAILS)
 async def get_api_key_details_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     user: UserDetails = Depends(get_current_user),
@@ -56,6 +58,7 @@ async def create_api_keys_api(
 @router.put(API_KEY_DETAILS)
 async def update_api_key_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     payload: UpdateApiKey,
@@ -70,6 +73,7 @@ async def update_api_key_api(
 @router.delete(API_KEY_DETAILS)
 async def delete_api_keys_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     background_tasks: BackgroundTasks,

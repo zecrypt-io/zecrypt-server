@@ -47,8 +47,7 @@ async def create_project_api(
     user: UserDetails = Depends(get_current_user),
 ):
     payload = payload.model_dump()
-    payload.update({"workspace_id": workspace_id, "created_by": user.get("user_id")})
-    return add_project(user.get("db"), payload)
+    return add_project(user, payload, workspace_id)
 
 
 @router.put(PROJECT_DETAILS)
@@ -59,9 +58,7 @@ async def update_project_api(
     payload: UpdateProject,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = payload.model_dump()
-    payload.update({"workspace_id": workspace_id, "updated_by": user.get("user_id")})
-    return update_project(user.get("db"), doc_id, payload)
+    return update_project(user, workspace_id, doc_id, payload.model_dump())
 
 
 @router.delete(PROJECT_DETAILS)
@@ -71,4 +68,4 @@ async def delete_project_api(
     doc_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_project(user.get("db"), doc_id)
+    return delete_project(user, workspace_id, doc_id)

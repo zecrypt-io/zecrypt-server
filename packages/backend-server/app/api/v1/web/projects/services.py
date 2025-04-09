@@ -57,14 +57,14 @@ def get_projects(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_project(db, payload):
+def add_project(user, payload, workspace_id):
+    db = user.get("db")
     project = project_manager.find_one(
         db,
         {
-            "workspace_id": payload.get("workspace_id"),
+            "workspace_id": workspace_id,
             "lower_name": payload.get("lower_name").strip().lower(),
-            "created_by": payload.get("created_by"),
-            "project_id": payload.get("project_id"),
+            "created_by": user.get("user_id"),
         },
     )
     if project:
@@ -74,7 +74,7 @@ def add_project(db, payload):
     payload.update(
         {
             "doc_id": create_uuid(),
-            "updated_by": payload.get("created_by"),
+            "updated_by": user.get("user_id"),
             "lower_name": payload.get("name").strip().lower(),
             "created_at": timestamp,
             "updated_at": timestamp,
@@ -87,32 +87,34 @@ def add_project(db, payload):
     )
 
 
-def update_project(db, doc_id, payload):
+def update_project(user, workspace_id, doc_id, payload):
+    db = user.get("db")
     payload = filter_payload(payload)
-    payload["updated_at"] = create_timestamp()
+    payload.update({"updated_by": user.get("user_id"), "updated_at": create_timestamp()})
     # Process name if it exists in the payload
     if payload.get("name"):
         lower_name = payload["name"].strip().lower()
         payload["lower_name"] = lower_name
 
-        existing_account = project_manager.find_one(
+        existing_project = project_manager.find_one(
             db,
             {
-                "workspace_id": payload.get("workspace_id"),
+                "workspace_id": workspace_id,
                 "lower_name": lower_name,
                 "doc_id": {"$ne": doc_id},
             },
         )
-        if existing_account:
+        if existing_project:
             return response_helper(status_code=400, message="project already exists")
     # Update account
     project_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload,},
+        db, {"doc_id": doc_id}, {"$set": payload},
     )
     return response_helper(status_code=200, message="Project updated successfully",)
 
 
-def delete_project(db, doc_id):
+def delete_project(user, workspace_id, doc_id):
+    db = user.get("db")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="Project details not found",)
     project_manager.delete_one(db, {"doc_id": doc_id})

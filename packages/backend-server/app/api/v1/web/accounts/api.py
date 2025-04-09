@@ -13,13 +13,14 @@ from app.framework.permission_services.service import get_current_user
 from app.utils.utils import filter_payload
 
 router = APIRouter()
-ACCOUNTS = "/{project_id}/accounts"
-ACCOUNT_DETAILS = "/{project_id}/accounts/{doc_id}"
+ACCOUNTS = "/{workspace_id}/{project_id}/accounts"
+ACCOUNT_DETAILS = "/{workspace_id}/{project_id}/accounts/{doc_id}"
 
 
 @router.get(ACCOUNTS)
 async def get_accounts_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     page: int = Query(1, description="Page number", ge=1),
     limit: int = Query(20, description="Items per page", ge=1),
@@ -32,6 +33,7 @@ async def get_accounts_api(
 @router.get(ACCOUNT_DETAILS)
 async def get_account_details_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     user: UserDetails = Depends(get_current_user),
@@ -55,6 +57,7 @@ async def create_account_api(
 @router.put(ACCOUNT_DETAILS)
 async def update_account_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     payload: UpdateAccount,
@@ -69,6 +72,7 @@ async def update_account_api(
 @router.delete(ACCOUNT_DETAILS)
 async def delete_account_api(
     request: Request,
+    workspace_id: str,
     project_id: str,
     doc_id: str,
     background_tasks: BackgroundTasks,
