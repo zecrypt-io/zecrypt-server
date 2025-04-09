@@ -51,7 +51,7 @@ async def create_api_keys_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_api_key(user, workspace_id, project_id, payload.model_dump(), background_tasks)
+    return add_api_key(request, user, payload.model_dump(), background_tasks)
 
 
 @router.put(API_KEY_DETAILS)
@@ -64,7 +64,7 @@ async def update_api_key_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_api_key(user, workspace_id, project_id, doc_id, payload.model_dump(), background_tasks)
+    return update_api_key(request, user, payload.model_dump(), background_tasks)
 
 
 @router.delete(API_KEY_DETAILS)
@@ -76,4 +76,4 @@ async def delete_api_keys_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_api_key(user, workspace_id, project_id, doc_id, background_tasks)
+    return delete_api_key(request, user, background_tasks)

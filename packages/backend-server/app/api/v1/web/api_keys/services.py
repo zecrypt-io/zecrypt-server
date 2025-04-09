@@ -1,6 +1,7 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import api_keys as api_key_manager
+from app.managers.collection_names import API_KEY
 from app.api.v1.web.auditlogs.services import add_audit_log
 
 
@@ -31,9 +32,10 @@ def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_api_key(user, workspace_id, project_id, payload, background_tasks):
+def add_api_key(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
     lower_name = payload.get("name").strip().lower()
     api_key = api_key_manager.find_one(
         db,
@@ -59,15 +61,26 @@ def add_api_key(user, workspace_id, project_id, payload, background_tasks):
     )
     api_key_manager.insert_one(db, payload)
 
-
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        API_KEY,
+        "created",
+        payload.get("doc_id"),
+        user_id,
+        request,
+    )
     return response_helper(
         status_code=201, message="API Key added successfully", data=payload,
     )
 
 
-def update_api_key(user, workspace_id, project_id, doc_id, payload, background_tasks):
+def update_api_key(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
+    doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
     
@@ -86,23 +99,42 @@ def update_api_key(user, workspace_id, project_id, doc_id, payload, background_t
         )
         if existing_account:
             return response_helper(status_code=400, message="API Key already exists")
+    
     # Update account
     api_key_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
 
-
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        API_KEY,
+        "updated",
+        doc_id,
+        user_id,
+        request,
+    )
     return response_helper(status_code=200, message="API Key updated successfully",)
 
 
-def delete_api_key(user, workspace_id, project_id, doc_id, background_tasks):
+def delete_api_key(request, user, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    doc_id = request.path_params.get("doc_id")
 
     if not api_key_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="API Key details not found",)
     api_key_manager.delete_one(db, {"doc_id": doc_id})
 
-    return response_helper(
-        status_code=200, message="API Key deleted successfully", data={},
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        API_KEY,
+        "deleted",
+        doc_id,
+        user_id,
+        request,
     )
+    return response_helper(status_code=200, message="API Key deleted successfully", data={},)

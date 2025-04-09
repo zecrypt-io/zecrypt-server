@@ -25,11 +25,11 @@ def find_one_and_update(
 
 
 def delete_one(db, collection_name, query):
-    db[collection_name].update_one(query, {"$set": {"is_active": False}})
+    db[collection_name].update_one(query, {"$set": {"access": False}})
 
 
 def delete_many(db, collection_name, query):
-    db[collection_name].update_many(query, {"$set": {"is_active": False}})
+    db[collection_name].update_many(query, {"$set": {"access": False}})
 
 
 def bulk_write(db, collection_name, data):

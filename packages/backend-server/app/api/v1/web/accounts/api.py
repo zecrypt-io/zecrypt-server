@@ -50,7 +50,7 @@ async def create_account_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_account(user, workspace_id, project_id, payload.model_dump(), background_tasks)
+    return add_account(request, user, payload.model_dump(), background_tasks)
 
 
 @router.put(ACCOUNT_DETAILS)
@@ -63,7 +63,7 @@ async def update_account_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_account(user, workspace_id, project_id, doc_id, payload.model_dump(), background_tasks)
+    return update_account(request, user, payload.model_dump(), background_tasks)
 
 
 @router.delete(ACCOUNT_DETAILS)
@@ -75,4 +75,4 @@ async def delete_account_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_account(user, workspace_id, project_id, doc_id, background_tasks)
+    return delete_account(request, user, background_tasks)

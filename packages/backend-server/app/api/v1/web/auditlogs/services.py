@@ -11,7 +11,7 @@ def get_audit_log_count(db, query):
     return audit_log_manager.count_documents(db, query)
 
 
-def add_audit_log(db, collection_name, action, record_id, created_by):
+def add_audit_log(db, collection_name, action, record_id, created_by, request=None):
     audit_log = {
         "collection_name": collection_name,
         "action": action,
@@ -20,5 +20,9 @@ def add_audit_log(db, collection_name, action, record_id, created_by):
         "record_id": record_id,
         "doc_id": create_uuid(),
         "message": f"{collection_name.title().replace('_', ' ')} is {action}.",
+        "ip_address": request.client.host if request else None,
+        "user_agent": request.headers.get('User-Agent') if request else None,
+        "workspace_id": request.path_params.get('workspace_id') if request else None,
+        "project_id": request.path_params.get('project_id') if request else None
     }
     audit_log_manager.insert_one(db, audit_log)

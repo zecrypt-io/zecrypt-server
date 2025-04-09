@@ -1,6 +1,8 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import wallet_phrase as wallet_phrase_manager
+from app.api.v1.web.auditlogs.services import add_audit_log
+from app.managers.collection_names import WALLET_PHRASE
 
 
 def get_wallet_phrase_details(db, doc_id):
@@ -30,9 +32,10 @@ def get_wallet_phrases(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_wallet_phrase(user, workspace_id, project_id, payload, background_tasks):
+def add_wallet_phrase(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
     wallet_phrase = wallet_phrase_manager.find_one(
         db,
         {
@@ -57,14 +60,24 @@ def add_wallet_phrase(user, workspace_id, project_id, payload, background_tasks)
     )
     wallet_phrase_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201, message="Wallet phrase added successfully", data=payload,
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        WALLET_PHRASE,
+        "created",
+        payload.get("doc_id"),
+        user_id,
+        request,
     )
+    return response_helper(status_code=201, message="Wallet phrase added successfully", data=payload,)
 
 
-def update_wallet_phrase(user, workspace_id, project_id, doc_id, payload, background_tasks):
+def update_wallet_phrase(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
+    doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
 
@@ -89,18 +102,37 @@ def update_wallet_phrase(user, workspace_id, project_id, doc_id, payload, backgr
     wallet_phrase_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
-    return response_helper(
-        status_code=200, message="Wallet phrase updated successfully",
+    
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        WALLET_PHRASE,
+        "updated",
+        doc_id,
+        user_id,
+        request,
     )
+    return response_helper(status_code=200, message="Wallet phrase updated successfully", data=payload,)
 
 
-def delete_wallet_phrase(user, workspace_id, project_id, doc_id, background_tasks):
+def delete_wallet_phrase(request, user, background_tasks):
     db = user.get("db")
+    user_id = user.get("user_id")
+    doc_id = request.path_params.get("doc_id")
     if not wallet_phrase_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(
             status_code=404, message="Wallet phrase details not found",
         )
     wallet_phrase_manager.delete_one(db, {"doc_id": doc_id})
-    return response_helper(
-        status_code=200, message="Wallet phrase deleted successfully", data={},
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        WALLET_PHRASE,
+        "deleted",
+        doc_id,
+        user_id,
+        request,
     )
+    return response_helper(status_code=200, message="Wallet phrase deleted successfully", data={},)

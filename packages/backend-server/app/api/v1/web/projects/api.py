@@ -47,7 +47,7 @@ async def create_project_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_project(user, workspace_id, payload.model_dump(), background_tasks)
+    return add_project(request, user, payload.model_dump(), background_tasks)
 
 
 @router.put(PROJECT_DETAILS)
@@ -59,7 +59,7 @@ async def update_project_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_project(user, workspace_id, doc_id, payload.model_dump(), background_tasks)
+    return update_project(request, user, payload.model_dump(), background_tasks)
 
 
 @router.delete(PROJECT_DETAILS)
@@ -70,4 +70,4 @@ async def delete_project_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_project(user, workspace_id, doc_id, background_tasks)
+    return delete_project(request, user, background_tasks)

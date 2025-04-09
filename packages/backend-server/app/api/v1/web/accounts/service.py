@@ -1,4 +1,5 @@
 from app.managers import accounts as accounts_manager
+from app.managers.collection_names import ACCOUNT
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import response_helper, filter_payload, create_uuid
 from app.api.v1.web.auditlogs.services import add_audit_log
@@ -31,9 +32,10 @@ def get_accounts(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_account(user, workspace_id, project_id, payload, background_tasks):
+def add_account(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
     existing_account = accounts_manager.find_one(
         db,
         {
@@ -57,15 +59,25 @@ def add_account(user, workspace_id, project_id, payload, background_tasks):
         }
     )
     accounts_manager.insert_one(db, payload)
-    
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        ACCOUNT,
+        "created",
+        payload.get("doc_id"),
+        payload.get("created_by"),
+        request,
+    )
     return response_helper(
         status_code=201, message="Account added successfully", data={},
     )
 
 
-def update_account(user, workspace_id, project_id, doc_id, payload, background_tasks):
+def update_account(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    project_id = request.path_params.get("project_id")
+    doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
     # Process name if it exists in the payload
@@ -89,20 +101,35 @@ def update_account(user, workspace_id, project_id, doc_id, payload, background_t
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
     
-    return response_helper(
-        status_code=200, message="Account updated successfully", data={},
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        ACCOUNT,
+        "updated",
+        doc_id,
+        user_id,
+        request,
     )
 
 
-def delete_account(user, workspace_id, project_id, doc_id, background_tasks):
+def delete_account(request, user, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+    doc_id = request.path_params.get("doc_id")
 
     if not accounts_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="Account details not found",)
     accounts_manager.delete_one(db, {"doc_id": doc_id})
 
-   
-    return response_helper(
-        status_code=200, message="Account deleted successfully", data={},
+    # Add audit log
+    background_tasks.add_task(
+        add_audit_log,
+        db,
+        ACCOUNT,
+        "deleted",
+        doc_id,
+        user_id,
+        request,
     )
+    return response_helper(status_code=200, message="Account deleted successfully", data={},)

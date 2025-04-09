@@ -130,7 +130,7 @@ async def signup_api(
     }
 
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_project_at_signup, db, user_id)
+    back_ground_tasks.add_task(create_project_at_signup, request, db, user_id)
     token_data = {
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
