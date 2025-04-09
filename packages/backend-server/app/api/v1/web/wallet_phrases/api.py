@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from app.api.v1.web.wallet_phrases.services import (
     get_wallet_phrases,
     add_wallet_phrase,
@@ -31,11 +31,10 @@ async def create_wallet_phrase_api(
     workspace_id: str,
     project_id: str,
     payload: WalletPhrase,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = payload.model_dump()
-    payload.update({"project_id": project_id, "created_by": user.get("user_id")})
-    return add_wallet_phrase(user.get("db"), payload)
+    return add_wallet_phrase(user, workspace_id, project_id, payload.model_dump(), background_tasks)
 
 
 @router.put(WALLET_PHRASE_DETAILS)
@@ -44,11 +43,10 @@ async def update_wallet_phrase_api(
     project_id: str,
     doc_id: str,
     payload: UpdateWalletPhrase,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = payload.model_dump()
-    payload.update({"project_id": project_id, "updated_by": user.get("user_id")})
-    return update_wallet_phrase(user.get("db"), doc_id, payload)
+    return update_wallet_phrase(user, workspace_id, project_id, doc_id, payload.model_dump())
 
 
 @router.delete(WALLET_PHRASE_DETAILS)
@@ -56,6 +54,7 @@ async def delete_wallet_phrase_api(
     workspace_id: str,
     project_id: str,
     doc_id: str,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_wallet_phrase(user.get("db"), doc_id)
+    return delete_wallet_phrase(user, workspace_id, project_id, doc_id, background_tasks)

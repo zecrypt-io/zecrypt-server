@@ -30,13 +30,15 @@ def get_wallet_phrases(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_wallet_phrase(db, payload):
+def add_wallet_phrase(user, workspace_id, project_id, payload, background_tasks):
+    db = user.get("db")
+    user_id = user.get("user_id")
     wallet_phrase = wallet_phrase_manager.find_one(
         db,
         {
             "lower_name": payload.get("name").strip().lower(),
-            "created_by": payload.get("created_by"),
-            "project_id": payload.get("project_id"),
+            "created_by": user_id,
+            "project_id": project_id,
         },
     )
     if wallet_phrase:
@@ -46,10 +48,11 @@ def add_wallet_phrase(db, payload):
     payload.update(
         {
             "doc_id": create_uuid(),
-            "updated_by": payload.get("created_by"),
+            "created_by": user_id,
             "lower_name": payload.get("name").strip().lower(),
             "created_at": timestamp,
             "updated_at": timestamp,
+            "project_id": project_id,
         }
     )
     wallet_phrase_manager.insert_one(db, payload)
@@ -59,9 +62,12 @@ def add_wallet_phrase(db, payload):
     )
 
 
-def update_wallet_phrase(db, doc_id, payload):
+def update_wallet_phrase(user, workspace_id, project_id, doc_id, payload, background_tasks):
+    db = user.get("db")
+    user_id = user.get("user_id")
     payload = filter_payload(payload)
-    payload["updated_at"] = create_timestamp()
+    payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
+
     # Process name if it exists in the payload
     if payload.get("name"):
         lower_name = payload["name"].strip().lower()
@@ -70,7 +76,7 @@ def update_wallet_phrase(db, doc_id, payload):
         existing_wallet_phrase = wallet_phrase_manager.find_one(
             db,
             {
-                "project_id": payload.get("project_id"),
+                "project_id": project_id,
                 "lower_name": lower_name,
                 "doc_id": {"$ne": doc_id},
             },
@@ -88,7 +94,8 @@ def update_wallet_phrase(db, doc_id, payload):
     )
 
 
-def delete_wallet_phrase(db, doc_id):
+def delete_wallet_phrase(user, workspace_id, project_id, doc_id, background_tasks):
+    db = user.get("db")
     if not wallet_phrase_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(
             status_code=404, message="Wallet phrase details not found",

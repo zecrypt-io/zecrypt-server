@@ -57,7 +57,7 @@ def get_projects(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
 
-def add_project(user, payload, workspace_id):
+def add_project(user, workspace_id, payload):
     db = user.get("db")
     project = project_manager.find_one(
         db,
@@ -74,7 +74,7 @@ def add_project(user, payload, workspace_id):
     payload.update(
         {
             "doc_id": create_uuid(),
-            "updated_by": user.get("user_id"),
+            "created_by": user.get("user_id"),
             "lower_name": payload.get("name").strip().lower(),
             "created_at": timestamp,
             "updated_at": timestamp,
@@ -113,7 +113,7 @@ def update_project(user, workspace_id, doc_id, payload):
     return response_helper(status_code=200, message="Project updated successfully",)
 
 
-def delete_project(user, workspace_id, doc_id):
+def delete_project(user, workspace_id, doc_id, background_tasks):
     db = user.get("db")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
         return response_helper(status_code=404, message="Project details not found",)

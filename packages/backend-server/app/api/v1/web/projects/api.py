@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Query, Depends
+from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
 
 from app.api.v1.web.auth.schema import UserDetails
 from app.api.v1.web.projects.schema import AddProject, UpdateProject
@@ -44,10 +44,10 @@ async def create_project_api(
     request: Request,
     workspace_id: str,
     payload: AddProject,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    payload = payload.model_dump()
-    return add_project(user, payload, workspace_id)
+    return add_project(user, workspace_id, payload.model_dump(), background_tasks)
 
 
 @router.put(PROJECT_DETAILS)
@@ -56,9 +56,10 @@ async def update_project_api(
     workspace_id: str,
     doc_id: str,
     payload: UpdateProject,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_project(user, workspace_id, doc_id, payload.model_dump())
+    return update_project(user, workspace_id, doc_id, payload.model_dump(), background_tasks)
 
 
 @router.delete(PROJECT_DETAILS)
@@ -66,6 +67,7 @@ async def delete_project_api(
     request: Request,
     workspace_id: str,
     doc_id: str,
+    background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_project(user, workspace_id, doc_id)
+    return delete_project(user, workspace_id, doc_id, background_tasks)
