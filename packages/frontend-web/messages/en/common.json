@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Secure your data with Zecrypt"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "agreement": "When signing in, you agree to our",
+    "terms": "Terms"
+  },
+  "features": {
+    "trial_title": "Try upto 3Password Families free for 40 days",
+    "unlimited_devices": "5 family members, unlimited devices",
+    "shared_vaults": "Shared vaults let family members choose what they want to share (or keep private)",
+    "advanced_security": "Advanced security with authenticated encryption, PAKE, and more",
+    "security_alerts": "Alerts for compromised websites and vulnerable passwords",
+    "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux",
+    "looking_for_options": "Looking for an individual, team, or business account?",
+    "see_options": "See all account options"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "confirm": "Confirm"
+  },
+  "dashboard": {
+    "welcome_back": "Welcome back to your secure workspace",
+    "total_passwords": "Total Passwords",
+    "total_accounts": "Total Accounts",
+    "total_folders": "Total Folders",
+    "from_last_month": "from last month",
+    "recent_activity": "Recent Activity"
+  },
+  "activity": {
+    "password_updated": "Password updated",
+    "note_created": "Secure note created"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last_7_days": "Last 7 days",
+    "last_30_days": "Last 30 days",
+    "all_time": "All time",
+    "just_now": "Just now",
+    "hours_ago": "{hours} hours ago",
+    "days_ago": "{days} days ago"
+  }
+} 

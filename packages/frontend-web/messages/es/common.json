@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Asegure sus datos con Zecrypt"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "dashboard": "Panel de control",
+    "settings": "Configuración"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "agreement": "Al iniciar sesión, aceptas nuestros",
+    "terms": "Términos"
+  },
+  "features": {
+    "trial_title": "Prueba 3Password Familias gratis durante 40 días",
+    "unlimited_devices": "5 miembros de familia, dispositivos ilimitados",
+    "shared_vaults": "Las bóvedas compartidas permiten a los miembros de la familia elegir lo que quieren compartir (o mantener privado)",
+    "advanced_security": "Seguridad avanzada con cifrado autenticado, PAKE y más",
+    "security_alerts": "Alertas para sitios web comprometidos y contraseñas vulnerables",
+    "multi_platform": "Disponible en Mac, iOS, Windows, Android, Chrome OS y Linux",
+    "looking_for_options": "¿Buscas una cuenta individual, de equipo o de empresa?",
+    "see_options": "Ver todas las opciones de cuenta"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "confirm": "Confirmar"
+  },
+  "dashboard": {
+    "welcome_back": "Bienvenido de nuevo a su espacio de trabajo seguro",
+    "total_passwords": "Total de contraseñas",
+    "total_accounts": "Total de cuentas",
+    "total_folders": "Total de carpetas",
+    "from_last_month": "desde el mes pasado",
+    "recent_activity": "Actividad reciente"
+  },
+  "activity": {
+    "password_updated": "Contraseña actualizada",
+    "note_created": "Nota segura creada"
+  },
+  "time": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "last_7_days": "Últimos 7 días",
+    "last_30_days": "Últimos 30 días",
+    "all_time": "Todo el tiempo",
+    "just_now": "Ahora mismo",
+    "hours_ago": "Hace {hours} horas",
+    "days_ago": "Hace {days} días"
+  }
+} 
