@@ -9,7 +9,12 @@ import { getTranslations } from 'next-intl/server';
 
 const inter = Inter({ subsets: ["latin"] })
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: string } 
+}) {
+  const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'app' });
   
   return {
@@ -26,11 +31,13 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  params: { locale },
+  params,
 }: Readonly<{
   children: React.ReactNode;
   params: { locale: string };
 }>) {
+  const locale = params.locale;
+  
   // Load messages for the current locale
   let messages;
   try {

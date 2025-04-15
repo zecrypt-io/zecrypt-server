@@ -1,7 +1,9 @@
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { LocalizedOverviewContent } from "@/components/localized-overview-content";
 
-export default function DashboardPage({ params: { locale } }: { params: { locale: string } }) {
+export default async function DashboardPage({ params }: { params: { locale: string } }) {
+  const locale = params.locale;
+  
   return (
     <DashboardLayout locale={locale}>
       <LocalizedOverviewContent />
