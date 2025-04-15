@@ -37,6 +37,7 @@ def bulk_write(db, collection_name, data):
 
 
 def find_one(db, collection_name, query, projection=None):
+    query["access"] = {"$ne": False}
     if projection is None:
         projection = {"_id": False}
     return db[collection_name].find_one(query, projection)
@@ -52,6 +53,8 @@ def find(
     limit=0,
     collation=None,
 ):
+    query["access"] = {"$ne": False}
+
     if projection is None:
         projection = {"_id": False}
     if not collation:

@@ -2,7 +2,7 @@ from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import project as project_manager
 from app.managers.collection_names import PROJECT
-from app.api.v1.web.auditlogs.services import add_audit_log
+from app.api.v1.web.audit_logs.services import add_audit_log
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 from app.managers import audit_log as audit_log_manager
 
@@ -71,7 +71,7 @@ def add_project(request, user, payload, background_tasks):
         db,
         {
             "workspace_id": workspace_id,
-            "lower_name": payload.get("lower_name").strip().lower(),
+            "lower_name": payload.get("name").strip().lower(),
             "created_by": user_id,
         },
     )

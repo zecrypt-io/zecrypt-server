@@ -2,7 +2,7 @@ from app.managers import workspace as workspace_manager
 from app.managers import project as project_manager
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import response_helper
-from app.api.v1.web.auditlogs.services import add_audit_log
+from app.api.v1.web.audit_logs.services import add_audit_log
 
 def create_initial_workspace_on_signup(db,request, user_id, workspace_id):
     timestamp = create_timestamp()

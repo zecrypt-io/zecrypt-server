@@ -1,7 +1,7 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import wallet_phrase as wallet_phrase_manager
-from app.api.v1.web.auditlogs.services import add_audit_log
+from app.api.v1.web.audit_logs.services import add_audit_log
 from app.managers.collection_names import WALLET_PHRASE
 
 

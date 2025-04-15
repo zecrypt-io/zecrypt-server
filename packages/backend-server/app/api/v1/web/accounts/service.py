@@ -2,8 +2,7 @@ from app.managers import accounts as accounts_manager
 from app.managers.collection_names import ACCOUNT
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import response_helper, filter_payload, create_uuid
-from app.api.v1.web.auditlogs.services import add_audit_log
-
+from app.api.v1.web.audit_logs.services import add_audit_log
 
 def get_account_details(db, doc_id):
     return response_helper(

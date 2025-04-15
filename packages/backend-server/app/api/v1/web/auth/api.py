@@ -42,9 +42,7 @@ async def login_api(
         return response_helper(
             status_code=400, message="Authentication failed, Please try again",
         )
-    print(res)
-    user = user_manager.find_one(db, {"uid": res.get("id")}, {"_id": False})
-    print(user)
+    user = user_manager.find_one(db, {"uid": res.get("id"),"access":{"$ne":False}}, {"_id": False})
     if not user:
         return response_helper(
             status_code=400, message="User not found, Please signup",
@@ -69,7 +67,7 @@ async def login_api(
             }
         },
     )
-    back_ground_tasks.add_task(record_login_event, request, db, user.get("user_id"))
+    back_ground_tasks.add_task(record_login_event, request, db, user)
     refresh_token = encode_token(user.get("user_id"))
     response.set_cookie(
         key="access_token", value=token, httponly=True, secure=True, samesite="strict"
@@ -100,7 +98,7 @@ async def signup_api(
             status_code=400, message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"uid": res.get("id")}, {"_id": False})
+    user = user_manager.find_one(db, {"uid": res.get("id"),"access":{"$ne":False}}, {"_id": False})
 
     if user:
         return response_helper(

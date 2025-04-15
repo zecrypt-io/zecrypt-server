@@ -2,7 +2,7 @@ from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import api_keys as api_key_manager
 from app.managers.collection_names import API_KEY
-from app.api.v1.web.auditlogs.services import add_audit_log
+from app.api.v1.web.audit_logs.services import add_audit_log
 
 
 def get_api_key_details(db, doc_id):
