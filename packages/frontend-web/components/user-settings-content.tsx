@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -51,6 +51,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { UpdatePasswordModal } from "@/components/update-password-modal"
+import { useRouter, usePathname } from "next/navigation"
+import { locales } from "@/middleware"
+import { useTranslations } from "next-intl"
 
 export function UserSettingsContent() {
   const [activeTab, setActiveTab] = useState("profile")
@@ -59,6 +62,37 @@ export function UserSettingsContent() {
   const [avatarSrc, setAvatarSrc] = useState("/placeholder.svg?height=128&width=128")
   const [showImageOptions, setShowImageOptions] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  // Get current locale from pathname
+  const [currentLocale, setCurrentLocale] = useState("en");
+  
+  // Set the current locale on component mount
+  useEffect(() => {
+    const pathSegments = pathname?.split('/') || [];
+    if (pathSegments.length > 1 && locales.includes(pathSegments[1] as any)) {
+      setCurrentLocale(pathSegments[1]);
+    }
+  }, [pathname]);
+  
+  // Localized labels for languages
+  const languageLabels = {
+    en: "English",
+    fr: "French (Français)",
+    es: "Spanish (Español)"
+  };
+  
+  // Handle language change
+  const handleLanguageChange = (newLocale: string) => {
+    // Switch language by changing the URL path
+    const segments = pathname?.split('/') || [];
+    // Remove the current locale segment
+    segments.splice(1, 1, newLocale);
+    const newPath = segments.join('/');
+    router.push(newPath);
+    setCurrentLocale(newLocale);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -184,16 +218,16 @@ export function UserSettingsContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="language">Language</Label>
-                      <Select defaultValue="en">
+                      <Select value={currentLocale} onValueChange={handleLanguageChange}>
                         <SelectTrigger id="language">
                           <SelectValue placeholder="Select language" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="es">Spanish</SelectItem>
-                          <SelectItem value="fr">French</SelectItem>
-                          <SelectItem value="de">German</SelectItem>
-                          <SelectItem value="ja">Japanese</SelectItem>
+                          {locales.map(locale => (
+                            <SelectItem key={locale} value={locale}>
+                              {languageLabels[locale as keyof typeof languageLabels] || locale}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

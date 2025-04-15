@@ -1,6 +1,8 @@
-import { LoginPage } from "@/components/login-page"
+import { redirect } from 'next/navigation';
+import { defaultLocale } from '../middleware';
 
-export default function Home() {
-  return <LoginPage />
+// Redirect to the login page with the default locale
+export default function RootPage() {
+  redirect(`/${defaultLocale}/login`);
 }
 

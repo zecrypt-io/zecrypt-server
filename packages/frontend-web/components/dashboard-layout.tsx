@@ -20,6 +20,7 @@ import {
   Bell,
   Plus,
   X,
+  Globe,
 } from "lucide-react"
 import { cn } from "@/libs/utils"
 import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav"
@@ -41,9 +42,11 @@ import { CommandPalette } from "@/components/command-palette"
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
 import { EncryptionKeyModal } from "@/components/encryption-key-modal"
 import { useRouter } from "next/navigation"
+import { locales } from "@/middleware"
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
+  locale?: string;
 }
 
 function Star(props: React.SVGProps<SVGSVGElement>) {
@@ -65,7 +68,7 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [showGeneratePassword, setShowGeneratePassword] = useState(false)
   const [showProfileDialog, setShowProfileDialog] = useState(false)
@@ -75,6 +78,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const searchParams = useSearchParams()
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false)
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"])
+  
+  // Language switcher state
+  const [currentLocale, setCurrentLocale] = useState(locale);
+  
+  // Language labels
+  const languageLabels: Record<string, string> = {
+    en: "English",
+    fr: "Français",
+    es: "Español"
+  };
 
   const removeTag = (tagToRemove: string) => {
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove))
@@ -83,6 +96,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter()
   const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false)
   const [isNewUser, setIsNewUser] = useState(false)
+  
+  // Switch language function
+  const switchLanguage = (newLocale: string) => {
+    if (newLocale === currentLocale) return;
+    
+    // Create a new path with the updated locale
+    const segments = pathname?.split('/') || [];
+    segments[1] = newLocale; // Replace the locale segment
+    const newPath = segments.join('/');
+    
+    // Navigate to the new path
+    router.push(newPath);
+    setCurrentLocale(newLocale);
+  };
+
+  useEffect(() => {
+    // Set the current locale when component mounts
+    if (locale) {
+      setCurrentLocale(locale);
+    }
+  }, [locale]);
 
   useEffect(() => {
     const handleGeneratePassword = () => setShowGeneratePassword(true)
@@ -128,19 +162,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           setShowProjectDialog(true)
           break
         case "d": // Dashboard
-          window.location.href = "/dashboard"
+          router.push(`/${currentLocale}/dashboard`)
           break
         case "a": // Accounts
-          window.location.href = "/dashboard/accounts"
+          router.push(`/${currentLocale}/dashboard/accounts`)
           break
         case "f": // Files
-          window.location.href = "/dashboard/files"
+          router.push(`/${currentLocale}/dashboard/files`)
           break
         case "n": // Notifications
-          window.location.href = "/dashboard/notifications"
+          router.push(`/${currentLocale}/dashboard/notifications`)
           break
         case "s": // Settings
-          window.location.href = "/dashboard/user-settings"
+          router.push(`/${currentLocale}/dashboard/user-settings`)
           break
         case "t": // Toggle theme
           document.dispatchEvent(new CustomEvent("toggle-theme-event"))
@@ -188,9 +222,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const handleEncryptionKeyCancel = () => {
-    // If user cancels, redirect back to login
+    // If user cancels, redirect back to login with the current locale
     setShowEncryptionKeyModal(false)
-    router.push("/")
+    router.push(`/${currentLocale}/login`)
   }
 
   return (
@@ -201,7 +235,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar */}
       <div className="hidden md:flex w-64 flex-col border-r border-border">
         <div className="flex h-14 items-center border-b border-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
             <Lock className="h-5 w-5" />
             <span>Zecrypt</span>
           </Link>
@@ -232,10 +266,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">Dashboards</h3>
             <div className="space-y-1 mb-6">
               <Link
-                href="/dashboard"
+                href={`/${currentLocale}/dashboard`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard"
+                  pathname === `/${currentLocale}/dashboard`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -244,10 +278,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Overview
               </Link>
               <Link
-                href="/dashboard/accounts"
+                href={`/${currentLocale}/dashboard/accounts`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/accounts"
+                  pathname === `/${currentLocale}/dashboard/accounts`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -256,10 +290,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Accounts
               </Link>
               <Link
-                href="/dashboard/api-keys"
+                href={`/${currentLocale}/dashboard/api-keys`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/api-keys"
+                  pathname === `/${currentLocale}/dashboard/api-keys`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -280,10 +314,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
 
               <Link
-                href="/dashboard/wallet-passphrases"
+                href={`/${currentLocale}/dashboard/wallet-passphrases`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/wallet-passphrases"
+                  pathname === `/${currentLocale}/dashboard/wallet-passphrases`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -309,10 +343,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {favoriteTags.map((tag) => (
               <div key={tag} className="flex items-center justify-between px-2 py-1 group">
                 <Link
-                  href={`/dashboard/favourites?tag=${encodeURIComponent(tag)}`}
+                  href={`/${currentLocale}/dashboard/favourites?tag=${encodeURIComponent(tag)}`}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-2 py-1 text-sm flex-1",
-                    pathname === "/dashboard/favourites" && searchParams?.get("tag") === tag
+                    pathname === `/${currentLocale}/dashboard/favourites` && searchParams?.get("tag") === tag
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground",
                   )}
@@ -337,10 +371,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="mt-auto border-t border-border">
           <div className="px-3 py-2">
             <Link
-              href="/dashboard/notifications"
+              href={`/${currentLocale}/dashboard/notifications`}
               className={cn(
                 "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                pathname === "/dashboard/notifications"
+                pathname === `/${currentLocale}/dashboard/notifications`
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}
@@ -372,7 +406,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/user-settings">
+                  <Link href={`/${currentLocale}/dashboard/user-settings`}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </Link>
@@ -434,7 +468,49 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Workspace Switcher in top nav */}
           <WorkspaceSwitcherNav />
 
-          <ThemeToggle />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => console.log("Shortcuts")}>
+                  <Command className="h-4 w-4" />
+                  <span className="sr-only">Keyboard shortcuts</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Keyboard shortcuts</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                <Globe className="h-4 w-4" />
+                <span className="sr-only">Change language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {locales.map((loc) => (
+                <DropdownMenuItem 
+                  key={loc} 
+                  onClick={() => switchLanguage(loc)}
+                  className={loc === currentLocale ? "font-bold bg-accent/50" : ""}
+                >
+                  {languageLabels[loc] || loc}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ThemeToggle />
+              </TooltipTrigger>
+              <TooltipContent>Toggle theme</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </header>
 
         <main className="flex flex-1">
