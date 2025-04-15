@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Sécurisez vos données avec Zecrypt"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres"
+  },
+  "auth": {
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "agreement": "En vous connectant, vous acceptez nos",
+    "terms": "Conditions d'utilisation"
+  },
+  "features": {
+    "trial_title": "Essayez 3Password Familles gratuitement pendant 40 jours",
+    "unlimited_devices": "5 membres de famille, appareils illimités",
+    "shared_vaults": "Les coffres-forts partagés permettent aux membres de la famille de choisir ce qu'ils veulent partager (ou garder privé)",
+    "advanced_security": "Sécurité avancée avec chiffrement authentifié, PAKE, et plus",
+    "security_alerts": "Alertes pour les sites web compromis et les mots de passe vulnérables",
+    "multi_platform": "Disponible sur Mac, iOS, Windows, Android, Chrome OS et Linux",
+    "looking_for_options": "Vous cherchez un compte individuel, d'équipe ou d'entreprise?",
+    "see_options": "Voir toutes les options de compte"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "submit": "Soumettre",
+    "confirm": "Confirmer"
+  },
+  "dashboard": {
+    "welcome_back": "Bienvenue dans votre espace de travail sécurisé",
+    "total_passwords": "Total des mots de passe",
+    "total_accounts": "Total des comptes",
+    "total_folders": "Total des dossiers",
+    "from_last_month": "par rapport au mois dernier",
+    "recent_activity": "Activité récente"
+  },
+  "activity": {
+    "password_updated": "Mot de passe mis à jour",
+    "note_created": "Note sécurisée créée"
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "last_7_days": "7 derniers jours",
+    "last_30_days": "30 derniers jours",
+    "all_time": "Tout le temps",
+    "just_now": "À l'instant",
+    "hours_ago": "Il y a {hours} heures",
+    "days_ago": "Il y a {days} jours"
+  }
+} 

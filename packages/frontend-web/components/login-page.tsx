@@ -9,10 +9,16 @@ import { MonochromeGoogleIcon } from "./monochrome-google-icon"
 import { useState, useEffect } from "react"
 import { SignIn,useUser } from '@stackframe/stack';
 import { stackAuthHandler } from "@/libs/stack-auth-handler"
+import { useTranslations } from 'next-intl';
 
+export interface LoginPageProps {
+  locale?: string;
+}
 
-export function LoginPage() {
+export function LoginPage({ locale = 'en' }: LoginPageProps) {
   const router = useRouter()
+  const t = useTranslations('auth');
+  const features = useTranslations('features');
  
   const user = useUser(); // Check if the user is already signed in
   const [isLoggingIn, setIsLoggingIn] = useState(false)
@@ -30,7 +36,7 @@ export function LoginPage() {
         console.log("Login response:", loginResponse);
 
         if (loginResponse?.status_code === 200) {
-          router.push("/dashboard");
+          router.push(`/${locale}/dashboard`);
         } else if (
           loginResponse?.status_code === 400 &&
           loginResponse?.message?.toLowerCase().includes("user not found")
@@ -40,7 +46,7 @@ export function LoginPage() {
           console.log("Signup response:", signupResponse);
 
           if (signupResponse?.status_code === 200) {
-            router.push("/dashboard");
+            router.push(`/${locale}/dashboard`);
           } else {
             console.error("Signup failed:", signupResponse);
           }
@@ -55,7 +61,7 @@ export function LoginPage() {
     if (user) {
       authenticateUser();
     }
-  }, [user, router]);
+  }, [user, router, locale]);
 
   // useEffect(() => {
   //   if (user) {
@@ -97,7 +103,7 @@ export function LoginPage() {
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
         <div className="space-y-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Try upto 3Password Families free for 40 days</h1>
+            <h1 className="text-3xl font-bold">{features('trial_title')}</h1>
           </div>
 
           <div className="space-y-4">
@@ -106,7 +112,7 @@ export function LoginPage() {
                 <Check className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">5 family members, unlimited devices</p>
+                <p className="text-sm text-muted-foreground">{features('unlimited_devices')}</p>
               </div>
             </div>
 
@@ -116,7 +122,7 @@ export function LoginPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Shared vaults let family members choose what they want to share (or keep private)
+                  {features('shared_vaults')}
                 </p>
               </div>
             </div>
@@ -127,7 +133,7 @@ export function LoginPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Advanced security with authenticated encryption, PAKE, and more
+                  {features('advanced_security')}
                 </p>
               </div>
             </div>
@@ -138,7 +144,7 @@ export function LoginPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Alerts for compromised websites and vulnerable passwords
+                  {features('security_alerts')}
                 </p>
               </div>
             </div>
@@ -149,33 +155,32 @@ export function LoginPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Available on Mac, iOS, Windows, Android, Chrome OS, and Linux
+                  {features('multi_platform')}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Looking for an individual, team, or business account?</p>
+            <p className="text-sm text-muted-foreground">{features('looking_for_options')}</p>
             <Link href="#" className="text-sm theme-accent-text hover:underline">
-              See all account options
+              {features('see_options')}
             </Link>
           </div>
         </div>
 
         <div className="bg-card rounded-lg p-1 flex flex-col border border-border shadow-md">
-
-        <SignIn
-        fullPage={true}
-        automaticRedirect={false}
-        firstTab='password'
-        extraInfo={<>When signing in, you agree to our <a href="/terms">Terms</a></>}
-      />
+          <SignIn
+            fullPage={true}
+            automaticRedirect={false}
+            firstTab='password'
+            extraInfo={<>
+              {t('agreement')} <a href={`/${locale}/terms`}>{t('terms')}</a>
+            </>}
+          />
+        </div>
       </div>
-      </div>
-      </div>
-
-
+    </div>
   )
 }
 
