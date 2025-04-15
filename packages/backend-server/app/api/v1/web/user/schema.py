@@ -9,3 +9,7 @@ class AddFavoriteTags(BaseModel):
     tag_to_add: List[str]= Field(default_factory=list)
     tag_to_remove: List[str]= Field(default_factory=list)
 
+class UpdateProfile(BaseModel):
+    name: Optional[str] = None
+    language: Optional[str] = None
+

@@ -54,6 +54,7 @@ async def login_api(
         "profile_url": user.get("profile_url"),
         "name": user.get("name"),
         "access_token": token,
+        "language": user.get("language"),
     }
 
     user_manager.update_one(
@@ -117,6 +118,7 @@ async def signup_api(
         "user_id": user_id,
         "profile_url": res.get("profile_image_url"),
         "token": token,
+        "language": "en",
         "auth": {
             "has_password": res.get("has_password"),
             "otp_auth_enabled": res.get("otp_auth_enabled"),
@@ -134,6 +136,7 @@ async def signup_api(
         "profile_url": res.get("profile_url"),
         "name": res.get("display_name"),
         "access_token": token,
+        "language": "en",
     }
     refresh_token = encode_token(user_id)
     response.set_cookie(

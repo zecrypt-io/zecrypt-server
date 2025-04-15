@@ -1,11 +1,13 @@
 from app.utils.utils import  response_helper
 from app.managers import favorite_tags as favorite_tags_manager
 from app.managers import login_activity as login_activity_manager
-
+from app.managers import user as user_manager
+from app.utils.utils import filter_payload
 def get_favorite_tags(request, user):
     tags= favorite_tags_manager.find_one(user.get("db"), {"created_by": user.get("user_id")})
 
     return response_helper(
+        status_code=200,
         message="Favorite tags fetched successfully",
         data=tags
     )
@@ -32,6 +34,7 @@ def update_favorite_tags(request, user,payload):
         upsert=True
     )
     return response_helper(
+        status_code=200,
         message="Favorite tags updated successfully",
     )
 
@@ -41,15 +44,34 @@ def get_profile(request, user):
         "email": user.get("email"),
         "name": user.get("name"),
         "profile_url": user.get("profile_url"),
-        "preferred_language": user.get("preferred_language", "en"),
+        "language": user.get("language", "en"),
     }
     return response_helper(
+        status_code=200,
         message="Profile fetched successfully",
         data=data
     )
 
 def get_login_history(request, user):
-    login_history = login_activity_manager.find(user.get("db"), {"created_by": user.get("user_id")},sort=[("created_at",-1)],skip=0,limit=20)
+    login_history = login_activity_manager.find(user.get("db"), {"created_by": user.get("user_id")},sort=[("created_at",-1)],skip=0,limit=10)
     return response_helper(
+        status_code=200,
         message="Login history fetched successfully",
         data=login_history)     
+
+def update_profile(request, user, payload):
+
+    payload =filter_payload(payload)
+    
+    if payload:
+        query = {"user_id": user.get("user_id")}
+        user_manager.update_one(user.get("db"),query,{"$set": payload})
+        return response_helper(
+            status_code=200,
+            message="Profile updated successfully",
+        )
+    else:
+        return response_helper(
+            status_code=200,
+            message="No changes to update",
+        )

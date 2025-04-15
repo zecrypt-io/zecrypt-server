@@ -52,3 +52,6 @@ def record_login_event(request, db, user):
         },
     }
     login_activity_manager.insert_one(db, data)
+
+
+

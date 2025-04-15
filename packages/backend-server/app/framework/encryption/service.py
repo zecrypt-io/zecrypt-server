@@ -26,6 +26,7 @@ sensitive_fields = ["user_name", "password", "api_key", "phrase", "wallet_addres
 def generate_passphrase(length=16):
     # list of uppercase letters and digits
     chars = string.ascii_uppercase + string.digits
+    
     # generate the passphrase by selecting random characters
     return "".join(random.choice(chars) for _ in range(length))
 
