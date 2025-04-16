@@ -1,53 +1,117 @@
-"use client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react"
-import { useUser } from '@stackframe/stack';
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
+import { useUser } from "@stackframe/stack";
 import { useEffect } from "react";
-import { access } from "fs";
-import { getWorkspace } from "../libs/getWorkspace";
-// import Cookies from "js-cookie";
+import { loadInitialData } from "../libs/getWorkspace";
+import { RootState, AppDispatch } from "../libs/Redux/store";
+import { useSelector, useDispatch } from "react-redux";
+import { setWorkspaceData } from "../libs/Redux/workspaceSlice";
+import { Workspace } from "../libs/Redux/workspaceSlice";
 
 export function OverviewContent() {
-
   const user = useUser();
-
-  // const authDetails = user?.getAuthJson();
-  // const tok = authDetails?.accessToken;
-  //   console.log('Access Token:', authDetails);
-  //   console.log("accessToken", tok);
+  const dispatch = useDispatch<AppDispatch>();
+  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  
+  // Get selected and default project for display
+  const selectedProject = useSelector((state: RootState) =>
+    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId && selectedProjectId
+      ? state.workspace.workspaces
+          .find((ws) => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find((p) => p.project_id === selectedProjectId)
+      : null
+  );
+  const defaultProject = useSelector((state: RootState) =>
+    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId
+      ? state.workspace.workspaces
+          .find((ws) => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find((p) => p.is_default)
+      : null
+  );
+  const displayProject = selectedProject || defaultProject;
 
   useEffect(() => {
     const fetchAuthDetails = async () => {
-      const authDetails = await user?.getAuthJson(); // Wait for the promise to resolve
-      console.log("Access Token:", authDetails?.accessToken); // Now it's safe
+      const authDetails = await user?.getAuthJson();
+      console.log("Access Token from Stack:", authDetails?.accessToken);
     };
-  
     fetchAuthDetails();
   }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const workspaceData = await getWorkspace();
-  
-      if (workspaceData) {
-        console.log("✅ Project ID:", workspaceData.project_id);
-        // use projectId to fetch passwords, etc.
+      if (!accessToken) {
+        console.error("No access token available in Redux");
+        dispatch(
+          setWorkspaceData({
+            workspaces: [],
+            selectedWorkspaceId: null,
+            selectedProjectId: null,
+          })
+        );
+        return;
+      }
+
+      const initialData: Workspace[] | null = await loadInitialData(accessToken);
+      if (initialData && Array.isArray(initialData) && initialData.length > 0) {
+        console.log("✅ Dispatching initial data to Redux:", initialData);
+        const defaultWorkspace = initialData[0];
+        const defaultProject = defaultWorkspace.projects.find((p) => p.is_default);
+        dispatch(
+          setWorkspaceData({
+            workspaces: initialData,
+            selectedWorkspaceId: defaultWorkspace.workspaceId,
+            // Persist selectedProjectId if set, otherwise use default or first project
+            selectedProjectId: selectedProjectId || defaultProject?.project_id || initialData[0].projects[0]?.project_id || null,
+          })
+        );
       } else {
-        console.error("❌ Failed to fetch workspace. Auth might have failed.");
+        console.error("❌ Failed to load initial data or no workspaces available.");
+        dispatch(
+          setWorkspaceData({
+            workspaces: [],
+            selectedWorkspaceId: null,
+            selectedProjectId: null,
+          })
+        );
       }
     };
-  
+
     fetchData();
-  }, []);
-  
+  }, [accessToken, dispatch, selectedProjectId]);
+
+  // Calculate totals from Redux state
+  const totalProjects = workspaces?.reduce((sum, ws) => sum + ws.projects.length, 0) || 0;
+  const totalWorkspaces = workspaces?.length || 0;
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back to your secure workspace</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-muted-foreground">Current Project:</p>
+            {displayProject ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: displayProject.color }}
+                ></div>
+                <span className="text-sm font-medium">{displayProject.name}</span>
+                {displayProject.is_default && (
+                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">Default</span>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No project selected</p>
+            )}
+          </div>
         </div>
         <div>
           <select className="rounded-md border border-border bg-background px-3 py-2 text-sm">
@@ -368,72 +432,51 @@ export function OverviewContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="font-medium truncate">{i % 2 === 0 ? "Password updated" : "Secure note created"}</p>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                        {i === 1 ? "Just now" : i === 2 ? "2 hours ago" : i === 3 ? "Yesterday" : "3 days ago"}
-                      </span>
+                      <p className="text-xs text-muted-foreground flex-shrink-0">
+                        {i === 1 ? "Today" : i === 2 ? "Yesterday" : `${i} days ago`}
+                      </p>
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
-                      {i % 2 === 0
-                        ? `You updated the password for Account ${i}`
-                        : `You created a new secure note titled "Note ${i}"`}
+                      {i % 2 === 0 ? "Updated password for GitHub" : "Created note for project planning"}
                     </p>
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4 flex justify-center">
-              <button className="text-sm text-primary hover:underline">View All Activity</button>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>Quick Stats</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Lock className="h-4 w-4 text-primary" />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Workspaces</span>
                 </div>
-                <div>
-                  <p className="font-medium">Generate Password</p>
-                  <p className="text-xs text-muted-foreground">Create a strong, secure password</p>
+                <span className="text-sm font-medium">{totalWorkspaces}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Projects</span>
                 </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                  <User className="h-4 w-4 text-blue-500" />
+                <span className="text-sm font-medium">{totalProjects}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Team Members</span>
                 </div>
-                <div>
-                  <p className="font-medium">Add Account</p>
-                  <p className="text-xs text-muted-foreground">Store a new account credential</p>
-                </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="h-4 w-4 text-green-500" />
-                </div>
-                <div>
-                  <p className="font-medium">Create Note</p>
-                  <p className="text-xs text-muted-foreground">Add a new secure note</p>
-                </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-4 w-4 text-purple-500" />
-                </div>
-                <div>
-                  <p className="font-medium">Security Check</p>
-                  <p className="text-xs text-muted-foreground">Analyze your password health</p>
-                </div>
-              </button>
+                <span className="text-sm font-medium">4</span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
-
