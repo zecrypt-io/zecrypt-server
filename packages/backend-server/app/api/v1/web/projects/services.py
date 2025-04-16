@@ -127,11 +127,13 @@ def update_project(request, user, payload, background_tasks):
         )
         if existing_project:
             return response_helper(status_code=400, message="project already exists")
-    
-    # Update account
-    project_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload},
-        )
+
+    # Update project
+    project_details=project_manager.find_one_and_update(
+        db, {"doc_id": doc_id}, {"$set": payload})
+        
+    if payload.get("is_default"):
+        project_manager.update_many(db,{"workspace_id":workspace_id,"doc_id":{"$ne":doc_id}},{"$set":{"is_default":False}})
     
     # Add audit log
     background_tasks.add_task(
@@ -143,7 +145,7 @@ def update_project(request, user, payload, background_tasks):
         user_id,
         request,
     )
-    return response_helper(status_code=200, message="Project updated successfully",)
+    return response_helper(status_code=200, message="Project updated successfully",data=project_details)
 
 
 def delete_project(request, user, background_tasks):
