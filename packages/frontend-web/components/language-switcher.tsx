@@ -54,6 +54,13 @@ export default function LanguageSwitcher() {
     af: 'Afrikaans',
   };
 
+  // Sort locales by display name
+  const sortedLocales = [...locales].sort((a, b) => {
+    const nameA = languageNames[a] || a;
+    const nameB = languageNames[b] || b;
+    return nameA.localeCompare(nameB);
+  });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -63,7 +70,7 @@ export default function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {locales.map((locale) => (
+        {sortedLocales.map((locale) => (
           <DropdownMenuItem
             key={locale}
             onClick={() => router.switchLanguage(locale)}

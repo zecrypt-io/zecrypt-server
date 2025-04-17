@@ -110,6 +110,13 @@ export function UserSettingsContent() {
     af: "Afrikaans (Afrikaans)",
   };
   
+  // Sort locales by display name
+  const sortedLocales = [...locales].sort((a, b) => {
+    const nameA = languageLabels[a as keyof typeof languageLabels] || a;
+    const nameB = languageLabels[b as keyof typeof languageLabels] || b;
+    return nameA.localeCompare(nameB);
+  });
+  
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
     // Switch language by changing the URL path
@@ -193,7 +200,7 @@ export function UserSettingsContent() {
                           <SelectValue placeholder="Select language" />
                         </SelectTrigger>
                         <SelectContent>
-                          {locales.map(locale => (
+                          {sortedLocales.map(locale => (
                             <SelectItem key={locale} value={locale}>
                               {languageLabels[locale as keyof typeof languageLabels] || locale}
                             </SelectItem>
