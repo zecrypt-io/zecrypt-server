@@ -103,6 +103,7 @@ export function UserSettingsContent() {
     fi: "Finnish (Suomalainen)",
     el: "Greek (Ελληνικά)",
     da: "Danish (Dansk)",
+    cs: "Czech (Čeština)",
   };
   
   // Handle language change

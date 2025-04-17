@@ -47,6 +47,7 @@ export default function LanguageSwitcher() {
     fi: 'Suomalainen',
     el: 'Ελληνικά',
     da: 'Dansk',
+    cs: 'Čeština',
   };
 
   return (
