@@ -84,7 +84,8 @@ export function UserSettingsContent() {
     vi: "Vietnamese (Tiếng Việt)",
     uk: "Ukrainian (Українська)",
     'zh-Hant': "Traditional Chinese (繁體中文)",
-    'pt-BR': "Brazilian Portuguese (Português Brasileiro)"
+    'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
+    pt: "Portuguese (Português)"
   };
   
   // Handle language change
