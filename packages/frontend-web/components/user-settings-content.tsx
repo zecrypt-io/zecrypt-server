@@ -80,7 +80,8 @@ export function UserSettingsContent() {
     en: "English",
     fr: "French (Français)",
     es: "Spanish (Español)",
-    de: "German (Deutsch)"
+    de: "German (Deutsch)",
+    vi: "Vietnamese (Tiếng Việt)"
   };
   
   // Handle language change

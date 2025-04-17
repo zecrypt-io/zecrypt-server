@@ -25,6 +25,7 @@ export default function LanguageSwitcher() {
     fr: 'Français',
     es: 'Español',
     de: 'Deutsch',
+    vi: 'Tiếng Việt',
   };
 
   return (

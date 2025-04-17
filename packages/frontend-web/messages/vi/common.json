@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Bảo vệ dữ liệu của bạn với Zecrypt"
+  },
+  "navigation": {
+    "home": "Trang chủ",
+    "dashboard": "Bảng điều khiển",
+    "settings": "Cài đặt"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "signup": "Đăng ký",
+    "logout": "Đăng xuất",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "agreement": "Khi đăng nhập, bạn đồng ý với",
+    "terms": "Điều khoản sử dụng"
+  },
+  "features": {
+    "trial_title": "Dùng thử 3Password Gia đình miễn phí 40 ngày",
+    "unlimited_devices": "5 thành viên gia đình, thiết bị không giới hạn",
+    "shared_vaults": "Khoá chung cho phép các thành viên gia đình chọn những gì họ muốn chia sẻ (hoặc giữ riêng tư)",
+    "advanced_security": "Bảo mật nâng cao với mã hóa xác thực, PAKE và nhiều hơn nữa",
+    "security_alerts": "Cảnh báo cho các trang web bị xâm phạm và mật khẩu yếu",
+    "multi_platform": "Có sẵn trên Mac, iOS, Windows, Android, Chrome OS và Linux",
+    "looking_for_options": "Bạn đang tìm tài khoản cá nhân, nhóm hay doanh nghiệp?",
+    "see_options": "Xem tất cả các loại tài khoản"
+  },
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "submit": "Gửi",
+    "confirm": "Xác nhận"
+  },
+  "dashboard": {
+    "welcome_back": "Chào mừng bạn trở lại không gian làm việc an toàn",
+    "total_passwords": "Tổng số mật khẩu",
+    "total_accounts": "Tổng số tài khoản",
+    "total_folders": "Tổng số thư mục",
+    "from_last_month": "so với tháng trước",
+    "recent_activity": "Hoạt động gần đây"
+  },
+  "activity": {
+    "password_updated": "Mật khẩu đã được cập nhật",
+    "note_created": "Ghi chú bảo mật đã được tạo"
+  },
+  "time": {
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "last_7_days": "7 ngày qua",
+    "last_30_days": "30 ngày qua",
+    "all_time": "Tất cả thời gian",
+    "just_now": "Vừa xong",
+    "hours_ago": "{hours} giờ trước",
+    "days_ago": "{days} ngày trước"
+  }
+} 
