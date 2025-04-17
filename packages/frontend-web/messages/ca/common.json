@@ -1,1 +1,58 @@
- 
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Protegeix les teves dades amb Zecrypt"
+  },
+  "navigation": {
+    "home": "Inici",
+    "dashboard": "Tauler de control",
+    "settings": "Configuració"
+  },
+  "auth": {
+    "login": "Inicia sessió",
+    "signup": "Registra't",
+    "logout": "Tanca sessió",
+    "email": "Correu electrònic",
+    "password": "Contrasenya",
+    "agreement": "En iniciar sessió, acceptes els nostres",
+    "terms": "Termes"
+  },
+  "features": {
+    "trial_title": "Prova fins a 3Password Famílies gratis durant 40 dies",
+    "unlimited_devices": "5 membres de la família, dispositius il·limitats",
+    "shared_vaults": "Les caixes fortes compartides permeten als membres de la família triar què volen compartir (o mantenir privat)",
+    "advanced_security": "Seguretat avançada amb xifratge autenticat, PAKE i més",
+    "security_alerts": "Alertes per a llocs web compromesos i contrasenyes vulnerables",
+    "multi_platform": "Disponible per a Mac, iOS, Windows, Android, Chrome OS i Linux",
+    "looking_for_options": "Busques un compte individual, d'equip o d'empresa?",
+    "see_options": "Veure totes les opcions de compte"
+  },
+  "actions": {
+    "save": "Desa",
+    "cancel": "Cancel·la",
+    "submit": "Envia",
+    "confirm": "Confirma"
+  },
+  "dashboard": {
+    "welcome_back": "Benvingut de nou al teu espai de treball segur",
+    "total_passwords": "Contrasenyes totals",
+    "total_accounts": "Comptes totals",
+    "total_folders": "Carpetes totals",
+    "from_last_month": "des del mes passat",
+    "recent_activity": "Activitat recent"
+  },
+  "activity": {
+    "password_updated": "Contrasenya actualitzada",
+    "note_created": "Nota segura creada"
+  },
+  "time": {
+    "today": "Avui",
+    "yesterday": "Ahir",
+    "last_7_days": "Últims 7 dies",
+    "last_30_days": "Últims 30 dies",
+    "all_time": "Tot el temps",
+    "just_now": "Ara mateix",
+    "hours_ago": "fa {hours} hores",
+    "days_ago": "fa {days} dies"
+  }
+} 
