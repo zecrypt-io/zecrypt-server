@@ -1,7 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 
 // Available locales
-export const locales = ['en', 'fr', 'es', 'de', 'vi'];
+export const locales = ['en', 'fr', 'es', 'de', 'vi', 'uk'];
 export const defaultLocale = 'en';
 
 // Get pathname for a given locale
