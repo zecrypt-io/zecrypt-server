@@ -43,6 +43,7 @@ export default function LanguageSwitcher() {
     it: 'Italiano',
     id: 'Indonesian',
     hu: 'Magyar',
+    he: 'עִברִית',
   };
 
   return (

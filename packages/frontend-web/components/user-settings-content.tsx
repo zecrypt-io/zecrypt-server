@@ -98,7 +98,8 @@ export function UserSettingsContent() {
     ja: "Japanese (日本語)",
     it: "Italian (Italiano)",
     id: "Indonesian (Bahasa Indonesia)",
-    hu: "Hungarian (Magyar)"
+    hu: "Hungarian (Magyar)",
+    he: "Hebrew (עִברִית)"
   };
   
   // Handle language change

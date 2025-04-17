@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "הגן על הנתונים שלך עם Zecrypt"
+  },
+  "navigation": {
+    "home": "דף הבית",
+    "dashboard": "לוח בקרה",
+    "settings": "הגדרות"
+  },
+  "auth": {
+    "login": "התחבר",
+    "signup": "הרשמה",
+    "logout": "התנתק",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "agreement": "בעת התחברות, אתה מסכים ל-",
+    "terms": "תנאי שימוש"
+  },
+  "features": {
+    "trial_title": "נסה את 3Password למשפחות בחינם ל-40 יום",
+    "unlimited_devices": "5 בני משפחה, מספר מכשירים בלתי מוגבל",
+    "shared_vaults": "כספות משותפות מאפשרות לבני המשפחה לבחור מה לשתף (או לשמור בפרטי)",
+    "advanced_security": "אבטחה מתקדמת עם הצפנה מאומתת, PAKE ועוד",
+    "security_alerts": "התראות על אתרים שנפרצו וסיסמאות פגיעות",
+    "multi_platform": "זמין ב-Mac, iOS, Windows, Android, Chrome OS ו-Linux",
+    "looking_for_options": "מחפש חשבון אישי, צוות או עסקי?",
+    "see_options": "ראה את כל אפשרויות החשבון"
+  },
+  "actions": {
+    "save": "שמור",
+    "cancel": "בטל",
+    "submit": "שלח",
+    "confirm": "אשר"
+  },
+  "dashboard": {
+    "welcome_back": "ברוך שובך לאזור העבודה המאובטח שלך",
+    "total_passwords": "סך כל הסיסמאות",
+    "total_accounts": "סך כל החשבונות",
+    "total_folders": "סך כל התיקיות",
+    "from_last_month": "לעומת החודש שעבר",
+    "recent_activity": "פעילות אחרונה"
+  },
+  "activity": {
+    "password_updated": "הסיסמה עודכנה",
+    "note_created": "נוצרה הערה מאובטחת"
+  },
+  "time": {
+    "today": "היום",
+    "yesterday": "אתמול",
+    "last_7_days": "7 הימים האחרונים",
+    "last_30_days": "30 הימים האחרונים",
+    "all_time": "כל הזמן",
+    "just_now": "הרגע",
+    "hours_ago": "לפני {hours} שעות",
+    "days_ago": "לפני {days} ימים"
+  }
+} 
