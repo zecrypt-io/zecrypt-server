@@ -45,6 +45,7 @@ export default function LanguageSwitcher() {
     hu: 'Magyar',
     he: 'עִברִית',
     fi: 'Suomalainen',
+    el: 'Ελληνικά',
   };
 
   return (
