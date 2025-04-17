@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Chroń swoje dane z Zecrypt"
+  },
+  "navigation": {
+    "home": "Strona główna",
+    "dashboard": "Panel sterowania",
+    "settings": "Ustawienia"
+  },
+  "auth": {
+    "login": "Zaloguj się",
+    "signup": "Zarejestruj się",
+    "logout": "Wyloguj się",
+    "email": "E-mail",
+    "password": "Hasło",
+    "agreement": "Logując się, akceptujesz nasze",
+    "terms": "Warunki korzystania"
+  },
+  "features": {
+    "trial_title": "Wypróbuj 3Password Rodziny za darmo przez 40 dni",
+    "unlimited_devices": "5 członków rodziny, nieograniczona liczba urządzeń",
+    "shared_vaults": "Wspólne sejfy pozwalają członkom rodziny wybrać, co chcą udostępnić (lub zachować prywatnie)",
+    "advanced_security": "Zaawansowane bezpieczeństwo z uwierzytelnionym szyfrowaniem, PAKE i więcej",
+    "security_alerts": "Alerty dla zagrożonych stron i słabych haseł",
+    "multi_platform": "Dostępne na Mac, iOS, Windows, Android, Chrome OS i Linux",
+    "looking_for_options": "Szukasz konta indywidualnego, zespołowego lub firmowego?",
+    "see_options": "Zobacz wszystkie opcje konta"
+  },
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "submit": "Wyślij",
+    "confirm": "Potwierdź"
+  },
+  "dashboard": {
+    "welcome_back": "Witamy ponownie w Twoim bezpiecznym miejscu pracy",
+    "total_passwords": "Łączna liczba haseł",
+    "total_accounts": "Łączna liczba kont",
+    "total_folders": "Łączna liczba folderów",
+    "from_last_month": "w porównaniu z zeszłym miesiącem",
+    "recent_activity": "Ostatnia aktywność"
+  },
+  "activity": {
+    "password_updated": "Hasło zaktualizowane",
+    "note_created": "Utworzono bezpieczną notatkę"
+  },
+  "time": {
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "last_7_days": "Ostatnie 7 dni",
+    "last_30_days": "Ostatnie 30 dni",
+    "all_time": "Cały czas",
+    "just_now": "Przed chwilą",
+    "hours_ago": "{hours} godzin temu",
+    "days_ago": "{days} dni temu"
+  }
+} 
