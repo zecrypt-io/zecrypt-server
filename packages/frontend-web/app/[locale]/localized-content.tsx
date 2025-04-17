@@ -124,6 +124,12 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           日本語
         </button>
+        <button 
+          onClick={() => router.switchLanguage('it')} 
+          className={`px-3 py-1 ${locale === 'it' ? 'font-bold underline' : ''}`}
+        >
+          Italiano
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

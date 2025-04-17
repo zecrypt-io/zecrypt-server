@@ -40,6 +40,7 @@ export default function LanguageSwitcher() {
     nl: 'Nederlands',
     ko: '한국어',
     ja: '日本語',
+    it: 'Italiano',
   };
 
   return (

@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Proteggi i tuoi dati con Zecrypt"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Impostazioni"
+  },
+  "auth": {
+    "login": "Accedi",
+    "signup": "Registrati",
+    "logout": "Disconnetti",
+    "email": "E-mail",
+    "password": "Password",
+    "agreement": "Accedendo, accetti i nostri",
+    "terms": "Termini di utilizzo"
+  },
+  "features": {
+    "trial_title": "Prova 3Password Famiglie gratis per 40 giorni",
+    "unlimited_devices": "5 membri della famiglia, dispositivi illimitati",
+    "shared_vaults": "Le casseforti condivise permettono ai membri della famiglia di scegliere cosa condividere (o mantenere privato)",
+    "advanced_security": "Sicurezza avanzata con crittografia autenticata, PAKE e altro",
+    "security_alerts": "Avvisi per siti compromessi e password vulnerabili",
+    "multi_platform": "Disponibile su Mac, iOS, Windows, Android, Chrome OS e Linux",
+    "looking_for_options": "Cerchi un account individuale, di team o aziendale?",
+    "see_options": "Vedi tutte le opzioni di account"
+  },
+  "actions": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "submit": "Invia",
+    "confirm": "Conferma"
+  },
+  "dashboard": {
+    "welcome_back": "Bentornato nel tuo spazio di lavoro sicuro",
+    "total_passwords": "Totale password",
+    "total_accounts": "Totale account",
+    "total_folders": "Totale cartelle",
+    "from_last_month": "rispetto al mese scorso",
+    "recent_activity": "Attività recente"
+  },
+  "activity": {
+    "password_updated": "Password aggiornata",
+    "note_created": "Nota sicura creata"
+  },
+  "time": {
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "last_7_days": "Ultimi 7 giorni",
+    "last_30_days": "Ultimi 30 giorni",
+    "all_time": "Tutto il tempo",
+    "just_now": "Proprio ora",
+    "hours_ago": "{hours} ore fa",
+    "days_ago": "{days} giorni fa"
+  }
+} 
