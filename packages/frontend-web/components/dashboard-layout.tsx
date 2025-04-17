@@ -113,8 +113,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     tr: "Turkish (Türkçe)",
     uk: "Ukrainian (Українська)",
     vi: "Vietnamese (Tiếng Việt)",
-    'zh-CN': "Chinese (Simplified) (简体中文)",
-    'zh-Hant': "Chinese (Traditional) (繁體中文)",
+    'zh-CN': "Chinese Simplified (简体中文)",
+    'zh-Hant': "Chinese Traditional (繁體中文)",
   };
 
   const removeTag = (tagToRemove: string) => {
