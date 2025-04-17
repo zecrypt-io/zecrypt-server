@@ -28,6 +28,7 @@ export default function LanguageSwitcher() {
     vi: 'Tiếng Việt',
     uk: 'Українська',
     'zh-Hant': '繁體中文',
+    'pt-BR': 'Português Brasileiro',
   };
 
   return (
