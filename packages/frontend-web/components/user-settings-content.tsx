@@ -82,7 +82,8 @@ export function UserSettingsContent() {
     es: "Spanish (Español)",
     de: "German (Deutsch)",
     vi: "Vietnamese (Tiếng Việt)",
-    uk: "Ukrainian (Українська)"
+    uk: "Ukrainian (Українська)",
+    'zh-Hant': "Traditional Chinese (繁體中文)"
   };
   
   // Handle language change

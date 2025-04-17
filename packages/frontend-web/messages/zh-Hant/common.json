@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "使用 Zecrypt 保護您的資料"
+  },
+  "navigation": {
+    "home": "首頁",
+    "dashboard": "儀表板",
+    "settings": "設定"
+  },
+  "auth": {
+    "login": "登入",
+    "signup": "註冊",
+    "logout": "登出",
+    "email": "電子郵件",
+    "password": "密碼",
+    "agreement": "登入即表示您同意我們的",
+    "terms": "使用條款"
+  },
+  "features": {
+    "trial_title": "免費試用 3Password 家庭版 40 天",
+    "unlimited_devices": "5 位家庭成員，不限裝置數量",
+    "shared_vaults": "共享保險箱讓家庭成員選擇要分享或保留私密的內容",
+    "advanced_security": "進階安全性，包含認證加密、PAKE 等",
+    "security_alerts": "針對被入侵網站與弱密碼的警示",
+    "multi_platform": "支援 Mac、iOS、Windows、Android、Chrome OS 及 Linux",
+    "looking_for_options": "需要個人、團隊或企業帳號？",
+    "see_options": "查看所有帳號選項"
+  },
+  "actions": {
+    "save": "儲存",
+    "cancel": "取消",
+    "submit": "送出",
+    "confirm": "確認"
+  },
+  "dashboard": {
+    "welcome_back": "歡迎回到您的安全工作區",
+    "total_passwords": "密碼總數",
+    "total_accounts": "帳號總數",
+    "total_folders": "資料夾總數",
+    "from_last_month": "與上個月相比",
+    "recent_activity": "最近活動"
+  },
+  "activity": {
+    "password_updated": "密碼已更新",
+    "note_created": "已建立安全筆記"
+  },
+  "time": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "last_7_days": "過去 7 天",
+    "last_30_days": "過去 30 天",
+    "all_time": "所有時間",
+    "just_now": "剛剛",
+    "hours_ago": "{hours} 小時前",
+    "days_ago": "{days} 天前"
+  }
+} 

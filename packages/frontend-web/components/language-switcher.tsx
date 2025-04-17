@@ -27,6 +27,7 @@ export default function LanguageSwitcher() {
     de: 'Deutsch',
     vi: 'Tiếng Việt',
     uk: 'Українська',
+    'zh-Hant': '繁體中文',
   };
 
   return (
