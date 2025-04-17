@@ -97,6 +97,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     ru: "Pусский",
     sr: "Српски",
     sv: "Svenska",
+    tr: "Türkçe",
   };
 
   const removeTag = (tagToRemove: string) => {

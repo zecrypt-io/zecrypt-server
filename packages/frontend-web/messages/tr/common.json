@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Verilerinizi Zecrypt ile koruyun"
+  },
+  "navigation": {
+    "home": "Ana Sayfa",
+    "dashboard": "Kontrol Paneli",
+    "settings": "Ayarlar"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "signup": "Kayıt Ol",
+    "logout": "Çıkış Yap",
+    "email": "E-posta",
+    "password": "Şifre",
+    "agreement": "Giriş yaparak şunları kabul etmiş olursunuz:",
+    "terms": "Kullanım Şartları"
+  },
+  "features": {
+    "trial_title": "3Password Aileleri'ni 40 gün ücretsiz deneyin",
+    "unlimited_devices": "5 aile üyesi, sınırsız cihaz",
+    "shared_vaults": "Paylaşılan kasalar, aile üyelerinin neyi paylaşmak istediklerini (veya gizli tutmak istediklerini) seçmelerine olanak tanır",
+    "advanced_security": "Kimlik doğrulamalı şifreleme, PAKE ve daha fazlasıyla gelişmiş güvenlik",
+    "security_alerts": "Tehlikeye atılmış siteler ve zayıf şifreler için uyarılar",
+    "multi_platform": "Mac, iOS, Windows, Android, Chrome OS ve Linux'ta mevcut",
+    "looking_for_options": "Bireysel, ekip veya işletme hesabı mı arıyorsunuz?",
+    "see_options": "Tüm hesap seçeneklerini gör"
+  },
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "submit": "Gönder",
+    "confirm": "Onayla"
+  },
+  "dashboard": {
+    "welcome_back": "Güvenli çalışma alanınıza tekrar hoş geldiniz",
+    "total_passwords": "Toplam Şifre",
+    "total_accounts": "Toplam Hesap",
+    "total_folders": "Toplam Klasör",
+    "from_last_month": "geçen aya göre",
+    "recent_activity": "Son Etkinlik"
+  },
+  "activity": {
+    "password_updated": "Şifre güncellendi",
+    "note_created": "Güvenli not oluşturuldu"
+  },
+  "time": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "last_7_days": "Son 7 gün",
+    "last_30_days": "Son 30 gün",
+    "all_time": "Tüm zamanlar",
+    "just_now": "Şimdi",
+    "hours_ago": "{hours} saat önce",
+    "days_ago": "{days} gün önce"
+  }
+} 

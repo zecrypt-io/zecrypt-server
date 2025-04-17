@@ -34,6 +34,7 @@ export default function LanguageSwitcher() {
     ru: 'Pусский',
     sr: 'Српски',
     sv: 'Svenska',
+    tr: 'Türkçe',
   };
 
   return (
