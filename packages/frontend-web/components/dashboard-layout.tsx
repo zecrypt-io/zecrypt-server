@@ -86,7 +86,12 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   const languageLabels: Record<string, string> = {
     en: "English",
     fr: "Français",
-    es: "Español"
+    es: "Español",
+    de: "Deutsch",
+    vi: "Tiếng Việt",
+    uk: "Українська",
+    'zh-Hant': "繁體中文",
+    'pt-BR': "Português Brasileiro"
   };
 
   const removeTag = (tagToRemove: string) => {
