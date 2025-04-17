@@ -38,6 +38,7 @@ export default function LanguageSwitcher() {
     pl: 'Polskie',
     no: 'Norsk',
     nl: 'Nederlands',
+    ko: '한국어',
   };
 
   return (

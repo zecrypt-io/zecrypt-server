@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Zecrypt로 데이터를 안전하게 보호하세요"
+  },
+  "navigation": {
+    "home": "홈",
+    "dashboard": "대시보드",
+    "settings": "설정"
+  },
+  "auth": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "email": "이메일",
+    "password": "비밀번호",
+    "agreement": "로그인 시 다음에 동의합니다:",
+    "terms": "이용약관"
+  },
+  "features": {
+    "trial_title": "3Password 패밀리를 40일간 무료로 체험하세요",
+    "unlimited_devices": "5명의 가족, 무제한 기기",
+    "shared_vaults": "공유 금고로 가족 구성원이 공유할 항목(또는 비공개로 유지할 항목)을 선택할 수 있습니다",
+    "advanced_security": "인증된 암호화, PAKE 등 고급 보안",
+    "security_alerts": "침해된 사이트 및 취약한 비밀번호에 대한 알림",
+    "multi_platform": "Mac, iOS, Windows, Android, Chrome OS, Linux에서 사용 가능",
+    "looking_for_options": "개인, 팀 또는 비즈니스 계정을 찾고 계신가요?",
+    "see_options": "모든 계정 옵션 보기"
+  },
+  "actions": {
+    "save": "저장",
+    "cancel": "취소",
+    "submit": "제출",
+    "confirm": "확인"
+  },
+  "dashboard": {
+    "welcome_back": "안전한 작업 공간에 다시 오신 것을 환영합니다",
+    "total_passwords": "총 비밀번호",
+    "total_accounts": "총 계정",
+    "total_folders": "총 폴더",
+    "from_last_month": "지난달 대비",
+    "recent_activity": "최근 활동"
+  },
+  "activity": {
+    "password_updated": "비밀번호가 업데이트됨",
+    "note_created": "보안 노트가 생성됨"
+  },
+  "time": {
+    "today": "오늘",
+    "yesterday": "어제",
+    "last_7_days": "지난 7일",
+    "last_30_days": "지난 30일",
+    "all_time": "전체 기간",
+    "just_now": "방금 전",
+    "hours_ago": "{hours}시간 전",
+    "days_ago": "{days}일 전"
+  }
+} 
