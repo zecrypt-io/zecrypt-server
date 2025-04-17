@@ -136,6 +136,12 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           Indonesian
         </button>
+        <button 
+          onClick={() => router.switchLanguage('hu')} 
+          className={`px-3 py-1 ${locale === 'hu' ? 'font-bold underline' : ''}`}
+        >
+          Magyar
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

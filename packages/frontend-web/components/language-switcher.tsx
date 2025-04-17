@@ -42,6 +42,7 @@ export default function LanguageSwitcher() {
     ja: '日本語',
     it: 'Italiano',
     id: 'Indonesian',
+    hu: 'Magyar',
   };
 
   return (

@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Védd meg adataidat a Zecrypttel"
+  },
+  "navigation": {
+    "home": "Kezdőlap",
+    "dashboard": "Irányítópult",
+    "settings": "Beállítások"
+  },
+  "auth": {
+    "login": "Bejelentkezés",
+    "signup": "Regisztráció",
+    "logout": "Kijelentkezés",
+    "email": "E-mail",
+    "password": "Jelszó",
+    "agreement": "Bejelentkezéssel elfogadod a",
+    "terms": "Felhasználási feltételeket"
+  },
+  "features": {
+    "trial_title": "Próbáld ki a 3Password Családokat 40 napig ingyen",
+    "unlimited_devices": "5 családtag, korlátlan eszköz",
+    "shared_vaults": "A megosztott tárolók lehetővé teszik a családtagoknak, hogy eldöntsék, mit osztanak meg (vagy tartanak privátban)",
+    "advanced_security": "Fejlett biztonság hitelesített titkosítással, PAKE-kal és egyebekkel",
+    "security_alerts": "Figyelmeztetések feltört weboldalakra és sebezhető jelszavakra",
+    "multi_platform": "Elérhető Mac, iOS, Windows, Android, Chrome OS és Linux rendszeren",
+    "looking_for_options": "Egyéni, csapat vagy üzleti fiókot keresel?",
+    "see_options": "Nézd meg az összes fiók opciót"
+  },
+  "actions": {
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "submit": "Küldés",
+    "confirm": "Megerősítés"
+  },
+  "dashboard": {
+    "welcome_back": "Üdvözlünk újra a biztonságos munkateredben",
+    "total_passwords": "Összes jelszó",
+    "total_accounts": "Összes fiók",
+    "total_folders": "Összes mappa",
+    "from_last_month": "az előző hónaphoz képest",
+    "recent_activity": "Legutóbbi aktivitás"
+  },
+  "activity": {
+    "password_updated": "Jelszó frissítve",
+    "note_created": "Biztonságos jegyzet létrehozva"
+  },
+  "time": {
+    "today": "Ma",
+    "yesterday": "Tegnap",
+    "last_7_days": "Elmúlt 7 nap",
+    "last_30_days": "Elmúlt 30 nap",
+    "all_time": "Minden idő",
+    "just_now": "Épp most",
+    "hours_ago": "{hours} órája",
+    "days_ago": "{days} napja"
+  }
+} 
