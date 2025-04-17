@@ -87,7 +87,8 @@ export function UserSettingsContent() {
     'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
     pt: "Portuguese (Português)",
     ro: "Romanian (Română)",
-    ru: "Russian (Pусский)"
+    ru: "Russian (Pусский)",
+    sr: "Serbian (Српски)"
   };
   
   // Handle language change

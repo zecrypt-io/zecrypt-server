@@ -32,6 +32,7 @@ export default function LanguageSwitcher() {
     pt: 'Português',
     ro: 'Română',
     ru: 'Pусский',
+    sr: 'Српски',
   };
 
   return (
