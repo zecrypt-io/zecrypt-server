@@ -110,7 +110,10 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     fi: "Suomalainen",
     el: "Ελληνικά",
     da: "Dansk",
+    cs: "Čeština",
     'zh-CN': "简体中文",
+    ca: "Català",
+    ar: "عربى",
   };
 
   const removeTag = (tagToRemove: string) => {

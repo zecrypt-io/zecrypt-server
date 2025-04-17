@@ -178,6 +178,18 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           简体中文
         </button>
+        <button 
+          onClick={() => router.switchLanguage('ca')} 
+          className={`px-3 py-1 ${locale === 'ca' ? 'font-bold underline' : ''}`}
+        >
+          Català
+        </button>
+        <button 
+          onClick={() => router.switchLanguage('ar')} 
+          className={`px-3 py-1 ${locale === 'ar' ? 'font-bold underline' : ''}`}
+        >
+          عربى
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

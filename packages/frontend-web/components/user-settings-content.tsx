@@ -105,6 +105,8 @@ export function UserSettingsContent() {
     da: "Danish (Dansk)",
     cs: "Czech (Čeština)",
     'zh-CN': "Simplified Chinese (简体中文)",
+    ca: "Catalan (Català)",
+    ar: "Arabic (عربى)",
   };
   
   // Handle language change

@@ -49,6 +49,8 @@ export default function LanguageSwitcher() {
     da: 'Dansk',
     cs: 'Čeština',
     'zh-CN': '简体中文',
+    ca: 'Català',
+    ar: 'عربى',
   };
 
   return (

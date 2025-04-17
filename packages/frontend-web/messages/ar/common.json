@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "احمِ بياناتك مع Zecrypt"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "agreement": "عند تسجيل الدخول، أنت توافق على",
+    "terms": "الشروط"
+  },
+  "features": {
+    "trial_title": "جرّب حتى 3Password للعائلات مجانًا لمدة 40 يومًا",
+    "unlimited_devices": "5 أفراد من العائلة، أجهزة غير محدودة",
+    "shared_vaults": "تتيح الخزائن المشتركة لأفراد العائلة اختيار ما يريدون مشاركته (أو إبقاءه خاصًا)",
+    "advanced_security": "أمان متقدم مع تشفير موثوق، PAKE والمزيد",
+    "security_alerts": "تنبيهات للمواقع المخترقة وكلمات المرور الضعيفة",
+    "multi_platform": "متوفر على Mac وiOS وWindows وAndroid وChrome OS وLinux",
+    "looking_for_options": "تبحث عن حساب فردي أو فريق أو شركة؟",
+    "see_options": "عرض جميع خيارات الحساب"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "submit": "إرسال",
+    "confirm": "تأكيد"
+  },
+  "dashboard": {
+    "welcome_back": "مرحبًا بعودتك إلى مساحة عملك الآمنة",
+    "total_passwords": "إجمالي كلمات المرور",
+    "total_accounts": "إجمالي الحسابات",
+    "total_folders": "إجمالي المجلدات",
+    "from_last_month": "منذ الشهر الماضي",
+    "recent_activity": "النشاط الأخير"
+  },
+  "activity": {
+    "password_updated": "تم تحديث كلمة المرور",
+    "note_created": "تم إنشاء ملاحظة آمنة"
+  },
+  "time": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "last_7_days": "آخر 7 أيام",
+    "last_30_days": "آخر 30 يومًا",
+    "all_time": "كل الوقت",
+    "just_now": "الآن",
+    "hours_ago": "منذ {hours} ساعة",
+    "days_ago": "منذ {days} يومًا"
+  }
+} 
