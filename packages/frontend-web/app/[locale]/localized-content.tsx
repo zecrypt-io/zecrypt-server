@@ -148,6 +148,24 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           עִברִית
         </button>
+        <button 
+          onClick={() => router.switchLanguage('fi')} 
+          className={`px-3 py-1 ${locale === 'fi' ? 'font-bold underline' : ''}`}
+        >
+          Suomalainen
+        </button>
+        <button 
+          onClick={() => router.switchLanguage('el')} 
+          className={`px-3 py-1 ${locale === 'el' ? 'font-bold underline' : ''}`}
+        >
+          Ελληνικά
+        </button>
+        <button 
+          onClick={() => router.switchLanguage('da')} 
+          className={`px-3 py-1 ${locale === 'da' ? 'font-bold underline' : ''}`}
+        >
+          Dansk
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

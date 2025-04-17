@@ -102,6 +102,7 @@ export function UserSettingsContent() {
     he: "Hebrew (עִברִית)",
     fi: "Finnish (Suomalainen)",
     el: "Greek (Ελληνικά)",
+    da: "Danish (Dansk)",
   };
   
   // Handle language change

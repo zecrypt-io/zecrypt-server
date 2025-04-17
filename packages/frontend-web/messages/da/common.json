@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beskyt dine data med Zecrypt"
+  },
+  "navigation": {
+    "home": "Hjem",
+    "dashboard": "Kontrolpanel",
+    "settings": "Indstillinger"
+  },
+  "auth": {
+    "login": "Log ind",
+    "signup": "Tilmeld dig",
+    "logout": "Log ud",
+    "email": "E-mail",
+    "password": "Adgangskode",
+    "agreement": "Ved at logge ind accepterer du vores",
+    "terms": "Vilkår"
+  },
+  "features": {
+    "trial_title": "Prøv op til 3Password-familier gratis i 40 dage",
+    "unlimited_devices": "5 familiemedlemmer, ubegrænsede enheder",
+    "shared_vaults": "Delte hvælvinger lader familiemedlemmer vælge, hvad de vil dele (eller holde privat)",
+    "advanced_security": "Avanceret sikkerhed med autentificeret kryptering, PAKE og mere",
+    "security_alerts": "Advarsler om kompromitterede websteder og svage adgangskoder",
+    "multi_platform": "Tilgængelig på Mac, iOS, Windows, Android, Chrome OS og Linux",
+    "looking_for_options": "Leder du efter en individuel, team- eller virksomheds-konto?",
+    "see_options": "Se alle konto-muligheder"
+  },
+  "actions": {
+    "save": "Gem",
+    "cancel": "Annuller",
+    "submit": "Indsend",
+    "confirm": "Bekræft"
+  },
+  "dashboard": {
+    "welcome_back": "Velkommen tilbage til dit sikre arbejdsområde",
+    "total_passwords": "Samlede adgangskoder",
+    "total_accounts": "Samlede konti",
+    "total_folders": "Samlede mapper",
+    "from_last_month": "fra sidste måned",
+    "recent_activity": "Seneste aktivitet"
+  },
+  "activity": {
+    "password_updated": "Adgangskode opdateret",
+    "note_created": "Sikker note oprettet"
+  },
+  "time": {
+    "today": "I dag",
+    "yesterday": "I går",
+    "last_7_days": "Sidste 7 dage",
+    "last_30_days": "Sidste 30 dage",
+    "all_time": "Al tid",
+    "just_now": "Lige nu",
+    "hours_ago": "{hours} timer siden",
+    "days_ago": "{days} dage siden"
+  }
+} 
