@@ -91,7 +91,8 @@ export function UserSettingsContent() {
     sr: "Serbian (Српски)",
     sv: "Swedish (Svenska)",
     tr: "Turkish (Türkçe)",
-    pl: "Polish (Polskie)"
+    pl: "Polish (Polskie)",
+    no: "Norwegian (Norsk)"
   };
   
   // Handle language change

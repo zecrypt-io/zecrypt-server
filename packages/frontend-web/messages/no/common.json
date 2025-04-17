@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beskytt dataene dine med Zecrypt"
+  },
+  "navigation": {
+    "home": "Hjem",
+    "dashboard": "Dashbord",
+    "settings": "Innstillinger"
+  },
+  "auth": {
+    "login": "Logg inn",
+    "signup": "Registrer deg",
+    "logout": "Logg ut",
+    "email": "E-post",
+    "password": "Passord",
+    "agreement": "Ved å logge inn godtar du våre",
+    "terms": "Vilkår for bruk"
+  },
+  "features": {
+    "trial_title": "Prøv 3Password Familier gratis i 40 dager",
+    "unlimited_devices": "5 familiemedlemmer, ubegrensede enheter",
+    "shared_vaults": "Delte hvelv lar familiemedlemmer velge hva de vil dele (eller holde privat)",
+    "advanced_security": "Avansert sikkerhet med autentisert kryptering, PAKE og mer",
+    "security_alerts": "Varsler for kompromitterte nettsteder og sårbare passord",
+    "multi_platform": "Tilgjengelig på Mac, iOS, Windows, Android, Chrome OS og Linux",
+    "looking_for_options": "Leter du etter en individuell, team- eller bedriftskonto?",
+    "see_options": "Se alle kontotyper"
+  },
+  "actions": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "submit": "Send inn",
+    "confirm": "Bekreft"
+  },
+  "dashboard": {
+    "welcome_back": "Velkommen tilbake til ditt sikre arbeidsområde",
+    "total_passwords": "Totalt antall passord",
+    "total_accounts": "Totalt antall kontoer",
+    "total_folders": "Totalt antall mapper",
+    "from_last_month": "sammenlignet med forrige måned",
+    "recent_activity": "Siste aktivitet"
+  },
+  "activity": {
+    "password_updated": "Passord oppdatert",
+    "note_created": "Sikker notat opprettet"
+  },
+  "time": {
+    "today": "I dag",
+    "yesterday": "I går",
+    "last_7_days": "Siste 7 dager",
+    "last_30_days": "Siste 30 dager",
+    "all_time": "All tid",
+    "just_now": "Akkurat nå",
+    "hours_ago": "{hours} timer siden",
+    "days_ago": "{days} dager siden"
+  }
+} 

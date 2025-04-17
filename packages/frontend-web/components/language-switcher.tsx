@@ -36,6 +36,7 @@ export default function LanguageSwitcher() {
     sv: 'Svenska',
     tr: 'Türkçe',
     pl: 'Polskie',
+    no: 'Norsk',
   };
 
   return (
