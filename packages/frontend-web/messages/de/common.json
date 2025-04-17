@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Sichern Sie Ihre Daten mit Zecrypt"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "agreement": "Mit Ihrer Anmeldung akzeptieren Sie unsere",
+    "terms": "Nutzungsbedingungen"
+  },
+  "features": {
+    "trial_title": "Testen Sie 3Password Familien 40 Tage kostenlos",
+    "unlimited_devices": "5 Familienmitglieder, unbegrenzt viele Geräte",
+    "shared_vaults": "Geteilte Tresore ermöglichen es Familienmitgliedern, auszuwählen, was sie teilen möchten (oder privat halten)",
+    "advanced_security": "Erweiterte Sicherheit mit authentifizierter Verschlüsselung, PAKE und mehr",
+    "security_alerts": "Warnungen für kompromittierte Websites und gefährdete Passwörter",
+    "multi_platform": "Verfügbar auf Mac, iOS, Windows, Android, Chrome OS und Linux",
+    "looking_for_options": "Suchen Sie ein Einzel-, Team- oder Unternehmenskonto?",
+    "see_options": "Alle Kontotypen anzeigen"
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "submit": "Absenden",
+    "confirm": "Bestätigen"
+  },
+  "dashboard": {
+    "welcome_back": "Willkommen in Ihrem sicheren Arbeitsbereich",
+    "total_passwords": "Gesamtanzahl Passwörter",
+    "total_accounts": "Gesamtanzahl Konten",
+    "total_folders": "Gesamtanzahl Ordner",
+    "from_last_month": "im Vergleich zum Vormonat",
+    "recent_activity": "Letzte Aktivität"
+  },
+  "activity": {
+    "password_updated": "Passwort aktualisiert",
+    "note_created": "Sichere Notiz erstellt"
+  },
+  "time": {
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "last_7_days": "Letzte 7 Tage",
+    "last_30_days": "Letzte 30 Tage",
+    "all_time": "Gesamte Zeit",
+    "just_now": "Gerade eben",
+    "hours_ago": "Vor {hours} Stunden",
+    "days_ago": "Vor {days} Tagen"
+  }
+} 

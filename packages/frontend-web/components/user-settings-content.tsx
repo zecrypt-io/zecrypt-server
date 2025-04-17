@@ -79,7 +79,8 @@ export function UserSettingsContent() {
   const languageLabels = {
     en: "English",
     fr: "French (Français)",
-    es: "Spanish (Español)"
+    es: "Spanish (Español)",
+    de: "German (Deutsch)"
   };
   
   // Handle language change
