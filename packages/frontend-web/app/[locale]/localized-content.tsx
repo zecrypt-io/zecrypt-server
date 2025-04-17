@@ -10,192 +10,47 @@ export default function LocalizedContent({ locale }: { locale: string }) {
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="flex space-x-4">
-        <button 
-          onClick={() => router.switchLanguage('en')} 
-          className={`px-3 py-1 ${locale === 'en' ? 'font-bold underline' : ''}`}
-        >
-          English
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('fr')} 
-          className={`px-3 py-1 ${locale === 'fr' ? 'font-bold underline' : ''}`}
-        >
-          Français
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('es')} 
-          className={`px-3 py-1 ${locale === 'es' ? 'font-bold underline' : ''}`}
-        >
-          Español
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('de')} 
-          className={`px-3 py-1 ${locale === 'de' ? 'font-bold underline' : ''}`}
-        >
-          Deutsch
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('vi')} 
-          className={`px-3 py-1 ${locale === 'vi' ? 'font-bold underline' : ''}`}
-        >
-          Tiếng Việt
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('uk')} 
-          className={`px-3 py-1 ${locale === 'uk' ? 'font-bold underline' : ''}`}
-        >
-          Українська
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('zh-Hant')} 
-          className={`px-3 py-1 ${locale === 'zh-Hant' ? 'font-bold underline' : ''}`}
-        >
-          繁體中文
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('pt-BR')} 
-          className={`px-3 py-1 ${locale === 'pt-BR' ? 'font-bold underline' : ''}`}
-        >
-          Português Brasileiro
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('pt')} 
-          className={`px-3 py-1 ${locale === 'pt' ? 'font-bold underline' : ''}`}
-        >
-          Português
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ro')} 
-          className={`px-3 py-1 ${locale === 'ro' ? 'font-bold underline' : ''}`}
-        >
-          Română
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ru')} 
-          className={`px-3 py-1 ${locale === 'ru' ? 'font-bold underline' : ''}`}
-        >
-          Pусский
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('sr')} 
-          className={`px-3 py-1 ${locale === 'sr' ? 'font-bold underline' : ''}`}
-        >
-          Српски
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('sv')} 
-          className={`px-3 py-1 ${locale === 'sv' ? 'font-bold underline' : ''}`}
-        >
-          Svenska
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('tr')} 
-          className={`px-3 py-1 ${locale === 'tr' ? 'font-bold underline' : ''}`}
-        >
-          Türkçe
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('pl')} 
-          className={`px-3 py-1 ${locale === 'pl' ? 'font-bold underline' : ''}`}
-        >
-          Polskie
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('no')} 
-          className={`px-3 py-1 ${locale === 'no' ? 'font-bold underline' : ''}`}
-        >
-          Norsk
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('nl')} 
-          className={`px-3 py-1 ${locale === 'nl' ? 'font-bold underline' : ''}`}
-        >
-          Nederlands
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ko')} 
-          className={`px-3 py-1 ${locale === 'ko' ? 'font-bold underline' : ''}`}
-        >
-          한국어
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ja')} 
-          className={`px-3 py-1 ${locale === 'ja' ? 'font-bold underline' : ''}`}
-        >
-          日本語
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('it')} 
-          className={`px-3 py-1 ${locale === 'it' ? 'font-bold underline' : ''}`}
-        >
-          Italiano
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('id')} 
-          className={`px-3 py-1 ${locale === 'id' ? 'font-bold underline' : ''}`}
-        >
-          Indonesian
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('hu')} 
-          className={`px-3 py-1 ${locale === 'hu' ? 'font-bold underline' : ''}`}
-        >
-          Magyar
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('he')} 
-          className={`px-3 py-1 ${locale === 'he' ? 'font-bold underline' : ''}`}
-        >
-          עִברִית
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('fi')} 
-          className={`px-3 py-1 ${locale === 'fi' ? 'font-bold underline' : ''}`}
-        >
-          Suomalainen
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('el')} 
-          className={`px-3 py-1 ${locale === 'el' ? 'font-bold underline' : ''}`}
-        >
-          Ελληνικά
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('da')} 
-          className={`px-3 py-1 ${locale === 'da' ? 'font-bold underline' : ''}`}
-        >
-          Dansk
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('cs')} 
-          className={`px-3 py-1 ${locale === 'cs' ? 'font-bold underline' : ''}`}
-        >
-          Čeština
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('zh-CN')} 
-          className={`px-3 py-1 ${locale === 'zh-CN' ? 'font-bold underline' : ''}`}
-        >
-          简体中文
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ca')} 
-          className={`px-3 py-1 ${locale === 'ca' ? 'font-bold underline' : ''}`}
-        >
-          Català
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('ar')} 
-          className={`px-3 py-1 ${locale === 'ar' ? 'font-bold underline' : ''}`}
-        >
-          عربى
-        </button>
-        <button 
-          onClick={() => router.switchLanguage('af')} 
-          className={`px-3 py-1 ${locale === 'af' ? 'font-bold underline' : ''}`}
-        >
-          Afrikaans
-        </button>
+        {[
+          { code: 'af', label: 'Afrikaans (Afrikaans)' },
+          { code: 'ar', label: 'Arabic (عربى)' },
+          { code: 'ca', label: 'Catalan (Català)' },
+          { code: 'cs', label: 'Czech (Čeština)' },
+          { code: 'da', label: 'Danish (Dansk)' },
+          { code: 'de', label: 'German (Deutsch)' },
+          { code: 'el', label: 'Greek (Ελληνικά)' },
+          { code: 'en', label: 'English (English)' },
+          { code: 'es', label: 'Español' },
+          { code: 'fi', label: 'Finnish (Suomalainen)' },
+          { code: 'fr', label: 'French (Français)' },
+          { code: 'he', label: 'Hebrew (עִברִית)' },
+          { code: 'hu', label: 'Hungarian (Magyar)' },
+          { code: 'id', label: 'Indonesian (Indonesian)' },
+          { code: 'it', label: 'Italian (Italiano)' },
+          { code: 'ja', label: 'Japanese (日本語)' },
+          { code: 'ko', label: 'Korean (한국어)' },
+          { code: 'nl', label: 'Dutch (Nederlands)' },
+          { code: 'no', label: 'Norwegian (Norsk)' },
+          { code: 'pl', label: 'Polish (Polskie)' },
+          { code: 'pt', label: 'Portuguese (Português)' },
+          { code: 'pt-BR', label: 'Portuguese Brazilian (Português Brasileiro)' },
+          { code: 'ro', label: 'Romanian (Română)' },
+          { code: 'ru', label: 'Russian (Pусский)' },
+          { code: 'sr', label: 'Serbian (Српски)' },
+          { code: 'sv', label: 'Swedish (Svenska)' },
+          { code: 'tr', label: 'Turkish (Türkçe)' },
+          { code: 'uk', label: 'Ukrainian (Українська)' },
+          { code: 'vi', label: 'Vietnamese (Tiếng Việt)' },
+          { code: 'zh-CN', label: 'Chinese Simplified (简体中文)' },
+          { code: 'zh-Hant', label: 'Chinese Traditional (繁體中文)' },
+        ].sort((a, b) => a.label.localeCompare(b.label)).map(({ code, label }) => (
+          <button
+            key={code}
+            onClick={() => router.switchLanguage(code)}
+            className={`px-3 py-1 ${locale === code ? 'font-bold underline' : ''}`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
       
       <nav className="flex space-x-4 mt-6">
