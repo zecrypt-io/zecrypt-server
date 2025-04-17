@@ -93,6 +93,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     'zh-Hant': "繁體中文",
     'pt-BR': "Português Brasileiro",
     pt: "Português",
+    ro: "Română",
+    ru: "Pусский",
   };
 
   const removeTag = (tagToRemove: string) => {

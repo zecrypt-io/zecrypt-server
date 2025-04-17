@@ -30,6 +30,8 @@ export default function LanguageSwitcher() {
     'zh-Hant': '繁體中文',
     'pt-BR': 'Português Brasileiro',
     pt: 'Português',
+    ro: 'Română',
+    ru: 'Pусский',
   };
 
   return (

@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Protejați-vă datele cu Zecrypt"
+  },
+  "navigation": {
+    "home": "Acasă",
+    "dashboard": "Tablou de bord",
+    "settings": "Setări"
+  },
+  "auth": {
+    "login": "Autentificare",
+    "signup": "Înregistrare",
+    "logout": "Deconectare",
+    "email": "E-mail",
+    "password": "Parolă",
+    "agreement": "Prin autentificare, sunteți de acord cu",
+    "terms": "Termenii de utilizare"
+  },
+  "features": {
+    "trial_title": "Încercați 3Password Familii gratuit timp de 40 de zile",
+    "unlimited_devices": "5 membri ai familiei, dispozitive nelimitate",
+    "shared_vaults": "Seifurile partajate permit membrilor familiei să aleagă ce doresc să partajeze (sau să păstreze privat)",
+    "advanced_security": "Securitate avansată cu criptare autenticată, PAKE și altele",
+    "security_alerts": "Alerte pentru site-uri compromise și parole vulnerabile",
+    "multi_platform": "Disponibil pe Mac, iOS, Windows, Android, Chrome OS și Linux",
+    "looking_for_options": "Căutați un cont individual, de echipă sau de afaceri?",
+    "see_options": "Vezi toate opțiunile de cont"
+  },
+  "actions": {
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "submit": "Trimite",
+    "confirm": "Confirmă"
+  },
+  "dashboard": {
+    "welcome_back": "Bine ați revenit în spațiul dvs. de lucru securizat",
+    "total_passwords": "Total parole",
+    "total_accounts": "Total conturi",
+    "total_folders": "Total dosare",
+    "from_last_month": "față de luna trecută",
+    "recent_activity": "Activitate recentă"
+  },
+  "activity": {
+    "password_updated": "Parolă actualizată",
+    "note_created": "Notă securizată creată"
+  },
+  "time": {
+    "today": "Astăzi",
+    "yesterday": "Ieri",
+    "last_7_days": "Ultimele 7 zile",
+    "last_30_days": "Ultimele 30 de zile",
+    "all_time": "Tot timpul",
+    "just_now": "Chiar acum",
+    "hours_ago": "Acum {hours} ore",
+    "days_ago": "Acum {days} zile"
+  }
+} 

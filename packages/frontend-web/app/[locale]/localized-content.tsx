@@ -64,6 +64,12 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           Português
         </button>
+        <button 
+          onClick={() => router.switchLanguage('ro')} 
+          className={`px-3 py-1 ${locale === 'ro' ? 'font-bold underline' : ''}`}
+        >
+          Română
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

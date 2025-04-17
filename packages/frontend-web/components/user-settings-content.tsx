@@ -85,7 +85,8 @@ export function UserSettingsContent() {
     uk: "Ukrainian (Українська)",
     'zh-Hant': "Traditional Chinese (繁體中文)",
     'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
-    pt: "Portuguese (Português)"
+    pt: "Portuguese (Português)",
+    ro: "Romanian (Română)"
   };
   
   // Handle language change
