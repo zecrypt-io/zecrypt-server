@@ -41,6 +41,7 @@ export default function LanguageSwitcher() {
     ko: '한국어',
     ja: '日本語',
     it: 'Italiano',
+    id: 'Indonesian',
   };
 
   return (

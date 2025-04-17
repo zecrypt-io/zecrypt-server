@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Lindungi data Anda dengan Zecrypt"
+  },
+  "navigation": {
+    "home": "Beranda",
+    "dashboard": "Dasbor",
+    "settings": "Pengaturan"
+  },
+  "auth": {
+    "login": "Masuk",
+    "signup": "Daftar",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "agreement": "Dengan masuk, Anda menyetujui",
+    "terms": "Syarat Penggunaan"
+  },
+  "features": {
+    "trial_title": "Coba 3Password Keluarga gratis selama 40 hari",
+    "unlimited_devices": "5 anggota keluarga, perangkat tak terbatas",
+    "shared_vaults": "Brankas bersama memungkinkan anggota keluarga memilih apa yang ingin dibagikan (atau tetap pribadi)",
+    "advanced_security": "Keamanan tingkat lanjut dengan enkripsi terautentikasi, PAKE, dan lainnya",
+    "security_alerts": "Peringatan untuk situs yang disusupi dan kata sandi yang rentan",
+    "multi_platform": "Tersedia di Mac, iOS, Windows, Android, Chrome OS, dan Linux",
+    "looking_for_options": "Mencari akun individu, tim, atau bisnis?",
+    "see_options": "Lihat semua opsi akun"
+  },
+  "actions": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "submit": "Kirim",
+    "confirm": "Konfirmasi"
+  },
+  "dashboard": {
+    "welcome_back": "Selamat datang kembali di ruang kerja aman Anda",
+    "total_passwords": "Total Kata Sandi",
+    "total_accounts": "Total Akun",
+    "total_folders": "Total Folder",
+    "from_last_month": "dibandingkan bulan lalu",
+    "recent_activity": "Aktivitas Terbaru"
+  },
+  "activity": {
+    "password_updated": "Kata sandi diperbarui",
+    "note_created": "Catatan aman dibuat"
+  },
+  "time": {
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "last_7_days": "7 hari terakhir",
+    "last_30_days": "30 hari terakhir",
+    "all_time": "Sepanjang waktu",
+    "just_now": "Baru saja",
+    "hours_ago": "{hours} jam yang lalu",
+    "days_ago": "{days} hari yang lalu"
+  }
+} 

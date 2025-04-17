@@ -96,7 +96,8 @@ export function UserSettingsContent() {
     nl: "Dutch (Nederlands)",
     ko: "Korean (한국어)",
     ja: "Japanese (日本語)",
-    it: "Italian (Italiano)"
+    it: "Italian (Italiano)",
+    id: "Indonesian (Bahasa Indonesia)"
   };
   
   // Handle language change

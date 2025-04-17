@@ -104,6 +104,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     ko: "한국어",
     ja: "日本語",
     it: "Italiano",
+    id: "Indonesian",
   };
 
   const removeTag = (tagToRemove: string) => {
