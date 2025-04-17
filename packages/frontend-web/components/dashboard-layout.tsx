@@ -114,6 +114,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     'zh-CN': "简体中文",
     ca: "Català",
     ar: "عربى",
+    af: "Afrikaans",
   };
 
   const removeTag = (tagToRemove: string) => {

@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beskerm jou data met Zecrypt"
+  },
+  "navigation": {
+    "home": "Tuis",
+    "dashboard": "Beheerpaneel",
+    "settings": "Instellings"
+  },
+  "auth": {
+    "login": "Meld aan",
+    "signup": "Registreer",
+    "logout": "Meld af",
+    "email": "E-pos",
+    "password": "Wagwoord",
+    "agreement": "Deur aan te meld, stem jy in tot ons",
+    "terms": "Voorwaardes"
+  },
+  "features": {
+    "trial_title": "Probeer tot 3Password Families gratis vir 40 dae",
+    "unlimited_devices": "5 gesinslede, onbeperkte toestelle",
+    "shared_vaults": "Gedeelde kluise laat gesinslede kies wat hulle wil deel (of privaat hou)",
+    "advanced_security": "Gevorderde sekuriteit met geverifieerde enkripsie, PAKE en meer",
+    "security_alerts": "Waarskuwings vir gekompromitteerde webwerwe en swak wagwoorde",
+    "multi_platform": "Beskikbaar op Mac, iOS, Windows, Android, Chrome OS en Linux",
+    "looking_for_options": "Op soek na 'n individuele, span- of besigheidsrekening?",
+    "see_options": "Sien alle rekeningopsies"
+  },
+  "actions": {
+    "save": "Stoor",
+    "cancel": "Kanselleer",
+    "submit": "Indien",
+    "confirm": "Bevestig"
+  },
+  "dashboard": {
+    "welcome_back": "Welkom terug by jou veilige werksruimte",
+    "total_passwords": "Totale wagwoorde",
+    "total_accounts": "Totale rekeninge",
+    "total_folders": "Totale vouers",
+    "from_last_month": "sedert verlede maand",
+    "recent_activity": "Onlangse aktiwiteit"
+  },
+  "activity": {
+    "password_updated": "Wagwoord opgedateer",
+    "note_created": "Veilige nota geskep"
+  },
+  "time": {
+    "today": "Vandag",
+    "yesterday": "Gister",
+    "last_7_days": "Laaste 7 dae",
+    "last_30_days": "Laaste 30 dae",
+    "all_time": "Alle tye",
+    "just_now": "Nou net",
+    "hours_ago": "{hours} uur gelede",
+    "days_ago": "{days} dae gelede"
+  }
+} 

@@ -51,6 +51,7 @@ export default function LanguageSwitcher() {
     'zh-CN': '简体中文',
     ca: 'Català',
     ar: 'عربى',
+    af: 'Afrikaans',
   };
 
   return (

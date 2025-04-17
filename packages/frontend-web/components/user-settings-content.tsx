@@ -107,6 +107,7 @@ export function UserSettingsContent() {
     'zh-CN': "Simplified Chinese (简体中文)",
     ca: "Catalan (Català)",
     ar: "Arabic (عربى)",
+    af: "Afrikaans (Afrikaans)",
   };
   
   // Handle language change
