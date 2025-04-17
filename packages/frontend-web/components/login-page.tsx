@@ -23,6 +23,7 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
   const user = useUser();
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -33,6 +34,7 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
   useEffect(() => {
     const authenticateUser = async () => {
       try {
+        setError(null);
         const authDetails = await user?.getAuthJson();
         const accessToken = authDetails?.accessToken;
 
@@ -41,28 +43,43 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
           return;
         }
 
-        // Try login first
-        const loginResponse = await stackAuthHandler(accessToken, "login");
-        
-        if (loginResponse?.status_code === 200) {
-          setShouldRedirect(true);
-          return;
-        }
-
-        // If login fails with "user not found", try signup
-        if (
-          loginResponse?.status_code === 400 &&
-          loginResponse?.message?.toLowerCase().includes("user not found")
-        ) {
-          const signupResponse = await stackAuthHandler(accessToken, "signup");
+        try {
+          // Try login first
+          const loginResponse = await stackAuthHandler(accessToken, "login");
           
-          if (signupResponse?.status_code === 200) {
+          if (loginResponse?.status_code === 200) {
             setShouldRedirect(true);
             return;
           }
+
+          // If login fails with "user not found", try signup
+          if (
+            loginResponse?.status_code === 400 &&
+            loginResponse?.message?.toLowerCase().includes("user not found")
+          ) {
+            try {
+              const signupResponse = await stackAuthHandler(accessToken, "signup");
+              
+              if (signupResponse?.status_code === 200) {
+                setShouldRedirect(true);
+                return;
+              } else {
+                setError(`Signup failed: ${signupResponse?.message || 'Unknown error'}`);
+              }
+            } catch (signupErr) {
+              console.error("Signup error:", signupErr);
+              setError("Failed to sign up. Please check your network connection and try again.");
+            }
+          } else {
+            setError(`Login failed: ${loginResponse?.message || 'Unknown error'}`);
+          }
+        } catch (authErr) {
+          console.error("Auth request error:", authErr);
+          setError("Failed to authenticate. Please check your network connection and try again.");
         }
       } catch (err) {
         console.error("Auth flow error:", err);
+        setError("Authentication process failed. Please try again later.");
       } finally {
         setIsAuthenticating(false);
       }
@@ -81,6 +98,32 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
         <p className="text-muted-foreground">Verifying authentication...</p>
+      </div>
+    );
+  }
+
+  // Show error message if authentication failed
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <div className="bg-destructive/10 text-destructive rounded-lg p-4 mb-6 max-w-md">
+          <p className="font-semibold mb-2">Authentication Error</p>
+          <p>{error}</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setError(null);
+            setIsAuthenticating(true);
+            // Try to re-authenticate
+            if (user) {
+              // This will trigger the useEffect again
+              window.location.reload();
+            }
+          }}
+        >
+          Try Again
+        </Button>
       </div>
     );
   }
