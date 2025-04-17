@@ -33,6 +33,7 @@ export default function LanguageSwitcher() {
     ro: 'Română',
     ru: 'Pусский',
     sr: 'Српски',
+    sv: 'Svenska',
   };
 
   return (

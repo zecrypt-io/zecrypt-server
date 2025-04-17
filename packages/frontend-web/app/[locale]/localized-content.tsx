@@ -82,6 +82,12 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           Српски
         </button>
+        <button 
+          onClick={() => router.switchLanguage('sv')} 
+          className={`px-3 py-1 ${locale === 'sv' ? 'font-bold underline' : ''}`}
+        >
+          Svenska
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

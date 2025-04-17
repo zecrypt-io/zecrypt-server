@@ -88,7 +88,8 @@ export function UserSettingsContent() {
     pt: "Portuguese (Português)",
     ro: "Romanian (Română)",
     ru: "Russian (Pусский)",
-    sr: "Serbian (Српски)"
+    sr: "Serbian (Српски)",
+    sv: "Swedish (Svenska)"
   };
   
   // Handle language change
