@@ -44,6 +44,7 @@ export default function LanguageSwitcher() {
     id: 'Indonesian',
     hu: 'Magyar',
     he: 'עִברִית',
+    fi: 'Suomalainen',
   };
 
   return (

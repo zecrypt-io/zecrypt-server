@@ -99,7 +99,8 @@ export function UserSettingsContent() {
     it: "Italian (Italiano)",
     id: "Indonesian (Bahasa Indonesia)",
     hu: "Hungarian (Magyar)",
-    he: "Hebrew (עִברִית)"
+    he: "Hebrew (עִברִית)",
+    fi: "Finnish (Suomalainen)"
   };
   
   // Handle language change

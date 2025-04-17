@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Suojaa tietosi Zecryptillä"
+  },
+  "navigation": {
+    "home": "Koti",
+    "dashboard": "Hallintapaneeli",
+    "settings": "Asetukset"
+  },
+  "auth": {
+    "login": "Kirjaudu sisään",
+    "signup": "Rekisteröidy",
+    "logout": "Kirjaudu ulos",
+    "email": "Sähköposti",
+    "password": "Salasana",
+    "agreement": "Kirjautumalla hyväksyt",
+    "terms": "Ehdot"
+  },
+  "features": {
+    "trial_title": "Kokeile jopa 3Password-perheitä ilmaiseksi 40 päivän ajan",
+    "unlimited_devices": "5 perheenjäsentä, rajattomasti laitteita",
+    "shared_vaults": "Jaetut holvit antavat perheenjäsenille mahdollisuuden valita, mitä haluavat jakaa (tai pitää yksityisenä)",
+    "advanced_security": "Edistynyt suojaus todennetulla salauksella, PAKE:lla ja muulla",
+    "security_alerts": "Hälytykset vaarantuneista sivustoista ja heikoista salasanoista",
+    "multi_platform": "Saatavilla Macille, iOS:lle, Windowsille, Androidille, Chrome OS:lle ja Linuxille",
+    "looking_for_options": "Etsitkö yksilö-, tiimi- tai yritystiliä?",
+    "see_options": "Katso kaikki tilivaihtoehdot"
+  },
+  "actions": {
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "submit": "Lähetä",
+    "confirm": "Vahvista"
+  },
+  "dashboard": {
+    "welcome_back": "Tervetuloa takaisin turvalliseen työtilaasi",
+    "total_passwords": "Salasanoja yhteensä",
+    "total_accounts": "Tilejä yhteensä",
+    "total_folders": "Kansioita yhteensä",
+    "from_last_month": "viime kuusta",
+    "recent_activity": "Viimeaikainen toiminta"
+  },
+  "activity": {
+    "password_updated": "Salasana päivitetty",
+    "note_created": "Turvamuistio luotu"
+  },
+  "time": {
+    "today": "Tänään",
+    "yesterday": "Eilen",
+    "last_7_days": "Viimeiset 7 päivää",
+    "last_30_days": "Viimeiset 30 päivää",
+    "all_time": "Kaikki ajat",
+    "just_now": "Juuri nyt",
+    "hours_ago": "{hours} tuntia sitten",
+    "days_ago": "{days} päivää sitten"
+  }
+} 
