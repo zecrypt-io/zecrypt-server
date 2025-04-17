@@ -48,6 +48,7 @@ export default function LanguageSwitcher() {
     el: 'Ελληνικά',
     da: 'Dansk',
     cs: 'Čeština',
+    'zh-CN': '简体中文',
   };
 
   return (

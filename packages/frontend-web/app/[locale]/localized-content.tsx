@@ -172,6 +172,12 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           Čeština
         </button>
+        <button 
+          onClick={() => router.switchLanguage('zh-CN')} 
+          className={`px-3 py-1 ${locale === 'zh-CN' ? 'font-bold underline' : ''}`}
+        >
+          简体中文
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">

@@ -104,6 +104,7 @@ export function UserSettingsContent() {
     el: "Greek (Ελληνικά)",
     da: "Danish (Dansk)",
     cs: "Czech (Čeština)",
+    'zh-CN': "Simplified Chinese (简体中文)",
   };
   
   // Handle language change
