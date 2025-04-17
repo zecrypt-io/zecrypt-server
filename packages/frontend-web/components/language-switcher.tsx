@@ -37,6 +37,7 @@ export default function LanguageSwitcher() {
     tr: 'Türkçe',
     pl: 'Polskie',
     no: 'Norsk',
+    nl: 'Nederlands',
   };
 
   return (

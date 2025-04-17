@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beveilig uw gegevens met Zecrypt"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Instellingen"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "signup": "Registreren",
+    "logout": "Uitloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "agreement": "Door in te loggen gaat u akkoord met onze",
+    "terms": "Gebruiksvoorwaarden"
+  },
+  "features": {
+    "trial_title": "Probeer 3Password Families 40 dagen gratis",
+    "unlimited_devices": "5 gezinsleden, onbeperkt aantal apparaten",
+    "shared_vaults": "Gedeelde kluizen laten gezinsleden kiezen wat ze willen delen (of privé houden)",
+    "advanced_security": "Geavanceerde beveiliging met geauthenticeerde encryptie, PAKE en meer",
+    "security_alerts": "Waarschuwingen voor gecompromitteerde websites en kwetsbare wachtwoorden",
+    "multi_platform": "Beschikbaar op Mac, iOS, Windows, Android, Chrome OS en Linux",
+    "looking_for_options": "Op zoek naar een individueel, team- of zakelijk account?",
+    "see_options": "Bekijk alle accountopties"
+  },
+  "actions": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "submit": "Verzenden",
+    "confirm": "Bevestigen"
+  },
+  "dashboard": {
+    "welcome_back": "Welkom terug in uw beveiligde werkomgeving",
+    "total_passwords": "Totaal aantal wachtwoorden",
+    "total_accounts": "Totaal aantal accounts",
+    "total_folders": "Totaal aantal mappen",
+    "from_last_month": "ten opzichte van vorige maand",
+    "recent_activity": "Recente activiteit"
+  },
+  "activity": {
+    "password_updated": "Wachtwoord bijgewerkt",
+    "note_created": "Beveiligde notitie aangemaakt"
+  },
+  "time": {
+    "today": "Vandaag",
+    "yesterday": "Gisteren",
+    "last_7_days": "Afgelopen 7 dagen",
+    "last_30_days": "Afgelopen 30 dagen",
+    "all_time": "Alle tijd",
+    "just_now": "Zojuist",
+    "hours_ago": "{hours} uur geleden",
+    "days_ago": "{days} dagen geleden"
+  }
+} 

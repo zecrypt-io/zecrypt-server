@@ -100,6 +100,18 @@ export default function LocalizedContent({ locale }: { locale: string }) {
         >
           Polskie
         </button>
+        <button 
+          onClick={() => router.switchLanguage('no')} 
+          className={`px-3 py-1 ${locale === 'no' ? 'font-bold underline' : ''}`}
+        >
+          Norsk
+        </button>
+        <button 
+          onClick={() => router.switchLanguage('nl')} 
+          className={`px-3 py-1 ${locale === 'nl' ? 'font-bold underline' : ''}`}
+        >
+          Nederlands
+        </button>
       </div>
       
       <nav className="flex space-x-4 mt-6">
