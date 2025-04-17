@@ -84,37 +84,37 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   
   // Language labels
   const languageLabels: Record<string, string> = {
-    en: "English",
-    fr: "Français",
-    es: "Español",
-    de: "Deutsch",
-    vi: "Tiếng Việt",
-    uk: "Українська",
-    'zh-Hant': "繁體中文",
-    'pt-BR': "Português Brasileiro",
-    pt: "Português",
-    ro: "Română",
-    ru: "Pусский",
-    sr: "Српски",
-    sv: "Svenska",
-    tr: "Türkçe",
-    pl: "Polskie",
-    no: "Norsk",
-    nl: "Nederlands",
-    ko: "한국어",
-    ja: "日本語",
-    it: "Italiano",
-    id: "Indonesian",
-    hu: "Magyar",
-    he: "עִברִית",
-    fi: "Suomalainen",
-    el: "Ελληνικά",
-    da: "Dansk",
-    cs: "Čeština",
-    'zh-CN': "简体中文",
-    ca: "Català",
-    ar: "عربى",
     af: "Afrikaans",
+    ar: "Arabic (عربى)",
+    ca: "Catalan (Català)",
+    cs: "Czech (Čeština)",
+    da: "Danish (Dansk)",
+    de: "German (Deutsch)",
+    el: "Greek (Ελληνικά)",
+    en: "English",
+    es: "Spanish (Español)",
+    fi: "Finnish (Suomalainen)",
+    fr: "French (Français)",
+    he: "Hebrew (עִברִית)",
+    hu: "Hungarian (Magyar)",
+    id: "Indonesian",
+    it: "Italian (Italiano)",
+    ja: "Japanese (日本語)",
+    ko: "Korean (한국어)",
+    nl: "Dutch (Nederlands)",
+    no: "Norwegian (Norsk)",
+    pl: "Polish (Polskie)",
+    pt: "Portuguese (Português)",
+    'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
+    ro: "Romanian (Română)",
+    ru: "Russian (Pусский)",
+    sr: "Serbian (Српски)",
+    sv: "Swedish (Svenska)",
+    tr: "Turkish (Türkçe)",
+    uk: "Ukrainian (Українська)",
+    vi: "Vietnamese (Tiếng Việt)",
+    'zh-CN': "Chinese (Simplified) (简体中文)",
+    'zh-Hant': "Chinese (Traditional) (繁體中文)",
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -254,6 +254,13 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     setShowEncryptionKeyModal(false)
     router.push(`/${currentLocale}/login`)
   }
+
+  // Sort locales by display name
+  const sortedLocales = [...locales].sort((a, b) => {
+    const nameA = languageLabels[a] || a;
+    const nameB = languageLabels[b] || b;
+    return nameA.localeCompare(nameB);
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -519,7 +526,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Language</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {locales.map((loc) => (
+              {sortedLocales.map((loc) => (
                 <DropdownMenuItem 
                   key={loc} 
                   onClick={() => switchLanguage(loc)}
