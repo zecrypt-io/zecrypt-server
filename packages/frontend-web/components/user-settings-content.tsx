@@ -86,7 +86,8 @@ export function UserSettingsContent() {
     'zh-Hant': "Traditional Chinese (繁體中文)",
     'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
     pt: "Portuguese (Português)",
-    ro: "Romanian (Română)"
+    ro: "Romanian (Română)",
+    ru: "Russian (Pусский)"
   };
   
   // Handle language change
