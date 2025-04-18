@@ -86,6 +86,8 @@ export function UserSettingsContent() {
   const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
   
   // Get current locale from pathname
   const [currentLocale, setCurrentLocale] = useState("en");
@@ -113,7 +115,24 @@ export function UserSettingsContent() {
     try {
       const response = await fetchLoginHistory();
       if (response.status_code === 200 && response.data) {
-        setLoginHistory(response.data);
+        // Remove duplicates by using the exact timestamp as the unique key
+        const uniqueByTimestamp = new Map();
+        
+        // First pass to identify duplicates
+        response.data.forEach((entry: LoginHistoryEntry) => {
+          // Use the exact created_at timestamp as the unique key
+          const timestamp = entry.created_at;
+          
+          if (!uniqueByTimestamp.has(timestamp)) {
+            uniqueByTimestamp.set(timestamp, entry);
+          }
+        });
+        
+        const uniqueEntries = Array.from(uniqueByTimestamp.values());
+        console.log(`Filtered ${response.data.length} entries down to ${uniqueEntries.length} unique entries`);
+        
+        setLoginHistory(uniqueEntries);
+        setCurrentPage(1); // Reset to first page when loading new data
       } else {
         setHistoryError(response.message || "Failed to load login history");
       }
@@ -123,6 +142,31 @@ export function UserSettingsContent() {
     } finally {
       setIsLoadingHistory(false);
     }
+  };
+  
+  // Get current entries for pagination
+  const getCurrentEntries = () => {
+    const indexOfLastEntry = currentPage * entriesPerPage;
+    const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+    return loginHistory.slice(indexOfFirstEntry, indexOfLastEntry);
+  };
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(loginHistory.length / entriesPerPage);
+  
+  // Change page
+  const goToPage = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+  
+  // Previous page
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+  
+  // Next page
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
   
   // Localized labels for languages
@@ -268,8 +312,8 @@ export function UserSettingsContent() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {loginHistory.map((entry, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                  {getCurrentEntries().map((entry, index: number) => (
+                    <div key={`login-entry-${index}-${entry.created_at}`} className="border rounded-lg p-4 space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center">
                           {entry.device?.is_mobile ? (
@@ -295,9 +339,31 @@ export function UserSettingsContent() {
                   ))}
                   
                   {loginHistory.length > 0 && (
-                    <div className="mt-4 text-center">
-                      <Button variant="outline" size="sm">
-                        View More
+                    <div className="mt-6 flex items-center justify-center space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center px-4">
+                        <span className="text-sm text-muted-foreground">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                      </div>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
                   )}
