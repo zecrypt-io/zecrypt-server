@@ -37,6 +37,7 @@ import {
   RotateCcw,
   Settings,
   Loader2,
+  Tablet,
 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -312,32 +313,50 @@ export function UserSettingsContent() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {getCurrentEntries().map((entry, index: number) => (
-                    <div key={`login-entry-${index}-${entry.created_at}`} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center">
+                  {/* Table header */}
+                  <div className="grid grid-cols-3 gap-4 px-4 py-2 font-medium text-sm border-b">
+                    <div>Device & Browser</div>
+                    <div>IP Address</div>
+                    <div>Time</div>
+                  </div>
+                  
+                  {/* Table rows */}
+                  <div className="space-y-1">
+                    {getCurrentEntries().map((entry, index: number) => (
+                      <div 
+                        key={`login-entry-${index}-${entry.created_at}`} 
+                        className="grid grid-cols-3 gap-4 px-4 py-3 text-sm hover:bg-muted/50 rounded-md transition-colors"
+                      >
+                        {/* Device & Browser column */}
+                        <div className="flex items-start">
                           {entry.device?.is_mobile ? (
-                            <Smartphone className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <Smartphone className="h-5 w-5 mr-2 text-muted-foreground mt-0.5" />
+                          ) : entry.device?.is_tablet ? (
+                            <Tablet className="h-5 w-5 mr-2 text-muted-foreground mt-0.5" />
                           ) : (
-                            <Laptop className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <Laptop className="h-5 w-5 mr-2 text-muted-foreground mt-0.5" />
                           )}
                           <div>
-                            <p className="font-medium">{entry.browser} on {entry.os}</p>
-                            <p className="text-sm text-muted-foreground">{getDeviceInfo(entry)}</p>
+                            <p>{entry.browser} on {entry.os}</p>
+                            <p className="text-muted-foreground text-xs">{getDeviceInfo(entry)}</p>
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        
+                        {/* IP Address column */}
+                        <div className="flex items-center">
+                          <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span>{entry.ip_address}</span>
+                        </div>
+                        
+                        {/* Time column */}
+                        <div className="text-muted-foreground">
                           {formatDate(entry.created_at)}
-                        </span>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center text-sm">
-                        <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="text-muted-foreground">IP: {entry.ip_address}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                   
+                  {/* Pagination */}
                   {loginHistory.length > 0 && (
                     <div className="mt-6 flex items-center justify-center space-x-2">
                       <Button 
