@@ -39,7 +39,17 @@
     "total_accounts": "Σύνολο Λογαριασμών",
     "total_folders": "Σύνολο Φακέλων",
     "from_last_month": "από τον προηγούμενο μήνα",
-    "recent_activity": "Πρόσφατη Δραστηριότητα"
+    "recent_activity": "Πρόσφατη Δραστηριότητα",
+    "keyboard_shortcuts": "Πληκτρολογικά συντομεύσεις",
+    "generate_password": "Δημιουργία Κωδικού Πρόσβασης",
+    "favourites": "Αγαπημένα",
+    "dashboard": "Πίνακας Ελέγχου",
+    "overview": "Επισκόπηση",
+    "project": "Πρόγραμμα",
+    "notifications": "Ειδοποιήσεις",
+    "search": "Αναζήτηση...",
+    "settings": "Ρυθμίσεις",
+    "logout": "Αποσύνδεση"
   },
   "activity": {
     "password_updated": "Ο κωδικός πρόσβασης ενημερώθηκε",
@@ -102,5 +112,27 @@
     "good": "Καλός",
     "strong_strength": "Ισχυρός",
     "strength": "{strength}% Ισχύς"
+  },
+  "accounts": {
+    "accounts": "Λογαριασμοί",
+    "search": "Αναζήτηση λογαριασμών...",
+    "all_accounts": "Όλοι οι λογαριασμοί",
+    "manage_your_saved_accounts_and_passwords": "Διαχείρηση των αποθηκευμένων λογαριασμών και των κωδικών πρόσβασης σας",
+    "generate_password": "Δημιουργία Κωδικού Πρόσβασης",
+    "add_account": "Προσθήκη Λογαριασμού",
+    "account": "Λογαριασμός",
+    "username": "Όνομα Χρήστη",
+    "password": "Κωδικός πρόσβασης",
+    "category": "Κατηγορία",
+    "tags": "Ετικέτες",
+    "last_modified": "Τελευταία Ενημέρωση",
+    "actions": "Ενέργειες",
+    "rows_per_page": "Γραμμές ανά σελίδα:",
+    "showing": "Εμφάνιση",
+    "of": "από",
+    "no_accounts_found": "Δεν υπάρχουν λογαριασμοί. Δημιουργήστε έναν για να ξεκινήσετε.",
+    "add_new_account": "Προσθήκη Νέου Λογαριασμού",
+    "focus_search": "Εστίαση Αναζήτησης",
+    "switch_project": "Αλλαγή Προγράμματος"
   }
 } 

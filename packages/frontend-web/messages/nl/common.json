@@ -39,7 +39,17 @@
     "total_accounts": "Totaal aantal accounts",
     "total_folders": "Totaal aantal mappen",
     "from_last_month": "ten opzichte van vorige maand",
-    "recent_activity": "Recente activiteit"
+    "recent_activity": "Recente activiteit",
+    "keyboard_shortcuts": "Sneltoetsen",
+    "generate_password": "Wachtwoord genereren",
+    "favourites": "Favorieten",
+    "dashboard": "Dashboard",
+    "overview": "Overzicht",
+    "project": "Project",
+    "notifications": "Meldingen",
+    "search": "Zoeken...",
+    "settings": "Instellingen",
+    "logout": "Uitloggen"
   },
   "activity": {
     "password_updated": "Wachtwoord bijgewerkt",
@@ -102,5 +112,28 @@
     "good": "Goed",
     "strong_strength": "Sterk",
     "strength": "{strength}% Sterkte"
+  },
+  "accounts": {
+    "accounts": "Accounts",
+    "search": "Zoek accounts...",
+    "all_accounts": "Alle accounts",
+    "manage_your_saved_accounts_and_passwords": "Beheer uw opgeslagen accounts en wachtwoorden",
+    "generate_password": "Wachtwoord genereren",
+    "add_account": "Account toevoegen",
+    "account": "Account",
+    "username": "Gebruikersnaam",
+    "password": "Wachtwoord",
+    "category": "Categorie",
+    "tags": "Tags",
+    "last_modified": "Laatst gewijzigd",
+    "actions": "Acties",
+    "rows_per_page": "Rijen per pagina:",
+    "showing": "Toon",
+    "of": "van",
+    "no_accounts_found": "Geen accounts gevonden. Maak er een om te beginnen.",
+    "add_new_account": "Nieuw account toevoegen",
+    "focus_search": "Zoeken",
+    "switch_project": "Project wijzigen"
   }
+
 } 

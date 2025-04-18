@@ -39,7 +39,17 @@
     "total_accounts": "Total Accounts",
     "total_folders": "Total Folders",
     "from_last_month": "from last month",
-    "recent_activity": "Recent Activity"
+    "recent_activity": "Recent Activity",
+    "keyboard_shortcuts": "Keyboard shortcuts",
+    "generate_password": "Generate Password",
+    "favourites": "Favourites",
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "project": "Project",
+    "notifications": "Notifications",
+    "search": "Search...",
+    "settings": "Settings",
+    "logout": "Logout"
   },
   "activity": {
     "password_updated": "Password updated",
@@ -102,5 +112,27 @@
     "good": "Good",
     "strong_strength": "Strong",
     "strength": "{strength}% Strength"
+  },
+  "accounts": {
+    "accounts": "Accounts",
+    "search": "Search accounts...",
+    "all_accounts": "All Accounts",
+    "manage_your_saved_accounts_and_passwords": "Manage your saved accounts and passwords",
+    "generate_password": "Generate Password",
+    "add_account": "Add Account",
+    "account": "Account",
+    "username": "Username",
+    "password": "Password",
+    "category": "Category",
+    "tags": "Tags",
+    "last_modified": "Last Modified",
+    "actions": "Actions",
+    "rows_per_page": "Rows per page:",
+    "showing": "Showing",
+    "of": "of",
+    "no_accounts_found": "No accounts found. Create one to get started.",
+    "add_new_account": "Add New Account",
+    "focus_search": "Focus Search",
+    "switch_project": "Switch Project"
   }
 } 

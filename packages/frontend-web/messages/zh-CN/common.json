@@ -39,7 +39,17 @@
     "total_accounts": "账户总数",
     "total_folders": "文件夹总数",
     "from_last_month": "较上月",
-    "recent_activity": "最近活动"
+    "recent_activity": "最近活动",
+    "keyboard_shortcuts": "键盘快捷键",
+    "generate_password": "生成密码",
+    "favourites": "收藏",
+    "dashboard": "仪表盘",
+    "overview": "概览",
+    "project": "项目",
+    "notifications": "通知",
+    "search": "搜索...",
+    "settings": "设置",
+    "logout": "登出"
   },
   "activity": {
     "password_updated": "密码已更新",
@@ -102,5 +112,27 @@
     "good": "好",
     "strong_strength": "强",
     "strength": "{strength}% 强度"
+  },
+  "accounts": {
+    "accounts": "账户",
+    "search": "搜索账户...",
+    "all_accounts": "所有账户",
+    "manage_your_saved_accounts_and_passwords": "管理您的保存账户和密码",
+    "generate_password": "生成密码",
+    "add_account": "添加账户",
+    "account": "账户",
+    "username": "用户名",
+    "password": "密码",
+    "category": "类别",
+    "tags": "标签",
+    "last_modified": "最后修改",
+    "actions": "操作",
+    "rows_per_page": "每页行数:",
+    "showing": "显示",
+    "of": "从",
+    "no_accounts_found": "没有找到账户。创建一个开始。",
+    "add_new_account": "添加新账户",
+    "focus_search": "聚焦搜索",
+    "switch_project": "切换项目"
   }
 } 

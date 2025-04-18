@@ -39,7 +39,17 @@
     "total_accounts": "Samlede konti",
     "total_folders": "Samlede mapper",
     "from_last_month": "fra sidste måned",
-    "recent_activity": "Seneste aktivitet"
+    "recent_activity": "Seneste aktivitet",
+    "keyboard_shortcuts": "Keyboard shortcuts",
+    "generate_password": "Generate Password",
+    "favourites": "Favourites",
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "project": "Project",
+    "notifications": "Notifications",
+    "search": "Search...",
+    "settings": "Settings",
+    "logout": "Logout"
   },
   "activity": {
     "password_updated": "Adgangskode opdateret",
@@ -102,5 +112,27 @@
     "good": "God",
     "strong_strength": "Stærk",
     "strength": "{strength}% Styrke"
+  },
+  "accounts": {
+    "accounts": "Konti",
+    "search": "Søg efter konti...",
+    "all_accounts": "Alle konti",
+    "manage_your_saved_accounts_and_passwords": "Administrer dine gemte konti og adgangskoder",
+    "generate_password": "Generer adgangskode",
+    "add_account": "Tilføj konto",
+    "account": "Konto",
+    "username": "Brugernavn",
+    "password": "Adgangskode",
+    "category": "Kategori",
+    "tags": "Tags",
+    "last_modified": "Sidst opdateret",
+    "actions": "Handlinger",
+    "rows_per_page": "Rækker pr. side:",
+    "showing": "Viser",
+    "of": "af",
+    "no_accounts_found": "Ingen konti fundet. Opret en for at komme i gang.",
+    "add_new_account": "Opret ny konto",
+    "focus_search": "Fokusér søgning",
+    "switch_project": "Skift projekt"
   }
 } 

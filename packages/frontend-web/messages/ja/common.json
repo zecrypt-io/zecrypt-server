@@ -39,7 +39,17 @@
     "total_accounts": "アカウント合計",
     "total_folders": "フォルダ合計",
     "from_last_month": "先月比",
-    "recent_activity": "最近のアクティビティ"
+    "recent_activity": "最近のアクティビティ",
+    "keyboard_shortcuts": "キーボードショートカット",
+    "generate_password": "パスワード生成",
+    "favourites": "お気に入り",
+    "dashboard": "ダッシュボード",
+    "overview": "概要",
+    "project": "プロジェクト",
+    "notifications": "通知",
+    "search": "検索...",
+    "settings": "設定",
+    "logout": "ログアウト"
   },
   "activity": {
     "password_updated": "パスワードが更新されました",
@@ -102,5 +112,27 @@
     "good": "良い",
     "strong_strength": "強力",
     "strength": "{strength}% 強度"
+  },
+  "accounts": {
+    "accounts": "アカウント",
+    "search": "アカウントを検索...",
+    "all_accounts": "すべてのアカウント",
+    "manage_your_saved_accounts_and_passwords": "保存されたアカウントとパスワードを管理します",
+    "generate_password": "パスワードを生成",
+    "add_account": "アカウントを追加",
+    "account": "アカウント",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "category": "カテゴリ",
+    "tags": "タグ",
+    "last_modified": "最終更新日",
+    "actions": "アクション",
+    "rows_per_page": "ページあたりの行数:",
+    "showing": "表示中",
+    "of": "の",
+    "no_accounts_found": "アカウントが見つかりません。作成してください。",
+    "add_new_account": "新しいアカウントを追加",
+    "focus_search": "検索をフォーカス",
+    "switch_project": "プロジェクトを切り替え"
   }
 } 

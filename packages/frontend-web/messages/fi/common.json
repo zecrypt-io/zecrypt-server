@@ -39,7 +39,17 @@
     "total_accounts": "Tilejä yhteensä",
     "total_folders": "Kansioita yhteensä",
     "from_last_month": "viime kuusta",
-    "recent_activity": "Viimeaikainen toiminta"
+    "recent_activity": "Viimeaikainen toiminta",
+    "keyboard_shortcuts": "Näppäintälyöntit",
+    "generate_password": "Luo salasana",
+    "favourites": "Suosikit",
+    "dashboard": "Hallintapaneeli",
+    "overview": "Yleiskatsaus",
+    "project": "Projekti",
+    "notifications": "Ilmoitukset",
+    "search": "Hae...",
+    "settings": "Asetukset",
+    "logout": "Kirjaudu ulos"
   },
   "activity": {
     "password_updated": "Salasana päivitetty",
@@ -102,5 +112,27 @@
     "good": "Hyvä",
     "strong_strength": "Vahva",
     "strength": "{strength}% Vahvuus"
+  },
+  "accounts": {
+    "accounts": "Tilit",
+    "search": "Hae tilejä...",
+    "all_accounts": "Kaikki tilejä",
+    "manage_your_saved_accounts_and_passwords": "Hallitse tallennettuja tilejä ja salasanoja",
+    "generate_password": "Luo salasana",
+    "add_account": "Lisää tile",
+    "account": "Tile",
+    "username": "Käyttäjätunnus",
+    "password": "Salasana",
+    "category": "Kategoria",
+    "tags": "Tunnisteet",
+    "last_modified": "Viimeksi muutettu",
+    "actions": "Toiminnot",
+    "rows_per_page": "Rivejä sivulla:",
+    "showing": "Näytetään",
+    "of": " / ",
+    "no_accounts_found": "Ei tilejä. Luo yksi.",
+    "add_new_account": "Lisää uusi tile",
+    "focus_search": "Keskity hakuun",
+    "switch_project": "Vaihda projektia"
   }
 } 

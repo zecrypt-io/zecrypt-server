@@ -39,7 +39,17 @@
     "total_accounts": "Totalt antal konton",
     "total_folders": "Totalt antal mappar",
     "from_last_month": "jämfört med förra månaden",
-    "recent_activity": "Senaste aktivitet"
+    "recent_activity": "Senaste aktivitet",
+    "keyboard_shortcuts": "Klavye kısayolları",
+    "generate_password": "Şifre oluştur",
+    "favourites": "Favoriler",
+    "dashboard": "Kontrol Paneli",
+    "overview": "Genel Bakış",
+    "project": "Projekt",
+    "notifications": "Notifikationer",
+    "search": "Sök...",
+    "settings": "Inställningar",
+    "logout": "Logga ut"
   },
   "activity": {
     "password_updated": "Lösenord uppdaterat",
@@ -102,5 +112,27 @@
     "good": "Bra",
     "strong_strength": "Starkt",
     "strength": "{strength}% Styrka"
+  },
+  "accounts": {
+    "accounts": "Konton",
+    "search": "Sök konton...",
+    "all_accounts": "Alla konton",
+    "manage_your_saved_accounts_and_passwords": "Hantera dina sparade konton och lösenord",
+    "generate_password": "Generera lösenord",
+    "add_account": "Lägg till konto",
+    "account": "Konto",
+    "username": "Användarnamn",
+    "password": "Lösenord",
+    "category": "Kategori",
+    "tags": "Taggar",
+    "last_modified": "Senast ändrad",
+    "actions": "Åtgärder",
+    "rows_per_page": "Rader per sida:",
+    "showing": "Visar",
+    "of": "av",
+    "no_accounts_found": "Inga konton hittade. Skapa ett för att börja.",
+    "add_new_account": "Lägg till nytt konto",
+    "focus_search": "Fokusera sökning",
+    "switch_project": "Byt projekt"
   }
 } 

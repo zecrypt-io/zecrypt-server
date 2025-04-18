@@ -39,7 +39,17 @@
     "total_accounts": "Total conturi",
     "total_folders": "Total dosare",
     "from_last_month": "față de luna trecută",
-    "recent_activity": "Activitate recentă"
+    "recent_activity": "Activitate recentă",
+    "keyboard_shortcuts": "Ateliere",
+    "generate_password": "Generare parolă",
+    "favourites": "Favorite",
+    "dashboard": "Tablou de bord",
+    "overview": "Prezentare generală",
+    "project": "Proiect",
+    "notifications": "Notificări",
+    "search": "Caută...",
+    "settings": "Setări",
+    "logout": "Deconectare"
   },
   "activity": {
     "password_updated": "Parolă actualizată",
@@ -102,5 +112,27 @@
     "good": "Bună",
     "strong_strength": "Puternică",
     "strength": "{strength}% Putere"
+  },
+  "accounts": {
+    "accounts": "Conturi",
+    "search": "Caută conturi...",
+    "all_accounts": "Toate conturile",
+    "manage_your_saved_accounts_and_passwords": "Gestionează conturile și parolele salvate",
+    "generate_password": "Generare parolă",
+    "add_account": "Adăugare cont",
+    "account": "Cont",
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "category": "Categorie",
+    "tags": "Etichete",
+    "last_modified": "Ultima modificare",
+    "actions": "Acțiuni",
+    "rows_per_page": "Rânduri pe pagină:",
+    "showing": "Afișând",
+    "of": "din",
+    "no_accounts_found": "Nu există conturi. Crează unul pentru a începe.",
+    "add_new_account": "Adăugare cont nou",
+    "focus_search": "Focusare căutare",
+    "switch_project": "Schimbare proiect"
   }
 } 

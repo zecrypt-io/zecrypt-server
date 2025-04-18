@@ -39,7 +39,17 @@
     "total_accounts": "총 계정",
     "total_folders": "총 폴더",
     "from_last_month": "지난달 대비",
-    "recent_activity": "최근 활동"
+    "recent_activity": "최근 활동",
+    "keyboard_shortcuts": "키보드 단축키",
+    "generate_password": "비밀번호 생성",
+    "favourites": "즐겨찾기",
+    "dashboard": "대시보드",
+    "overview": "개요",
+    "project": "프로젝트",
+    "notifications": "알림",
+    "search": "검색...",
+    "settings": "설정",
+    "logout": "로그아웃"
   },
   "activity": {
     "password_updated": "비밀번호가 업데이트됨",
@@ -102,5 +112,27 @@
     "good": "좋음",
     "strong_strength": "강함",
     "strength": "{strength}% 강도"
+  },
+  "accounts": {
+    "accounts": "계정",
+    "search": "계정 검색...",
+    "all_accounts": "모든 계정",
+    "manage_your_saved_accounts_and_passwords": "저장된 계정과 비밀번호 관리",
+    "generate_password": "비밀번호 생성",
+    "add_account": "계정 추가",
+    "account": "계정",
+    "username": "사용자 이름",
+    "password": "비밀번호",
+    "category": "카테고리",
+    "tags": "태그",
+    "last_modified": "마지막 수정일",
+    "actions": "작업",
+    "rows_per_page": "페이지당 행 수:",
+    "showing": "보여주는 중",
+    "of": "중",
+    "no_accounts_found": "계정이 없습니다. 하나 만들어 시작하세요.",
+    "add_new_account": "새 계정 추가",
+    "focus_search": "검색 포커스",
+    "switch_project": "프로젝트 전환"
   }
 } 

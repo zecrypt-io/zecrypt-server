@@ -39,7 +39,17 @@
     "total_accounts": "Összes fiók",
     "total_folders": "Összes mappa",
     "from_last_month": "az előző hónaphoz képest",
-    "recent_activity": "Legutóbbi aktivitás"
+    "recent_activity": "Legutóbbi aktivitás",
+    "keyboard_shortcuts": "Billentyűparancsok",
+    "generate_password": "Jelszó generálása",
+    "favourites": "Kedvencek",
+    "dashboard": "Irányítópult",
+    "overview": "Áttekintés",
+    "project": "Projekt",
+    "notifications": "Értesítések",
+    "search": "Keresés...",
+    "settings": "Beállítások",
+    "logout": "Kijelentkezés"
   },
   "activity": {
     "password_updated": "Jelszó frissítve",
@@ -102,5 +112,27 @@
     "good": "Jó",
     "strong_strength": "Erős",
     "strength": "{strength}% Erősség"
+  },
+  "accounts": {
+    "accounts": "Fiókok",
+    "search": "Fiókok keresése...",
+    "all_accounts": "Összes fiók",
+    "manage_your_saved_accounts_and_passwords": "Fiókok és jelszavak kezelése",
+    "generate_password": "Jelszó generálása",
+    "add_account": "Fiók hozzáadása",
+    "account": "Fiók",
+    "username": "Felhasználónév",
+    "password": "Jelszó",
+    "category": "Kategória",
+    "tags": "Címkék",
+    "last_modified": "Utoljára módosítva",
+    "actions": "Műveletek",
+    "rows_per_page": "Sorok per oldal:",
+    "showing": "Megjelenítve",
+    "of": "-ból/-ből",
+    "no_accounts_found": "Nincs fiók található. Hozz létre egyet a kezdéshez.",
+    "add_new_account": "Új fiók hozzáadása",
+    "focus_search": "Keresés fókuszálása",
+    "switch_project": "Projekt csere"
   }
 } 

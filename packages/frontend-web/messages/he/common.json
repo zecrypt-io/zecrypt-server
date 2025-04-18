@@ -39,7 +39,17 @@
     "total_accounts": "סך כל החשבונות",
     "total_folders": "סך כל התיקיות",
     "from_last_month": "לעומת החודש שעבר",
-    "recent_activity": "פעילות אחרונה"
+    "recent_activity": "פעילות אחרונה",
+    "keyboard_shortcuts": "מקצת מהירות",
+    "generate_password": "צור סיסמה",
+    "favourites": "מועדפים",
+    "dashboard": "לוח בקרה",
+    "overview": "תמונה כוללת",
+    "project": "פרויקט",
+    "notifications": "התראות",
+    "search": "חיפוש...",
+    "settings": "הגדרות",
+    "logout": "התנתק"
   },
   "activity": {
     "password_updated": "הסיסמה עודכנה",
@@ -102,5 +112,27 @@
     "good": "טוב",
     "strong_strength": "חזק",
     "strength": "{strength}% עוצמה"
+  },
+  "accounts": {
+    "accounts": "חשבונות",
+    "search": "חיפוש חשבונות...",
+    "all_accounts": "כל החשבונות",
+    "manage_your_saved_accounts_and_passwords": "ניהול חשבונות וסיסמאות שמורים",
+    "generate_password": "צור סיסמה",
+    "add_account": "הוסף חשבון",
+    "account": "חשבון",
+    "username": "שם משתמש",
+    "password": "סיסמה",
+    "category": "קטגוריה",
+    "tags": "תגיות",
+    "last_modified": "שונה אחרונה",
+    "actions": "פעולות",
+    "rows_per_page": "שורות לעמוד:",
+    "showing": "מציג",
+    "of": "מתוך",
+    "no_accounts_found": "לא נמצאו חשבונות. צור אחד כדי להתחיל.",
+    "add_new_account": "הוסף חשבון חדש",
+    "focus_search": "התמקדות בחיפוש",
+    "switch_project": "שנה פרויקט"
   }
 } 

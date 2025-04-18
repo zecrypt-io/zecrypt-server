@@ -39,7 +39,17 @@
     "total_accounts": "Total de cuentas",
     "total_folders": "Total de carpetas",
     "from_last_month": "desde el mes pasado",
-    "recent_activity": "Actividad reciente"
+    "recent_activity": "Actividad reciente",
+    "keyboard_shortcuts": "Atajos de teclado",
+    "generate_password": "Generar contraseña",
+    "favourites": "Favoritos",
+    "dashboard": "Panel de control",
+    "overview": "Vista general",
+    "project": "Proyecto",
+    "notifications": "Notificaciones",
+    "search": "Buscar...",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
   },
   "activity": {
     "password_updated": "Contraseña actualizada",
@@ -102,5 +112,27 @@
     "good": "Buena",
     "strong_strength": "Fuerte",
     "strength": "{strength}% Fuerza"
+  },
+  "accounts": {
+    "accounts": "Cuentas",
+    "search": "Buscar cuentas...",
+    "all_accounts": "Todas las cuentas",
+    "manage_your_saved_accounts_and_passwords": "Gestiona tus cuentas y contraseñas guardadas",
+    "generate_password": "Generar contraseña",
+    "add_account": "Añadir cuenta",
+    "account": "Cuenta",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "category": "Categoría",
+    "tags": "Etiquetas",
+    "last_modified": "Última modificación",
+    "actions": "Acciones",
+    "rows_per_page": "Filas por página:",
+    "showing": "Mostrando",
+    "of": "de",
+    "no_accounts_found": "No se encontraron cuentas. Crea una para empezar.",
+    "add_new_account": "Añadir nueva cuenta",
+    "focus_search": "Enfocar búsqueda",
+    "switch_project": "Cambiar proyecto"
   }
 } 

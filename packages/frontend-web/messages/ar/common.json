@@ -39,7 +39,17 @@
     "total_accounts": "إجمالي الحسابات",
     "total_folders": "إجمالي المجلدات",
     "from_last_month": "منذ الشهر الماضي",
-    "recent_activity": "النشاط الأخير"
+    "recent_activity": "النشاط الأخير",
+    "keyboard_shortcuts": "Keyboard shortcuts",
+    "generate_password": "توليد كلمة مرور",
+    "favourites": "المفضلة",
+    "dashboard": "لوحة التحكم",
+    "overview": "معاينة",
+    "project": "مشروع",
+    "notifications": "الإشعارات",
+    "search": "بحث...",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
   },
   "activity": {
     "password_updated": "تم تحديث كلمة المرور",
@@ -102,5 +112,27 @@
     "good": "جيد",
     "strong_strength": "قوي",
     "strength": "{strength}% قوة"
+  },
+  "accounts": {
+    "accounts": "الحسابات",
+    "search": "بحث عن حسابات...",
+    "all_accounts": "جميع الحسابات",
+    "manage_your_saved_accounts_and_passwords": "إدارة حساباتك المحفوظة وكلمات المرور",
+    "generate_password": "توليد كلمة مرور",
+    "add_account": "إضافة حساب",
+    "account": "حساب",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "category": "التصنيف",
+    "tags": "العلامات",
+    "last_modified": "آخر تعديل",
+    "actions": "الإجراءات",
+    "rows_per_page": "صفوف في الصفحة:",
+    "showing": "إظهار",
+    "of": "من",
+    "no_accounts_found": "لا يوجد حسابات. قم بإنشاء واحد للبدء.",
+    "add_new_account": "إضافة حساب جديد",
+    "focus_search": "تركيز البحث",
+    "switch_project": "تبديل المشروع"
   }
 } 

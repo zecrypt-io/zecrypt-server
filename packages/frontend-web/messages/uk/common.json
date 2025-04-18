@@ -39,7 +39,17 @@
     "total_accounts": "Всього акаунтів",
     "total_folders": "Всього папок",
     "from_last_month": "у порівнянні з минулим місяцем",
-    "recent_activity": "Остання активність"
+    "recent_activity": "Остання активність",
+    "keyboard_shortcuts": "Клавіатурні скорочення",
+    "generate_password": "Згенерувати пароль",
+    "favourites": "Улюблені",
+    "dashboard": "Панель керування",
+    "overview": "Огляд",
+    "project": "Проект",
+    "notifications": "Повідомлення",
+    "search": "Пошук...",
+    "settings": "Налаштування",
+    "logout": "Вийти"
   },
   "activity": {
     "password_updated": "Пароль оновлено",
@@ -102,5 +112,27 @@
     "good": "Добрий",
     "strong_strength": "Надійний",
     "strength": "{strength}% Надійності"
+  },
+  "accounts": {
+    "accounts": "Акаунти",
+    "search": "Пошук акаунтів...",
+    "all_accounts": "Всі акаунти",
+    "manage_your_saved_accounts_and_passwords": "Управляйте своїми збереженими акаунтами та паролями",
+    "generate_password": "Згенерувати пароль",
+    "add_account": "Додати акаунт",
+    "account": "Акаунт",
+    "username": "Ім'я користувача",
+    "password": "Пароль",
+    "category": "Категорія",
+    "tags": "Теги",
+    "last_modified": "Останній змінений",
+    "actions": "Дії",
+    "rows_per_page": "Рядків на сторінку:",
+    "showing": "Показано",
+    "of": "з",
+    "no_accounts_found": "Акаунтів не знайдено. Створіть один, щоб почати.",
+    "add_new_account": "Додати новий акаунт",
+    "focus_search": "Знайти",
+    "switch_project": "Змінити проект"
   }
 } 

@@ -1,5 +1,8 @@
 import uuid
 from datetime import datetime, timedelta as timedzelta
+import hashlib
+import os
+import json
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
@@ -114,3 +117,22 @@ def validate_access_token(access_token, user_id):
         return True
     else:
         return False
+
+def hash_data(data, salt=None):
+    """
+    Securely hashes a given string or dict using SHA-256 with optional salt.
+    For dicts, ensures consistent hashing by sorting keys.
+    """
+    if isinstance(data, dict):
+        data_str = json.dumps(data, sort_keys=True, separators=(",", ":"))
+    else:
+        data_str = str(data)
+
+    if salt is None:
+        salt = os.urandom(16)  # Generate 16-byte random salt
+
+    if isinstance(salt, str):
+        salt = salt.encode('utf-8')
+    
+    hash_input = salt + data_str.encode('utf-8')
+    return hashlib.sha512(hash_input).hexdigest(), salt.hex()

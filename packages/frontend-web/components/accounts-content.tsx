@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge"
 import { EditAccountDialog } from "@/components/edit-account-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTranslator } from "@/hooks/use-translations"
 
 export function AccountsContent() {
   const [showAddAccount, setShowAddAccount] = useState(false)
@@ -35,7 +36,7 @@ export function AccountsContent() {
   const [viewPassword, setViewPassword] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  
+  const { translate } = useTranslator();
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(5)
@@ -245,8 +246,8 @@ export function AccountsContent() {
     <div className="p-6">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold">Accounts</h1>
-        <p className="text-muted-foreground">Manage your saved accounts and passwords</p>
+        <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
+        <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
       </div>
 
       {/* Search Bar and Action Buttons */}
@@ -256,7 +257,7 @@ export function AccountsContent() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search accounts..."
+              placeholder={translate("search", "accounts")}
               className="pl-8 w-full"
               value={searchQuery}
               onChange={(e) => {
@@ -301,11 +302,11 @@ export function AccountsContent() {
             onClick={() => setShowGeneratePassword(true)}
           >
             <Key className="h-4 w-4" />
-            Generate
+            {translate("generate_password", "accounts")}
           </Button>
           <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
             <Plus className="h-4 w-4" />
-            Add
+            {translate("add_account", "accounts")}
           </Button>
         </div>
       </div>
@@ -316,13 +317,13 @@ export function AccountsContent() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
-                <th className="text-left p-3 font-medium text-sm">Account</th>
-                <th className="text-left p-3 font-medium text-sm">Username</th>
-                <th className="text-left p-3 font-medium text-sm">Password</th>
-                <th className="text-left p-3 font-medium text-sm">Category</th>
-                <th className="text-left p-3 font-medium text-sm">Tags</th>
-                <th className="text-left p-3 font-medium text-sm">Last Modified</th>
-                <th className="text-left p-3 font-medium text-sm">Actions</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("category", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("actions", "accounts")}</th>
               </tr>
             </thead>
             <tbody>
@@ -507,12 +508,11 @@ export function AccountsContent() {
       {filteredAccounts.length > 0 && (
         <div className="flex items-center justify-between px-4 py-4 border-t">
           <div className="text-sm text-muted-foreground">
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAccounts.length)} of{" "}
-            {filteredAccounts.length} accounts
+            {translate("showing", "accounts")} {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAccounts.length)} {translate("of", "accounts")} {filteredAccounts.length} {translate("accounts", "accounts")}
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1 mr-4">
-              <span className="text-sm text-muted-foreground">Rows per page:</span>
+              <span className="text-sm text-muted-foreground">{translate("rows_per_page", "accounts")}</span>
               <Select
                 value={itemsPerPage.toString()}
                 onValueChange={(value) => {
