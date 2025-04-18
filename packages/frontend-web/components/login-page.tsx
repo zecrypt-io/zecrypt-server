@@ -10,6 +10,7 @@ import { useState, useEffect } from "react"
 import { SignIn,useUser } from '@stackframe/stack';
 import { stackAuthHandler } from "@/libs/stack-auth-handler"
 import { useTranslations } from 'next-intl';
+import { saveUserData } from "@/libs/local-storage-utils"
 
 export interface LoginPageProps {
   locale?: string;
@@ -48,6 +49,10 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
           const loginResponse = await stackAuthHandler(accessToken, "login");
           
           if (loginResponse?.status_code === 200) {
+            // Store user data in localStorage
+            if (loginResponse.data) {
+              saveUserData(loginResponse.data);
+            }
             setShouldRedirect(true);
             return;
           }
@@ -61,6 +66,10 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
               const signupResponse = await stackAuthHandler(accessToken, "signup");
               
               if (signupResponse?.status_code === 200) {
+                // Store user data in localStorage
+                if (signupResponse.data) {
+                  saveUserData(signupResponse.data);
+                }
                 setShouldRedirect(true);
                 return;
               } else {

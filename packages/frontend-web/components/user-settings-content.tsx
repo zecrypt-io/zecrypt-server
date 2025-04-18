@@ -36,6 +36,7 @@ import {
   Filter,
   RotateCcw,
   Settings,
+  Loader2,
 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -54,6 +55,23 @@ import { UpdatePasswordModal } from "@/components/update-password-modal"
 import { useRouter, usePathname } from "next/navigation"
 import { locales } from "@/middleware"
 import { useTranslations } from "next-intl"
+import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
+
+// Interface for login history entry
+interface LoginHistoryEntry {
+  ip_address: string;
+  created_by: string;
+  created_at: string;
+  user_agent: string;
+  browser: string;
+  os: string;
+  device: {
+    type: string;
+    is_mobile: boolean;
+    is_tablet: boolean;
+    is_pc: boolean;
+  };
+}
 
 export function UserSettingsContent() {
   const [activeTab, setActiveTab] = useState("profile")
@@ -63,6 +81,11 @@ export function UserSettingsContent() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const router = useRouter();
   const pathname = usePathname();
+  
+  // Login history state
+  const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   
   // Get current locale from pathname
   const [currentLocale, setCurrentLocale] = useState("en");
@@ -74,6 +97,33 @@ export function UserSettingsContent() {
       setCurrentLocale(pathSegments[1]);
     }
   }, [pathname]);
+  
+  // Fetch login history when the history tab is activated
+  useEffect(() => {
+    if (activeTab === "history") {
+      loadLoginHistory();
+    }
+  }, [activeTab]);
+  
+  // Function to load login history
+  const loadLoginHistory = async () => {
+    setIsLoadingHistory(true);
+    setHistoryError(null);
+    
+    try {
+      const response = await fetchLoginHistory();
+      if (response.status_code === 200 && response.data) {
+        setLoginHistory(response.data);
+      } else {
+        setHistoryError(response.message || "Failed to load login history");
+      }
+    } catch (error) {
+      console.error("Error loading login history:", error);
+      setHistoryError("Failed to load login history. Please try again later.");
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
   
   // Localized labels for languages
   const languageLabels = {
@@ -192,9 +242,67 @@ export function UserSettingsContent() {
               <CardDescription>Recent account activity</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <p>View your recent login activity</p>
-              </div>
+              {isLoadingHistory ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">Loading login history...</p>
+                </div>
+              ) : historyError ? (
+                <div className="bg-destructive/10 text-destructive rounded-lg p-4">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 mr-2" />
+                    <p>{historyError}</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4" 
+                    onClick={loadLoginHistory}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Try Again
+                  </Button>
+                </div>
+              ) : loginHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No login history available</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {loginHistory.map((entry, index) => (
+                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center">
+                          {entry.device?.is_mobile ? (
+                            <Smartphone className="h-5 w-5 mr-2 text-muted-foreground" />
+                          ) : (
+                            <Laptop className="h-5 w-5 mr-2 text-muted-foreground" />
+                          )}
+                          <div>
+                            <p className="font-medium">{entry.browser} on {entry.os}</p>
+                            <p className="text-sm text-muted-foreground">{getDeviceInfo(entry)}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(entry.created_at)}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm">
+                        <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <span className="text-muted-foreground">IP: {entry.ip_address}</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {loginHistory.length > 0 && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" size="sm">
+                        View More
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
