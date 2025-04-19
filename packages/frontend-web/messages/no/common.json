@@ -39,7 +39,17 @@
     "total_accounts": "Totalt antall kontoer",
     "total_folders": "Totalt antall mapper",
     "from_last_month": "sammenlignet med forrige måned",
-    "recent_activity": "Siste aktivitet"
+    "recent_activity": "Siste aktivitet",
+    "keyboard_shortcuts": "Snellater",
+    "generate_password": "Generer passord",
+    "favourites": "Favoritter",
+    "dashboard": "Dashboard",
+    "overview": "Oversikt",
+    "project": "Prosjekt",
+    "notifications": "Notifikasjoner",
+    "search": "Søk...",
+    "settings": "Innstillinger",
+    "logout": "Logg ut"
   },
   "activity": {
     "password_updated": "Passord oppdatert",
@@ -102,5 +112,27 @@
     "good": "God",
     "strong_strength": "Sterk",
     "strength": "{strength}% Styrke"
+  },
+  "accounts": {
+    "accounts": "Kontoer",
+    "search": "Søk i kontoer...",
+    "all_accounts": "Alle kontoer",
+    "manage_your_saved_accounts_and_passwords": "Administrer dine lagrede kontoer og passord",
+    "generate_password": "Generer passord",
+    "add_account": "Legg til konto",
+    "account": "Konto",
+    "username": "Brukernavn",
+    "password": "Passord",
+    "category": "Kategori",
+    "tags": "Tagger",
+    "last_modified": "Sist endret",
+    "actions": "Handlinger",
+    "rows_per_page": "Rader per side:",
+    "showing": "Viser",
+    "of": "av",
+    "no_accounts_found": "Ingen kontoer funnet. Opprett en for å komme i gang.",
+    "add_new_account": "Legg til ny konto",
+    "focus_search": "Fokuser søk",
+    "switch_project": "Bytt prosjekt"
   }
 } 

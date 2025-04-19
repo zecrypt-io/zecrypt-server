@@ -42,10 +42,14 @@ import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
 import { EncryptionKeyModal } from "@/components/encryption-key-modal"
 import { useRouter } from "next/navigation"
 import { locales } from "@/middleware"
+<<<<<<< HEAD
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
+=======
+import { useTranslator } from "@/hooks/use-translations"
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -283,6 +287,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     return nameA.localeCompare(nameB);
   });
 
+  const { translate } = useTranslator();
+
   return (
     <div className="flex min-h-screen bg-background">
       <CommandPalette />
@@ -308,12 +314,17 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
         <div className="flex-1 overflow-auto py-2">
           <div className="px-3 py-2">
             <div className="mb-4">
+<<<<<<< HEAD
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">Project</label>
               <Button
                 variant="outline"
                 className="w-full justify-between"
                 onClick={() => setShowProjectDialog(true)}
               >
+=======
+              <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
+              <Button variant="outline" className="w-full justify-between" onClick={() => setShowProjectDialog(true)}>
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
                     className="h-4 w-4 rounded-full"
@@ -324,7 +335,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </Button>
             </div>
-            <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">Dashboards</h3>
+            <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">{translate("dashboard", "dashboard")}</h3>
             <div className="space-y-1 mb-6">
               <Link
                 href={`/${currentLocale}/dashboard`}
@@ -336,7 +347,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 )}
               >
                 <Home className="h-4 w-4" />
-                Overview
+                {translate("overview", "dashboard")}
               </Link>
               <Link
                 href={`/${currentLocale}/dashboard/accounts`}
@@ -405,7 +416,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
           <div className="flex items-center justify-between px-2 mt-6 mb-2">
             <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Star className="h-3 w-3" />
-              Favourites
+              {translate("favourites", "dashboard")}
             </h3>
             <Button
               variant="ghost"
@@ -458,7 +469,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               )}
             >
               <Bell className="h-4 w-4" />
-              Notifications
+              {translate("notifications", "dashboard")}
               <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
                 4
               </span>
@@ -486,13 +497,13 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 <DropdownMenuItem asChild>
                   <Link href={`/${currentLocale}/dashboard/user-settings`}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <span>{translate("settings", "dashboard")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>{translate("logout", "dashboard")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -513,7 +524,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 <input
                   ref={searchInputRef}
                   type="search"
-                  placeholder="Search..."
+                  placeholder={translate("search", "dashboard")}
                   className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
                 <kbd className="pointer-events-none absolute right-2.5 top-2.5 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
@@ -523,6 +534,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
+<<<<<<< HEAD
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -540,6 +552,26 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+=======
+          
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="default"
+        onClick={() => setShowGeneratePassword(true)}
+        className="theme-button flex items-center gap-2 px-4 py-2"
+      >
+        <Key className="h-5 w-5" />
+        <span>{translate("generate_password", "dashboard")}</span>
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>{translate("generate_password", "dashboard")}</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
           <WorkspaceSwitcherNav />
 

@@ -39,7 +39,17 @@
     "total_accounts": "Total Akun",
     "total_folders": "Total Folder",
     "from_last_month": "dibandingkan bulan lalu",
-    "recent_activity": "Aktivitas Terbaru"
+    "recent_activity": "Aktivitas Terbaru",
+    "keyboard_shortcuts": "Tautan Cepat",
+    "generate_password": "Buat Kata Sandi",
+    "favourites": "Favorit",
+    "dashboard": "Dasbor",
+    "overview": "Penglihatan",
+    "project": "Proyek",
+    "notifications": "Pemberitahuan",
+    "search": "Cari...",
+    "settings": "Pengaturan",
+    "logout": "Keluar"
   },
   "activity": {
     "password_updated": "Kata sandi diperbarui",
@@ -102,5 +112,27 @@
     "good": "Bagus",
     "strong_strength": "Kuat",
     "strength": "{strength}% Kekuatan"
+  },
+  "accounts": {
+    "accounts": "Akun",
+    "search": "Cari akun...",
+    "all_accounts": "Semua Akun",
+    "manage_your_saved_accounts_and_passwords": "Mengelola akun dan kata sandi Anda yang disimpan",
+    "generate_password": "Buat Kata Sandi",
+    "add_account": "Tambah Akun",
+    "account": "Akun",
+    "username": "Nama Pengguna",
+    "password": "Kata Sandi",
+    "category": "Kategori",
+    "tags": "Tag",
+    "last_modified": "Terakhir Diubah",
+    "actions": "Aksi",
+    "rows_per_page": "Baris per halaman:",
+    "showing": "Menampilkan",
+    "of": "dari",
+    "no_accounts_found": "Tidak ada akun. Buat satu untuk memulai.",
+    "add_new_account": "Tambah Akun Baru",
+    "focus_search": "Fokus Pencarian",
+    "switch_project": "Ubah Proyek"
   }
 } 

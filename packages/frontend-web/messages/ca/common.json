@@ -39,7 +39,17 @@
     "total_accounts": "Comptes totals",
     "total_folders": "Carpetes totals",
     "from_last_month": "des del mes passat",
-    "recent_activity": "Activitat recent"
+    "recent_activity": "Activitat recent",
+    "keyboard_shortcuts": "Keyboard shortcuts",
+    "generate_password": "Genera contrasenya",
+    "favourites": "Favorits",
+    "dashboard": "Tauler de control",
+    "overview": "Vista general",
+    "project": "Projecte",
+    "notifications": "Notificacions",
+    "search": "Cerca...",
+    "settings": "Configuració",
+    "logout": "Tanca sessió"
   },
   "activity": {
     "password_updated": "Contrasenya actualitzada",
@@ -102,5 +112,27 @@
     "good": "Bona",
     "strong_strength": "Forta",
     "strength": "{strength}% Força"
+  },
+  "accounts": {
+    "accounts": "Comptes",
+    "search": "Cerca comptes...",
+    "all_accounts": "Tots els comptes",
+    "manage_your_saved_accounts_and_passwords": "Gestiona els teus comptes i contrasenyes guardats",
+    "generate_password": "Genera contrasenya",
+    "add_account": "Afegeix compte",
+    "account": "Compte",
+    "username": "Nom d'usuari",
+    "password": "Contrasenya",
+    "category": "Categoria",
+    "tags": "Etiquetes",
+    "last_modified": "Última modificació",
+    "actions": "Accions",
+    "rows_per_page": "Files per pàgina:",
+    "showing": "Mostrant",
+    "of": "de",
+    "no_accounts_found": "No hi ha comptes. Crea un per començar.",
+    "add_new_account": "Afegeix un nou compte",
+    "focus_search": "Focusa la cerca",
+    "switch_project": "Canvia el projecte"
   }
 } 

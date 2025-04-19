@@ -39,7 +39,17 @@
     "total_accounts": "Tổng số tài khoản",
     "total_folders": "Tổng số thư mục",
     "from_last_month": "so với tháng trước",
-    "recent_activity": "Hoạt động gần đây"
+    "recent_activity": "Hoạt động gần đây",
+    "keyboard_shortcuts": "Phím tắt",
+    "generate_password": "Tạo mật khẩu",
+    "favourites": "Yêu thích",
+    "dashboard": "Bảng điều khiển",
+    "overview": "Tổng quan",
+    "project": "Dự án",
+    "notifications": "Thông báo",
+    "search": "Tìm kiếm...",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất"
   },
   "activity": {
     "password_updated": "Mật khẩu đã được cập nhật",
@@ -102,5 +112,27 @@
     "good": "Good",
     "strong_strength": "Strong",
     "strength": "{strength}% Strength"
+  },
+  "accounts": {
+    "accounts": "Tài khoản",
+    "search": "Tìm kiếm tài khoản...",
+    "all_accounts": "Tất cả tài khoản",
+    "manage_your_saved_accounts_and_passwords": "Quản lý tài khoản và mật khẩu đã lưu",
+    "generate_password": "Tạo mật khẩu",
+    "add_account": "Thêm tài khoản",
+    "account": "Tài khoản",
+    "username": "Tên tài khoản",
+    "password": "Mật khẩu",
+    "category": "Danh mục",
+    "tags": "Thẻ",
+    "last_modified": "Cuối cùng sửa đổi",
+    "actions": "Hành động",
+    "rows_per_page": "Hàng trên trang:",
+    "showing": "Hiển thị",
+    "of": "của",
+    "no_accounts_found": "Không tìm thấy tài khoản. Tạo một để bắt đầu.",
+    "add_new_account": "Thêm tài khoản mới",
+    "focus_search": "Tìm kiếm",
+    "switch_project": "Chuyển dự án"
   }
 } 

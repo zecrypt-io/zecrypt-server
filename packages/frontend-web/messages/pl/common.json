@@ -39,7 +39,17 @@
     "total_accounts": "Łączna liczba kont",
     "total_folders": "Łączna liczba folderów",
     "from_last_month": "w porównaniu z zeszłym miesiącem",
-    "recent_activity": "Ostatnia aktywność"
+    "recent_activity": "Ostatnia aktywność",
+    "keyboard_shortcuts": "Szybkie klawisze",
+    "generate_password": "Generuj hasło",
+    "favourites": "Ulubione",
+    "dashboard": "Dashboard",
+    "overview": "Przegląd",
+    "project": "Projekt",
+    "notifications": "Powiadomienia",
+    "search": "Szukaj...",
+    "settings": "Ustawienia",
+    "logout": "Wyloguj"
   },
   "activity": {
     "password_updated": "Hasło zaktualizowane",
@@ -102,5 +112,27 @@
     "good": "Dobre",
     "strong_strength": "Silne",
     "strength": "{strength}% Siła"
+  },
+  "accounts": {
+    "accounts": "Konta",
+    "search": "Szukaj kont...",
+    "all_accounts": "Wszystkie konta",
+    "manage_your_saved_accounts_and_passwords": "Zarządzaj zapisanymi kontami i hasłami",
+    "generate_password": "Generuj hasło",
+    "add_account": "Dodaj konto",
+    "account": "Konto",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło",
+    "category": "Kategoria",
+    "tags": "Tagi",
+    "last_modified": "Ostatnia modyfikacja",
+    "actions": "Akcje",
+    "rows_per_page": "Wierszy na stronę:",
+    "showing": "Wyświetlanie",
+    "of": "z",
+    "no_accounts_found": "Nie znaleziono kont. Utwórz jedno, aby rozpocząć.",
+    "add_new_account": "Dodaj nowe konto",
+    "focus_search": "Skup się na wyszukiwaniu",
+    "switch_project": "Zmień projekt"
   }
 } 

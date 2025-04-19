@@ -39,7 +39,17 @@
     "total_accounts": "Celkem účtů",
     "total_folders": "Celkem složek",
     "from_last_month": "od minulého měsíce",
-    "recent_activity": "Nedávná aktivita"
+    "recent_activity": "Nedávná aktivita",
+    "keyboard_shortcuts": "Klávesové zkratky",
+    "generate_password": "Generovat heslo",
+    "favourites": "Oblíbené",
+    "dashboard": "Nástěnka",
+    "overview": "Přehled",
+    "project": "Projekt",
+    "notifications": "Oznámení",
+    "search": "Hledat...",
+    "settings": "Nastavení",
+    "logout": "Odhlásit se"
   },
   "activity": {
     "password_updated": "Heslo bylo aktualizováno",
@@ -102,5 +112,27 @@
     "good": "Dobré",
     "strong_strength": "Silné",
     "strength": "{strength}% Síla"
+  },
+  "accounts": {
+    "accounts": "Účty",
+    "search": "Hledat účty...",
+    "all_accounts": "Všechny účty",
+    "manage_your_saved_accounts_and_passwords": "Spravujte své uložené účty a hesla",
+    "generate_password": "Generovat heslo",
+    "add_account": "Přidat účet",
+    "account": "Účet",
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "category": "Kategorie",
+    "tags": "Štítky",
+    "last_modified": "Poslední změna",
+    "actions": "Akce",
+    "rows_per_page": "Řádky na stránku:",
+    "showing": "Zobrazující",
+    "of": "z",
+    "no_accounts_found": "Nebyly nalezeny žádné účty. Vytvořte jeden, abyste mohli začít.",
+    "add_new_account": "Přidat nový účet",
+    "focus_search": "Zaměřit hledání",
+    "switch_project": "Přepnout projekt"
   }
 } 

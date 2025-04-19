@@ -39,7 +39,17 @@
     "total_accounts": "Toplam Hesap",
     "total_folders": "Toplam Klasör",
     "from_last_month": "geçen aya göre",
-    "recent_activity": "Son Etkinlik"
+    "recent_activity": "Son Etkinlik",
+    "keyboard_shortcuts": "Klavye kısayolları",
+    "generate_password": "Şifre oluştur",
+    "favourites": "Favoriler",
+    "dashboard": "Kontrol Paneli",
+    "overview": "Genel Bakış",
+    "project": "Proje",
+    "notifications": "Bildirimler",
+    "search": "Arama...",
+    "settings": "Ayarlar",
+    "logout": "Çıkış Yap"
   },
   "activity": {
     "password_updated": "Şifre güncellendi",
@@ -102,5 +112,27 @@
     "good": "İyi",
     "strong_strength": "Güçlü",
     "strength": "{strength}% Güç"
+  },
+  "accounts": {
+    "accounts": "Hesaplar",
+    "search": "Hesapları ara...",
+    "all_accounts": "Tüm hesaplar",
+    "manage_your_saved_accounts_and_passwords": "Kayıtlı hesaplarınızı ve şifrelerinizi yönetin",
+    "generate_password": "Şifre oluştur",
+    "add_account": "Hesap ekle",
+    "account": "Hesap",
+    "username": "Kullanıcı adı",
+    "password": "Şifre",
+    "category": "Kategori",
+    "tags": "Etiketler",
+    "last_modified": "Son değiştirildi",
+    "actions": "İşlemler",
+    "rows_per_page": "Sayfa başına satır:",
+    "showing": "Görüntülenen",
+    "of": "-dan",
+    "no_accounts_found": "Hesap bulunamadı. Bir tane oluşturun.",
+    "add_new_account": "Yeni hesap ekle",
+    "focus_search": "Araçları bul",
+    "switch_project": "Proje değiştir"
   }
 } 

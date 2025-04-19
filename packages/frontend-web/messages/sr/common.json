@@ -39,7 +39,17 @@
     "total_accounts": "Укупно налога",
     "total_folders": "Укупно фасцикли",
     "from_last_month": "у односу на прошли месец",
-    "recent_activity": "Скорашња активност"
+    "recent_activity": "Скорашња активност",
+    "keyboard_shortcuts": "Крајеви",
+    "generate_password": "Генериши лозинку",
+    "favourites": "Омиљени",
+    "dashboard": "Контролна табла",
+    "overview": "Преглед",
+    "project": "Пројекат",
+    "notifications": "Извештаји",
+    "search": "Претрага...",
+    "settings": "Подешавања",
+    "logout": "Одјава"
   },
   "activity": {
     "password_updated": "Лозинка ажурирана",
@@ -102,5 +112,27 @@
     "good": "Добра",
     "strong_strength": "Јака",
     "strength": "{strength}% Јачина"
+  },
+  "accounts": {
+    "accounts": "Аккаунты",
+    "search": "Поиск аккаунтов...",
+    "all_accounts": "Все аккаунты",
+    "manage_your_saved_accounts_and_passwords": "Управление вашими сохранёнными аккаунтами и паролями",
+    "generate_password": "Сгенерировать пароль",
+    "add_account": "Добавить аккаунт",
+    "account": "Аккаунт",
+    "username": "Имя пользователя",
+    "password": "Пароль",
+    "category": "Категория",
+    "tags": "Теги",
+    "last_modified": "Последнее изменение",
+    "actions": "Действия",
+    "rows_per_page": "Строк на странице:",
+    "showing": "Показано",
+    "of": "из",
+    "no_accounts_found": "Аккаунты не найдены. Создайте один для начала.",
+    "add_new_account": "Добавить новый аккаунт",
+    "focus_search": "Фокус поиска",
+    "switch_project": "Переключить проект"
   }
 } 

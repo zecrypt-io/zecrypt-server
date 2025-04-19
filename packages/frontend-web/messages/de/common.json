@@ -39,7 +39,17 @@
     "total_accounts": "Gesamtanzahl Konten",
     "total_folders": "Gesamtanzahl Ordner",
     "from_last_month": "im Vergleich zum Vormonat",
-    "recent_activity": "Letzte Aktivität"
+    "recent_activity": "Letzte Aktivität",
+    "keyboard_shortcuts": "Tastaturkürzel",
+    "generate_password": "Passwort generieren",
+    "favourites": "Favoriten",
+    "dashboard": "Dashboard",
+    "overview": "Übersicht",
+    "project": "Projekt",
+    "notifications": "Benachrichtigungen",
+    "search": "Suchen...",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
   },
   "activity": {
     "password_updated": "Passwort aktualisiert",
@@ -102,5 +112,27 @@
     "good": "Gut",
     "strong_strength": "Stark",
     "strength": "{strength}% Stärke"
+  },
+  "accounts": {
+    "accounts": "Konten",
+    "search": "Konten suchen...",
+    "all_accounts": "Alle Konten",
+    "manage_your_saved_accounts_and_passwords": "Verwalten Sie Ihre gespeicherten Konten und Passwörter",
+    "generate_password": "Passwort generieren",
+    "add_account": "Konto hinzufügen",
+    "account": "Konto",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "category": "Kategorie",
+    "tags": "Tags",
+    "last_modified": "Letzte Änderung",
+    "actions": "Aktionen",
+    "rows_per_page": "Zeilen pro Seite:",
+    "showing": "Anzeigen",
+    "of": "von",
+    "no_accounts_found": "Keine Konten gefunden. Erstellen Sie eines, um loszulegen.",
+    "add_new_account": "Neue Konto hinzufügen",
+    "focus_search": "Suche fokussieren",
+    "switch_project": "Projekt wechseln"
   }
 } 

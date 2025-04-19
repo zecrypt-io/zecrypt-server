@@ -39,7 +39,17 @@
     "total_accounts": "Totale rekeninge",
     "total_folders": "Totale vouers",
     "from_last_month": "sedert verlede maand",
-    "recent_activity": "Onlangse aktiwiteit"
+    "recent_activity": "Onlangse aktiwiteit",
+    "keyboard_shortcuts": "Sleutelbordkortpaaie",
+    "generate_password": "Genereer wagwoord",
+    "favourites": "Gunstelinge",
+    "dashboard": "Beheerpaneel",
+    "overview": "Oorsig",
+    "project": "Projek",
+    "notifications": "Kennisgewings",
+    "search": "Soek...",
+    "settings": "Instellings",
+    "logout": "Meld af"
   },
   "activity": {
     "password_updated": "Wagwoord opgedateer",
@@ -102,5 +112,27 @@
     "good": "Goed",
     "strong_strength": "Sterk",
     "strength": "{strength}% Sterkte"
+  },
+  "accounts": {
+    "accounts": "Rekeninge",
+    "search": "Soek rekeninge...",
+    "all_accounts": "Alle rekeninge",
+    "manage_your_saved_accounts_and_passwords": "Bestuur jou gestoorde rekeninge en wagwoorde",
+    "generate_password": "Genereer wagwoord",
+    "add_account": "Voeg rekening by",
+    "account": "Rekening",
+    "username": "Gebruikersnaam",
+    "password": "Wagwoord",
+    "category": "Kategorie",
+    "tags": "Etikette",
+    "last_modified": "Laas gewysig",
+    "actions": "Aksies",
+    "rows_per_page": "Rye per bladsy:",
+    "showing": "Wys",
+    "of": "van",
+    "no_accounts_found": "Geen rekeninge gevind nie. Skep een om te begin.",
+    "add_new_account": "Voeg nuwe rekening by",
+    "focus_search": "Fokus soek",
+    "switch_project": "Wissel projek"
   }
 } 

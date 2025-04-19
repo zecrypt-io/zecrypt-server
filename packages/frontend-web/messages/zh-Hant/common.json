@@ -39,7 +39,17 @@
     "total_accounts": "帳號總數",
     "total_folders": "資料夾總數",
     "from_last_month": "與上個月相比",
-    "recent_activity": "最近活動"
+    "recent_activity": "最近活動",
+    "keyboard_shortcuts": "鍵盤快捷鍵",
+    "generate_password": "產生密碼",
+    "favourites": "最愛",
+    "dashboard": "儀表板",
+    "overview": "概覽",
+    "project": "專案",
+    "notifications": "通知",
+    "search": "搜尋...",
+    "settings": "設定",
+    "logout": "登出"
   },
   "activity": {
     "password_updated": "密碼已更新",
@@ -102,5 +112,27 @@
     "good": "好",
     "strong_strength": "強",
     "strength": "{strength}% 強度"
+  },
+ "accounts": {
+    "accounts": "帳號",
+    "search": "搜尋帳號...",
+    "all_accounts": "所有帳號",
+    "manage_your_saved_accounts_and_passwords": "管理您的保存帳號和密碼",
+    "generate_password": "產生密碼",
+    "add_account": "添加帳號",
+    "account": "帳號",
+    "username": "用戶名",
+    "password": "密碼",
+    "category": "類別",
+    "tags": "標籤",
+    "last_modified": "最後修改",
+    "actions": "操作",
+    "rows_per_page": "每頁行數:",
+    "showing": "顯示",
+    "of": "從",
+    "no_accounts_found": "沒有找到帳號。創建一個開始。",
+    "add_new_account": "添加新帳號",
+    "focus_search": "聚焦搜索",
+    "switch_project": "切換專案"
   }
 } 
