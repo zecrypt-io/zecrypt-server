@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Skydda dina data med Zecrypt"
+  },
+  "navigation": {
+    "home": "Hem",
+    "dashboard": "Instrumentpanel",
+    "settings": "Inställningar"
+  },
+  "auth": {
+    "login": "Logga in",
+    "signup": "Registrera dig",
+    "logout": "Logga ut",
+    "email": "E-post",
+    "password": "Lösenord",
+    "agreement": "Genom att logga in godkänner du våra",
+    "terms": "Användarvillkor"
+  },
+  "features": {
+    "trial_title": "Prova 3Password Familjer gratis i 40 dagar",
+    "unlimited_devices": "5 familjemedlemmar, obegränsat antal enheter",
+    "shared_vaults": "Delade valv låter familjemedlemmar välja vad de vill dela (eller behålla privat)",
+    "advanced_security": "Avancerad säkerhet med autentiserad kryptering, PAKE och mer",
+    "security_alerts": "Varningar för komprometterade webbplatser och sårbara lösenord",
+    "multi_platform": "Tillgänglig på Mac, iOS, Windows, Android, Chrome OS och Linux",
+    "looking_for_options": "Letar du efter ett individuellt, team- eller företagskonto?",
+    "see_options": "Se alla kontotyper"
+  },
+  "actions": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "submit": "Skicka",
+    "confirm": "Bekräfta"
+  },
+  "dashboard": {
+    "welcome_back": "Välkommen tillbaka till din säkra arbetsyta",
+    "total_passwords": "Totalt antal lösenord",
+    "total_accounts": "Totalt antal konton",
+    "total_folders": "Totalt antal mappar",
+    "from_last_month": "jämfört med förra månaden",
+    "recent_activity": "Senaste aktivitet"
+  },
+  "activity": {
+    "password_updated": "Lösenord uppdaterat",
+    "note_created": "Säker anteckning skapad"
+  },
+  "time": {
+    "today": "Idag",
+    "yesterday": "Igår",
+    "last_7_days": "Senaste 7 dagarna",
+    "last_30_days": "Senaste 30 dagarna",
+    "all_time": "All tid",
+    "just_now": "Precis nu",
+    "hours_ago": "{hours} timmar sedan",
+    "days_ago": "{days} dagar sedan"
+  },
+  "password_generator": {
+    "title": "Lösenordsgenerator",
+    "strong": "Starkt",
+    "memorable": "Lätt att minnas",
+    "pin": "PIN",
+    "passphrase": "Lösenordsfras",
+    "chars": "tecken",
+    "digits": "siffror",
+    "generate_new": "Generera nytt lösenord",
+    "copy": "Kopiera lösenord",
+    "copied": "Kopierat!",
+    "save": "Spara lösenord",
+    "close": "Stäng",
+    "copy_password": "Kopiera lösenord",
+    "password_length": "Lösenordslängd",
+    "options": "Alternativ",
+    "advanced": "Avancerat",
+    "history": "Historik",
+    "uppercase": "Versaler (A-Z)",
+    "lowercase": "Gemener (a-z)",
+    "numbers": "Siffror (0-9)",
+    "symbols": "Symboler (!@#$%^&*)",
+    "password_analysis": "Lösenordsanalys",
+    "strong_enough": "Tillräckligt starkt för de flesta webbplatser",
+    "not_strong_enough": "Inte tillräckligt starkt för känsliga konton",
+    "good_length": "Bra längd",
+    "consider_longer": "Överväg att använda ett längre lösenord",
+    "using_all_types": "Alla teckentyper används",
+    "consider_more_types": "Överväg att använda fler teckentyper",
+    "all_characters": "Alla tecken",
+    "easy_to_read": "Lätt att läsa (inga liknande tecken som 1, l, I, 0, O)",
+    "easy_to_say": "Lätt att säga (inga siffror eller specialtecken)",
+    "password_tips": "Lösenordstips",
+    "tip_min_length": "• Använd minst 14 tecken för hög säkerhet",
+    "tip_mix": "• Inkludera en blandning av bokstäver, siffror och symboler",
+    "tip_no_personal": "• Undvik att använda personlig information",
+    "tip_unique": "• Använd ett unikt lösenord för varje konto",
+    "tip_manager": "• Överväg att använda en lösenordshanterare för att lagra dina lösenord",
+    "recently_generated": "Nyligen genererade",
+    "clear_history": "Rensa historik",
+    "no_history": "Ingen lösenordshistorik än",
+    "history_hint": "Genererade lösenord visas här",
+    "weak": "Svagt",
+    "fair": "Medel",
+    "good": "Bra",
+    "strong_strength": "Starkt",
+    "strength": "{strength}% Styrka"
+  }
+} 

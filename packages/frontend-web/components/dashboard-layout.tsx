@@ -3,7 +3,7 @@
 import type React from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
@@ -19,11 +19,12 @@ import {
   Bell,
   Plus,
   X,
-} from "lucide-react";
-import { cn } from "@/libs/utils";
-import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav";
-import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
-import { ThemeToggle } from "@/components/theme-toggle";
+  Globe,
+} from "lucide-react"
+import { cn } from "@/libs/utils"
+import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav"
+import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,14 +32,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ProjectDialog } from "@/components/project-dialog";
-import { CommandPalette } from "@/components/command-palette";
-import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
-import { EncryptionKeyModal } from "@/components/encryption-key-modal";
-import { useRouter } from "next/navigation";
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserProfileDialog } from "@/components/user-profile-dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ProjectDialog } from "@/components/project-dialog"
+import { CommandPalette } from "@/components/command-palette"
+import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
+import { EncryptionKeyModal } from "@/components/encryption-key-modal"
+import { useRouter } from "next/navigation"
+import { locales } from "@/middleware"
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
@@ -46,6 +49,7 @@ import { useUser } from "@stackframe/stack";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  locale?: string;
 }
 
 function Star(props: React.SVGProps<SVGSVGElement>) {
@@ -67,7 +71,7 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProps) {
   const pathname = usePathname();
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
@@ -76,6 +80,43 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
+
+  const [currentLocale, setCurrentLocale] = useState(locale);
+  
+  // Language labels
+  const languageLabels: Record<string, string> = {
+    af: "Afrikaans",
+    ar: "Arabic (عربى)",
+    ca: "Catalan (Català)",
+    cs: "Czech (Čeština)",
+    da: "Danish (Dansk)",
+    de: "German (Deutsch)",
+    el: "Greek (Ελληνικά)",
+    en: "English",
+    es: "Spanish (Español)",
+    fi: "Finnish (Suomalainen)",
+    fr: "French (Français)",
+    he: "Hebrew (עִברִית)",
+    hu: "Hungarian (Magyar)",
+    id: "Indonesian",
+    it: "Italian (Italiano)",
+    ja: "Japanese (日本語)",
+    ko: "Korean (한국어)",
+    nl: "Dutch (Nederlands)",
+    no: "Norwegian (Norsk)",
+    pl: "Polish (Polskie)",
+    pt: "Portuguese (Português)",
+    'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
+    ro: "Romanian (Română)",
+    ru: "Russian (Pусский)",
+    sr: "Serbian (Српски)",
+    sv: "Swedish (Svenska)",
+    tr: "Turkish (Türkçe)",
+    uk: "Ukrainian (Українська)",
+    vi: "Vietnamese (Tiếng Việt)",
+    'zh-CN': "Chinese Simplified (简体中文)",
+    'zh-Hant': "Chinese Traditional (繁體中文)",
+  };
 
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -106,18 +147,40 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleLogout = async () => {
+  // Define handleLogout using useCallback to avoid recreating it on every render
+  const handleLogout = useCallback(async () => {
     try {
       if (user) {
         await user.signOut();
       }
       dispatch(clearUserData());
       localStorage.clear();
-      router.push("/");
+      router.push(`/${currentLocale}`);
     } catch (error) {
       console.error("Error during logout:", error);
     }
+  }, [user, dispatch, router, currentLocale]);
+ 
+  // Switch language function
+  const switchLanguage = (newLocale: string) => {
+    if (newLocale === currentLocale) return;
+    
+    // Create a new path with the updated locale
+    const segments = pathname?.split('/') || [];
+    segments[1] = newLocale; // Replace the locale segment
+    const newPath = segments.join('/');
+    
+    // Navigate to the new path
+    router.push(newPath);
+    setCurrentLocale(newLocale);
   };
+
+  useEffect(() => {
+    // Set the current locale when component mounts
+    if (locale) {
+      setCurrentLocale(locale);
+    }
+  }, [locale]);
 
   useEffect(() => {
     const handleGeneratePassword = () => setShowGeneratePassword(true);
@@ -147,35 +210,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       }
 
       switch (e.key.toLowerCase()) {
-        case "k":
-          break;
-        case "g":
-          setShowGeneratePassword(true);
-          break;
-        case "p":
-          setShowProjectDialog(true);
-          break;
-        case "d":
-          window.location.href = "/dashboard";
-          break;
-        case "a":
-          window.location.href = "/dashboard/accounts";
-          break;
-        case "f":
-          window.location.href = "/dashboard/files";
-          break;
-        case "n":
-          window.location.href = "/dashboard/notifications";
-          break;
-        case "s":
-          window.location.href = "/dashboard/user-settings";
-          break;
-        case "t":
-          document.dispatchEvent(new CustomEvent("toggle-theme-event"));
-          break;
-        case "l":
+        case "k": // Command palette is handled separately
+          break
+        case "g": // Generate password
+          setShowGeneratePassword(true)
+          break
+        case "p": // Project switcher
+          setShowProjectDialog(true)
+          break
+        case "d": // Dashboard
+          router.push(`/${currentLocale}/dashboard`)
+          break
+        case "a": // Accounts
+          router.push(`/${currentLocale}/dashboard/accounts`)
+          break
+        case "f": // Files
+          router.push(`/${currentLocale}/dashboard/files`)
+          break
+        case "n": // Notifications
+          router.push(`/${currentLocale}/dashboard/notifications`)
+          break
+        case "s": // Settings
+          router.push(`/${currentLocale}/dashboard/user-settings`)
+          break
+        case "t": // Toggle theme
+          document.dispatchEvent(new CustomEvent("toggle-theme-event"))
+          break
+        case "l": // Logout
           handleLogout();
-          break;
+          break
       }
     };
 
@@ -188,7 +251,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       document.removeEventListener("toggle-theme", handleThemeToggle);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleLogout]);
+  }, [router, currentLocale, handleLogout]);
 
   useEffect(() => {
     const shouldShowModal = sessionStorage.getItem("showEncryptionKeyModal") === "true";
@@ -208,9 +271,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const handleEncryptionKeyCancel = () => {
-    setShowEncryptionKeyModal(false);
-    router.push("/");
-  };
+    // If user cancels, redirect back to login with the current locale
+    setShowEncryptionKeyModal(false)
+    router.push(`/${currentLocale}/login`)
+  }
+
+  // Sort locales by display name
+  const sortedLocales = [...locales].sort((a, b) => {
+    const nameA = languageLabels[a] || a;
+    const nameB = languageLabels[b] || b;
+    return nameA.localeCompare(nameB);
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -218,7 +289,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <div className="hidden md:flex w-64 flex-col border-r border-border">
         <div className="flex h-14 items-center border-b border-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
             <Lock className="h-5 w-5" />
             <span>Zecrypt</span>
           </Link>
@@ -256,10 +327,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">Dashboards</h3>
             <div className="space-y-1 mb-6">
               <Link
-                href="/dashboard"
+                href={`/${currentLocale}/dashboard`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard"
+                  pathname === `/${currentLocale}/dashboard`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -268,10 +339,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Overview
               </Link>
               <Link
-                href="/dashboard/accounts"
+                href={`/${currentLocale}/dashboard/accounts`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/accounts"
+                  pathname === `/${currentLocale}/dashboard/accounts`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -280,10 +351,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Accounts
               </Link>
               <Link
-                href="/dashboard/api-keys"
+                href={`/${currentLocale}/dashboard/api-keys`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/api-keys"
+                  pathname === `/${currentLocale}/dashboard/api-keys`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -303,10 +374,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 API Keys
               </Link>
               <Link
-                href="/dashboard/wallet-passphrases"
+                href={`/${currentLocale}/dashboard/wallet-passphrases`}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === "/dashboard/wallet-passphrases"
+                  pathname === `/${currentLocale}/dashboard/wallet-passphrases`
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
@@ -350,10 +421,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {favoriteTags.map((tag) => (
               <div key={tag} className="flex items-center justify-between px-2 py-1 group">
                 <Link
-                  href={`/dashboard/favourites?tag=${encodeURIComponent(tag)}`}
+                  href={`/${currentLocale}/dashboard/favourites?tag=${encodeURIComponent(tag)}`}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-2 py-1 text-sm flex-1",
-                    pathname === "/dashboard/favourites" && searchParams?.get("tag") === tag
+                    pathname === `/${currentLocale}/dashboard/favourites` && searchParams?.get("tag") === tag
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground",
                   )}
@@ -378,10 +449,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="mt-auto border-t border-border">
           <div className="px-3 py-2">
             <Link
-              href="/dashboard/notifications"
+              href={`/${currentLocale}/dashboard/notifications`}
               className={cn(
                 "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                pathname === "/dashboard/notifications"
+                pathname === `/${currentLocale}/dashboard/notifications`
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}
@@ -413,7 +484,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/user-settings">
+                  <Link href={`/${currentLocale}/dashboard/user-settings`}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </Link>
@@ -472,7 +543,49 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <WorkspaceSwitcherNav />
 
-          <ThemeToggle />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => console.log("Shortcuts")}>
+                  <Command className="h-4 w-4" />
+                  <span className="sr-only">Keyboard shortcuts</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Keyboard shortcuts</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                <Globe className="h-4 w-4" />
+                <span className="sr-only">Change language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {sortedLocales.map((loc) => (
+                <DropdownMenuItem 
+                  key={loc} 
+                  onClick={() => switchLanguage(loc)}
+                  className={loc === currentLocale ? "font-bold bg-accent/50" : ""}
+                >
+                  {languageLabels[loc] || loc}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ThemeToggle />
+              </TooltipTrigger>
+              <TooltipContent>Toggle theme</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </header>
 
         <main className="flex flex-1">

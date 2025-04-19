@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Zecryptであなたのデータを守りましょう"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "dashboard": "ダッシュボード",
+    "settings": "設定"
+  },
+  "auth": {
+    "login": "ログイン",
+    "signup": "新規登録",
+    "logout": "ログアウト",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "agreement": "ログインすることで、以下に同意したことになります:",
+    "terms": "利用規約"
+  },
+  "features": {
+    "trial_title": "3Passwordファミリーを40日間無料でお試しください",
+    "unlimited_devices": "5人の家族、無制限のデバイス",
+    "shared_vaults": "共有ボールトで家族が共有するもの（または非公開にするもの）を選べます",
+    "advanced_security": "認証付き暗号化、PAKEなどの高度なセキュリティ",
+    "security_alerts": "侵害されたウェブサイトや脆弱なパスワードの警告",
+    "multi_platform": "Mac、iOS、Windows、Android、Chrome OS、Linuxで利用可能",
+    "looking_for_options": "個人、チーム、ビジネスアカウントをお探しですか？",
+    "see_options": "すべてのアカウントオプションを見る"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "submit": "送信",
+    "confirm": "確認"
+  },
+  "dashboard": {
+    "welcome_back": "安全なワークスペースへようこそ",
+    "total_passwords": "パスワード合計",
+    "total_accounts": "アカウント合計",
+    "total_folders": "フォルダ合計",
+    "from_last_month": "先月比",
+    "recent_activity": "最近のアクティビティ"
+  },
+  "activity": {
+    "password_updated": "パスワードが更新されました",
+    "note_created": "セキュアノートが作成されました"
+  },
+  "time": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "last_7_days": "過去7日間",
+    "last_30_days": "過去30日間",
+    "all_time": "全期間",
+    "just_now": "たった今",
+    "hours_ago": "{hours}時間前",
+    "days_ago": "{days}日前"
+  },
+  "password_generator": {
+    "title": "パスワードジェネレーター",
+    "strong": "強力",
+    "memorable": "覚えやすい",
+    "pin": "PIN",
+    "passphrase": "パスフレーズ",
+    "chars": "文字",
+    "digits": "数字",
+    "generate_new": "新しいパスワードを生成",
+    "copy": "パスワードをコピー",
+    "copied": "コピーしました！",
+    "save": "パスワードを保存",
+    "close": "閉じる",
+    "copy_password": "パスワードをコピー",
+    "password_length": "パスワードの長さ",
+    "options": "オプション",
+    "advanced": "詳細設定",
+    "history": "履歴",
+    "uppercase": "大文字 (A-Z)",
+    "lowercase": "小文字 (a-z)",
+    "numbers": "数字 (0-9)",
+    "symbols": "記号 (!@#$%^&*)",
+    "password_analysis": "パスワード分析",
+    "strong_enough": "ほとんどのサイトで十分強力",
+    "not_strong_enough": "機密性の高いアカウントには十分強力ではありません",
+    "good_length": "十分な長さ",
+    "consider_longer": "より長いパスワードの使用を検討してください",
+    "using_all_types": "すべての文字タイプを使用中",
+    "consider_more_types": "より多くの文字タイプの使用を検討してください",
+    "all_characters": "すべての文字",
+    "easy_to_read": "読みやすい（1, l, I, 0, Oのような似た文字なし）",
+    "easy_to_say": "言いやすい（数字や記号なし）",
+    "password_tips": "パスワードのヒント",
+    "tip_min_length": "• 高いセキュリティのために14文字以上を使用してください",
+    "tip_mix": "• 文字、数字、記号を組み合わせてください",
+    "tip_no_personal": "• 個人情報の使用は避けてください",
+    "tip_unique": "• 各アカウントで異なるパスワードを使用してください",
+    "tip_manager": "• パスワードマネージャーの利用を検討してください",
+    "recently_generated": "最近生成されたもの",
+    "clear_history": "履歴をクリア",
+    "no_history": "まだパスワード履歴がありません",
+    "history_hint": "生成されたパスワードはここに表示されます",
+    "weak": "弱い",
+    "fair": "普通",
+    "good": "良い",
+    "strong_strength": "強力",
+    "strength": "{strength}% 強度"
+  }
+} 

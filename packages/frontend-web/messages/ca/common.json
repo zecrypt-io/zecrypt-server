@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Protegeix les teves dades amb Zecrypt"
+  },
+  "navigation": {
+    "home": "Inici",
+    "dashboard": "Tauler de control",
+    "settings": "Configuració"
+  },
+  "auth": {
+    "login": "Inicia sessió",
+    "signup": "Registra't",
+    "logout": "Tanca sessió",
+    "email": "Correu electrònic",
+    "password": "Contrasenya",
+    "agreement": "En iniciar sessió, acceptes els nostres",
+    "terms": "Termes"
+  },
+  "features": {
+    "trial_title": "Prova fins a 3Password Famílies gratis durant 40 dies",
+    "unlimited_devices": "5 membres de la família, dispositius il·limitats",
+    "shared_vaults": "Les caixes fortes compartides permeten als membres de la família triar què volen compartir (o mantenir privat)",
+    "advanced_security": "Seguretat avançada amb xifratge autenticat, PAKE i més",
+    "security_alerts": "Alertes per a llocs web compromesos i contrasenyes vulnerables",
+    "multi_platform": "Disponible per a Mac, iOS, Windows, Android, Chrome OS i Linux",
+    "looking_for_options": "Busques un compte individual, d'equip o d'empresa?",
+    "see_options": "Veure totes les opcions de compte"
+  },
+  "actions": {
+    "save": "Desa",
+    "cancel": "Cancel·la",
+    "submit": "Envia",
+    "confirm": "Confirma"
+  },
+  "dashboard": {
+    "welcome_back": "Benvingut de nou al teu espai de treball segur",
+    "total_passwords": "Contrasenyes totals",
+    "total_accounts": "Comptes totals",
+    "total_folders": "Carpetes totals",
+    "from_last_month": "des del mes passat",
+    "recent_activity": "Activitat recent"
+  },
+  "activity": {
+    "password_updated": "Contrasenya actualitzada",
+    "note_created": "Nota segura creada"
+  },
+  "time": {
+    "today": "Avui",
+    "yesterday": "Ahir",
+    "last_7_days": "Últims 7 dies",
+    "last_30_days": "Últims 30 dies",
+    "all_time": "Tot el temps",
+    "just_now": "Ara mateix",
+    "hours_ago": "fa {hours} hores",
+    "days_ago": "fa {days} dies"
+  },
+  "password_generator": {
+    "title": "Generador de contrasenyes",
+    "strong": "Forta",
+    "memorable": "Memorable",
+    "pin": "PIN",
+    "passphrase": "Frase de pas",
+    "chars": "caràcters",
+    "digits": "dígits",
+    "generate_new": "Genera una nova contrasenya",
+    "copy": "Copia la contrasenya",
+    "copied": "Copiat!",
+    "save": "Desa la contrasenya",
+    "close": "Tanca",
+    "copy_password": "Copia la contrasenya",
+    "password_length": "Longitud de la contrasenya",
+    "options": "Opcions",
+    "advanced": "Avançat",
+    "history": "Historial",
+    "uppercase": "Majúscules (A-Z)",
+    "lowercase": "Minúscules (a-z)",
+    "numbers": "Nombres (0-9)",
+    "symbols": "Símbols (!@#$%^&*)",
+    "password_analysis": "Anàlisi de la contrasenya",
+    "strong_enough": "Suficientment forta per a la majoria de llocs",
+    "not_strong_enough": "No prou forta per a comptes sensibles",
+    "good_length": "Bona longitud",
+    "consider_longer": "Considera utilitzar una contrasenya més llarga",
+    "using_all_types": "Utilitzant tots els tipus de caràcters",
+    "consider_more_types": "Considera utilitzar més tipus de caràcters",
+    "all_characters": "Tots els caràcters",
+    "easy_to_read": "Fàcil de llegir (sense caràcters similars com 1, l, I, 0, O)",
+    "easy_to_say": "Fàcil de dir (sense nombres ni caràcters especials)",
+    "password_tips": "Consells de contrasenya",
+    "tip_min_length": "• Utilitza un mínim de 14 caràcters per a una alta seguretat",
+    "tip_mix": "• Inclou una barreja de lletres, nombres i símbols",
+    "tip_no_personal": "• Evita utilitzar informació personal",
+    "tip_unique": "• Utilitza una contrasenya diferent per a cada compte",
+    "tip_manager": "• Considera utilitzar un gestor de contrasenyes per desar les teves contrasenyes",
+    "recently_generated": "Generades recentment",
+    "clear_history": "Neteja l'historial",
+    "no_history": "Encara no hi ha historial de contrasenyes",
+    "history_hint": "Les contrasenyes generades apareixeran aquí",
+    "weak": "Feble",
+    "fair": "Regular",
+    "good": "Bona",
+    "strong_strength": "Forta",
+    "strength": "{strength}% Força"
+  }
+} 

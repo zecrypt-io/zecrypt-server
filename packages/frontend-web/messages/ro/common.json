@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Protejați-vă datele cu Zecrypt"
+  },
+  "navigation": {
+    "home": "Acasă",
+    "dashboard": "Tablou de bord",
+    "settings": "Setări"
+  },
+  "auth": {
+    "login": "Autentificare",
+    "signup": "Înregistrare",
+    "logout": "Deconectare",
+    "email": "E-mail",
+    "password": "Parolă",
+    "agreement": "Prin autentificare, sunteți de acord cu",
+    "terms": "Termenii de utilizare"
+  },
+  "features": {
+    "trial_title": "Încercați 3Password Familii gratuit timp de 40 de zile",
+    "unlimited_devices": "5 membri ai familiei, dispozitive nelimitate",
+    "shared_vaults": "Seifurile partajate permit membrilor familiei să aleagă ce doresc să partajeze (sau să păstreze privat)",
+    "advanced_security": "Securitate avansată cu criptare autenticată, PAKE și altele",
+    "security_alerts": "Alerte pentru site-uri compromise și parole vulnerabile",
+    "multi_platform": "Disponibil pe Mac, iOS, Windows, Android, Chrome OS și Linux",
+    "looking_for_options": "Căutați un cont individual, de echipă sau de afaceri?",
+    "see_options": "Vezi toate opțiunile de cont"
+  },
+  "actions": {
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "submit": "Trimite",
+    "confirm": "Confirmă"
+  },
+  "dashboard": {
+    "welcome_back": "Bine ați revenit în spațiul dvs. de lucru securizat",
+    "total_passwords": "Total parole",
+    "total_accounts": "Total conturi",
+    "total_folders": "Total dosare",
+    "from_last_month": "față de luna trecută",
+    "recent_activity": "Activitate recentă"
+  },
+  "activity": {
+    "password_updated": "Parolă actualizată",
+    "note_created": "Notă securizată creată"
+  },
+  "time": {
+    "today": "Astăzi",
+    "yesterday": "Ieri",
+    "last_7_days": "Ultimele 7 zile",
+    "last_30_days": "Ultimele 30 de zile",
+    "all_time": "Tot timpul",
+    "just_now": "Chiar acum",
+    "hours_ago": "Acum {hours} ore",
+    "days_ago": "Acum {days} zile"
+  },
+  "password_generator": {
+    "title": "Generator de parole",
+    "strong": "Puternică",
+    "memorable": "Ușor de reținut",
+    "pin": "PIN",
+    "passphrase": "Fraza de acces",
+    "chars": "caractere",
+    "digits": "cifre",
+    "generate_new": "Generează o parolă nouă",
+    "copy": "Copiază parola",
+    "copied": "Copiat!",
+    "save": "Salvează parola",
+    "close": "Închide",
+    "copy_password": "Copiază parola",
+    "password_length": "Lungimea parolei",
+    "options": "Opțiuni",
+    "advanced": "Avansat",
+    "history": "Istoric",
+    "uppercase": "Majuscule (A-Z)",
+    "lowercase": "Minuscule (a-z)",
+    "numbers": "Numere (0-9)",
+    "symbols": "Simboluri (!@#$%^&*)",
+    "password_analysis": "Analiza parolei",
+    "strong_enough": "Destul de puternică pentru majoritatea site-urilor",
+    "not_strong_enough": "Nu este suficient de puternică pentru conturi sensibile",
+    "good_length": "Lungime bună",
+    "consider_longer": "Ia în considerare o parolă mai lungă",
+    "using_all_types": "Se folosesc toate tipurile de caractere",
+    "consider_more_types": "Ia în considerare folosirea mai multor tipuri de caractere",
+    "all_characters": "Toate caracterele",
+    "easy_to_read": "Ușor de citit (fără caractere similare precum 1, l, I, 0, O)",
+    "easy_to_say": "Ușor de spus (fără cifre sau caractere speciale)",
+    "password_tips": "Sfaturi pentru parole",
+    "tip_min_length": "• Folosește cel puțin 14 caractere pentru o securitate ridicată",
+    "tip_mix": "• Include un amestec de litere, cifre și simboluri",
+    "tip_no_personal": "• Evită folosirea informațiilor personale",
+    "tip_unique": "• Folosește o parolă diferită pentru fiecare cont",
+    "tip_manager": "• Ia în considerare utilizarea unui manager de parole pentru a-ți stoca parolele",
+    "recently_generated": "Generate recent",
+    "clear_history": "Șterge istoricul",
+    "no_history": "Nu există încă istoric de parole",
+    "history_hint": "Parolele generate vor apărea aici",
+    "weak": "Slabă",
+    "fair": "Mediocră",
+    "good": "Bună",
+    "strong_strength": "Puternică",
+    "strength": "{strength}% Putere"
+  }
+} 

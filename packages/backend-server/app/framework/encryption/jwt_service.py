@@ -23,7 +23,7 @@ def generate_jwt(
     lifetime_seconds: int = 3600,
     secret: str = jwt_secret,
     algorithm: str = jwt_algo,
-) -> str:
+):
     payload = data.copy()
     payload["exp"] = get_expire_timestamp(lifetime_seconds)
     return jwt.encode(payload, secret, algorithm=algorithm)

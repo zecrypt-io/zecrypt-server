@@ -10,11 +10,14 @@ import { RootState, AppDispatch } from "../libs/Redux/store";
 import { useSelector, useDispatch } from "react-redux";
 import { setWorkspaceData } from "../libs/Redux/workspaceSlice";
 import { Workspace } from "../libs/Redux/workspaceSlice";
+import { log } from "node:console";
 
 export function OverviewContent() {
   const user = useUser();
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+  console.log(`access token ${accessToken}`);
+  
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);

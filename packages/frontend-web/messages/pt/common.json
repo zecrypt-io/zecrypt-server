@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Proteja os seus dados com o Zecrypt"
+  },
+  "navigation": {
+    "home": "Início",
+    "dashboard": "Painel de Controlo",
+    "settings": "Definições"
+  },
+  "auth": {
+    "login": "Entrar",
+    "signup": "Registar-se",
+    "logout": "Sair",
+    "email": "E-mail",
+    "password": "Palavra-passe",
+    "agreement": "Ao entrar, concorda com os nossos",
+    "terms": "Termos de utilização"
+  },
+  "features": {
+    "trial_title": "Experimente o 3Password Famílias gratuitamente durante 40 dias",
+    "unlimited_devices": "5 membros da família, dispositivos ilimitados",
+    "shared_vaults": "Cofres partilhados permitem que os membros da família escolham o que querem partilhar (ou manter privado)",
+    "advanced_security": "Segurança avançada com encriptação autenticada, PAKE e mais",
+    "security_alerts": "Alertas para sites comprometidos e palavras-passe vulneráveis",
+    "multi_platform": "Disponível para Mac, iOS, Windows, Android, Chrome OS e Linux",
+    "looking_for_options": "Procura uma conta individual, de equipa ou empresarial?",
+    "see_options": "Veja todas as opções de conta"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "submit": "Submeter",
+    "confirm": "Confirmar"
+  },
+  "dashboard": {
+    "welcome_back": "Bem-vindo de volta ao seu espaço de trabalho seguro",
+    "total_passwords": "Total de palavras-passe",
+    "total_accounts": "Total de contas",
+    "total_folders": "Total de pastas",
+    "from_last_month": "em relação ao mês passado",
+    "recent_activity": "Atividade recente"
+  },
+  "activity": {
+    "password_updated": "Palavra-passe atualizada",
+    "note_created": "Nota segura criada"
+  },
+  "time": {
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "last_7_days": "Últimos 7 dias",
+    "last_30_days": "Últimos 30 dias",
+    "all_time": "Todo o tempo",
+    "just_now": "Agora mesmo",
+    "hours_ago": "Há {hours} horas",
+    "days_ago": "Há {days} dias"
+  },
+  "password_generator": {
+    "title": "Gerador de Senhas",
+    "strong": "Forte",
+    "memorable": "Memorável",
+    "pin": "PIN",
+    "passphrase": "Frase de acesso",
+    "chars": "caracteres",
+    "digits": "dígitos",
+    "generate_new": "Gerar nova senha",
+    "copy": "Copiar senha",
+    "copied": "Copiado!",
+    "save": "Salvar senha",
+    "close": "Fechar",
+    "copy_password": "Copiar senha",
+    "password_length": "Comprimento da senha",
+    "options": "Opções",
+    "advanced": "Avançado",
+    "history": "Histórico",
+    "uppercase": "Maiúsculas (A-Z)",
+    "lowercase": "Minúsculas (a-z)",
+    "numbers": "Números (0-9)",
+    "symbols": "Símbolos (!@#$%^&*)",
+    "password_analysis": "Análise de senha",
+    "strong_enough": "Forte o suficiente para a maioria dos sites",
+    "not_strong_enough": "Não é forte o suficiente para contas sensíveis",
+    "good_length": "Bom comprimento",
+    "consider_longer": "Considere usar uma senha mais longa",
+    "using_all_types": "Usando todos os tipos de caracteres",
+    "consider_more_types": "Considere usar mais tipos de caracteres",
+    "all_characters": "Todos os caracteres",
+    "easy_to_read": "Fácil de ler (sem caracteres semelhantes como 1, l, I, 0, O)",
+    "easy_to_say": "Fácil de dizer (sem números ou caracteres especiais)",
+    "password_tips": "Dicas de senha",
+    "tip_min_length": "• Use no mínimo 14 caracteres para alta segurança",
+    "tip_mix": "• Inclua uma mistura de letras, números e símbolos",
+    "tip_no_personal": "• Evite usar informações pessoais",
+    "tip_unique": "• Use uma senha diferente para cada conta",
+    "tip_manager": "• Considere usar um gestor de senhas para armazenar as suas senhas",
+    "recently_generated": "Geradas recentemente",
+    "clear_history": "Limpar histórico",
+    "no_history": "Ainda não há histórico de senhas",
+    "history_hint": "As senhas geradas aparecerão aqui",
+    "weak": "Fraca",
+    "fair": "Razoável",
+    "good": "Boa",
+    "strong_strength": "Forte",
+    "strength": "{strength}% Força"
+  }
+} 

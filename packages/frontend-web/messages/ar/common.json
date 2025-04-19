@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "احمِ بياناتك مع Zecrypt"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "agreement": "عند تسجيل الدخول، أنت توافق على",
+    "terms": "الشروط"
+  },
+  "features": {
+    "trial_title": "جرّب حتى 3Password للعائلات مجانًا لمدة 40 يومًا",
+    "unlimited_devices": "5 أفراد من العائلة، أجهزة غير محدودة",
+    "shared_vaults": "تتيح الخزائن المشتركة لأفراد العائلة اختيار ما يريدون مشاركته (أو إبقاءه خاصًا)",
+    "advanced_security": "أمان متقدم مع تشفير موثوق، PAKE والمزيد",
+    "security_alerts": "تنبيهات للمواقع المخترقة وكلمات المرور الضعيفة",
+    "multi_platform": "متوفر على Mac وiOS وWindows وAndroid وChrome OS وLinux",
+    "looking_for_options": "تبحث عن حساب فردي أو فريق أو شركة؟",
+    "see_options": "عرض جميع خيارات الحساب"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "submit": "إرسال",
+    "confirm": "تأكيد"
+  },
+  "dashboard": {
+    "welcome_back": "مرحبًا بعودتك إلى مساحة عملك الآمنة",
+    "total_passwords": "إجمالي كلمات المرور",
+    "total_accounts": "إجمالي الحسابات",
+    "total_folders": "إجمالي المجلدات",
+    "from_last_month": "منذ الشهر الماضي",
+    "recent_activity": "النشاط الأخير"
+  },
+  "activity": {
+    "password_updated": "تم تحديث كلمة المرور",
+    "note_created": "تم إنشاء ملاحظة آمنة"
+  },
+  "time": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "last_7_days": "آخر 7 أيام",
+    "last_30_days": "آخر 30 يومًا",
+    "all_time": "كل الوقت",
+    "just_now": "الآن",
+    "hours_ago": "منذ {hours} ساعة",
+    "days_ago": "منذ {days} يومًا"
+  },
+  "password_generator": {
+    "title": "مولد كلمات المرور",
+    "strong": "قوي",
+    "memorable": "سهل التذكر",
+    "pin": "رمز PIN",
+    "passphrase": "عبارة مرور",
+    "chars": "أحرف",
+    "digits": "أرقام",
+    "generate_new": "توليد كلمة مرور جديدة",
+    "copy": "نسخ كلمة المرور",
+    "copied": "تم النسخ!",
+    "save": "حفظ كلمة المرور",
+    "close": "إغلاق",
+    "copy_password": "نسخ كلمة المرور",
+    "password_length": "طول كلمة المرور",
+    "options": "خيارات",
+    "advanced": "متقدم",
+    "history": "السجل",
+    "uppercase": "أحرف كبيرة (A-Z)",
+    "lowercase": "أحرف صغيرة (a-z)",
+    "numbers": "أرقام (0-9)",
+    "symbols": "رموز (!@#$%^&*)",
+    "password_analysis": "تحليل كلمة المرور",
+    "strong_enough": "قوية بما يكفي لمعظم المواقع",
+    "not_strong_enough": "غير قوية بما يكفي للحسابات الحساسة",
+    "good_length": "طول جيد",
+    "consider_longer": "يفضل استخدام كلمة مرور أطول",
+    "using_all_types": "تستخدم جميع أنواع الأحرف",
+    "consider_more_types": "يفضل استخدام أنواع أحرف أكثر",
+    "all_characters": "كل الأحرف",
+    "easy_to_read": "سهل القراءة (بدون أحرف متشابهة مثل 1، l، I، 0، O)",
+    "easy_to_say": "سهل النطق (بدون أرقام أو رموز)",
+    "password_tips": "نصائح كلمة المرور",
+    "tip_min_length": "• استخدم 14 حرفًا على الأقل لأمان عالٍ",
+    "tip_mix": "• استخدم مزيجًا من الأحرف والأرقام والرموز",
+    "tip_no_personal": "• تجنب استخدام معلومات شخصية",
+    "tip_unique": "• استخدم كلمة مرور مختلفة لكل حساب",
+    "tip_manager": "• استخدم مدير كلمات مرور لحفظ كلمات المرور",
+    "recently_generated": "تم التوليد مؤخرًا",
+    "clear_history": "مسح السجل",
+    "no_history": "لا يوجد سجل كلمات مرور بعد",
+    "history_hint": "ستظهر كلمات المرور المولدة هنا",
+    "weak": "ضعيف",
+    "fair": "متوسط",
+    "good": "جيد",
+    "strong_strength": "قوي",
+    "strength": "{strength}% قوة"
+  }
+} 

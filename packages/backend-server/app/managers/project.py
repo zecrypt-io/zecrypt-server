@@ -22,11 +22,12 @@ def update_many(db, query, payload):
     db_manager.update_many(db, collection_name, query, payload)
 
 
-def find_one_and_update(db, query, update_query, return_document=False):
-    return db_manager.find_one_and_update(
+def find_one_and_update(db, query, update_query, return_document=True):
+    details = db_manager.find_one_and_update(
         db, collection_name, query, update_query, return_document=return_document
     )
-
+    details.pop("_id")
+    return details
 
 def delete_one(db, query):
     db_manager.delete_one(db, collection_name, query)

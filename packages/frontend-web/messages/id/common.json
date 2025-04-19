@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Lindungi data Anda dengan Zecrypt"
+  },
+  "navigation": {
+    "home": "Beranda",
+    "dashboard": "Dasbor",
+    "settings": "Pengaturan"
+  },
+  "auth": {
+    "login": "Masuk",
+    "signup": "Daftar",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "agreement": "Dengan masuk, Anda menyetujui",
+    "terms": "Syarat Penggunaan"
+  },
+  "features": {
+    "trial_title": "Coba 3Password Keluarga gratis selama 40 hari",
+    "unlimited_devices": "5 anggota keluarga, perangkat tak terbatas",
+    "shared_vaults": "Brankas bersama memungkinkan anggota keluarga memilih apa yang ingin dibagikan (atau tetap pribadi)",
+    "advanced_security": "Keamanan tingkat lanjut dengan enkripsi terautentikasi, PAKE, dan lainnya",
+    "security_alerts": "Peringatan untuk situs yang disusupi dan kata sandi yang rentan",
+    "multi_platform": "Tersedia di Mac, iOS, Windows, Android, Chrome OS, dan Linux",
+    "looking_for_options": "Mencari akun individu, tim, atau bisnis?",
+    "see_options": "Lihat semua opsi akun"
+  },
+  "actions": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "submit": "Kirim",
+    "confirm": "Konfirmasi"
+  },
+  "dashboard": {
+    "welcome_back": "Selamat datang kembali di ruang kerja aman Anda",
+    "total_passwords": "Total Kata Sandi",
+    "total_accounts": "Total Akun",
+    "total_folders": "Total Folder",
+    "from_last_month": "dibandingkan bulan lalu",
+    "recent_activity": "Aktivitas Terbaru"
+  },
+  "activity": {
+    "password_updated": "Kata sandi diperbarui",
+    "note_created": "Catatan aman dibuat"
+  },
+  "time": {
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "last_7_days": "7 hari terakhir",
+    "last_30_days": "30 hari terakhir",
+    "all_time": "Sepanjang waktu",
+    "just_now": "Baru saja",
+    "hours_ago": "{hours} jam yang lalu",
+    "days_ago": "{days} hari yang lalu"
+  },
+  "password_generator": {
+    "title": "Generator Kata Sandi",
+    "strong": "Kuat",
+    "memorable": "Mudah diingat",
+    "pin": "PIN",
+    "passphrase": "Frasa sandi",
+    "chars": "karakter",
+    "digits": "digit",
+    "generate_new": "Buat kata sandi baru",
+    "copy": "Salin kata sandi",
+    "copied": "Disalin!",
+    "save": "Simpan kata sandi",
+    "close": "Tutup",
+    "copy_password": "Salin Kata Sandi",
+    "password_length": "Panjang Kata Sandi",
+    "options": "Opsi",
+    "advanced": "Lanjutan",
+    "history": "Riwayat",
+    "uppercase": "Huruf besar (A-Z)",
+    "lowercase": "Huruf kecil (a-z)",
+    "numbers": "Angka (0-9)",
+    "symbols": "Simbol (!@#$%^&*)",
+    "password_analysis": "Analisis Kata Sandi",
+    "strong_enough": "Cukup kuat untuk sebagian besar situs",
+    "not_strong_enough": "Tidak cukup kuat untuk akun sensitif",
+    "good_length": "Panjang yang baik",
+    "consider_longer": "Pertimbangkan menggunakan kata sandi yang lebih panjang",
+    "using_all_types": "Menggunakan semua jenis karakter",
+    "consider_more_types": "Pertimbangkan menggunakan lebih banyak jenis karakter",
+    "all_characters": "Semua Karakter",
+    "easy_to_read": "Mudah dibaca (tanpa karakter mirip seperti 1, l, I, 0, O)",
+    "easy_to_say": "Mudah diucapkan (tanpa angka atau karakter khusus)",
+    "password_tips": "Tips Kata Sandi",
+    "tip_min_length": "• Gunakan minimal 14 karakter untuk keamanan tinggi",
+    "tip_mix": "• Sertakan campuran huruf, angka, dan simbol",
+    "tip_no_personal": "• Hindari menggunakan informasi pribadi",
+    "tip_unique": "• Gunakan kata sandi berbeda untuk setiap akun",
+    "tip_manager": "• Pertimbangkan menggunakan pengelola kata sandi untuk menyimpan kata sandi Anda",
+    "recently_generated": "Baru saja dibuat",
+    "clear_history": "Hapus Riwayat",
+    "no_history": "Belum ada riwayat kata sandi",
+    "history_hint": "Kata sandi yang dihasilkan akan muncul di sini",
+    "weak": "Lemah",
+    "fair": "Sedang",
+    "good": "Bagus",
+    "strong_strength": "Kuat",
+    "strength": "{strength}% Kekuatan"
+  }
+} 

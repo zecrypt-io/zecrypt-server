@@ -42,9 +42,7 @@ async def login_api(
         return response_helper(
             status_code=400, message="Authentication failed, Please try again",
         )
-    print(res)
-    user = user_manager.find_one(db, {"uid": res.get("id")}, {"_id": False})
-    print(user)
+    user = user_manager.find_one(db, {"uid": res.get("id"),"access":{"$ne":False}}, {"_id": False})
     if not user:
         return response_helper(
             status_code=400, message="User not found, Please signup",
@@ -56,6 +54,7 @@ async def login_api(
         "profile_url": user.get("profile_url"),
         "name": user.get("name"),
         "access_token": token,
+        "language": user.get("language"),
     }
 
     user_manager.update_one(
@@ -69,7 +68,7 @@ async def login_api(
             }
         },
     )
-    back_ground_tasks.add_task(record_login_event, request, db, user.get("user_id"))
+    back_ground_tasks.add_task(record_login_event, request, db, user)
     refresh_token = encode_token(user.get("user_id"))
     response.set_cookie(
         key="access_token", value=token, httponly=True, secure=True, samesite="strict"
@@ -100,7 +99,7 @@ async def signup_api(
             status_code=400, message="Authentication failed, Please try again",
         )
 
-    user = user_manager.find_one(db, {"uid": res.get("id")}, {"_id": False})
+    user = user_manager.find_one(db, {"uid": res.get("id"),"access":{"$ne":False}}, {"_id": False})
 
     if user:
         return response_helper(
@@ -119,6 +118,7 @@ async def signup_api(
         "user_id": user_id,
         "profile_url": res.get("profile_image_url"),
         "token": token,
+        "language": "en",
         "auth": {
             "has_password": res.get("has_password"),
             "otp_auth_enabled": res.get("otp_auth_enabled"),
@@ -130,12 +130,13 @@ async def signup_api(
     }
 
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_project_at_signup, db, user_id)
+    back_ground_tasks.add_task(create_project_at_signup, request, db, user_id)
     token_data = {
         "user_id": user_id,
         "profile_url": res.get("profile_url"),
         "name": res.get("display_name"),
         "access_token": token,
+        "language": "en",
     }
     refresh_token = encode_token(user_id)
     response.set_cookie(

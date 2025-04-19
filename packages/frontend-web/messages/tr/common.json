@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Verilerinizi Zecrypt ile koruyun"
+  },
+  "navigation": {
+    "home": "Ana Sayfa",
+    "dashboard": "Kontrol Paneli",
+    "settings": "Ayarlar"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "signup": "Kayıt Ol",
+    "logout": "Çıkış Yap",
+    "email": "E-posta",
+    "password": "Şifre",
+    "agreement": "Giriş yaparak şunları kabul etmiş olursunuz:",
+    "terms": "Kullanım Şartları"
+  },
+  "features": {
+    "trial_title": "3Password Aileleri'ni 40 gün ücretsiz deneyin",
+    "unlimited_devices": "5 aile üyesi, sınırsız cihaz",
+    "shared_vaults": "Paylaşılan kasalar, aile üyelerinin neyi paylaşmak istediklerini (veya gizli tutmak istediklerini) seçmelerine olanak tanır",
+    "advanced_security": "Kimlik doğrulamalı şifreleme, PAKE ve daha fazlasıyla gelişmiş güvenlik",
+    "security_alerts": "Tehlikeye atılmış siteler ve zayıf şifreler için uyarılar",
+    "multi_platform": "Mac, iOS, Windows, Android, Chrome OS ve Linux'ta mevcut",
+    "looking_for_options": "Bireysel, ekip veya işletme hesabı mı arıyorsunuz?",
+    "see_options": "Tüm hesap seçeneklerini gör"
+  },
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "submit": "Gönder",
+    "confirm": "Onayla"
+  },
+  "dashboard": {
+    "welcome_back": "Güvenli çalışma alanınıza tekrar hoş geldiniz",
+    "total_passwords": "Toplam Şifre",
+    "total_accounts": "Toplam Hesap",
+    "total_folders": "Toplam Klasör",
+    "from_last_month": "geçen aya göre",
+    "recent_activity": "Son Etkinlik"
+  },
+  "activity": {
+    "password_updated": "Şifre güncellendi",
+    "note_created": "Güvenli not oluşturuldu"
+  },
+  "time": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "last_7_days": "Son 7 gün",
+    "last_30_days": "Son 30 gün",
+    "all_time": "Tüm zamanlar",
+    "just_now": "Şimdi",
+    "hours_ago": "{hours} saat önce",
+    "days_ago": "{days} gün önce"
+  },
+  "password_generator": {
+    "title": "Şifre Oluşturucu",
+    "strong": "Güçlü",
+    "memorable": "Kolay hatırlanır",
+    "pin": "PIN",
+    "passphrase": "Parola ifadesi",
+    "chars": "karakter",
+    "digits": "rakam",
+    "generate_new": "Yeni şifre oluştur",
+    "copy": "Şifreyi kopyala",
+    "copied": "Kopyalandı!",
+    "save": "Şifreyi kaydet",
+    "close": "Kapat",
+    "copy_password": "Şifreyi kopyala",
+    "password_length": "Şifre uzunluğu",
+    "options": "Seçenekler",
+    "advanced": "Gelişmiş",
+    "history": "Geçmiş",
+    "uppercase": "Büyük harfler (A-Z)",
+    "lowercase": "Küçük harfler (a-z)",
+    "numbers": "Rakamlar (0-9)",
+    "symbols": "Semboller (!@#$%^&*)",
+    "password_analysis": "Şifre analizi",
+    "strong_enough": "Çoğu site için yeterince güçlü",
+    "not_strong_enough": "Hassas hesaplar için yeterince güçlü değil",
+    "good_length": "İyi uzunluk",
+    "consider_longer": "Daha uzun bir şifre kullanmayı düşünün",
+    "using_all_types": "Tüm karakter türleri kullanılıyor",
+    "consider_more_types": "Daha fazla karakter türü kullanmayı düşünün",
+    "all_characters": "Tüm karakterler",
+    "easy_to_read": "Okuması kolay (1, l, I, 0, O gibi benzer karakterler yok)",
+    "easy_to_say": "Söylemesi kolay (rakam veya özel karakter yok)",
+    "password_tips": "Şifre İpuçları",
+    "tip_min_length": "• Yüksek güvenlik için en az 14 karakter kullanın",
+    "tip_mix": "• Harf, rakam ve sembollerin bir karışımını dahil edin",
+    "tip_no_personal": "• Kişisel bilgi kullanmaktan kaçının",
+    "tip_unique": "• Her hesap için farklı bir şifre kullanın",
+    "tip_manager": "• Şifrelerinizi saklamak için bir şifre yöneticisi kullanmayı düşünün",
+    "recently_generated": "Son oluşturulanlar",
+    "clear_history": "Geçmişi temizle",
+    "no_history": "Henüz şifre geçmişi yok",
+    "history_hint": "Oluşturulan şifreler burada görünecek",
+    "weak": "Zayıf",
+    "fair": "Orta",
+    "good": "İyi",
+    "strong_strength": "Güçlü",
+    "strength": "{strength}% Güç"
+  }
+} 

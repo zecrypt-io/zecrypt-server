@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Asegure sus datos con Zecrypt"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "dashboard": "Panel de control",
+    "settings": "Configuración"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "agreement": "Al iniciar sesión, aceptas nuestros",
+    "terms": "Términos"
+  },
+  "features": {
+    "trial_title": "Prueba 3Password Familias gratis durante 40 días",
+    "unlimited_devices": "5 miembros de familia, dispositivos ilimitados",
+    "shared_vaults": "Las bóvedas compartidas permiten a los miembros de la familia elegir lo que quieren compartir (o mantener privado)",
+    "advanced_security": "Seguridad avanzada con cifrado autenticado, PAKE y más",
+    "security_alerts": "Alertas para sitios web comprometidos y contraseñas vulnerables",
+    "multi_platform": "Disponible en Mac, iOS, Windows, Android, Chrome OS y Linux",
+    "looking_for_options": "¿Buscas una cuenta individual, de equipo o de empresa?",
+    "see_options": "Ver todas las opciones de cuenta"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "confirm": "Confirmar"
+  },
+  "dashboard": {
+    "welcome_back": "Bienvenido de nuevo a su espacio de trabajo seguro",
+    "total_passwords": "Total de contraseñas",
+    "total_accounts": "Total de cuentas",
+    "total_folders": "Total de carpetas",
+    "from_last_month": "desde el mes pasado",
+    "recent_activity": "Actividad reciente"
+  },
+  "activity": {
+    "password_updated": "Contraseña actualizada",
+    "note_created": "Nota segura creada"
+  },
+  "time": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "last_7_days": "Últimos 7 días",
+    "last_30_days": "Últimos 30 días",
+    "all_time": "Todo el tiempo",
+    "just_now": "Ahora mismo",
+    "hours_ago": "Hace {hours} horas",
+    "days_ago": "Hace {days} días"
+  },
+  "password_generator": {
+    "title": "Generador de Contraseñas",
+    "strong": "Fuerte",
+    "memorable": "Memorable",
+    "pin": "PIN",
+    "passphrase": "Frase de paso",
+    "chars": "caracteres",
+    "digits": "dígitos",
+    "generate_new": "Generar nueva contraseña",
+    "copy": "Copiar contraseña",
+    "copied": "¡Copiado!",
+    "save": "Guardar contraseña",
+    "close": "Cerrar",
+    "copy_password": "Copiar Contraseña",
+    "password_length": "Longitud de la contraseña",
+    "options": "Opciones",
+    "advanced": "Avanzado",
+    "history": "Historial",
+    "uppercase": "Mayúsculas (A-Z)",
+    "lowercase": "Minúsculas (a-z)",
+    "numbers": "Números (0-9)",
+    "symbols": "Símbolos (!@#$%^&*)",
+    "password_analysis": "Análisis de Contraseña",
+    "strong_enough": "Suficientemente fuerte para la mayoría de los sitios",
+    "not_strong_enough": "No lo suficientemente fuerte para cuentas sensibles",
+    "good_length": "Buena longitud",
+    "consider_longer": "Considere usar una contraseña más larga",
+    "using_all_types": "Usando todos los tipos de caracteres",
+    "consider_more_types": "Considere usar más tipos de caracteres",
+    "all_characters": "Todos los caracteres",
+    "easy_to_read": "Fácil de leer (sin caracteres similares como 1, l, I, 0, O)",
+    "easy_to_say": "Fácil de decir (sin números ni caracteres especiales)",
+    "password_tips": "Consejos de Contraseña",
+    "tip_min_length": "• Use un mínimo de 14 caracteres para alta seguridad",
+    "tip_mix": "• Incluya una mezcla de letras, números y símbolos",
+    "tip_no_personal": "• Evite usar información personal",
+    "tip_unique": "• Use una contraseña diferente para cada cuenta",
+    "tip_manager": "• Considere usar un gestor de contraseñas para almacenar sus contraseñas",
+    "recently_generated": "Generadas recientemente",
+    "clear_history": "Borrar historial",
+    "no_history": "Aún no hay historial de contraseñas",
+    "history_hint": "Las contraseñas generadas aparecerán aquí",
+    "weak": "Débil",
+    "fair": "Regular",
+    "good": "Buena",
+    "strong_strength": "Fuerte",
+    "strength": "{strength}% Fuerza"
+  }
+} 

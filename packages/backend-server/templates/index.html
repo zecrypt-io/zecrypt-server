@@ -26,16 +26,15 @@
             --gray-700: #404040;
             --gray-800: #262626;
             --gray-900: #171717;
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --primary-light: #60a5fa;
-            --accent: #f43f5e;
-            --accent-dark: #e11d48;
-            --success: #10b981;
+            --primary: #2d2d2d;
+            --primary-dark: #000000;
+            --primary-light: #595959;
+            --accent: #404040;
+            --success: #4d4d4d;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --gradient: linear-gradient(135deg, var(--primary), var(--accent));
+            --gradient: linear-gradient(135deg, #000000, #333333);
         }
 
         /* Dark Mode */
@@ -52,9 +51,9 @@
                 --gray-700: #d1d1d1;
                 --gray-800: #e5e5e5;
                 --gray-900: #f5f5f5;
-                --primary: #3b82f6;
-                --primary-dark: #60a5fa;
-                --primary-light: #2563eb;
+                --primary: #e5e5e5;
+                --primary-dark: #ffffff;
+                --primary-light: #a1a1a1;
             }
         }
 
@@ -67,7 +66,7 @@
             line-height: 1.6;
             color: var(--gray-800);
             min-height: 100vh;
-            background-image: radial-gradient(var(--gray-200) 1px, transparent 1px);
+            background-image: radial-gradient(var(--gray-300) 1px, transparent 1px);
             background-size: 30px 30px;
         }
 
@@ -86,12 +85,12 @@
             border-radius: 1.5rem;
             box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 48rem;
+            max-width: 54rem;
             text-align: center;
             position: relative;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--gray-200);
+            border: 2px solid var(--black);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
@@ -118,7 +117,7 @@
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.025em;
-            background: var(--gradient);
+            background: linear-gradient(135deg, #000000, #4d4d4d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -145,7 +144,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--primary);
+            background: var(--black);
             color: var(--white);
             padding: 0.85rem 2rem;
             border-radius: 0.75rem;
@@ -153,17 +152,17 @@
             font-weight: 600;
             font-size: 1.125rem;
             transition: all 0.3s;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            border: none;
+            border: 2px solid var(--black);
             cursor: pointer;
         }
 
         .btn:hover {
-            background: var(--primary-dark);
+            background: var(--gray-900);
             transform: translateY(-2px);
-            box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
         .btn:active {
@@ -220,7 +219,7 @@
             flex-direction: column;
             align-items: flex-start;
             transition: all 0.3s;
-            border: 1px solid var(--gray-200);
+            border: 2px solid var(--black);
             height: 100%;
             overflow: hidden;
             position: relative;
@@ -237,7 +236,7 @@
 
         .feature-item:hover .feature-icon {
             transform: scale(1.1);
-            background: var(--primary);
+            background: var(--black);
             color: var(--white);
         }
 
@@ -258,11 +257,11 @@
             background: var(--white);
             border-radius: 12px;
             margin-right: 1rem;
-            color: var(--primary);
+            color: var(--black);
             font-size: 1.5rem;
             box-shadow: var(--shadow-sm);
             flex-shrink: 0;
-            border: 1px solid var(--gray-200);
+            border: 2px solid var(--black);
             transition: all 0.3s;
         }
 
@@ -288,15 +287,15 @@
         /* API Example */
         .api-example {
             margin-top: 2.5rem;
-            background: var(--gray-900);
-            color: var(--white);
+            background: var(--white);
+            color: var(--black);
             padding: 1.75rem;
             border-radius: 1rem;
             text-align: left;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow);
-            border: 1px solid var(--gray-800);
+            border: 2px solid var(--black);
         }
 
         .api-example::before {
@@ -304,7 +303,7 @@
             position: absolute;
             top: 0.75rem;
             right: 1rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.5);
             font-family: 'Fira Code', monospace;
             font-size: 0.75rem;
         }
@@ -312,7 +311,7 @@
         .api-example code {
             display: block;
             background: transparent;
-            color: var(--gray-300);
+            color: var(--black);
             border: none;
             padding: 0;
             font-family: 'Fira Code', monospace;

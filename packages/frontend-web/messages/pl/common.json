@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Chroń swoje dane z Zecrypt"
+  },
+  "navigation": {
+    "home": "Strona główna",
+    "dashboard": "Panel sterowania",
+    "settings": "Ustawienia"
+  },
+  "auth": {
+    "login": "Zaloguj się",
+    "signup": "Zarejestruj się",
+    "logout": "Wyloguj się",
+    "email": "E-mail",
+    "password": "Hasło",
+    "agreement": "Logując się, akceptujesz nasze",
+    "terms": "Warunki korzystania"
+  },
+  "features": {
+    "trial_title": "Wypróbuj 3Password Rodziny za darmo przez 40 dni",
+    "unlimited_devices": "5 członków rodziny, nieograniczona liczba urządzeń",
+    "shared_vaults": "Wspólne sejfy pozwalają członkom rodziny wybrać, co chcą udostępnić (lub zachować prywatnie)",
+    "advanced_security": "Zaawansowane bezpieczeństwo z uwierzytelnionym szyfrowaniem, PAKE i więcej",
+    "security_alerts": "Alerty dla zagrożonych stron i słabych haseł",
+    "multi_platform": "Dostępne na Mac, iOS, Windows, Android, Chrome OS i Linux",
+    "looking_for_options": "Szukasz konta indywidualnego, zespołowego lub firmowego?",
+    "see_options": "Zobacz wszystkie opcje konta"
+  },
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "submit": "Wyślij",
+    "confirm": "Potwierdź"
+  },
+  "dashboard": {
+    "welcome_back": "Witamy ponownie w Twoim bezpiecznym miejscu pracy",
+    "total_passwords": "Łączna liczba haseł",
+    "total_accounts": "Łączna liczba kont",
+    "total_folders": "Łączna liczba folderów",
+    "from_last_month": "w porównaniu z zeszłym miesiącem",
+    "recent_activity": "Ostatnia aktywność"
+  },
+  "activity": {
+    "password_updated": "Hasło zaktualizowane",
+    "note_created": "Utworzono bezpieczną notatkę"
+  },
+  "time": {
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "last_7_days": "Ostatnie 7 dni",
+    "last_30_days": "Ostatnie 30 dni",
+    "all_time": "Cały czas",
+    "just_now": "Przed chwilą",
+    "hours_ago": "{hours} godzin temu",
+    "days_ago": "{days} dni temu"
+  },
+  "password_generator": {
+    "title": "Generator haseł",
+    "strong": "Silne",
+    "memorable": "Łatwe do zapamiętania",
+    "pin": "PIN",
+    "passphrase": "Fraza hasła",
+    "chars": "znaki",
+    "digits": "cyfry",
+    "generate_new": "Wygeneruj nowe hasło",
+    "copy": "Kopiuj hasło",
+    "copied": "Skopiowano!",
+    "save": "Zapisz hasło",
+    "close": "Zamknij",
+    "copy_password": "Kopiuj hasło",
+    "password_length": "Długość hasła",
+    "options": "Opcje",
+    "advanced": "Zaawansowane",
+    "history": "Historia",
+    "uppercase": "Wielkie litery (A-Z)",
+    "lowercase": "Małe litery (a-z)",
+    "numbers": "Liczby (0-9)",
+    "symbols": "Symbole (!@#$%^&*)",
+    "password_analysis": "Analiza hasła",
+    "strong_enough": "Wystarczająco silne dla większości stron",
+    "not_strong_enough": "Niewystarczająco silne dla wrażliwych kont",
+    "good_length": "Dobra długość",
+    "consider_longer": "Rozważ użycie dłuższego hasła",
+    "using_all_types": "Używane są wszystkie typy znaków",
+    "consider_more_types": "Rozważ użycie większej liczby typów znaków",
+    "all_characters": "Wszystkie znaki",
+    "easy_to_read": "Łatwe do odczytania (bez podobnych znaków jak 1, l, I, 0, O)",
+    "easy_to_say": "Łatwe do wymówienia (bez cyfr i znaków specjalnych)",
+    "password_tips": "Wskazówki dotyczące haseł",
+    "tip_min_length": "• Użyj co najmniej 14 znaków dla wysokiego poziomu bezpieczeństwa",
+    "tip_mix": "• Użyj mieszanki liter, cyfr i symboli",
+    "tip_no_personal": "• Unikaj używania danych osobowych",
+    "tip_unique": "• Używaj innego hasła do każdego konta",
+    "tip_manager": "• Rozważ użycie menedżera haseł do przechowywania swoich haseł",
+    "recently_generated": "Ostatnio wygenerowane",
+    "clear_history": "Wyczyść historię",
+    "no_history": "Brak historii haseł",
+    "history_hint": "Wygenerowane hasła pojawią się tutaj",
+    "weak": "Słabe",
+    "fair": "Średnie",
+    "good": "Dobre",
+    "strong_strength": "Silne",
+    "strength": "{strength}% Siła"
+  }
+} 

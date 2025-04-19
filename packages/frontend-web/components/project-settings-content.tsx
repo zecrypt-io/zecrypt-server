@@ -312,8 +312,6 @@ export function ProjectSettingsContent() {
                   <tbody>
                     {teamMembers.map((member) => (
                       <tr key={member.id} className="border-t border-border">
-                        <td className="p-3">  => (
-                      <tr key={member.id} className="border-t border-border">
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">

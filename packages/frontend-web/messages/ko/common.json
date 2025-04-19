@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Zecrypt로 데이터를 안전하게 보호하세요"
+  },
+  "navigation": {
+    "home": "홈",
+    "dashboard": "대시보드",
+    "settings": "설정"
+  },
+  "auth": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "email": "이메일",
+    "password": "비밀번호",
+    "agreement": "로그인 시 다음에 동의합니다:",
+    "terms": "이용약관"
+  },
+  "features": {
+    "trial_title": "3Password 패밀리를 40일간 무료로 체험하세요",
+    "unlimited_devices": "5명의 가족, 무제한 기기",
+    "shared_vaults": "공유 금고로 가족 구성원이 공유할 항목(또는 비공개로 유지할 항목)을 선택할 수 있습니다",
+    "advanced_security": "인증된 암호화, PAKE 등 고급 보안",
+    "security_alerts": "침해된 사이트 및 취약한 비밀번호에 대한 알림",
+    "multi_platform": "Mac, iOS, Windows, Android, Chrome OS, Linux에서 사용 가능",
+    "looking_for_options": "개인, 팀 또는 비즈니스 계정을 찾고 계신가요?",
+    "see_options": "모든 계정 옵션 보기"
+  },
+  "actions": {
+    "save": "저장",
+    "cancel": "취소",
+    "submit": "제출",
+    "confirm": "확인"
+  },
+  "dashboard": {
+    "welcome_back": "안전한 작업 공간에 다시 오신 것을 환영합니다",
+    "total_passwords": "총 비밀번호",
+    "total_accounts": "총 계정",
+    "total_folders": "총 폴더",
+    "from_last_month": "지난달 대비",
+    "recent_activity": "최근 활동"
+  },
+  "activity": {
+    "password_updated": "비밀번호가 업데이트됨",
+    "note_created": "보안 노트가 생성됨"
+  },
+  "time": {
+    "today": "오늘",
+    "yesterday": "어제",
+    "last_7_days": "지난 7일",
+    "last_30_days": "지난 30일",
+    "all_time": "전체 기간",
+    "just_now": "방금 전",
+    "hours_ago": "{hours}시간 전",
+    "days_ago": "{days}일 전"
+  },
+  "password_generator": {
+    "title": "비밀번호 생성기",
+    "strong": "강함",
+    "memorable": "기억하기 쉬움",
+    "pin": "PIN",
+    "passphrase": "암호 구절",
+    "chars": "문자",
+    "digits": "숫자",
+    "generate_new": "새 비밀번호 생성",
+    "copy": "비밀번호 복사",
+    "copied": "복사됨!",
+    "save": "비밀번호 저장",
+    "close": "닫기",
+    "copy_password": "비밀번호 복사",
+    "password_length": "비밀번호 길이",
+    "options": "옵션",
+    "advanced": "고급",
+    "history": "기록",
+    "uppercase": "대문자 (A-Z)",
+    "lowercase": "소문자 (a-z)",
+    "numbers": "숫자 (0-9)",
+    "symbols": "기호 (!@#$%^&*)",
+    "password_analysis": "비밀번호 분석",
+    "strong_enough": "대부분의 사이트에 충분히 강함",
+    "not_strong_enough": "민감한 계정에는 충분히 강하지 않음",
+    "good_length": "적절한 길이",
+    "consider_longer": "더 긴 비밀번호 사용을 고려하세요",
+    "using_all_types": "모든 문자 유형 사용 중",
+    "consider_more_types": "더 많은 문자 유형 사용을 고려하세요",
+    "all_characters": "모든 문자",
+    "easy_to_read": "읽기 쉬움 (1, l, I, 0, O와 같은 유사 문자 없음)",
+    "easy_to_say": "말하기 쉬움 (숫자나 특수문자 없음)",
+    "password_tips": "비밀번호 팁",
+    "tip_min_length": "• 높은 보안을 위해 최소 14자 사용",
+    "tip_mix": "• 문자, 숫자, 기호를 혼합해서 사용",
+    "tip_no_personal": "• 개인 정보를 사용하지 마세요",
+    "tip_unique": "• 각 계정마다 다른 비밀번호 사용",
+    "tip_manager": "• 비밀번호 관리자를 사용해 비밀번호를 저장하는 것을 고려하세요",
+    "recently_generated": "최근 생성됨",
+    "clear_history": "기록 지우기",
+    "no_history": "아직 비밀번호 기록 없음",
+    "history_hint": "생성된 비밀번호가 여기에 표시됩니다",
+    "weak": "약함",
+    "fair": "보통",
+    "good": "좋음",
+    "strong_strength": "강함",
+    "strength": "{strength}% 강도"
+  }
+} 

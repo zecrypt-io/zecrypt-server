@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beskytt dataene dine med Zecrypt"
+  },
+  "navigation": {
+    "home": "Hjem",
+    "dashboard": "Dashbord",
+    "settings": "Innstillinger"
+  },
+  "auth": {
+    "login": "Logg inn",
+    "signup": "Registrer deg",
+    "logout": "Logg ut",
+    "email": "E-post",
+    "password": "Passord",
+    "agreement": "Ved å logge inn godtar du våre",
+    "terms": "Vilkår for bruk"
+  },
+  "features": {
+    "trial_title": "Prøv 3Password Familier gratis i 40 dager",
+    "unlimited_devices": "5 familiemedlemmer, ubegrensede enheter",
+    "shared_vaults": "Delte hvelv lar familiemedlemmer velge hva de vil dele (eller holde privat)",
+    "advanced_security": "Avansert sikkerhet med autentisert kryptering, PAKE og mer",
+    "security_alerts": "Varsler for kompromitterte nettsteder og sårbare passord",
+    "multi_platform": "Tilgjengelig på Mac, iOS, Windows, Android, Chrome OS og Linux",
+    "looking_for_options": "Leter du etter en individuell, team- eller bedriftskonto?",
+    "see_options": "Se alle kontotyper"
+  },
+  "actions": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "submit": "Send inn",
+    "confirm": "Bekreft"
+  },
+  "dashboard": {
+    "welcome_back": "Velkommen tilbake til ditt sikre arbeidsområde",
+    "total_passwords": "Totalt antall passord",
+    "total_accounts": "Totalt antall kontoer",
+    "total_folders": "Totalt antall mapper",
+    "from_last_month": "sammenlignet med forrige måned",
+    "recent_activity": "Siste aktivitet"
+  },
+  "activity": {
+    "password_updated": "Passord oppdatert",
+    "note_created": "Sikker notat opprettet"
+  },
+  "time": {
+    "today": "I dag",
+    "yesterday": "I går",
+    "last_7_days": "Siste 7 dager",
+    "last_30_days": "Siste 30 dager",
+    "all_time": "All tid",
+    "just_now": "Akkurat nå",
+    "hours_ago": "{hours} timer siden",
+    "days_ago": "{days} dager siden"
+  },
+  "password_generator": {
+    "title": "Passordgenerator",
+    "strong": "Sterk",
+    "memorable": "Lett å huske",
+    "pin": "PIN",
+    "passphrase": "Passordfrase",
+    "chars": "tegn",
+    "digits": "sifre",
+    "generate_new": "Generer nytt passord",
+    "copy": "Kopier passord",
+    "copied": "Kopiert!",
+    "save": "Lagre passord",
+    "close": "Lukk",
+    "copy_password": "Kopier passord",
+    "password_length": "Passordlengde",
+    "options": "Alternativer",
+    "advanced": "Avansert",
+    "history": "Historikk",
+    "uppercase": "Store bokstaver (A-Z)",
+    "lowercase": "Små bokstaver (a-z)",
+    "numbers": "Tall (0-9)",
+    "symbols": "Symboler (!@#$%^&*)",
+    "password_analysis": "Passordanalyse",
+    "strong_enough": "Sterkt nok for de fleste nettsteder",
+    "not_strong_enough": "Ikke sterkt nok for sensitive kontoer",
+    "good_length": "God lengde",
+    "consider_longer": "Vurder å bruke et lengre passord",
+    "using_all_types": "Bruker alle tegntyper",
+    "consider_more_types": "Vurder å bruke flere tegntyper",
+    "all_characters": "Alle tegn",
+    "easy_to_read": "Lett å lese (ingen lignende tegn som 1, l, I, 0, O)",
+    "easy_to_say": "Lett å si (ingen tall eller spesialtegn)",
+    "password_tips": "Passordtips",
+    "tip_min_length": "• Bruk minst 14 tegn for høy sikkerhet",
+    "tip_mix": "• Inkluder en blanding av bokstaver, tall og symboler",
+    "tip_no_personal": "• Unngå å bruke personlig informasjon",
+    "tip_unique": "• Bruk et unikt passord for hver konto",
+    "tip_manager": "• Vurder å bruke en passordbehandler for å lagre passordene dine",
+    "recently_generated": "Nylig generert",
+    "clear_history": "Tøm historikk",
+    "no_history": "Ingen passordhistorikk ennå",
+    "history_hint": "Genererte passord vil vises her",
+    "weak": "Svak",
+    "fair": "Middels",
+    "good": "God",
+    "strong_strength": "Sterk",
+    "strength": "{strength}% Styrke"
+  }
+} 

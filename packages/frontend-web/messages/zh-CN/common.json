@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "用 Zecrypt 保护您的数据"
+  },
+  "navigation": {
+    "home": "首页",
+    "dashboard": "仪表盘",
+    "settings": "设置"
+  },
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "logout": "登出",
+    "email": "电子邮件",
+    "password": "密码",
+    "agreement": "登录即表示您同意我们的",
+    "terms": "条款"
+  },
+  "features": {
+    "trial_title": "免费试用 3Password 家庭版 40 天",
+    "unlimited_devices": "5 个家庭成员，无限设备",
+    "shared_vaults": "共享保险库让家庭成员可以选择要共享或保留私密的内容",
+    "advanced_security": "高级安全性，支持认证加密、PAKE 等",
+    "security_alerts": "被攻破网站和弱密码的安全警报",
+    "multi_platform": "支持 Mac、iOS、Windows、Android、Chrome OS 和 Linux",
+    "looking_for_options": "正在寻找个人、团队或企业账户？",
+    "see_options": "查看所有账户选项"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "取消",
+    "submit": "提交",
+    "confirm": "确认"
+  },
+  "dashboard": {
+    "welcome_back": "欢迎回到您的安全工作区",
+    "total_passwords": "密码总数",
+    "total_accounts": "账户总数",
+    "total_folders": "文件夹总数",
+    "from_last_month": "较上月",
+    "recent_activity": "最近活动"
+  },
+  "activity": {
+    "password_updated": "密码已更新",
+    "note_created": "已创建安全笔记"
+  },
+  "time": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "last_7_days": "最近 7 天",
+    "last_30_days": "最近 30 天",
+    "all_time": "全部时间",
+    "just_now": "刚刚",
+    "hours_ago": "{hours} 小时前",
+    "days_ago": "{days} 天前"
+  },
+  "password_generator": {
+    "title": "密码生成器",
+    "strong": "强",
+    "memorable": "易记",
+    "pin": "PIN",
+    "passphrase": "密码短语",
+    "chars": "字符",
+    "digits": "数字",
+    "generate_new": "生成新密码",
+    "copy": "复制密码",
+    "copied": "已复制！",
+    "save": "保存密码",
+    "close": "关闭",
+    "copy_password": "复制密码",
+    "password_length": "密码长度",
+    "options": "选项",
+    "advanced": "高级",
+    "history": "历史记录",
+    "uppercase": "大写字母 (A-Z)",
+    "lowercase": "小写字母 (a-z)",
+    "numbers": "数字 (0-9)",
+    "symbols": "符号 (!@#$%^&*)",
+    "password_analysis": "密码分析",
+    "strong_enough": "对大多数网站来说足够强",
+    "not_strong_enough": "对敏感账户来说不够强",
+    "good_length": "长度合适",
+    "consider_longer": "建议使用更长的密码",
+    "using_all_types": "已使用所有字符类型",
+    "consider_more_types": "建议使用更多字符类型",
+    "all_characters": "所有字符",
+    "easy_to_read": "易读（无类似字符如1, l, I, 0, O）",
+    "easy_to_say": "易说（无数字或特殊字符）",
+    "password_tips": "密码提示",
+    "tip_min_length": "• 为了高安全性请至少使用14个字符",
+    "tip_mix": "• 包含字母、数字和符号的组合",
+    "tip_no_personal": "• 避免使用个人信息",
+    "tip_unique": "• 每个账户使用不同的密码",
+    "tip_manager": "• 建议使用密码管理器保存密码",
+    "recently_generated": "最近生成",
+    "clear_history": "清除历史记录",
+    "no_history": "暂无密码历史",
+    "history_hint": "生成的密码会显示在这里",
+    "weak": "弱",
+    "fair": "一般",
+    "good": "好",
+    "strong_strength": "强",
+    "strength": "{strength}% 强度"
+  }
+} 

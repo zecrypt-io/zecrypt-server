@@ -8,8 +8,11 @@ import ReduxProvider from "../libs/Redux/ReduxProvider"; // Updated import
 
 const inter = Inter({ subsets: ["latin"] });
 
+
 export const metadata = {
-  generator: "v0.dev",
+  title: 'Zecrypt',
+  description: 'Secure your data with Zecrypt',
+  generator: 'v0.dev'
 };
 
 export default function RootLayout({

@@ -29,7 +29,7 @@ def validate_stack_auth_token(token):
         return None
 
 
-def record_login_event(request, db, user_id):
+def record_login_event(request, db, user):
     # Get IP Address
     client_ip = request.client.host
     if "x-forwarded-for" in request.headers:
@@ -39,7 +39,7 @@ def record_login_event(request, db, user_id):
     ua = parse(user_agent)
     data = {
         "ip_address": client_ip,
-        "created_by": user_id,
+        "created_by": user.get("user_id"),
         "created_at": create_timestamp(),
         "user_agent": user_agent,
         "browser": ua.browser.family,
@@ -52,3 +52,6 @@ def record_login_event(request, db, user_id):
         },
     }
     login_activity_manager.insert_one(db, data)
+
+
+

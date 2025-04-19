@@ -23,6 +23,11 @@ const nextConfig = {
   },
 }
 
+// Import the createNextIntlPlugin function from next-intl
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 mergeConfig(nextConfig, userConfig)
 
 function mergeConfig(nextConfig, userConfig) {
@@ -45,4 +50,5 @@ function mergeConfig(nextConfig, userConfig) {
   }
 }
 
-export default nextConfig
+// Apply the next-intl plugin to the Next.js config
+export default withNextIntl(nextConfig);

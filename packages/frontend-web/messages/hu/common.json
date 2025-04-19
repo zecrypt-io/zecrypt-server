@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Védd meg adataidat a Zecrypttel"
+  },
+  "navigation": {
+    "home": "Kezdőlap",
+    "dashboard": "Irányítópult",
+    "settings": "Beállítások"
+  },
+  "auth": {
+    "login": "Bejelentkezés",
+    "signup": "Regisztráció",
+    "logout": "Kijelentkezés",
+    "email": "E-mail",
+    "password": "Jelszó",
+    "agreement": "Bejelentkezéssel elfogadod a",
+    "terms": "Felhasználási feltételeket"
+  },
+  "features": {
+    "trial_title": "Próbáld ki a 3Password Családokat 40 napig ingyen",
+    "unlimited_devices": "5 családtag, korlátlan eszköz",
+    "shared_vaults": "A megosztott tárolók lehetővé teszik a családtagoknak, hogy eldöntsék, mit osztanak meg (vagy tartanak privátban)",
+    "advanced_security": "Fejlett biztonság hitelesített titkosítással, PAKE-kal és egyebekkel",
+    "security_alerts": "Figyelmeztetések feltört weboldalakra és sebezhető jelszavakra",
+    "multi_platform": "Elérhető Mac, iOS, Windows, Android, Chrome OS és Linux rendszeren",
+    "looking_for_options": "Egyéni, csapat vagy üzleti fiókot keresel?",
+    "see_options": "Nézd meg az összes fiók opciót"
+  },
+  "actions": {
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "submit": "Küldés",
+    "confirm": "Megerősítés"
+  },
+  "dashboard": {
+    "welcome_back": "Üdvözlünk újra a biztonságos munkateredben",
+    "total_passwords": "Összes jelszó",
+    "total_accounts": "Összes fiók",
+    "total_folders": "Összes mappa",
+    "from_last_month": "az előző hónaphoz képest",
+    "recent_activity": "Legutóbbi aktivitás"
+  },
+  "activity": {
+    "password_updated": "Jelszó frissítve",
+    "note_created": "Biztonságos jegyzet létrehozva"
+  },
+  "time": {
+    "today": "Ma",
+    "yesterday": "Tegnap",
+    "last_7_days": "Elmúlt 7 nap",
+    "last_30_days": "Elmúlt 30 nap",
+    "all_time": "Minden idő",
+    "just_now": "Épp most",
+    "hours_ago": "{hours} órája",
+    "days_ago": "{days} napja"
+  },
+  "password_generator": {
+    "title": "Jelszógenerátor",
+    "strong": "Erős",
+    "memorable": "Könnyen megjegyezhető",
+    "pin": "PIN",
+    "passphrase": "Jelszó kifejezés",
+    "chars": "karakterek",
+    "digits": "számjegyek",
+    "generate_new": "Új jelszó generálása",
+    "copy": "Jelszó másolása",
+    "copied": "Másolva!",
+    "save": "Jelszó mentése",
+    "close": "Bezárás",
+    "copy_password": "Jelszó másolása",
+    "password_length": "Jelszó hossza",
+    "options": "Beállítások",
+    "advanced": "Speciális",
+    "history": "Előzmények",
+    "uppercase": "Nagybetűk (A-Z)",
+    "lowercase": "Kisbetűk (a-z)",
+    "numbers": "Számok (0-9)",
+    "symbols": "Szimbólumok (!@#$%^&*)",
+    "password_analysis": "Jelszó elemzés",
+    "strong_enough": "Elég erős a legtöbb oldalhoz",
+    "not_strong_enough": "Nem elég erős érzékeny fiókokhoz",
+    "good_length": "Jó hosszúság",
+    "consider_longer": "Fontolja meg hosszabb jelszó használatát",
+    "using_all_types": "Minden karaktertípus használatban",
+    "consider_more_types": "Fontolja meg több karaktertípus használatát",
+    "all_characters": "Minden karakter",
+    "easy_to_read": "Könnyen olvasható (nincs hasonló karakter, mint 1, l, I, 0, O)",
+    "easy_to_say": "Könnyen kimondható (nincs szám vagy speciális karakter)",
+    "password_tips": "Jelszó tippek",
+    "tip_min_length": "• Használjon legalább 14 karaktert a magas biztonság érdekében",
+    "tip_mix": "• Tartalmazzon betűket, számokat és szimbólumokat",
+    "tip_no_personal": "• Kerülje a személyes adatok használatát",
+    "tip_unique": "• Minden fiókhoz használjon másik jelszót",
+    "tip_manager": "• Fontolja meg jelszókezelő használatát a jelszavak tárolásához",
+    "recently_generated": "Nemrég generált",
+    "clear_history": "Előzmények törlése",
+    "no_history": "Még nincs jelszó előzmény",
+    "history_hint": "A generált jelszavak itt jelennek meg",
+    "weak": "Gyenge",
+    "fair": "Közepes",
+    "good": "Jó",
+    "strong_strength": "Erős",
+    "strength": "{strength}% Erősség"
+  }
+} 

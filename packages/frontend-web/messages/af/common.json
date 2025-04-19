@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Zecrypt",
+    "description": "Beskerm jou data met Zecrypt"
+  },
+  "navigation": {
+    "home": "Tuis",
+    "dashboard": "Beheerpaneel",
+    "settings": "Instellings"
+  },
+  "auth": {
+    "login": "Meld aan",
+    "signup": "Registreer",
+    "logout": "Meld af",
+    "email": "E-pos",
+    "password": "Wagwoord",
+    "agreement": "Deur aan te meld, stem jy in tot ons",
+    "terms": "Voorwaardes"
+  },
+  "features": {
+    "trial_title": "Probeer tot 3Password Families gratis vir 40 dae",
+    "unlimited_devices": "5 gesinslede, onbeperkte toestelle",
+    "shared_vaults": "Gedeelde kluise laat gesinslede kies wat hulle wil deel (of privaat hou)",
+    "advanced_security": "Gevorderde sekuriteit met geverifieerde enkripsie, PAKE en meer",
+    "security_alerts": "Waarskuwings vir gekompromitteerde webwerwe en swak wagwoorde",
+    "multi_platform": "Beskikbaar op Mac, iOS, Windows, Android, Chrome OS en Linux",
+    "looking_for_options": "Op soek na 'n individuele, span- of besigheidsrekening?",
+    "see_options": "Sien alle rekeningopsies"
+  },
+  "actions": {
+    "save": "Stoor",
+    "cancel": "Kanselleer",
+    "submit": "Indien",
+    "confirm": "Bevestig"
+  },
+  "dashboard": {
+    "welcome_back": "Welkom terug by jou veilige werksruimte",
+    "total_passwords": "Totale wagwoorde",
+    "total_accounts": "Totale rekeninge",
+    "total_folders": "Totale vouers",
+    "from_last_month": "sedert verlede maand",
+    "recent_activity": "Onlangse aktiwiteit"
+  },
+  "activity": {
+    "password_updated": "Wagwoord opgedateer",
+    "note_created": "Veilige nota geskep"
+  },
+  "time": {
+    "today": "Vandag",
+    "yesterday": "Gister",
+    "last_7_days": "Laaste 7 dae",
+    "last_30_days": "Laaste 30 dae",
+    "all_time": "Alle tye",
+    "just_now": "Nou net",
+    "hours_ago": "{hours} uur gelede",
+    "days_ago": "{days} dae gelede"
+  },
+ "password_generator": {
+    "title": "Wagwoordgenerator",
+    "strong": "Sterk",
+    "memorable": "Onthoubaar",
+    "pin": "PIN",
+    "passphrase": "Wagwoordfrase",
+    "chars": "karakters",
+    "digits": "syfers",
+    "generate_new": "Genereer nuwe wagwoord",
+    "copy": "Kopieer wagwoord",
+    "copied": "Gekopieer!",
+    "save": "Stoor wagwoord",
+    "close": "Maak toe",
+    "copy_password": "Kopieer Wagwoord",
+    "password_length": "Wagwoordlengte",
+    "options": "Opsies",
+    "advanced": "Gevorderd",
+    "history": "Geskiedenis",
+    "uppercase": "Hoofletters (A-Z)",
+    "lowercase": "Kleinletters (a-z)",
+    "numbers": "Nommer (0-9)",
+    "symbols": "Simbole (!@#$%^&*)",
+    "password_analysis": "Wagwoordanalisering",
+    "strong_enough": "Sterk genoeg vir meeste webwerwe",
+    "not_strong_enough": "Nie sterk genoeg vir sensitiewe rekeninge nie",
+    "good_length": "Goeie lengte",
+    "consider_longer": "Oorweeg om 'n langer wagwoord te gebruik",
+    "using_all_types": "Gebruik alle karaktertipes",
+    "consider_more_types": "Oorweeg om meer karaktertipes te gebruik",
+    "all_characters": "Alle Karakters",
+    "easy_to_read": "Maklik om te lees (geen soortgelyke karakters soos 1, l, I, 0, O)",
+    "easy_to_say": "Maklik om te sê (geen syfers of spesiale karakters)",
+    "password_tips": "Wenke vir Wagwoorde",
+    "tip_min_length": "• Gebruik minstens 14 karakters vir hoë sekuriteit",
+    "tip_mix": "• Sluit 'n mengsel van letters, syfers en simbole in",
+    "tip_no_personal": "• Vermy die gebruik van persoonlike inligting",
+    "tip_unique": "• Gebruik 'n ander wagwoord vir elke rekening",
+    "tip_manager": "• Oorweeg om 'n wagwoordbestuurder te gebruik om jou wagwoorde te stoor",
+    "recently_generated": "Onlangs gegenereer",
+    "clear_history": "Maak Geskiedenis Skoon",
+    "no_history": "Nog geen wagwoordgeskiedenis nie",
+    "history_hint": "Gegenereerde wagwoorde sal hier verskyn",
+    "weak": "Swak",
+    "fair": "Redelik",
+    "good": "Goed",
+    "strong_strength": "Sterk",
+    "strength": "{strength}% Sterkte"
+  }
+} 
