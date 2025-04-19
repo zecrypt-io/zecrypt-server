@@ -1,32 +1,50 @@
-export const getWorkspace = async () => {
-    try {
-      // Parse the URL to extract host and existing path
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      // Remove trailing slash from baseUrl if it exists
-      const baseUrlNoTrailingSlash = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-      // The workspace route
-      const workspaceRoute = "/web/workspace";
-      // Remove leading slash from route if it exists
-      const routeNoLeadingSlash = workspaceRoute.startsWith('/') ? workspaceRoute.slice(1) : workspaceRoute;
-      
-      // Construct the full URL
-      const fullUrl = `${baseUrlNoTrailingSlash}/${routeNoLeadingSlash}`;
-      
-      const res = await fetch(fullUrl, {
-        method: "GET",
-        credentials: "include", // This is key to include the cookie
-      });
-  
-      const data = await res.json();
-  
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to fetch workspace");
-      }
-  
-      return data?.data; // contains project_id, name, etc.
-    } catch (err) {
-      console.error("Error fetching workspace:", err);
-      return null;
+export const loadInitialData = async (accessToken: string) => {
+  if (!accessToken) {
+    console.error("No access token provided for loadInitialData");
+    return null;
+  }
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/load-initial-data`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "access-token": accessToken,
+      },
+      credentials: "include",
+    });
+    const data = await res.json();
+    console.log("Raw response status:", res.status);
+    console.log("Raw response data:", JSON.stringify(data, null, 2));
+
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to load initial data");
     }
-  };
-  
+
+    // Transform API response into Workspace[] format
+    const workspaces = data.data.map((workspace: any) => ({
+      workspaceId: workspace.doc_id,
+      name: workspace.name,
+      created_by: workspace.created_by,
+      created_at: workspace.created_at,
+      updated_at: workspace.updated_at,
+      projects: workspace.projects.map((project: any) => ({
+        project_id: project.doc_id,
+        name: project.name,
+        lower_name: project.lower_name,
+        description: project.description ?? "",
+        color: project.color || "#4f46e5",
+        created_by: project.created_by,
+        created_at: project.created_at,
+        updated_at: project.updated_at,
+        is_default: project.is_default,
+        workspace_id: project.workspace_id,
+      })),
+    }));
+
+    console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
+    return workspaces;
+  } catch (err) {
+    console.error("Error loading initial data:", err);
+    return null;
+  }
+};

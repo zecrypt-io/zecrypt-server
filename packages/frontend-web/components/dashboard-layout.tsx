@@ -1,11 +1,10 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
+import type React from "react";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
   Command,
@@ -43,7 +42,14 @@ import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
 import { EncryptionKeyModal } from "@/components/encryption-key-modal"
 import { useRouter } from "next/navigation"
 import { locales } from "@/middleware"
+<<<<<<< HEAD
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/libs/Redux/store";
+import { clearUserData } from "@/libs/Redux/userSlice";
+import { useUser } from "@stackframe/stack";
+=======
 import { useTranslator } from "@/hooks/use-translations"
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -66,21 +72,19 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
     >
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
-  )
+  );
 }
 
 export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProps) {
-  const pathname = usePathname()
-  const [showGeneratePassword, setShowGeneratePassword] = useState(false)
-  const [showProfileDialog, setShowProfileDialog] = useState(false)
-  const [showProjectDialog, setShowProjectDialog] = useState(false)
-  const searchInputRef = useRef<HTMLInputElement>(null)
+  const pathname = usePathname();
+  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const searchParams = useSearchParams()
-  const [showFavoritesDialog, setShowFavoritesDialog] = useState(false)
-  const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"])
-  
-  // Language switcher state
+  const searchParams = useSearchParams();
+  const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
+  const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
+
   const [currentLocale, setCurrentLocale] = useState(locale);
   
   // Language labels
@@ -118,14 +122,49 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     'zh-Hant': "Chinese Traditional (繁體中文)",
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove))
-  }
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useUser();
+  const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
-  const router = useRouter()
-  const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false)
-  const [isNewUser, setIsNewUser] = useState(false)
-  
+  // Get selected and default project from Redux
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const selectedProject = useSelector((state: RootState) =>
+    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId && selectedProjectId
+      ? state.workspace.workspaces
+          .find((ws) => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find((p) => p.project_id === selectedProjectId)
+      : null
+  );
+  const defaultProject = useSelector((state: RootState) =>
+    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId
+      ? state.workspace.workspaces
+          .find((ws) => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find((p) => p.is_default)
+      : null
+  );
+  const displayProject = selectedProject || defaultProject;
+
+  const removeTag = (tagToRemove: string) => {
+    setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
+  };
+
+  // Define handleLogout using useCallback to avoid recreating it on every render
+  const handleLogout = useCallback(async () => {
+    try {
+      if (user) {
+        await user.signOut();
+      }
+      dispatch(clearUserData());
+      localStorage.clear();
+      router.push(`/${currentLocale}`);
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  }, [user, dispatch, router, currentLocale]);
+ 
   // Switch language function
   const switchLanguage = (newLocale: string) => {
     if (newLocale === currentLocale) return;
@@ -148,37 +187,30 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   }, [locale]);
 
   useEffect(() => {
-    const handleGeneratePassword = () => setShowGeneratePassword(true)
-    const handleProjectDialog = () => setShowProjectDialog(true)
-    const handleSearchFocus = () => searchInputRef.current?.focus()
-    const handleThemeToggle = () => document.dispatchEvent(new CustomEvent("toggle-theme-event"))
-    const handleProfileDialog = () => setShowProfileDialog(true)
+    const handleGeneratePassword = () => setShowGeneratePassword(true);
+    const handleProjectDialog = () => setShowProjectDialog(true);
+    const handleSearchFocus = () => searchInputRef.current?.focus();
+    const handleThemeToggle = () => document.dispatchEvent(new CustomEvent("toggle-theme-event"));
 
-    document.addEventListener("toggle-generate-password", handleGeneratePassword)
-    document.addEventListener("toggle-project-dialog", handleProjectDialog)
-    document.addEventListener("toggle-search-focus", handleSearchFocus)
-    document.addEventListener("toggle-theme", handleThemeToggle)
-    document.addEventListener("toggle-profile-dialog", handleProfileDialog)
+    document.addEventListener("toggle-generate-password", handleGeneratePassword);
+    document.addEventListener("toggle-project-dialog", handleProjectDialog);
+    document.addEventListener("toggle-search-focus", handleSearchFocus);
+    document.addEventListener("toggle-theme", handleThemeToggle);
 
-    // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in input fields or when modifiers are used in combinations we don't handle
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
+        return;
       }
 
-      // Slash key for search focus
       if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault()
-        searchInputRef.current?.focus()
+        e.preventDefault();
+        searchInputRef.current?.focus();
       }
 
-      // Only handle keyboard shortcuts with modifiers below this point
-      if (!(e.metaKey || e.ctrlKey)) return
+      if (!(e.metaKey || e.ctrlKey)) return;
 
-      // Prevent default browser behavior for all our shortcuts
       if (["k", "g", "p", "d", "a", "f", "n", "s", "t", "l"].includes(e.key.toLowerCase())) {
-        e.preventDefault()
+        e.preventDefault();
       }
 
       switch (e.key.toLowerCase()) {
@@ -209,46 +241,38 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
           document.dispatchEvent(new CustomEvent("toggle-theme-event"))
           break
         case "l": // Logout
-          console.log("Logging out...")
-          // Implement actual logout functionality here
+          handleLogout();
           break
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("toggle-generate-password", handleGeneratePassword)
-      document.removeEventListener("toggle-project-dialog", handleProjectDialog)
-      document.removeEventListener("toggle-search-focus", handleSearchFocus)
-      document.removeEventListener("toggle-theme", handleThemeToggle)
-      document.removeEventListener("toggle-profile-dialog", handleProfileDialog)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [])
+      document.removeEventListener("toggle-generate-password", handleGeneratePassword);
+      document.removeEventListener("toggle-project-dialog", handleProjectDialog);
+      document.removeEventListener("toggle-search-focus", handleSearchFocus);
+      document.removeEventListener("toggle-theme", handleThemeToggle);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [router, currentLocale, handleLogout]);
 
   useEffect(() => {
-    // Check if we need to show the encryption key modal
-    const shouldShowModal = sessionStorage.getItem("showEncryptionKeyModal") === "true"
-    const newUserFlag = sessionStorage.getItem("isNewUser") === "true"
+    const shouldShowModal = sessionStorage.getItem("showEncryptionKeyModal") === "true";
+    const newUserFlag = sessionStorage.getItem("isNewUser") === "true";
 
     if (shouldShowModal) {
-      setShowEncryptionKeyModal(true)
-      setIsNewUser(newUserFlag)
-      // Clear the flag so it doesn't show again on refresh
-      sessionStorage.removeItem("showEncryptionKeyModal")
+      setShowEncryptionKeyModal(true);
+      setIsNewUser(newUserFlag);
+      sessionStorage.removeItem("showEncryptionKeyModal");
     }
-  }, [])
+  }, []);
 
-  // Add a function to handle the encryption key submission
   const handleEncryptionKeySubmit = (key: string) => {
-    // Store the key in sessionStorage
-    sessionStorage.setItem("encryptionKey", key)
-    setShowEncryptionKeyModal(false)
-
-    // In a real app, you would use this key to decrypt data
-    console.log("Encryption key received and stored for this session")
-  }
+    sessionStorage.setItem("encryptionKey", key);
+    setShowEncryptionKeyModal(false);
+    console.log("Encryption key received and stored for this session");
+  };
 
   const handleEncryptionKeyCancel = () => {
     // If user cancels, redirect back to login with the current locale
@@ -267,10 +291,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Command Palette */}
       <CommandPalette />
 
-      {/* Sidebar */}
       <div className="hidden md:flex w-64 flex-col border-r border-border">
         <div className="flex h-14 items-center border-b border-border px-4">
           <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
@@ -292,11 +314,23 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
         <div className="flex-1 overflow-auto py-2">
           <div className="px-3 py-2">
             <div className="mb-4">
+<<<<<<< HEAD
+              <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">Project</label>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => setShowProjectDialog(true)}
+              >
+=======
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
               <Button variant="outline" className="w-full justify-between" onClick={() => setShowProjectDialog(true)}>
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <div className="h-4 w-4 rounded-full bg-primary"></div>
-                  <span className="truncate">Personal Vault</span>
+                  <div
+                    className="h-4 w-4 rounded-full"
+                    style={{ backgroundColor: displayProject?.color || "#4f46e5" }}
+                  ></div>
+                  <span className="truncate">{displayProject?.name || "No project selected"}</span>
                 </div>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </Button>
@@ -350,7 +384,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 </svg>
                 API Keys
               </Link>
-
               <Link
                 href={`/${currentLocale}/dashboard/wallet-passphrases`}
                 className={cn(
@@ -360,19 +393,37 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wallet-icon lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-wallet-icon lucide-wallet"
+                >
+                  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+                  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+                </svg>
                 Wallet Passphrases
               </Link>
-
             </div>
-          </div> 
+          </div>
 
           <div className="flex items-center justify-between px-2 mt-6 mb-2">
             <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Star className="h-3 w-3" />
               {translate("favourites", "dashboard")}
             </h3>
-            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setShowFavoritesDialog(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5"
+              onClick={() => setShowFavoritesDialog(true)}
+            >
               <Plus className="h-3 w-3" />
               <span className="sr-only">Add Favorite Tag</span>
             </Button>
@@ -450,7 +501,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setShowProfileDialog(true)}>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{translate("logout", "dashboard")}</span>
                 </DropdownMenuItem>
@@ -460,7 +511,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center gap-4 border-b border-border px-4 lg:px-6">
           <Button variant="ghost" size="icon" className="md:hidden">
@@ -484,6 +534,25 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
+<<<<<<< HEAD
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  onClick={() => setShowGeneratePassword(true)}
+                  className="theme-button flex items-center gap-2 px-4 py-2"
+                >
+                  <Key className="h-5 w-5" />
+                  <span>Generate Password</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Generate Password</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+=======
           
 <TooltipProvider>
   <Tooltip>
@@ -502,8 +571,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     </TooltipContent>
   </Tooltip>
 </TooltipProvider>
+>>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
-          {/* Workspace Switcher in top nav */}
           <WorkspaceSwitcherNav />
 
           <TooltipProvider>
@@ -557,7 +626,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       </div>
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
-      {showProfileDialog && <UserProfileDialog onClose={() => setShowProfileDialog(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
       <KeyboardShortcutsHelp />
       {showEncryptionKeyModal && (
@@ -568,6 +636,5 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
         />
       )}
     </div>
-  )
+  );
 }
-

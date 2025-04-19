@@ -1,8 +1,13 @@
-import type React from "react"
-import { Inter } from "next/font/google"
-import "./globals.css"
+import type React from "react";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import ReduxProvider from "../libs/Redux/ReduxProvider"; // Updated import
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
+
 
 export const metadata = {
   title: 'Zecrypt',
@@ -13,16 +18,23 @@ export const metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </head>
       <body className={inter.className}>
-        {children}
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+            >
+              <ReduxProvider>{children}</ReduxProvider>
+            </ThemeProvider>
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
-  )
+  );
 }

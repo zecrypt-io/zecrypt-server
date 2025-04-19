@@ -7,9 +7,12 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "./theme-toggle"
 import { MonochromeGoogleIcon } from "./monochrome-google-icon"
 import { useState, useEffect } from "react"
-import { SignIn,useUser } from '@stackframe/stack';
+import { SignIn, useUser } from '@stackframe/stack'
 import { stackAuthHandler } from "@/libs/stack-auth-handler"
-import { useTranslations } from 'next-intl';
+import { useDispatch } from "react-redux"
+import { setUserData } from "../libs/Redux/userSlice"
+import { AppDispatch } from "../libs/Redux/store"
+import { useTranslations } from 'next-intl'
 
 export interface LoginPageProps {
   locale?: string;
@@ -17,80 +20,106 @@ export interface LoginPageProps {
 
 export function LoginPage({ locale = 'en' }: LoginPageProps) {
   const router = useRouter()
-  const t = useTranslations('auth');
-  const features = useTranslations('features');
+  const dispatch = useDispatch<AppDispatch>()
+  const t = useTranslations('auth')
+  const features = useTranslations('features')
  
-  const user = useUser();
-  const [isAuthenticating, setIsAuthenticating] = useState(true);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const user = useUser()
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [isAuthenticating, setIsAuthenticating] = useState(true)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (shouldRedirect) {
-      router.replace(`/${locale}/dashboard`);
+      router.replace(`/${locale}/dashboard`)
     }
-  }, [shouldRedirect, router, locale]);
+  }, [shouldRedirect, router, locale])
 
   useEffect(() => {
     const authenticateUser = async () => {
-      try {
-        setError(null);
-        const authDetails = await user?.getAuthJson();
-        const accessToken = authDetails?.accessToken;
+      if (isLoggingIn) return
+      setIsLoggingIn(true)
 
+      try {
+        setError(null)
+        const authDetails = await user?.getAuthJson()
+        const accessToken = authDetails?.accessToken
         if (!accessToken) {
-          setIsAuthenticating(false);
-          return;
+          setIsAuthenticating(false)
+          setIsLoggingIn(false)
+          return
         }
 
         try {
-          // Try login first
-          const loginResponse = await stackAuthHandler(accessToken, "login");
-          
-          if (loginResponse?.status_code === 200) {
-            setShouldRedirect(true);
-            return;
-          }
+          const loginResponse = await stackAuthHandler(accessToken, "login")
+          console.log("Login response:", loginResponse)
 
+          if (loginResponse?.status_code === 200) {
+            dispatch(
+              setUserData({
+                user_id: loginResponse.data.user_id,
+                name: loginResponse.data.name,
+                profile_url: loginResponse.data.profile_url,
+                access_token: loginResponse.data.access_token,
+                email: loginResponse.data.email,
+              })
+            )
+            // setShouldRedirect(true)
+            router.push(`/${locale}/dashboard`)
+            return
+          } 
+          
           // If login fails with "user not found", try signup
           if (
             loginResponse?.status_code === 400 &&
             loginResponse?.message?.toLowerCase().includes("user not found")
           ) {
             try {
-              const signupResponse = await stackAuthHandler(accessToken, "signup");
+              const signupResponse = await stackAuthHandler(accessToken, "signup")
+              console.log("Signup response:", signupResponse)
               
               if (signupResponse?.status_code === 200) {
-                setShouldRedirect(true);
-                return;
+                dispatch(
+                  setUserData({
+                    user_id: signupResponse.data.user_id,
+                    name: signupResponse.data.name,
+                    profile_url: signupResponse.data.profile_url,
+                    access_token: signupResponse.data.access_token,
+                    email: signupResponse.data.email,
+                  })
+                )
+                setShouldRedirect(true)
+                return
               } else {
-                setError(`Signup failed: ${signupResponse?.message || 'Unknown error'}`);
+                setError(`Signup failed: ${signupResponse?.message || 'Unknown error'}`)
               }
             } catch (signupErr) {
-              console.error("Signup error:", signupErr);
-              setError("Failed to sign up. Please check your network connection and try again.");
+              console.error("Signup error:", signupErr)
+              setError("Failed to sign up. Please check your network connection and try again.")
             }
           } else {
-            setError(`Login failed: ${loginResponse?.message || 'Unknown error'}`);
+            setError(`Login failed: ${loginResponse?.message || 'Unknown error'}`)
           }
         } catch (authErr) {
-          console.error("Auth request error:", authErr);
-          setError("Failed to authenticate. Please check your network connection and try again.");
+          console.error("Auth request error:", authErr)
+          setError("Failed to authenticate. Please check your network connection and try again.")
         }
       } catch (err) {
-        console.error("Auth flow error:", err);
-        setError("Authentication process failed. Please try again later.");
+        console.error("Auth flow error:", err)
+        setError("Authentication process failed. Please try again later.")
       } finally {
-        setIsAuthenticating(false);
+        setIsAuthenticating(false)
+        setIsLoggingIn(false)
       }
-    };
+    }
 
     if (user) {
-      authenticateUser();
+      authenticateUser()
     } else {
-      setIsAuthenticating(false);
+      setIsAuthenticating(false)
     }
-  }, [user]);
+  }, [user, router, dispatch])
 
   // Show loading screen while checking authentication status
   if (isAuthenticating) {
@@ -99,7 +128,7 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
         <p className="text-muted-foreground">Verifying authentication...</p>
       </div>
-    );
+    )
   }
 
   // Show error message if authentication failed
@@ -113,19 +142,19 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
         <Button 
           variant="outline" 
           onClick={() => {
-            setError(null);
-            setIsAuthenticating(true);
+            setError(null)
+            setIsAuthenticating(true)
             // Try to re-authenticate
             if (user) {
               // This will trigger the useEffect again
-              window.location.reload();
+              window.location.reload()
             }
           }}
         >
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   // If we're not authenticating and there's no user, show the login page
@@ -216,7 +245,7 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // If we have a user but we're not redirecting yet, show loading
@@ -225,6 +254,5 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
       <p className="text-muted-foreground">Redirecting to dashboard...</p>
     </div>
-  );
+  )
 }
-

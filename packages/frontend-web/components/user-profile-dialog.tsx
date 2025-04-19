@@ -1,63 +1,92 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { X, Camera, Upload, Trash, LogOut } from "lucide-react" // Added LogOut icon
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { useUser } from '@stackframe/stack' // Import useUser for authentication
-import { useRouter } from "next/navigation" // Import useRouter for redirection
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { X, Camera, Upload, Trash, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useUser } from "@stackframe/stack"; // Only useUser is needed
+import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../libs/Redux/store";
+import { clearUserData } from "../libs/Redux/userSlice";
+// import { clearWorkspaceData } from "../libs/Redux/workspaceSlice";
 
 interface UserProfileDialogProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
-  const [name, setName] = useState("Sadik Ali")
-  const [email, setEmail] = useState("sadik@example.com")
-  const [avatarSrc, setAvatarSrc] = useState("/placeholder.svg?height=128&width=128")
-  const [showImageOptions, setShowImageOptions] = useState(false)
-  const user = useUser() // Get the current user
-  const router = useRouter() // Initialize router for redirection
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { userData } = useSelector((state: RootState) => state.user);
+  const user = useUser(); // Stack's user object for sign-out
+
+  // Initialize state with Redux data or defaults
+  const [name, setName] = useState(userData?.name || "Sadik Ali");
+  const [email, setEmail] = useState(userData?.email || "sadik@example.com");
+  const [avatarSrc, setAvatarSrc] = useState(
+    userData?.profile_url || "/placeholder.svg?height=128&width=128"
+  );
+  const [showImageOptions, setShowImageOptions] = useState(false);
+
+  // Sync state with Redux data when userData changes
+  useEffect(() => {
+    if (userData) {
+      setName(userData.name);
+      setEmail(userData.email || "sadik@example.com"); // Email might not be in userSlice
+      setAvatarSrc(userData.profile_url || "/placeholder.svg?height=128&width=128");
+    }
+  }, [userData]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setAvatarSrc(event.target.result as string)
-          setShowImageOptions(false)
+          setAvatarSrc(event.target.result as string);
+          setShowImageOptions(false);
         }
-      }
-      reader.readAsDataURL(file)
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const removeImage = () => {
-    setAvatarSrc("/placeholder.svg?height=128&width=128")
-    setShowImageOptions(false)
-  }
+    setAvatarSrc("/placeholder.svg?height=128&width=128");
+    setShowImageOptions(false);
+  };
 
-  // Handle logout functionality
   const handleLogout = async () => {
-    if (user) {
-      try {
-        await user.signOut()
-         // Assumed method; check Stack docs for exact method
-        // Clear any stored tokens (e.g., from localStorage)
-        localStorage.removeItem('authToken')
-        // Redirect to login page
-        router.push('/login')
-        onClose() // Close the dialog
-      } catch (error) {
-        console.error('Error during logout:', error)
-        // Optionally show an error message to the user
+    try {
+      if (user) {
+        // Sign out from Stack using the user object's signOut method
+        await user.signOut();
       }
+
+      // Clear Redux state
+      dispatch(clearUserData());
+      // dispatch(clearWorkspaceData());
+
+      // Remove any local storage items (if applicable)
+      localStorage.removeItem("authToken"); // Optional, remove if not used
+
+      // Redirect to login page
+      router.push("/");
+      onClose(); // Close the dialog
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Optionally show an error message to the user
     }
+  };
+
+  // If no user is logged in, don't render the dialog
+  if (!userData) {
+    router.push("/login");
+    return null;
   }
 
   return (
@@ -75,7 +104,10 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center space-y-4">
             <div className="relative">
-              <Avatar className="h-24 w-24 cursor-pointer" onClick={() => setShowImageOptions(!showImageOptions)}>
+              <Avatar
+                className="h-24 w-24 cursor-pointer"
+                onClick={() => setShowImageOptions(!showImageOptions)}
+              >
                 <AvatarImage src={avatarSrc} alt={name} />
                 <AvatarFallback className="text-lg">
                   {name
@@ -97,7 +129,12 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
                     <label className="flex items-center gap-2 p-2 text-sm rounded-md cursor-pointer hover:bg-accent">
                       <Upload className="h-4 w-4" />
                       <span>Upload Image</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
                     </label>
                     <button
                       className="flex items-center gap-2 p-2 text-sm w-full text-left rounded-md cursor-pointer hover:bg-accent"
@@ -121,7 +158,13 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled // Email typically shouldn't be editable
+              />
             </div>
           </div>
 
@@ -138,5 +181,5 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
