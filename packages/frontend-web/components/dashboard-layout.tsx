@@ -42,14 +42,11 @@ import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
 import { EncryptionKeyModal } from "@/components/encryption-key-modal"
 import { useRouter } from "next/navigation"
 import { locales } from "@/middleware"
-<<<<<<< HEAD
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
-=======
 import { useTranslator } from "@/hooks/use-translations"
->>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -314,17 +311,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
         <div className="flex-1 overflow-auto py-2">
           <div className="px-3 py-2">
             <div className="mb-4">
-<<<<<<< HEAD
-              <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">Project</label>
-              <Button
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => setShowProjectDialog(true)}
-              >
-=======
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
               <Button variant="outline" className="w-full justify-between" onClick={() => setShowProjectDialog(true)}>
->>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
                     className="h-4 w-4 rounded-full"
@@ -534,25 +522,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
-<<<<<<< HEAD
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="default"
-                  onClick={() => setShowGeneratePassword(true)}
-                  className="theme-button flex items-center gap-2 px-4 py-2"
-                >
-                  <Key className="h-5 w-5" />
-                  <span>Generate Password</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Generate Password</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-=======
           
 <TooltipProvider>
   <Tooltip>
@@ -571,7 +540,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     </TooltipContent>
   </Tooltip>
 </TooltipProvider>
->>>>>>> 45321cfd5fc8cab5f8c63ab9462df9dd0a0b631e
 
           <WorkspaceSwitcherNav />
 
