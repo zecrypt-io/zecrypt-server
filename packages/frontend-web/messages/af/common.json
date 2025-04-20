@@ -186,8 +186,11 @@
     "enter_api_key_name": "e.g., Production Backend",
     "key_type": "Sleutel tipe",
     "key_preview": "Sleutelvoorskou",
-    "key_preview_description": "Die werklike sleutel sal wanneer jy klik op &quot;Skep API Sleutel&quot; gegenereer word"
-
+    "key_preview_description": "Die werklike sleutel sal wanneer jy klik op &quot;Skep API Sleutel&quot; gegenereer word",
+    "create_api_key": "Skep API Sleutel",
+    "cancel": "Kanselleer",
+    "rows_per_page": "Rye per bladsy:",
+    "add_key": "Voeg Sleutel by"
 
   }
 } 

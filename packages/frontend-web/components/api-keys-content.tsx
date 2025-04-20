@@ -554,7 +554,7 @@ export function ApiKeysContent() {
           className="w-full md:w-auto flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10"
         >
           <Plus className="h-4 w-4" />
-          Add Key
+          {translate("add_key", "api_keys")}
         </Button>
       </div>
 
@@ -693,7 +693,7 @@ export function ApiKeysContent() {
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">Rows per page:</span>
+                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "api_keys")}</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {
@@ -813,11 +813,11 @@ export function ApiKeysContent() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddKeyModal(false)}>
-              Cancel
+              {translate("cancel", "api_keys")}
             </Button>
             <Button onClick={handleCreateKey} className="bg-primary text-primary-foreground">
               <Key className="mr-2 h-4 w-4" />
-              Create API Key
+              {translate("create_api_key", "api_keys")}
             </Button>
           </DialogFooter>
         </DialogContent>

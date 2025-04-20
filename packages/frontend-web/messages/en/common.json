@@ -187,7 +187,10 @@
     "enter_api_key_name": "e.g., Production Backend",
     "key_type": "Key Type",
     "key_preview": "Key Preview",
-    "key_preview_description": "The actual key will be generated when you click &quot;Create API Key&quot;"
-
+    "key_preview_description": "The actual key will be generated when you click &quot;Create API Key&quot;",
+    "create_api_key": "Create API Key",
+    "cancel": "Cancel",
+    "rows_per_page": "Rows per page:",
+    "add_key": "Add Key"
   }
 } 
