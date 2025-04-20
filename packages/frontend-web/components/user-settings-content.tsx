@@ -274,7 +274,6 @@ export function UserSettingsContent() {
                     
                   </div>
 
-                  <Button className="w-full mt-6">Save Changes</Button>
                   <Button className="w-full mt-6" onClick={handleSave} disabled={loading}>
                     {loading ? "Saving..." : "Save Changes"}
                   </Button>
