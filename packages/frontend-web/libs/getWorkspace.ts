@@ -4,7 +4,7 @@ export const loadInitialData = async (accessToken: string) => {
     return null;
   }
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_API_LOAD_INITIAL_DATA_ROUTE}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/web/load-initial-data`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

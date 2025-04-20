@@ -49,7 +49,14 @@
     "notifications": "Kennisgewings",
     "search": "Soek...",
     "settings": "Instellings",
-    "logout": "Meld af"
+    "logout": "Meld af",
+    "total_projects": "Totale projekte",
+    "total_workspaces": "Totale werksruimtes",
+    "total_team_members": "Totale teamlede",
+    "quick_stats": "Quick Stats",
+    "workspaces": "Werksruimtes",
+    "projects": "Projekte",
+    "team_members": "Teamlede"
   },
   "activity": {
     "password_updated": "Wagwoord opgedateer",
@@ -111,7 +118,8 @@
     "fair": "Redelik",
     "good": "Goed",
     "strong_strength": "Sterk",
-    "strength": "{strength}% Sterkte"
+    "strength": "{strength}% Sterkte",
+    "no_project_selected": "Geen projek gekies nie"
   },
   "accounts": {
     "accounts": "Rekeninge",
@@ -134,5 +142,52 @@
     "add_new_account": "Voeg nuwe rekening by",
     "focus_search": "Fokus soek",
     "switch_project": "Wissel projek"
+  },
+  "user_settings": {
+    "title": "Gebruikerinstellings",
+    "description": "Bestuur jou rekeninginstellings en voorkeure",
+    "profile": "Profiel",
+    "security": "Sekuriteit",
+    "notifications": "Kennisgewings",
+    "integrations": "Integrasies",
+    "logout": "Meld af",
+    "login_history": "Meldings geskiedenis",
+    "audit_log": "Auditing Log",
+    "profile_title": "Profiel & Rekening Informatie",
+    "profile_description": "Bestuur jou persoonlike en rekeningbesonderhede",
+    "language": "Taal",
+    "select_language": "Kies taal",
+    "email_address": "E-posadres",
+    "full_name": "Volle naam",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "page": "Bladsy",
+    "of": "van",
+    "saving": "Stoor",
+    "save_changes": "Wysigings stoor",
+    "profile_picture": "Profielbeeld"
+  },
+  "api_keys": {
+    "title":"API Sleutels",
+    "description":"Bestuur jou API sleutels vir programmatiese toegang tot Zecrypt-dienste.",
+    "edit_api_key": "Wysig API Sleutel",
+    "search": "Soek API Sleutels...",
+    "name": "Naam",
+    "key": "Sleutel",
+    "type": "Type",
+    "created": "Geskep",
+    "expires": "Verloop",
+    "status": "Status",
+    "actions": "Aksies",
+    "clear": "Maak Skoon",
+    "create_new_api_key": "Skep Nuwe API Sleutel",
+    "enter_details_for_new_api_key": "Voer die besonderhede in vir jou nuwe API Sleutel",
+    "api_key_name": "API Sleutelnaam",
+    "enter_api_key_name": "e.g., Production Backend",
+    "key_type": "Sleutel tipe",
+    "key_preview": "Sleutelvoorskou",
+    "key_preview_description": "Die werklike sleutel sal wanneer jy klik op &quot;Skep API Sleutel&quot; gegenereer word"
+
+
   }
 } 

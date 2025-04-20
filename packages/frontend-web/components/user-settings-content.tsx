@@ -106,7 +106,7 @@ export function UserSettingsContent() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/web/profile`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to fetch profile");
@@ -257,7 +257,7 @@ export function UserSettingsContent() {
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/web/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -315,8 +315,8 @@ export function UserSettingsContent() {
         <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile & Account Information</CardTitle>
-              <CardDescription>Manage your personal and account details</CardDescription>
+              <CardTitle>{translate("profile_title", "user_settings")}</CardTitle>
+              <CardDescription>{translate("profile_description", "user_settings")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-8">
@@ -333,29 +333,29 @@ export function UserSettingsContent() {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <p className="text-sm text-muted-foreground">Profile picture</p>
+                  <p className="text-sm text-muted-foreground">{translate("profile_picture", "user_settings")}</p>
                 </div>
 
                 {/* Form Fields Section */}
                 <div className="flex-1 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name">{translate("full_name", "user_settings")}</Label>
                       <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     {/* Username field - Commented out as requested */}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email">{translate("email_address", "user_settings")}</Label>
                       <Input id="email" type="email" value={email} disabled />
                     </div>
                     {/* Phone Number field - Commented out as requested */}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="language">Language</Label>
+                      <Label htmlFor="language">{translate("language", "user_settings")}</Label>
                       <Select value={currentLocale} onValueChange={handleLanguageChange}>
                         <SelectTrigger id="language">
-                          <SelectValue placeholder="Select language" />
+                          <SelectValue placeholder={translate("select_language", "user_settings")} />
                         </SelectTrigger>
                         <SelectContent>
                           {sortedLocales.map(locale => (
@@ -371,7 +371,7 @@ export function UserSettingsContent() {
                   </div>
 
                   <Button className="w-full mt-6" onClick={handleSave} disabled={loading}>
-                    {loading ? "Saving..." : "Save Changes"}
+                    {loading ? (translate("saving", "user_settings")) : (translate("save_changes", "user_settings"))}
                   </Button>
                 </div>
               </div>
@@ -466,12 +466,12 @@ export function UserSettingsContent() {
                         disabled={currentPage === 1}
                       >
                         <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
+                        {translate("previous", "user_settings")}
                       </Button>
                       
                       <div className="flex items-center px-4">
                         <span className="text-sm text-muted-foreground">
-                          Page {currentPage} of {totalPages}
+                          {translate("page", "user_settings")} {currentPage} {translate("of", "user_settings")} {totalPages}
                         </span>
                       </div>
                       
@@ -481,7 +481,7 @@ export function UserSettingsContent() {
                         onClick={goToNextPage}
                         disabled={currentPage === totalPages}
                       >
-                        Next
+                        {translate("next", "user_settings")}
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>

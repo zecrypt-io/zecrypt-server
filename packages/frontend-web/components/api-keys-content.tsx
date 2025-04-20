@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/libs/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTranslator } from "@/hooks/use-translations"
 
 interface ApiKey {
   id: string
@@ -169,7 +170,7 @@ export function ApiKeysContent() {
   const [editWritePermission, setEditWritePermission] = useState(false)
   const [editDeletePermission, setEditDeletePermission] = useState(false)
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(allApiKeys)
-
+  const { translate } = useTranslator()
   useEffect(() => {
     const handleAddKey = () => setShowAddKeyModal(true)
 
@@ -390,7 +391,7 @@ export function ApiKeysContent() {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
         <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-foreground">Edit API Key</h2>
+            <h2 className="text-xl font-semibold text-foreground">{translate("edit_api_key", "api_keys")}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -404,11 +405,11 @@ export function ApiKeysContent() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="edit-key-name" className="text-sm font-medium text-foreground">
-                API Key Name
+                {translate("api_key_name", "api_keys")}
               </Label>
               <Input
                 id="edit-key-name"
-                placeholder="Enter API key name"
+                placeholder={translate("enter_api_key_name", "api_keys")}
                 value={editKeyName}
                 onChange={(e) => setEditKeyName(e.target.value)}
                 className="h-10 border-border focus:ring-2 focus:ring-primary"
@@ -482,9 +483,9 @@ export function ApiKeysContent() {
     <div className="flex-1 flex-col space-y-6 p-6 md:p-8">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold tracking-tight">API Keys</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{translate("title", "api_keys")}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage your API keys for programmatic access to Zecrypt services.
+          {translate("description", "api_keys")}
         </p>
       </div>
 
@@ -495,7 +496,7 @@ export function ApiKeysContent() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search API keys..."
+              placeholder={translate("search", "api_keys")}
               className="pl-8 w-full h-10"
               value={searchQuery}
               onChange={(e) => {
@@ -563,13 +564,13 @@ export function ApiKeysContent() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="w-[200px] p-3 font-medium text-sm">Name</TableHead>
-                <TableHead className="p-3 font-medium text-sm">Key</TableHead>
-                <TableHead className="w-[100px] p-3 font-medium text-sm">Type</TableHead>
-                <TableHead className="w-[120px] p-3 font-medium text-sm">Created</TableHead>
-                <TableHead className="w-[120px] p-3 font-medium text-sm">Expires</TableHead>
-                <TableHead className="w-[100px] p-3 font-medium text-sm">Status</TableHead>
-                <TableHead className="w-[80px] p-3 font-medium text-sm text-right">Actions</TableHead>
+                <TableHead className="w-[200px] p-3 font-medium text-sm">{translate("name", "api_keys")}</TableHead>
+                <TableHead className="p-3 font-medium text-sm">{translate("key", "api_keys")}</TableHead>
+                <TableHead className="w-[100px] p-3 font-medium text-sm">{translate("type", "api_keys")}</TableHead>
+                <TableHead className="w-[120px] p-3 font-medium text-sm">{translate("created", "api_keys")}</TableHead>
+                <TableHead className="w-[120px] p-3 font-medium text-sm">{translate("expires", "api_keys")}</TableHead>
+                <TableHead className="w-[100px] p-3 font-medium text-sm">{translate("status", "api_keys")}</TableHead>
+                <TableHead className="w-[80px] p-3 font-medium text-sm text-right">{translate("actions", "api_keys")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -670,7 +671,7 @@ export function ApiKeysContent() {
                         <h3 className="font-medium">No API keys found</h3>
                         <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
                         <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                          Clear filters
+                          {translate("clear", "api_keys")}
                         </Button>
                       </div>
                     ) : (
@@ -761,15 +762,15 @@ export function ApiKeysContent() {
       <Dialog open={showAddKeyModal} onOpenChange={setShowAddKeyModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New API Key</DialogTitle>
-            <DialogDescription>Enter the details for your new API key.</DialogDescription>
+            <DialogTitle>{translate("create_new_api_key", "api_keys")}</DialogTitle>
+            <DialogDescription>{translate("enter_details_for_new_api_key", "api_keys")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="key-name">API Key Name</Label>
+              <Label htmlFor="key-name">{translate("api_key_name", "api_keys")}</Label>
               <Input
                 id="key-name"
-                placeholder="e.g., Production Backend"
+                placeholder={translate("enter_api_key_name", "api_keys")}
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
                 className="mt-1.5 h-10"
@@ -777,7 +778,7 @@ export function ApiKeysContent() {
             </div>
 
             <div>
-              <Label>Key Type</Label>
+              <Label>{translate("key_type", "api_keys")}</Label>
               <RadioGroup
                 value={keyType}
                 onValueChange={(value) => setKeyType(value as "test" | "live")}
@@ -799,14 +800,14 @@ export function ApiKeysContent() {
             </div>
 
             <div>
-              <Label>Key Preview</Label>
+              <Label>{translate("key_preview", "api_keys")}</Label>
               <div className="mt-1.5 border rounded-md bg-muted/30 overflow-hidden">
                 <div className="p-3 h-20 flex items-center">
                   <code className="text-sm font-mono w-full break-all">{`zk_${keyType}_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`}</code>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                The actual key will be generated when you click &quot;Create API Key&quot;
+               {translate("key_preview_description", "api_keys")}
               </p>
             </div>
           </div>
