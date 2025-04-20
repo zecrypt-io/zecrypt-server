@@ -1,9 +1,14 @@
 import { getStoredUserData } from './local-storage-utils';
+import { store } from './Redux/store';
+import { UserState } from './Redux/userSlice';
 
 export async function fetchLoginHistory() {
   try {
-    const userData = getStoredUserData();
-    if (!userData?.access_token) {
+    // Get access token from Redux store instead of local storage
+    const state = store.getState();
+    const accessToken = state.user.userData?.access_token;
+    
+    if (!accessToken) {
       throw new Error('No access token found');
     }
 
@@ -18,7 +23,7 @@ export async function fetchLoginHistory() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "access-token": userData.access_token
+        "access-token": accessToken
       },
       credentials: "include",
     });
