@@ -13,6 +13,8 @@ import { useDispatch } from "react-redux"
 import { setUserData } from "../libs/Redux/userSlice"
 import { AppDispatch } from "../libs/Redux/store"
 import { useTranslations } from 'next-intl'
+// import { useTranslations } from 'next-intl';
+import { saveUserData } from "@/libs/local-storage-utils"
 
 export interface LoginPageProps {
   locale?: string;
@@ -54,6 +56,17 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
         try {
           const loginResponse = await stackAuthHandler(accessToken, "login")
           console.log("Login response:", loginResponse)
+          // // Try login first
+          // const loginResponse = await stackAuthHandler(accessToken, "login");
+          
+          // if (loginResponse?.status_code === 200) {
+          //   // Store user data in localStorage
+          //   if (loginResponse.data) {
+          //     saveUserData(loginResponse.data);
+          //   }
+          //   setShouldRedirect(true);
+          //   return;
+          // }
 
           if (loginResponse?.status_code === 200) {
             dispatch(
@@ -91,6 +104,12 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
                 )
                 setShouldRedirect(true)
                 return
+                // Store user data in localStorage
+                // if (signupResponse.data) {
+                //   saveUserData(signupResponse.data);
+                // }
+                // setShouldRedirect(true);
+                // return;
               } else {
                 setError(`Signup failed: ${signupResponse?.message || 'Unknown error'}`)
               }
