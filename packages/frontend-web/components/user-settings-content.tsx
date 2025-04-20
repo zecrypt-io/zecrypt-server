@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { useTranslator } from "@/hooks/use-translations"
+
 import {
   User,
   Shield,
@@ -57,17 +59,48 @@ import { useTranslations } from "next-intl"
 
 export function UserSettingsContent() {
   const [activeTab, setActiveTab] = useState("profile")
-  const [name, setName] = useState("Sadik Ali")
-  const [email, setEmail] = useState("sadik@example.com")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [avatarSrc, setAvatarSrc] = useState("/placeholder.svg?height=128&width=128")
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter();
   const pathname = usePathname();
-  
+  const { translate } = useTranslator();
+
   // Get current locale from pathname
   const [currentLocale, setCurrentLocale] = useState("en");
   
-  // Set the current locale on component mount
+  // Fetch user profile on mount
+  useEffect(() => {
+    async function fetchProfile() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        if (data?.data) {
+          setName(data.data.name || "");
+          setEmail(data.data.email || "");
+          setAvatarSrc(data.data.profile_url || "/placeholder.svg?height=128&width=128");
+          setCurrentLocale(data.data.language || "en");
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Set the current locale from URL if present
   useEffect(() => {
     const pathSegments = pathname?.split('/') || [];
     if (pathSegments.length > 1 && locales.includes(pathSegments[1] as any)) {
@@ -119,29 +152,58 @@ export function UserSettingsContent() {
   
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
-    // Switch language by changing the URL path
-    const segments = pathname?.split('/') || [];
-    // Remove the current locale segment
-    segments.splice(1, 1, newLocale);
-    const newPath = segments.join('/');
-    router.push(newPath);
     setCurrentLocale(newLocale);
+  };
+
+  // Handle save changes
+  const handleSave = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name,
+          language: currentLocale,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update profile");
+      setSuccess("Profile updated successfully");
+      // Optionally update the URL to reflect the new locale
+      const segments = pathname?.split('/') || [];
+      if (segments.length > 1 && locales.includes(segments[1] as any)) {
+        segments[1] = currentLocale;
+        const newPath = segments.join('/');
+        if (newPath !== pathname) router.push(newPath);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">User Settings</h1>
-          <p className="text-muted-foreground">Manage your account settings and preferences</p>
+          <h1 className="text-2xl font-bold">{translate("title", "user_settings")}</h1>
+          <p className="text-muted-foreground">{translate("description", "user_settings")}</p>
         </div>
       </div>
-
+      {loading && <div className="mb-4 text-blue-500">Loading...</div>}
+      {error && <div className="mb-4 text-red-500">{error}</div>}
+      {success && <div className="mb-4 text-green-600">{success}</div>}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-[600px] grid-cols-3 mb-6">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
-            Profile
+            {translate("profile", "user_settings")}
           </TabsTrigger>
           <TabsTrigger value="history">
             <Clock className="mr-2 h-4 w-4" />
@@ -189,7 +251,7 @@ export function UserSettingsContent() {
                     
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <Input id="email" type="email" value={email} disabled />
                     </div>
                     {/* Phone Number field - Commented out as requested */}
                     
@@ -213,6 +275,9 @@ export function UserSettingsContent() {
                   </div>
 
                   <Button className="w-full mt-6">Save Changes</Button>
+                  <Button className="w-full mt-6" onClick={handleSave} disabled={loading}>
+                    {loading ? "Saving..." : "Save Changes"}
+                  </Button>
                 </div>
               </div>
             </CardContent>
