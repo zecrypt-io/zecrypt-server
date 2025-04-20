@@ -18,7 +18,9 @@ export async function stackAuthHandler(uid: string, action: StackAuthAction): Pr
     throw new Error("NEXT_PUBLIC_API_URL is not defined in environment variables");
   }
 
-  const endpoint = action === "login" ? "/login" : "/signup";
+  const endpoint = action === "login" 
+    ? process.env.NEXT_PUBLIC_API_AUTH_LOGIN_ROUTE 
+    : process.env.NEXT_PUBLIC_API_AUTH_SIGNUP_ROUTE;
   const fullUrl = `${baseUrl}${endpoint}`;
   console.log(`Fetching ${action} at: ${fullUrl}`);
 
