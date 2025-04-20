@@ -49,7 +49,15 @@
     "notifications": "Notifications",
     "search": "Search...",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "current_project": "Current Project",
+    "default": "Default",
+    "no_project_selected": "No project selected",
+    "total_workspaces": "Total Workspaces",
+    "quick_stats": "Quick Stats",
+    "workspaces": "Workspaces",
+    "projects": "Projects",
+    "team_members": "Team Members"
   },
   "activity": {
     "password_updated": "Password updated",
