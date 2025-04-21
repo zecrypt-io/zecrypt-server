@@ -1,3 +1,5 @@
+import { API_ROUTES } from '@/constants/routes';
+
 type StackAuthAction = "login" | "signup";
 
 interface AuthResponse {
@@ -19,8 +21,8 @@ export async function stackAuthHandler(uid: string, action: StackAuthAction): Pr
   }
 
   const endpoint = action === "login" 
-    ? process.env.NEXT_PUBLIC_API_AUTH_LOGIN_ROUTE 
-    : process.env.NEXT_PUBLIC_API_AUTH_SIGNUP_ROUTE;
+    ? API_ROUTES.AUTH.LOGIN
+    : API_ROUTES.AUTH.SIGNUP;
   const fullUrl = `${baseUrl}${endpoint}`;
   console.log(`Fetching ${action} at: ${fullUrl}`);
 

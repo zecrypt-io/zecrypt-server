@@ -1,10 +1,12 @@
+import { API_ROUTES } from '@/constants/routes';
+
 export const loadInitialData = async (accessToken: string) => {
   if (!accessToken) {
     console.error("No access token provided for loadInitialData");
     return null;
   }
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_API_LOAD_INITIAL_DATA_ROUTE}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.LOAD_INITIAL_DATA}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
