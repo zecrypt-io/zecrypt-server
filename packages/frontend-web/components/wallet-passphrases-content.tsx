@@ -21,6 +21,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import { Card, CardContent } from "@/components/ui/card"
+import { useSelector } from "react-redux"
+import { RootState } from "@/libs/Redux/store"
+import { 
+  createWalletPassphrase, 
+  updateWalletPassphrase, 
+  deleteWalletPassphrase, 
+  getWalletPassphrases 
+} from "@/libs/wallet-api"
 
 // Types
 interface WalletPassphrase {
@@ -28,96 +36,14 @@ interface WalletPassphrase {
   name: string
   walletType: string
   passphrase: string
+  walletAddress: string
   tags: string[]
   notes: string
   createdAt: Date
   lastAccessed: Date
 }
 
-// Mock data for demonstration
-const mockWalletPassphrases: WalletPassphrase[] = [
-  {
-    id: "1",
-    name: "Bitcoin Main Wallet",
-    walletType: "Bitcoin",
-    passphrase: "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12",
-    tags: ["main", "hodl"],
-    notes: "My main Bitcoin wallet for long-term holding",
-    createdAt: new Date("2023-01-15"),
-    lastAccessed: new Date("2023-06-20"),
-  },
-  {
-    id: "2",
-    name: "Ethereum DeFi",
-    walletType: "Ethereum",
-    passphrase: "apple banana cherry dog elephant frog guitar house igloo jacket kite lion mountain",
-    tags: ["defi", "trading"],
-    notes: "Used for DeFi applications",
-    createdAt: new Date("2023-02-10"),
-    lastAccessed: new Date("2023-06-18"),
-  },
-  {
-    id: "3",
-    name: "Solana NFT",
-    walletType: "Solana",
-    passphrase: "zebra yellow xylophone window van umbrella tree sun river queen piano orange notebook",
-    tags: ["nft", "trading"],
-    notes: "Wallet for NFT collections",
-    createdAt: new Date("2023-03-05"),
-    lastAccessed: new Date("2023-06-15"),
-  },
-  {
-    id: "4",
-    name: "Cardano Staking",
-    walletType: "Cardano",
-    passphrase: "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu",
-    tags: ["staking", "long-term"],
-    notes: "Wallet for ADA staking",
-    createdAt: new Date("2023-04-12"),
-    lastAccessed: new Date("2023-06-10"),
-  },
-  {
-    id: "5",
-    name: "Polygon DeFi",
-    walletType: "Polygon",
-    passphrase: "moon sun stars planet comet asteroid galaxy nebula quasar pulsar blackhole",
-    tags: ["defi", "trading"],
-    notes: "Used for Polygon DeFi apps",
-    createdAt: new Date("2023-05-20"),
-    lastAccessed: new Date("2023-06-05"),
-  },
-  {
-    id: "6",
-    name: "Avalanche Validator",
-    walletType: "Avalanche",
-    passphrase: "red orange yellow green blue indigo violet white black gray silver",
-    tags: ["validator", "staking"],
-    notes: "Validator node wallet",
-    createdAt: new Date("2023-06-01"),
-    lastAccessed: new Date("2023-06-18"),
-  },
-  {
-    id: "7",
-    name: "Binance Smart Chain",
-    walletType: "Binance Smart Chain",
-    passphrase: "one two three four five six seven eight nine ten eleven twelve",
-    tags: ["trading", "defi"],
-    notes: "BSC trading wallet",
-    createdAt: new Date("2023-01-30"),
-    lastAccessed: new Date("2023-06-15"),
-  },
-  {
-    id: "8",
-    name: "Polkadot Parachain",
-    walletType: "Polkadot",
-    passphrase: "alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo",
-    tags: ["parachain", "staking"],
-    notes: "Parachain participation wallet",
-    createdAt: new Date("2023-02-15"),
-    lastAccessed: new Date("2023-06-12"),
-  },
-]
-
+// Wallet types for dropdown
 const walletTypes = [
   "Bitcoin",
   "Ethereum",
@@ -132,15 +58,16 @@ const walletTypes = [
 
 export function WalletPassphrasesContent() {
   const router = useRouter()
-  const [walletPassphrases, setWalletPassphrases] = useState<WalletPassphrase[]>(mockWalletPassphrases)
+  const [walletPassphrases, setWalletPassphrases] = useState<WalletPassphrase[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filteredPassphrases, setFilteredPassphrases] = useState<WalletPassphrase[]>(walletPassphrases)
+  const [filteredPassphrases, setFilteredPassphrases] = useState<WalletPassphrase[]>([])
   const [visiblePassphrases, setVisiblePassphrases] = useState<Record<string, boolean>>({})
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentPassphrase, setCurrentPassphrase] = useState<WalletPassphrase | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -151,9 +78,63 @@ export function WalletPassphrasesContent() {
     name: "",
     walletType: "Bitcoin",
     passphrase: "",
+    walletAddress: "",
     tags: "",
     notes: "",
   })
+
+  // Redux state
+  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+
+  // Fetch wallet passphrases on component mount or when workspace/project changes
+  useEffect(() => {
+    const fetchWalletPassphrases = async () => {
+      if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+        console.log("Missing required parameters for fetching wallet passphrases");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await getWalletPassphrases(
+          selectedWorkspaceId,
+          selectedProjectId,
+          accessToken
+        );
+
+        if (response.data && Array.isArray(response.data)) {
+          // Transform API response to match component data structure
+          const walletData = response.data.map((wallet: any) => ({
+            id: wallet.doc_id,
+            name: wallet.name,
+            walletType: wallet.wallet_type,
+            passphrase: wallet.phrase,
+            walletAddress: wallet.wallet_address || "",
+            tags: wallet.tag || [],
+            notes: wallet.notes || "",
+            createdAt: new Date(wallet.created_at),
+            lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
+          }));
+
+          setWalletPassphrases(walletData);
+          console.log("Wallet passphrases loaded:", walletData.length);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallet passphrases:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load wallet passphrases. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWalletPassphrases();
+  }, [selectedWorkspaceId, selectedProjectId, accessToken]);
 
   // Filter passphrases based on search term
   useEffect(() => {
@@ -224,6 +205,7 @@ export function WalletPassphrasesContent() {
       name: "",
       walletType: "Bitcoin",
       passphrase: "",
+      walletAddress: "",
       tags: "",
       notes: "",
     })
@@ -242,6 +224,7 @@ export function WalletPassphrasesContent() {
       name: passphrase.name,
       walletType: passphrase.walletType,
       passphrase: passphrase.passphrase,
+      walletAddress: passphrase.walletAddress || "",
       tags: passphrase.tags.join(", "),
       notes: passphrase.notes,
     })
@@ -255,72 +238,172 @@ export function WalletPassphrasesContent() {
   }
 
   // Add new passphrase
-  const addPassphrase = () => {
-    const newPassphrase: WalletPassphrase = {
-      id: Date.now().toString(),
-      name: formData.name,
-      walletType: formData.walletType,
-      passphrase: formData.passphrase,
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      notes: formData.notes,
-      createdAt: new Date(),
-      lastAccessed: new Date(),
+  const addPassphrase = async () => {
+    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+      toast({
+        title: "Error",
+        description: "No workspace or project selected",
+        variant: "destructive",
+      });
+      return;
     }
 
-    setWalletPassphrases((prev) => [...prev, newPassphrase])
-    setIsAddDialogOpen(false)
-    resetFormData()
+    try {
+      // Format tags for API
+      const formattedTags = formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+      
+      // Call API
+      const response = await createWalletPassphrase(
+        selectedWorkspaceId,
+        selectedProjectId,
+        accessToken,
+        {
+          name: formData.name,
+          phrase: formData.passphrase,
+          wallet_address: formData.walletAddress,
+          wallet_type: formData.walletType,
+          tag: formattedTags,
+        }
+      );
+      
+      console.log('Wallet passphrase created:', response);
+      
+      // Create new passphrase object for UI
+      const newPassphrase: WalletPassphrase = {
+        id: response.data?.doc_id || Date.now().toString(),
+        name: formData.name,
+        walletType: formData.walletType,
+        passphrase: formData.passphrase,
+        walletAddress: formData.walletAddress,
+        tags: formattedTags,
+        notes: formData.notes,
+        createdAt: new Date(),
+        lastAccessed: new Date(),
+      };
 
-    toast({
-      title: "Passphrase added",
-      description: "Your wallet passphrase has been securely stored.",
-    })
+      setWalletPassphrases((prev) => [...prev, newPassphrase]);
+      setIsAddDialogOpen(false);
+      resetFormData();
+
+      toast({
+        title: "Passphrase added",
+        description: "Your wallet passphrase has been securely stored.",
+      });
+    } catch (error) {
+      console.error("Error adding passphrase:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add wallet passphrase",
+        variant: "destructive",
+      });
+    }
   }
 
   // Edit passphrase
-  const editPassphrase = () => {
-    if (!currentPassphrase) return
-
-    const updatedPassphrase: WalletPassphrase = {
-      ...currentPassphrase,
-      name: formData.name,
-      walletType: formData.walletType,
-      passphrase: formData.passphrase,
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      notes: formData.notes,
+  const editPassphrase = async () => {
+    if (!currentPassphrase) return;
+    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+      toast({
+        title: "Error",
+        description: "No workspace or project selected",
+        variant: "destructive",
+      });
+      return;
     }
 
-    setWalletPassphrases((prev) => prev.map((item) => (item.id === currentPassphrase.id ? updatedPassphrase : item)))
+    try {
+      // Format tags for API
+      const formattedTags = formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+      
+      // Call API
+      await updateWalletPassphrase(
+        selectedWorkspaceId,
+        selectedProjectId,
+        currentPassphrase.id,
+        accessToken,
+        {
+          name: formData.name,
+          phrase: formData.passphrase,
+          wallet_address: formData.walletAddress,
+          wallet_type: formData.walletType,
+          tag: formattedTags,
+        }
+      );
+      
+      const updatedPassphrase: WalletPassphrase = {
+        ...currentPassphrase,
+        name: formData.name,
+        walletType: formData.walletType,
+        passphrase: formData.passphrase,
+        walletAddress: formData.walletAddress,
+        tags: formattedTags,
+        notes: formData.notes,
+      }
 
-    setIsEditDialogOpen(false)
-    setCurrentPassphrase(null)
-    resetFormData()
+      setWalletPassphrases((prev) => prev.map((item) => (item.id === currentPassphrase.id ? updatedPassphrase : item)))
 
-    toast({
-      title: "Passphrase updated",
-      description: "Your wallet passphrase has been updated successfully.",
-    })
+      setIsEditDialogOpen(false)
+      setCurrentPassphrase(null)
+      resetFormData()
+
+      toast({
+        title: "Passphrase updated",
+        description: "Your wallet passphrase has been updated successfully.",
+      })
+    } catch (error) {
+      console.error("Error updating passphrase:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update wallet passphrase",
+        variant: "destructive",
+      });
+    }
   }
 
   // Delete passphrase
-  const deletePassphrase = () => {
-    if (!currentPassphrase) return
+  const deletePassphrase = async () => {
+    if (!currentPassphrase) return;
+    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+      toast({
+        title: "Error",
+        description: "No workspace or project selected",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setWalletPassphrases((prev) => prev.filter((item) => item.id !== currentPassphrase.id))
+    try {
+      // Call API
+      await deleteWalletPassphrase(
+        selectedWorkspaceId,
+        selectedProjectId,
+        currentPassphrase.id,
+        accessToken
+      );
+      
+      setWalletPassphrases((prev) => prev.filter((item) => item.id !== currentPassphrase.id))
 
-    setIsDeleteDialogOpen(false)
-    setCurrentPassphrase(null)
+      setIsDeleteDialogOpen(false)
+      setCurrentPassphrase(null)
 
-    toast({
-      title: "Passphrase deleted",
-      description: "Your wallet passphrase has been deleted.",
-    })
+      toast({
+        title: "Passphrase deleted",
+        description: "Your wallet passphrase has been deleted.",
+      })
+    } catch (error) {
+      console.error("Error deleting passphrase:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete wallet passphrase",
+        variant: "destructive",
+      });
+    }
   }
 
   // Format date
@@ -359,7 +442,17 @@ export function WalletPassphrasesContent() {
         </Button>
       </div>
 
-      {filteredPassphrases.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="h-12 w-12 rounded-full border-4 border-muted-foreground/20 border-t-muted-foreground animate-spin mb-4"></div>
+            <h3 className="text-lg font-medium">Loading wallet passphrases...</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please wait while we fetch your secure passphrases.
+            </p>
+          </CardContent>
+        </Card>
+      ) : filteredPassphrases.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-6 text-center">
             <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
@@ -384,6 +477,7 @@ export function WalletPassphrasesContent() {
                     <TableHead className="p-3 font-medium text-sm">Name</TableHead>
                     <TableHead className="p-3 font-medium text-sm">Wallet Type</TableHead>
                     <TableHead className="p-3 font-medium text-sm">Passphrase</TableHead>
+                    <TableHead className="p-3 font-medium text-sm">Wallet Address</TableHead>
                     <TableHead className="p-3 font-medium text-sm">Tags</TableHead>
                     <TableHead className="p-3 font-medium text-sm">Created</TableHead>
                     <TableHead className="p-3 font-medium text-sm">Last Accessed</TableHead>
@@ -424,6 +518,11 @@ export function WalletPassphrasesContent() {
                               <Copy className="h-4 w-4" />
                             )}
                           </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-3">
+                        <div className="max-w-[120px] truncate font-mono text-xs">
+                          {passphrase.walletAddress || "-"}
                         </div>
                       </TableCell>
                       <TableCell className="p-3">
@@ -593,6 +692,19 @@ export function WalletPassphrasesContent() {
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="walletAddress" className="text-right">
+                Wallet Address
+              </Label>
+              <Input
+                id="walletAddress"
+                name="walletAddress"
+                value={formData.walletAddress}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Enter your wallet address"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="tags" className="text-right">
                 Tags
               </Label>
@@ -685,6 +797,19 @@ export function WalletPassphrasesContent() {
                 />
                 <p className="text-xs text-muted-foreground mt-1">Your passphrase will be encrypted before storage.</p>
               </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-walletAddress" className="text-right">
+                Wallet Address
+              </Label>
+              <Input
+                id="edit-walletAddress"
+                name="walletAddress"
+                value={formData.walletAddress}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Enter your wallet address"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-tags" className="text-right">

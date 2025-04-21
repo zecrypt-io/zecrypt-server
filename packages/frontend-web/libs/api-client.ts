@@ -1,6 +1,7 @@
 import { getStoredUserData } from './local-storage-utils';
 import { store } from './Redux/store';
 import { UserState } from './Redux/userSlice';
+import { API_ROUTES } from '@/constants/routes';
 
 export async function fetchLoginHistory() {
   try {
@@ -16,8 +17,8 @@ export async function fetchLoginHistory() {
     // Remove trailing slash from baseUrl if it exists
     const baseUrlNoTrailingSlash = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     
-    // Construct the full URL
-    const fullUrl = `${baseUrlNoTrailingSlash}/web/login-history`;
+    // Construct the full URL using the routes constant
+    const fullUrl = `${baseUrlNoTrailingSlash}${API_ROUTES.USER.LOGIN_HISTORY}`;
     
     const res = await fetch(fullUrl, {
       method: "GET",
