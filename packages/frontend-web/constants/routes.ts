@@ -60,6 +60,18 @@ export const API_ROUTES = {
     PROJECTS: (workspaceId: string) => `/${workspaceId}/projects`,
     PROJECT_DETAILS: (workspaceId: string, projectId: string) => `/${workspaceId}/projects/${projectId}`,
   },
+
+  // Wallet API endpoints
+  WALLET: {
+    PASSPHRASES: {
+      LIST: (workspaceId: string, projectId: string) => `/${workspaceId}/${projectId}/wallet-phrases`,
+      CREATE: (workspaceId: string, projectId: string) => `/${workspaceId}/${projectId}/wallet-phrases`,
+      UPDATE: (workspaceId: string, projectId: string, walletId: string) => 
+        `/${workspaceId}/${projectId}/wallet-phrases/${walletId}`,
+      DELETE: (workspaceId: string, projectId: string, walletId: string) => 
+        `/${workspaceId}/${projectId}/wallet-phrases/${walletId}`,
+    }
+  },
 };
 
 // Function to get a localized route path
