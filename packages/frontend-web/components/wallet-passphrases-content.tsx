@@ -441,6 +441,12 @@ export function WalletPassphrasesContent() {
 
   return (
     <div className="space-y-4 p-3 md:p-8">
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Wallet Passphrases</h1>
+        <p className="text-muted-foreground">Securely store and manage your wallet recovery phrases</p>
+      </div>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
