@@ -44,9 +44,9 @@ export const APP_ROUTES = {
 export const API_ROUTES = {
   // Auth API endpoints
   AUTH: {
-    LOGIN: process.env.NEXT_PUBLIC_API_AUTH_LOGIN_ROUTE || '/login',
-    SIGNUP: process.env.NEXT_PUBLIC_API_AUTH_SIGNUP_ROUTE || '/signup',
-    LOAD_INITIAL_DATA: process.env.NEXT_PUBLIC_API_LOAD_INITIAL_DATA_ROUTE || '/load-initial-data',
+    LOGIN: '/login',
+    SIGNUP: '/signup',
+    LOAD_INITIAL_DATA: '/load-initial-data',
   },
   
   // User API endpoints
