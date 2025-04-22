@@ -543,18 +543,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
 
           <WorkspaceSwitcherNav />
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => console.log("Shortcuts")}>
-                  <Command className="h-4 w-4" />
-                  <span className="sr-only">Keyboard shortcuts</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Keyboard shortcuts</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
           {/* Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
