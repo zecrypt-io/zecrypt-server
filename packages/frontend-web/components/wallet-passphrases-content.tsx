@@ -62,7 +62,9 @@ export function WalletPassphrasesContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredPassphrases, setFilteredPassphrases] = useState<WalletPassphrase[]>([])
   const [visiblePassphrases, setVisiblePassphrases] = useState<Record<string, boolean>>({})
+  const [visibleAddresses, setVisibleAddresses] = useState<Record<string, boolean>>({})
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -167,6 +169,14 @@ export function WalletPassphrasesContent() {
     }))
   }
 
+  // Toggle wallet address visibility
+  const toggleAddressVisibility = (id: string) => {
+    setVisibleAddresses((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
+  }
+
   // Copy passphrase to clipboard
   const copyToClipboard = (id: string, passphrase: string) => {
     navigator.clipboard.writeText(passphrase)
@@ -179,6 +189,20 @@ export function WalletPassphrasesContent() {
     toast({
       title: "Passphrase copied",
       description: "The passphrase has been copied to your clipboard.",
+    })
+  }
+
+  // Copy wallet address to clipboard
+  const copyAddressToClipboard = (id: string, address: string) => {
+    if (!address) return
+    
+    navigator.clipboard.writeText(address)
+    setCopiedAddressId(id)
+    setTimeout(() => setCopiedAddressId(null), 2000)
+
+    toast({
+      title: "Wallet address copied",
+      description: "The wallet address has been copied to your clipboard.",
     })
   }
 
@@ -522,7 +546,43 @@ export function WalletPassphrasesContent() {
                       </TableCell>
                       <TableCell className="p-3">
                         <div className="max-w-[120px] truncate font-mono text-xs">
-                          {passphrase.walletAddress || "-"}
+                          {passphrase.walletAddress ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="max-w-[160px] truncate font-mono text-xs">
+                                {visibleAddresses[passphrase.id] ? passphrase.walletAddress : "••••••••••••••••••••••••"}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => toggleAddressVisibility(passphrase.id)}
+                                title={visibleAddresses[passphrase.id] ? "Hide address" : "Show address"}
+                              >
+                                {visibleAddresses[passphrase.id] ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
+                              </Button>
+                              {passphrase.walletAddress && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyAddressToClipboard(passphrase.id, passphrase.walletAddress)}
+                                  title="Copy address to clipboard"
+                                >
+                                  {copiedAddressId === passphrase.id ? (
+                                    <Check className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="p-3">
