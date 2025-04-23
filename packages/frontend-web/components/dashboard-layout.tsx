@@ -469,12 +469,16 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Sadik Ali" />
-                    <AvatarFallback>SA</AvatarFallback>
+                    <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
+                    <AvatarFallback>
+                      {user?.displayName 
+                        ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+                        : "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">Sadik Ali</p>
-                    <p className="text-xs text-muted-foreground truncate">sadik@example.com</p>
+                    <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
                   </div>
                   <ChevronDown className="ml-auto h-4 w-4" />
                 </div>
