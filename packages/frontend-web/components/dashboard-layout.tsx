@@ -20,9 +20,9 @@ import {
   Plus,
   X,
   Globe,
+  Users,
 } from "lucide-react"
 import { cn } from "@/libs/utils"
-import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav"
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -143,6 +143,14 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       : null
   );
   const displayProject = selectedProject || defaultProject;
+
+  // Get selected workspace name from Redux
+  const selectedWorkspace = useSelector((state: RootState) => 
+    Array.isArray(state.workspace.workspaces) 
+      ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId) 
+      : null
+  );
+  const workspaceName = selectedWorkspace?.name || "Personal Workspace";
 
   const removeTag = (tagToRemove: string) => {
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
@@ -545,7 +553,11 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   </Tooltip>
 </TooltipProvider>
 
-          <WorkspaceSwitcherNav />
+          {/* Replace WorkspaceSwitcherNav with static workspace display */}
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{workspaceName}</span>
+          </div>
 
           {/* Language Switcher */}
           <DropdownMenu>
