@@ -12,13 +12,28 @@ def get_account_details(db, doc_id):
     )
 
 
-def get_accounts(db, query, sort=None, projection=None, page=1, limit=20):
+def get_accounts(db, payload, request):
+    page = payload.get("page", 1)
+    limit = payload.get("limit", 20)
+    tags = payload.get("tags", [])
+    name = payload.get("name", None)
+    sort = payload.get("sort", None)
+    project_id = request.path_params.get("project_id")
+
+    query = {
+        "project_id": project_id,
+    }
+    if tags:
+        query["tags"] = {"$in": tags}
+    if name:
+        query["lower_name"] = {"$regex": name.strip().lower()}      
+
     skip = (page - 1) * limit
     if not sort:
         sort = ("_id", 1)
 
     accounts = accounts_manager.find(
-        db, query, projection, sort=sort, skip=skip, limit=limit
+        db, query, sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(
@@ -38,7 +53,7 @@ def add_account(request, user, payload, background_tasks):
     existing_account = accounts_manager.find_one(
         db,
         {
-            "lower_name": payload.get("lower_name").strip().lower(),
+            "lower_name": payload.get("name").strip().lower(),
             "created_by": user_id,
             "project_id": project_id,
         },

@@ -56,7 +56,10 @@
     "quick_stats": "Quick Stats",
     "workspaces": "Werksruimtes",
     "projects": "Projekte",
-    "team_members": "Teamlede"
+    "team_members": "Teamlede",
+    "current_project": "Current Project",
+    "default": "Default",
+    "no_project_selected": "No project selected"
   },
   "activity": {
     "password_updated": "Wagwoord opgedateer",
@@ -72,7 +75,7 @@
     "hours_ago": "{hours} uur gelede",
     "days_ago": "{days} dae gelede"
   },
- "password_generator": {
+  "password_generator": {
     "title": "Wagwoordgenerator",
     "strong": "Sterk",
     "memorable": "Onthoubaar",
@@ -165,11 +168,18 @@
     "of": "van",
     "saving": "Stoor",
     "save_changes": "Wysigings stoor",
-    "profile_picture": "Profielbeeld"
+    "profile_picture": "Profielbeeld",
+    "billing": "Billing",
+    "loading_history": "Loading login history...",
+    "no_history_available": "No login history available",
+    "try_again": "Try Again",
+    "device_browser": "Device & Browser",
+    "ip_address": "IP Address",
+    "time": "Time"
   },
   "api_keys": {
-    "title":"API Sleutels",
-    "description":"Bestuur jou API sleutels vir programmatiese toegang tot Zecrypt-dienste.",
+    "title": "API Sleutels",
+    "description": "Bestuur jou API sleutels vir programmatiese toegang tot Zecrypt-dienste.",
     "edit_api_key": "Wysig API Sleutel",
     "search": "Soek API Sleutels...",
     "name": "Naam",
@@ -191,6 +201,5 @@
     "cancel": "Kanselleer",
     "rows_per_page": "Rye per bladsy:",
     "add_key": "Voeg Sleutel by"
-
   }
-} 
+}

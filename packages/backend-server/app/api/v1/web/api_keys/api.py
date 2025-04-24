@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
 
-from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey
+from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey,GetApiKeysList
 from app.api.v1.web.api_keys.services import (
     delete_api_key,
     update_api_key,
@@ -15,20 +15,20 @@ from app.utils.utils import filter_payload
 
 router = APIRouter()
 API_KEYS = "/{workspace_id}/{project_id}/api-keys"
+API_KEY_LIST= "/{workspace_id}/{project_id}/api-keys/list"
 API_KEY_DETAILS = "/{workspace_id}/{project_id}/api-keys/{doc_id}"
 
 
-@router.get(API_KEYS)
+@router.post(API_KEY_LIST)
 async def get_api_key_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    page: int = Query(1, description="Page number", ge=1),
-    limit: int = Query(20, description="Items per page", ge=1),
+    payload: GetApiKeysList,
     user: UserDetails = Depends(get_current_user),
 ):
-    query = {"project_id": project_id}
-    return get_api_keys(user.get("db"), query, page=page, limit=limit)
+    
+    return get_api_keys(user.get("db"), payload.model_dump(),request)
 
 
 @router.get(API_KEY_DETAILS)

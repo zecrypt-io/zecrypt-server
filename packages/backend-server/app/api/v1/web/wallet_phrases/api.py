@@ -5,26 +5,25 @@ from app.api.v1.web.wallet_phrases.services import (
     update_wallet_phrase,
     delete_wallet_phrase,
 )
-from app.api.v1.web.wallet_phrases.schema import WalletPhrase, UpdateWalletPhrase
+from app.api.v1.web.wallet_phrases.schema import WalletPhrase, UpdateWalletPhrase,GetWalletPhrasesList
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 
 router = APIRouter()
 WALLET_PHRASES = "/{workspace_id}/{project_id}/wallet-phrases"
+WALLET_PHRASE_LIST = "/{workspace_id}/{project_id}/wallet-phrases/list"
 WALLET_PHRASE_DETAILS = "/{workspace_id}/{project_id}/wallet-phrases/{doc_id}"
 
 
-@router.get(WALLET_PHRASES)
+@router.post(WALLET_PHRASE_LIST)
 async def get_wallet_phrases_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    page: int = 1,
-    limit: int = 20,
+    payload: GetWalletPhrasesList,
     user: UserDetails = Depends(get_current_user),
 ):
-    query = {"project_id": project_id}
-    return get_wallet_phrases(user.get("db"), query, page=page, limit=limit)
+    return get_wallet_phrases(user.get("db"), payload.model_dump(), request)
 
 
 @router.post(WALLET_PHRASES)
