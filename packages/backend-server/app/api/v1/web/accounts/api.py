@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
 
-from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
+from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount, GetAccountsList
 from app.api.v1.web.accounts.service import (
     get_accounts,
     get_account_details,
@@ -14,20 +14,21 @@ from app.utils.utils import filter_payload
 
 router = APIRouter()
 ACCOUNTS = "/{workspace_id}/{project_id}/accounts"
+ACCOUNTS_LIST = "/{workspace_id}/{project_id}/accounts/list"
+
 ACCOUNT_DETAILS = "/{workspace_id}/{project_id}/accounts/{doc_id}"
 
 
-@router.get(ACCOUNTS)
+@router.post(ACCOUNTS_LIST)
 async def get_accounts_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    page: int = Query(1, description="Page number", ge=1),
-    limit: int = Query(20, description="Items per page", ge=1),
+    payload: GetAccountsList,
     user: UserDetails = Depends(get_current_user),
 ):
-    query = {"project_id": project_id}
-    return get_accounts(user.get("db"), query, sort=("name", 1), page=page, limit=limit)
+
+    return get_accounts(user.get("db"), payload.model_dump())
 
 
 @router.get(ACCOUNT_DETAILS)

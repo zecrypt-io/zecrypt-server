@@ -13,13 +13,32 @@ def get_wallet_phrase_details(db, doc_id):
     )
 
 
-def get_wallet_phrases(db, query, sort=None, projection=None, page=1, limit=20):
+def get_wallet_phrases(db, payload, request):
+    page=payload.get("page",1)
+    limit=payload.get("limit",20)
+    tags=payload.get("tags",[])
+    name=payload.get("name",None)
+    wallet_type=payload.get("wallet_type",None)
+    sort=payload.get("sort",None)
+    project_id=request.path_params.get("project_id")
+    
+    query={
+        "project_id":project_id
+    }
+    if tags:
+        query["tags"]={"$in":tags}
+    if name:
+        query["lower_name"]={"$regex":name.strip().lower()}
+
+    if wallet_type:
+        query["wallet_type"]=wallet_type
     skip = (page - 1) * limit
+    
     if not sort:
         sort = ("_id", 1)
 
     wallet_phrases = wallet_phrase_manager.find(
-        db, query, projection, sort=sort, skip=skip, limit=limit
+        db, query, sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(

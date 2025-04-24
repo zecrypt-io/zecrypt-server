@@ -1,6 +1,6 @@
 from app.framework.mongo_db.base_model import BaseModel
-from typing import Optional, Any
-from datetime import datetime
+from typing import Optional, Any, List, Tuple
+from pydantic import Field
 
 
 class WalletPhrase(BaseModel):
@@ -18,7 +18,7 @@ class WalletPhrase(BaseModel):
     phrase: str
     wallet_address: Optional[str] = None
     wallet_type: Optional[str] = None
-    tag: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
     data: Optional[Any] = None
 
 class UpdateWalletPhrase(BaseModel):
@@ -31,5 +31,14 @@ class UpdateWalletPhrase(BaseModel):
     phrase: Optional[str] = None
     wallet_address: Optional[str] = None
     wallet_type: Optional[str] = None
-    tag: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
     data: Optional[Any] = None
+
+
+class GetWalletPhrasesList(BaseModel):
+    page: int
+    limit: int
+    tags: Optional[List[str]] = Field(default_factory=list)
+    name: Optional[str] = None
+    wallet_type: Optional[str] = None
+    sort: Optional[Tuple[str, int]] = None
