@@ -59,6 +59,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { locales } from "@/middleware"
 import { useTranslations } from "next-intl"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
+import { useUser } from '@stackframe/stack'
 
 // Interface for login history entry
 interface LoginHistoryEntry {
@@ -88,6 +89,7 @@ export function UserSettingsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const { translate } = useTranslator();
+  const user = useUser();
 
   
   // Login history state
@@ -106,10 +108,25 @@ export function UserSettingsContent() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/web/profile`, {
+        // If we have user data from @stackframe/stack, use it
+        if (user) {
+          setName(user.displayName || "");
+          setEmail(user.primaryEmail || "");
+          setAvatarSrc(user.profileImageUrl || "/placeholder.svg?height=128&width=128");
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to API call if no user data from @stackframe/stack
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("Failed to fetch profile");
+        if (!res.ok) {
+          // Silently log the error without setting it to state
+          console.error("Failed to fetch profile");
+          setLoading(false);
+          return;
+        }
         const data = await res.json();
         if (data?.data) {
           setName(data.data.name || "");
@@ -118,14 +135,15 @@ export function UserSettingsContent() {
           setCurrentLocale(data.data.language || "en");
         }
       } catch (err: any) {
-        setError(err.message || "Failed to load profile");
+        // Silently log the error without setting it to state
+        console.error("Error fetching profile:", err.message || "Failed to load profile");
       } finally {
         setLoading(false);
       }
     }
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
   
   // Set the current locale from URL if present
   useEffect(() => {
@@ -327,9 +345,8 @@ export function UserSettingsContent() {
                       <AvatarImage src={avatarSrc} alt={name} />
                       <AvatarFallback className="text-xl">
                         {name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                          ? name.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
+                          : "U"}
                       </AvatarFallback>
                     </Avatar>
                   </div>

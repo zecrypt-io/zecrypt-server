@@ -25,9 +25,9 @@ export function WorkspaceSwitcherNav() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="gap-2 h-9">
+          <Button variant="ghost" className="gap-2 h-9 px-3">
             {currentWorkspace.type === "personal" ? <Users className="h-4 w-4" /> : <Building className="h-4 w-4" />}
-            <span className="max-w-[100px] truncate hidden sm:inline-block">{currentWorkspace.name}</span>
+            <span className="max-w-[150px] truncate">{currentWorkspace.name}</span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>

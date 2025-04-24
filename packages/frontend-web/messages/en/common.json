@@ -165,8 +165,16 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page",
-    "of": "of"
-
+    "of": "of",
+    "saving": "Saving...",
+    "save_changes": "Save Changes",
+    "profile_picture": "Profile Picture",
+    "loading_history": "Loading login history...",
+    "no_history_available": "No login history available",
+    "try_again": "Try Again",
+    "device_browser": "Device & Browser",
+    "ip_address": "IP Address",
+    "time": "Time"
   },
   "api_keys": {
     "title":"API Keys",

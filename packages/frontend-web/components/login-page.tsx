@@ -55,18 +55,10 @@ export function LoginPage({ locale = 'en' }: LoginPageProps) {
 
         try {
           const loginResponse = await stackAuthHandler(accessToken, "login")
-          console.log("Login response:", loginResponse)
-          // // Try login first
-          // const loginResponse = await stackAuthHandler(accessToken, "login");
-          
-          // if (loginResponse?.status_code === 200) {
-          //   // Store user data in localStorage
-          //   if (loginResponse.data) {
-          //     saveUserData(loginResponse.data);
-          //   }
-          //   setShouldRedirect(true);
-          //   return;
-          // }
+          console.log("User:", user?.displayName)
+          console.log("user email:", user?.primaryEmail)
+          console.log("user profile url:", user?.profileImageUrl)
+          // console.log("Login response:", loginResponse)
 
           if (loginResponse?.status_code === 200) {
             dispatch(

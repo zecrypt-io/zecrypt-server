@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Wallet, Plus, Pencil, Trash2, Eye, EyeOff, Copy, Check, Search, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Wallet, Plus, Pencil, Trash2, Eye, EyeOff, Copy, Check, Search, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -62,12 +62,17 @@ export function WalletPassphrasesContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredPassphrases, setFilteredPassphrases] = useState<WalletPassphrase[]>([])
   const [visiblePassphrases, setVisiblePassphrases] = useState<Record<string, boolean>>({})
+  const [visibleAddresses, setVisibleAddresses] = useState<Record<string, boolean>>({})
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentPassphrase, setCurrentPassphrase] = useState<WalletPassphrase | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [passphraseError, setPassphraseError] = useState<string | null>(null)
+  const [passphraseExistsError, setPassphraseExistsError] = useState<string | null>(null)
+  const [nameExistsError, setNameExistsError] = useState<string | null>(null)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -167,6 +172,14 @@ export function WalletPassphrasesContent() {
     }))
   }
 
+  // Toggle wallet address visibility
+  const toggleAddressVisibility = (id: string) => {
+    setVisibleAddresses((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
+  }
+
   // Copy passphrase to clipboard
   const copyToClipboard = (id: string, passphrase: string) => {
     navigator.clipboard.writeText(passphrase)
@@ -182,6 +195,20 @@ export function WalletPassphrasesContent() {
     })
   }
 
+  // Copy wallet address to clipboard
+  const copyAddressToClipboard = (id: string, address: string) => {
+    if (!address) return
+    
+    navigator.clipboard.writeText(address)
+    setCopiedAddressId(id)
+    setTimeout(() => setCopiedAddressId(null), 2000)
+
+    toast({
+      title: "Wallet address copied",
+      description: "The wallet address has been copied to your clipboard.",
+    })
+  }
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -189,6 +216,85 @@ export function WalletPassphrasesContent() {
       ...prev,
       [name]: value,
     }))
+    
+    // Validate based on field name
+    if (name === "passphrase") {
+      validatePassphrase(value);
+      // Check if passphrase already exists when in Add mode
+      if (!isEditDialogOpen) {
+        checkIfPassphraseExists(value);
+      } else if (currentPassphrase && value !== currentPassphrase.passphrase) {
+        // Only check in Edit mode if the passphrase has been changed
+        checkIfPassphraseExists(value);
+      } else {
+        setPassphraseExistsError(null);
+      }
+    } else if (name === "name") {
+      // Check if name already exists
+      if (!isEditDialogOpen) {
+        checkIfNameExists(value);
+      } else if (currentPassphrase && value !== currentPassphrase.name) {
+        // Only check in Edit mode if the name has been changed
+        checkIfNameExists(value);
+      } else {
+        setNameExistsError(null);
+      }
+    }
+  }
+
+  // Check if name already exists
+  const checkIfNameExists = (name: string) => {
+    if (!name.trim()) {
+      setNameExistsError(null);
+      return;
+    }
+    
+    const exists = walletPassphrases.some(
+      (wp) => wp.name.toLowerCase().trim() === name.toLowerCase().trim() && 
+              (!currentPassphrase || wp.id !== currentPassphrase.id)
+    );
+    
+    if (exists) {
+      setNameExistsError("A wallet with this name already exists");
+    } else {
+      setNameExistsError(null);
+    }
+  }
+
+  // Check if passphrase already exists
+  const checkIfPassphraseExists = (passphrase: string) => {
+    if (!passphrase.trim()) {
+      setPassphraseExistsError(null);
+      return;
+    }
+    
+    const exists = walletPassphrases.some(
+      (wp) => wp.passphrase.toLowerCase().trim() === passphrase.toLowerCase().trim() && 
+              (!currentPassphrase || wp.id !== currentPassphrase.id)
+    );
+    
+    if (exists) {
+      setPassphraseExistsError("This passphrase already exists in your wallet");
+    } else {
+      setPassphraseExistsError(null);
+    }
+  }
+
+  // Validate if the passphrase has exactly 12 words
+  const validatePassphrase = (passphrase: string) => {
+    // Trim the passphrase and split by whitespace (space, tab, newline)
+    const words = passphrase.trim().split(/\s+/);
+    
+    if (passphrase.trim() === "") {
+      setPassphraseError(null);
+      return false;
+    } else if (words.length !== 12) {
+      setPassphraseError(`Passphrase must contain exactly 12 words (currently ${words.length})`);
+      return false;
+    } else {
+      setPassphraseError(null);
+      return true;
+    }
   }
 
   // Handle wallet type selection
@@ -209,6 +315,9 @@ export function WalletPassphrasesContent() {
       tags: "",
       notes: "",
     })
+    setPassphraseError(null);
+    setPassphraseExistsError(null);
+    setNameExistsError(null);
   }
 
   // Open add dialog
@@ -228,6 +337,9 @@ export function WalletPassphrasesContent() {
       tags: passphrase.tags.join(", "),
       notes: passphrase.notes,
     })
+    setPassphraseError(null);
+    setPassphraseExistsError(null);
+    setNameExistsError(null);
     setIsEditDialogOpen(true)
   }
 
@@ -239,6 +351,31 @@ export function WalletPassphrasesContent() {
 
   // Add new passphrase
   const addPassphrase = async () => {
+    // Validate passphrase before submitting
+    if (!validatePassphrase(formData.passphrase)) {
+      return;
+    }
+    
+    // Check if passphrase already exists
+    const passphraseExists = walletPassphrases.some(
+      (wp) => wp.passphrase.toLowerCase().trim() === formData.passphrase.toLowerCase().trim()
+    );
+    
+    if (passphraseExists) {
+      setPassphraseExistsError("This passphrase already exists in your wallet");
+      return;
+    }
+    
+    // Check if name already exists
+    const nameExists = walletPassphrases.some(
+      (wp) => wp.name.toLowerCase().trim() === formData.name.toLowerCase().trim()
+    );
+    
+    if (nameExists) {
+      setNameExistsError("A wallet with this name already exists");
+      return;
+    }
+
     if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
       toast({
         title: "Error",
@@ -304,7 +441,39 @@ export function WalletPassphrasesContent() {
 
   // Edit passphrase
   const editPassphrase = async () => {
+    // Validate passphrase before submitting
+    if (!validatePassphrase(formData.passphrase)) {
+      return;
+    }
+    
     if (!currentPassphrase) return;
+    
+    // Check if the updated passphrase already exists (and it's not the current one)
+    if (formData.passphrase !== currentPassphrase.passphrase) {
+      const passphraseExists = walletPassphrases.some(
+        (wp) => wp.passphrase.toLowerCase().trim() === formData.passphrase.toLowerCase().trim() && 
+                wp.id !== currentPassphrase.id
+      );
+      
+      if (passphraseExists) {
+        setPassphraseExistsError("This passphrase already exists in your wallet");
+        return;
+      }
+    }
+    
+    // Check if the updated name already exists (and it's not the current one)
+    if (formData.name !== currentPassphrase.name) {
+      const nameExists = walletPassphrases.some(
+        (wp) => wp.name.toLowerCase().trim() === formData.name.toLowerCase().trim() && 
+                wp.id !== currentPassphrase.id
+      );
+      
+      if (nameExists) {
+        setNameExistsError("A wallet with this name already exists");
+        return;
+      }
+    }
+    
     if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
       toast({
         title: "Error",
@@ -417,6 +586,12 @@ export function WalletPassphrasesContent() {
 
   return (
     <div className="space-y-4 p-3 md:p-8">
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Wallet Passphrases</h1>
+        <p className="text-muted-foreground">Securely store and manage your wallet recovery phrases</p>
+      </div>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -522,7 +697,43 @@ export function WalletPassphrasesContent() {
                       </TableCell>
                       <TableCell className="p-3">
                         <div className="max-w-[120px] truncate font-mono text-xs">
-                          {passphrase.walletAddress || "-"}
+                          {passphrase.walletAddress ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="max-w-[160px] truncate font-mono text-xs">
+                                {visibleAddresses[passphrase.id] ? passphrase.walletAddress : "••••••••••••••••••••••••"}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => toggleAddressVisibility(passphrase.id)}
+                                title={visibleAddresses[passphrase.id] ? "Hide address" : "Show address"}
+                              >
+                                {visibleAddresses[passphrase.id] ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
+                              </Button>
+                              {passphrase.walletAddress && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyAddressToClipboard(passphrase.id, passphrase.walletAddress)}
+                                  title="Copy address to clipboard"
+                                >
+                                  {copiedAddressId === passphrase.id ? (
+                                    <Check className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="p-3">
@@ -646,15 +857,23 @@ export function WalletPassphrasesContent() {
               <Label htmlFor="name" className="text-right">
                 Name
               </Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="My Bitcoin Wallet"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={`${nameExistsError ? "border-destructive" : ""}`}
+                  placeholder="My Bitcoin Wallet"
+                  required
+                />
+                {nameExistsError && (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {nameExistsError}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="walletType" className="text-right">
@@ -684,11 +903,23 @@ export function WalletPassphrasesContent() {
                   value={formData.passphrase}
                   onChange={handleInputChange}
                   placeholder="Enter your wallet recovery phrase or seed words"
-                  className="font-mono"
+                  className={`font-mono ${passphraseError || passphraseExistsError ? "border-destructive" : ""}`}
                   rows={3}
                   required
                 />
-                <p className="text-xs text-muted-foreground mt-1">Your passphrase will be encrypted before storage.</p>
+                {passphraseError ? (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {passphraseError}
+                  </div>
+                ) : passphraseExistsError ? (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {passphraseExistsError}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">Your passphrase will be encrypted before storage.</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -736,7 +967,16 @@ export function WalletPassphrasesContent() {
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={addPassphrase} disabled={!formData.name || !formData.passphrase}>
+            <Button 
+              onClick={addPassphrase} 
+              disabled={
+                !formData.name || 
+                !formData.passphrase || 
+                passphraseError !== null || 
+                passphraseExistsError !== null ||
+                nameExistsError !== null
+              }
+            >
               Save Passphrase
             </Button>
           </DialogFooter>
@@ -755,14 +995,22 @@ export function WalletPassphrasesContent() {
               <Label htmlFor="edit-name" className="text-right">
                 Name
               </Label>
-              <Input
-                id="edit-name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="edit-name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={`${nameExistsError ? "border-destructive" : ""}`}
+                  required
+                />
+                {nameExistsError && (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {nameExistsError}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-walletType" className="text-right">
@@ -791,11 +1039,23 @@ export function WalletPassphrasesContent() {
                   name="passphrase"
                   value={formData.passphrase}
                   onChange={handleInputChange}
-                  className="font-mono"
+                  className={`font-mono ${passphraseError || passphraseExistsError ? "border-destructive" : ""}`}
                   rows={3}
                   required
                 />
-                <p className="text-xs text-muted-foreground mt-1">Your passphrase will be encrypted before storage.</p>
+                {passphraseError ? (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {passphraseError}
+                  </div>
+                ) : passphraseExistsError ? (
+                  <div className="flex items-center mt-1 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {passphraseExistsError}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">Your passphrase will be encrypted before storage.</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -842,7 +1102,16 @@ export function WalletPassphrasesContent() {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={editPassphrase} disabled={!formData.name || !formData.passphrase}>
+            <Button 
+              onClick={editPassphrase} 
+              disabled={
+                !formData.name || 
+                !formData.passphrase || 
+                passphraseError !== null || 
+                passphraseExistsError !== null ||
+                nameExistsError !== null
+              }
+            >
               Update Passphrase
             </Button>
           </DialogFooter>
