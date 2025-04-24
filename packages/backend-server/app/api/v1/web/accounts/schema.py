@@ -1,6 +1,6 @@
 from typing import Optional, List, Any, Tuple
 
-from pydantic import BaseModel, Field, Query
+from pydantic import BaseModel, Field
 
 
 class GetAccountsList(BaseModel):
