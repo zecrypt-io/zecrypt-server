@@ -1,17 +1,12 @@
 import base64
-import hashlib
 import random
-import re
 import string
 from base64 import b64encode, b64decode
 import os
 import logging
-import hmac
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Hash import HMAC, SHA256, SHA512
+from Crypto.Hash import HMAC, SHA512
 
 from app.core.config import settings
 
@@ -36,7 +31,7 @@ def generate_key():
     """Generates a secure 256-bit (32-byte) key using OS randomness"""
     try:
         return base64.b64encode(os.urandom(32)).decode("utf-8")
-    except Exception as e:
+    except Exception:
         raise
 
 

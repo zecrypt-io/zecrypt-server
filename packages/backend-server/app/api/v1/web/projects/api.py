@@ -8,13 +8,14 @@ from app.api.v1.web.projects.services import (
     update_project,
     add_project,
     delete_project,
+    get_tags,
 )
 from app.framework.permission_services.service import get_current_user
-from app.utils.utils import filter_payload
 
 router = APIRouter()
 PROJECTS = "/{workspace_id}/projects"
 PROJECT_DETAILS = "/{workspace_id}/projects/{doc_id}"
+TAGS = "/{workspace_id}/{project_id}/tags"
 
 
 @router.get(PROJECTS)
@@ -71,3 +72,13 @@ async def delete_project_api(
     user: UserDetails = Depends(get_current_user),
 ):
     return delete_project(request, user, background_tasks)
+
+
+@router.get(TAGS)
+async def get_tags_api(
+    request: Request,
+    workspace_id: str,
+    project_id: str,
+    user: UserDetails = Depends(get_current_user),
+):
+    return get_tags(user.get("db"), project_id)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
+from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
 from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount, GetAccountsList
 from app.api.v1.web.accounts.service import (
@@ -10,7 +10,6 @@ from app.api.v1.web.accounts.service import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.utils.utils import filter_payload
 
 router = APIRouter()
 ACCOUNTS = "/{workspace_id}/{project_id}/accounts"

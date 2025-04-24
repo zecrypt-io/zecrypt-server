@@ -1,7 +1,6 @@
 import jwt
-from fastapi import Header, HTTPException, Response, Cookie
+from fastapi import Header, HTTPException, Response
 from pydantic import ValidationError
-from typing import Dict, Any, Optional
 
 from app.core.config import settings
 from app.framework.mongo_db.db import get_db

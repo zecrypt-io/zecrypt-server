@@ -37,8 +37,7 @@ def get_api_keys(db, payload, request):
     
     skip = (page - 1) * limit
     
-    if not sort:
-        sort = ("_id", 1)
+    sort = ("_id", 1)
 
     if name:
         query["lower_name"] = {"$regex": name.strip().lower()}

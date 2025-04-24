@@ -7,7 +7,7 @@ collection_name = API_KEY
 
 def insert_one(db, data):
     db_manager.insert_one(db, collection_name, data)
-    payload.pop("_id", None)
+    data.pop("_id", None)
 
 
 def insert_many(db, data_list):
