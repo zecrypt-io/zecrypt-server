@@ -1,3 +1,5 @@
+import { API_ROUTES } from '@/constants/routes';
+
 export const loadInitialData = async (accessToken: string) => {
   if (!accessToken) {
     console.error("No access token provided for loadInitialData");

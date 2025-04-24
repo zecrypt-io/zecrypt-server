@@ -20,9 +20,9 @@ import {
   Plus,
   X,
   Globe,
+  Users,
 } from "lucide-react"
 import { cn } from "@/libs/utils"
-import { WorkspaceSwitcherNav } from "@/components/workspace-switcher-nav"
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -143,6 +143,14 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       : null
   );
   const displayProject = selectedProject || defaultProject;
+
+  // Get selected workspace name from Redux
+  const selectedWorkspace = useSelector((state: RootState) => 
+    Array.isArray(state.workspace.workspaces) 
+      ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId) 
+      : null
+  );
+  const workspaceName = selectedWorkspace?.name || "Personal Workspace";
 
   const removeTag = (tagToRemove: string) => {
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
@@ -469,12 +477,16 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Sadik Ali" />
-                    <AvatarFallback>SA</AvatarFallback>
+                    <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
+                    <AvatarFallback>
+                      {user?.displayName 
+                        ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+                        : "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">Sadik Ali</p>
-                    <p className="text-xs text-muted-foreground truncate">sadik@example.com</p>
+                    <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
                   </div>
                   <ChevronDown className="ml-auto h-4 w-4" />
                 </div>
@@ -541,19 +553,11 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   </Tooltip>
 </TooltipProvider>
 
-          <WorkspaceSwitcherNav />
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => console.log("Shortcuts")}>
-                  <Command className="h-4 w-4" />
-                  <span className="sr-only">Keyboard shortcuts</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Keyboard shortcuts</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* Replace WorkspaceSwitcherNav with static workspace display */}
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{workspaceName}</span>
+          </div>
 
           {/* Language Switcher */}
           <DropdownMenu>

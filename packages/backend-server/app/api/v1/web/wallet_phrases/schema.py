@@ -1,5 +1,5 @@
 from app.framework.mongo_db.base_model import BaseModel
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 
 
@@ -19,7 +19,7 @@ class WalletPhrase(BaseModel):
     wallet_address: Optional[str] = None
     wallet_type: Optional[str] = None
     tag: Optional[list[str]] = None
-
+    data: Optional[Any] = None
 
 class UpdateWalletPhrase(BaseModel):
     """Update schema allowing partial updates to WalletPhrase fields
@@ -32,3 +32,4 @@ class UpdateWalletPhrase(BaseModel):
     wallet_address: Optional[str] = None
     wallet_type: Optional[str] = None
     tag: Optional[list[str]] = None
+    data: Optional[Any] = None
