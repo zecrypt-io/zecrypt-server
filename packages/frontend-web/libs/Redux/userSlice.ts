@@ -5,7 +5,8 @@ interface UserData {
   name: string;
   profile_url: string;
   access_token: string;
-  email?: string; // Optional
+  email?: string;
+  locale?: string; // Added to resolve type error
 }
 
 interface UserState {
