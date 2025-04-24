@@ -6,6 +6,7 @@ import "../globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
+import ReduxProvider from "../../libs/Redux/ReduxProvider"; 
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -58,7 +59,10 @@ export default async function LocaleLayout({
         <StackProvider app={stackServerApp}>
           <StackTheme>
             <main className={inter.className}>
+              <ReduxProvider>
               {children}
+              </ReduxProvider>
+             
             </main>
           </StackTheme>
         </StackProvider>

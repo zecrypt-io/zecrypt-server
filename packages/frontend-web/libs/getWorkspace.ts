@@ -6,6 +6,7 @@ export const loadInitialData = async (accessToken: string) => {
     return null;
   }
   try {
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.LOAD_INITIAL_DATA}`, {
       method: "POST",
       headers: {

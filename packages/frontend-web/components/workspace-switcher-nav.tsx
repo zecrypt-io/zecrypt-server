@@ -49,7 +49,7 @@ export function WorkspaceSwitcherNav() {
               <span className="ml-auto h-2 w-2 rounded-full bg-primary"></span>
             )}
           </DropdownMenuItem>
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             className="cursor-pointer"
             onClick={() => {
               setCurrentWorkspace({
@@ -87,7 +87,7 @@ export function WorkspaceSwitcherNav() {
           <DropdownMenuItem className="cursor-pointer" onClick={() => setShowWorkspaceDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             <span>Create Workspace</span>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 
