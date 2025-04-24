@@ -43,6 +43,8 @@
     "keyboard_shortcuts": "Keyboard shortcuts",
     "generate_password": "Generate Password",
     "favourites": "Favourites",
+    "add_favorite_tag": "Add Favorite Tag",
+    "remove_tag": "Remove {tag}",
     "dashboard": "Dashboard",
     "overview": "Overview",
     "project": "Project",
@@ -59,7 +61,14 @@
     "team_members": "Team Members",
     "total_projects": "Total Projects",
     "total_workspaces": "Total Workspaces",
-    "total_team_members": "Total Team Members"
+    "total_team_members": "Total Team Members",
+    "my_account": "My Account",
+    "change_language": "Change language",
+    "language": "Language",
+    "toggle_theme": "Toggle theme",
+    "accounts": "Accounts",
+    "api_keys": "API Keys",
+    "wallet_passphrases": "Wallet Passphrases"
   },
   "activity": {
     "password_updated": "Password updated",
@@ -124,7 +133,12 @@
     "strength": "{strength}% Strength"
   },
   "accounts": {
-   "all_fields_required": "Please fill in all required fields",
+    "loading_accounts": "Loading accounts...",
+    "error_fetching_accounts": "Failed to fetch accounts",
+    "account_deleted_successfully": "Account deleted successfully",
+    "error_deleting_account": "Failed to delete account",
+    "account_updated_successfully": "Account updated successfully",
+    "all_fields_required": "Please fill in all required fields",
     "account_already_exists": "An account with this name already exists",
     "validation_error": "Invalid input data. Please check your entries",
     "failed_to_add_account": "Failed to add account. Please try again",
@@ -180,7 +194,17 @@
     "updating": "Updating...",
     "update": "Update",
     "view_details": "View Details",
-    "filter_warning": "Filters may affect pagination accuracy as server-side filtering is not supported."
+    "filter_warning": "Filters may affect pagination accuracy as server-side filtering is not supported.",
+    "search": "Search",
+    "all_accounts": "All Accounts",
+    "personal": "Personal",
+    "work": "Work",
+    "finance": "Finance",
+    "clear": "Clear",
+    "favorite": "Favorite",
+    "no_accounts_create": "No accounts found. Create one to get started.",
+    "adjust_search_filter": "Try adjusting your search or filter criteria",
+    "error_loading_workspace": "Failed to load workspace data"
   },
   "api_keys": {
     "title": "API Keys",

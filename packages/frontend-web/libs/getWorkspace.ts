@@ -1,27 +1,20 @@
-import { API_ROUTES } from '@/constants/routes';
+import axiosInstance from '../libs/Middleware/axiosInstace';
 
 export const loadInitialData = async (accessToken: string) => {
   if (!accessToken) {
     console.error("No access token provided for loadInitialData");
     return null;
   }
+  
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/load-initial-data`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "access-token": accessToken,
-      },
-      credentials: "include",
-    });
-    const data = await res.json();
-    console.log("Raw response status:", res.status);
-    console.log("Raw response data:", JSON.stringify(data, null, 2));
-
-    if (!res.ok) {
-      throw new Error(data?.message || "Failed to load initial data");
-    }
-
+    const response = await axiosInstance.post('/load-initial-data');
+    
+    // Log response information
+    console.log("Raw response status:", response.status);
+    console.log("Raw response data:", JSON.stringify(response.data, null, 2));
+    
+    const data = response.data;
+    
     // Transform API response into Workspace[] format
     const workspaces = data.data.map((workspace: any) => ({
       workspaceId: workspace.doc_id,
@@ -42,7 +35,7 @@ export const loadInitialData = async (accessToken: string) => {
         workspace_id: project.workspace_id,
       })),
     }));
-
+    
     console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
     return workspaces;
   } catch (err) {

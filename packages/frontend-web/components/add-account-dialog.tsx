@@ -10,6 +10,7 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import { hashData, encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface AddAccountDialogProps {
   onClose: () => void;
@@ -30,7 +31,6 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
 
   const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment", "Favorite"];
 
@@ -51,11 +51,10 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
       return;
     }
 
-    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+    if (!selectedWorkspaceId || !selectedProjectId) {
       console.error("Missing required data for adding account:", {
         selectedWorkspaceId,
         selectedProjectId,
-        accessToken,
       });
       setError(translate("no_project_selected", "accounts"));
       return;
@@ -67,18 +66,13 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     try {
       // Create data object
       const data = { user_name: userName, password };
-      console.log("Payload data:", data);
 
       // Hash the data object with fixed salt
       const { hash, salt } = await hashData(data);
-      console.log("Hashed data:", { hash, salt });
 
       // Encrypt the hash
-      console.log("Calling hexToCryptoKey with key:", ENCRYPTION_KEY);
       const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      console.log("CryptoKey generated successfully");
       const encryptedHash = await encrypt(hash, cryptoKey);
-      console.log("Encrypted hash:", encryptedHash);
 
       // Prepare payload with encrypted hash as data
       const payload = {
@@ -89,51 +83,37 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
         tags,
         data: encryptedHash,
       };
-      console.log("API payload:", payload);
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/${selectedWorkspaceId}/${selectedProjectId}/accounts`;
-      console.log("API URL:", url);
+      const response = await axiosInstance.post(
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts`,
+        payload
+      );
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "access-token": accessToken,
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      console.log("API response status:", response.status);
-
-      const contentType = response.headers.get("content-type");
-      let result;
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-        console.log("API response JSON:", result);
-      } else {
-        const textResponse = await response.text();
-        console.error("Server returned non-JSON response:", textResponse);
-        throw new Error(`Server returned non-JSON response: ${textResponse}`);
-      }
-
-      if (response.ok && result.status_code === 201) {
-        console.log("Account added successfully");
+      if (response.status === 201 || (response.data && response.data.status_code === 201)) {
         onAccountAdded();
         onClose();
       } else {
-        if (result.status_code === 400 && result.message === "Account already exists") {
-          setError(translate("account_already_exists", "accounts"));
-        } else if (result.status_code === 500 || response.status === 500) {
-          setError(translate("error_adding_account", "accounts"));
-          console.error("Server error:", result);
-        } else {
-          setError(result.message || translate("failed_to_add_account", "accounts"));
-        }
+        throw new Error(response.data?.message || translate("failed_to_add_account", "accounts"));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding account:", error);
-      setError(`${translate("error_adding_account", "accounts")}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      if (error.response) {
+        // Server responded with an error status
+        if (error.response.status === 400 && error.response.data?.message === "Account already exists") {
+          setError(translate("account_already_exists", "accounts"));
+        } else if (error.response.status === 500) {
+          setError(translate("error_adding_account", "accounts"));
+        } else {
+          setError(error.response.data?.message || translate("failed_to_add_account", "accounts"));
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError(translate("network_error", "accounts"));
+      } else {
+        // Something else happened
+        setError(`${translate("error_adding_account", "accounts")}: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

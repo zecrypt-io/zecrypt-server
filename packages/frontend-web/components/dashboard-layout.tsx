@@ -3,6 +3,7 @@
 import type React from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { resetWorkspaceState } from "@/libs/Redux/workspaceSlice";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -162,6 +163,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       if (user) {
         await user.signOut();
       }
+      dispatch(resetWorkspaceState());
       dispatch(clearUserData());
       localStorage.clear();
       router.push(`/${currentLocale}`);

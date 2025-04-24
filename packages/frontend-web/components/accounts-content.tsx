@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { EditAccountDialog } from "@/components/edit-account-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
+import axiosInstance from "../libs/Middleware/axiosInstace";
 
 // Define Account interface locally
 interface Account {
@@ -50,18 +51,17 @@ export function AccountsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
+  const [sort, setSort] = useState<[string, number]>(["_id", 1]);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
 
   const fetchAccounts = useCallback(async () => {
-    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+    if (!selectedWorkspaceId || !selectedProjectId) {
       console.error("Missing required data for fetching accounts:", {
         selectedWorkspaceId,
         selectedProjectId,
-        accessToken,
       });
       setIsLoading(false);
       return;
@@ -69,49 +69,45 @@ export function AccountsContent() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/${selectedWorkspaceId}/${selectedProjectId}/accounts`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "access-token": accessToken,
-          },
-          credentials: "include",
-        }
+
+      // Construct payload matching GetAccountsList schema
+      const payload = {
+        page: currentPage,
+        limit: itemsPerPage,
+        name: searchQuery.trim() || null,
+        tags: selectedCategory !== "all" ? [selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)] : [],
+        sort: sort,
+      };
+
+      const response = await axiosInstance.post(
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
+        payload
       );
-      const result = await response.json();
-      if (response.ok) {
-        const fetchedAccounts = result.data || [];
-        const count = result.count || fetchedAccounts.length;
-        setAllAccounts(fetchedAccounts);
-        setTotalCount(count);
-      } else {
-        console.error("Failed to fetch accounts:", result.message);
-        alert(translate("failed_to_load_accounts", "accounts"));
-      }
-    } catch (error) {
+
+      // Log the response for debugging
+      console.log("Fetch accounts response:", response.data);
+
+      // Parse response based on backend's response_helper structure
+      const { data: fetchedAccounts, count } = response.data;
+
+      setAllAccounts(fetchedAccounts || []);
+      setTotalCount(count || fetchedAccounts?.length || 0);
+    } catch (error: any) {
       console.error("Error fetching accounts:", error);
-      alert(translate("error_fetching_accounts", "accounts"));
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        alert(`${translate("error_fetching_accounts", "accounts")}: ${error.response.data?.message || error.message}`);
+      } else {
+        alert(translate("error_fetching_accounts", "accounts"));
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, accessToken,]);
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, sort, ]);
 
   useEffect(() => {
-    // Clear accounts and fetch new data on mount
-    setAllAccounts([]);
-    setTotalCount(0);
     fetchAccounts();
   }, [fetchAccounts]);
-
-  useEffect(() => {
-    // Redirect to login if user data is missing
-    if (!accessToken) {
-      console.warn("No access token found, redirecting to login");
-      router.push(`/${currentLocale}/login`);
-    }
-  }, [accessToken, router, currentLocale]);
 
   useEffect(() => {
     const handleAddAccount = () => setShowAddAccount(true);
@@ -129,25 +125,7 @@ export function AccountsContent() {
     };
   }, []);
 
-  const filteredAccounts = useMemo(() => {
-    return allAccounts.filter((account) => {
-      const matchesSearch = searchQuery === "" ||
-        account.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        account.user_name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" ||
-        (selectedCategory === "personal" && account.tags?.includes("Personal")) ||
-        (selectedCategory === "work" && account.tags?.includes("Work")) ||
-        (selectedCategory === "finance" && account.tags?.includes("Finance"));
-      return matchesSearch && matchesCategory;
-    });
-  }, [allAccounts, searchQuery, selectedCategory]);
-
-  const totalFilteredCount = filteredAccounts.length;
-  const totalPages = Math.ceil(totalFilteredCount / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredAccounts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
     try {
@@ -160,55 +138,54 @@ export function AccountsContent() {
   }, []);
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
-    setViewPassword(prevState => prevState === doc_id ? null : doc_id);
+    setViewPassword(prevState => (prevState === doc_id ? null : doc_id));
   }, []);
 
   const clearFilters = useCallback(() => {
     setSearchQuery("");
     setSelectedCategory("all");
     setCurrentPage(1);
+    setSort(["_id", 1]);
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
   }, []);
 
-  const handleDeleteAccount = useCallback(async (doc_id: string) => {
-    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
-      console.error("Missing required data for deleting account:", {
-        selectedWorkspaceId,
-        selectedProjectId,
-        accessToken,
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "access-token": accessToken,
-          },
-          credentials: "include",
-        }
-      );
-      const result = await response.json();
-      if (response.ok) {
-        setAllAccounts(prev => prev.filter(account => account.doc_id !== doc_id));
-        setTotalCount(prev => prev - 1);
-        alert(translate("account_deleted_successfully", "accounts"));
-      } else {
-        console.error("Failed to delete account:", result.message);
-        alert(translate("failed_to_delete_account", "accounts"));
+  const handleSortChange = useCallback((field: string) => {
+    setSort(prev => {
+      if (prev[0] === field) {
+        return [field, prev[1] === 1 ? -1 : 1];
       }
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert(translate("error_deleting_account", "accounts"));
-    }
-  }, [selectedWorkspaceId, selectedProjectId, accessToken, translate]);
+      return [field, 1];
+    });
+  }, []);
+
+  const handleDeleteAccount = useCallback(
+    async (doc_id: string) => {
+      if (!selectedWorkspaceId || !selectedProjectId) {
+        console.error("Missing required data for deleting account:", {
+          selectedWorkspaceId,
+          selectedProjectId,
+        });
+        return;
+      }
+
+      try {
+        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
+        fetchAccounts(); // Refetch accounts after deletion
+        alert(translate("account_deleted_successfully", "accounts"));
+      } catch (error: any) {
+        console.error("Error deleting account:", error);
+        if (error.response) {
+          alert(`${translate("error_deleting_account", "accounts")}: ${error.response.data?.message || error.message}`);
+        } else {
+          alert(translate("error_deleting_account", "accounts"));
+        }
+      }
+    },
+    [selectedWorkspaceId, selectedProjectId, translate, fetchAccounts]
+  );
 
   const handleAccountUpdated = useCallback(() => {
     setShowEditAccount(false);
@@ -219,7 +196,7 @@ export function AccountsContent() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, sort]);
 
   if (isLoading) {
     return (
@@ -250,10 +227,7 @@ export function AccountsContent() {
           </div>
 
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Select
-              value={selectedCategory}
-              onValueChange={(value) => setSelectedCategory(value)}
-            >
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="All Accounts" />
               </SelectTrigger>
@@ -265,7 +239,7 @@ export function AccountsContent() {
               </SelectContent>
             </Select>
 
-            {(searchQuery || selectedCategory !== "all") && (
+            {(searchQuery || selectedCategory !== "all" || sort[0] !== "_id") && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
                 <X className="h-4 w-4 mr-2" />
                 Clear
@@ -295,17 +269,27 @@ export function AccountsContent() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
-                <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">
+                  <button className="flex items-center" onClick={() => handleSortChange("name")}>
+                    {translate("account", "accounts")}
+                    {sort[0] === "name" && <span className="ml-1">{sort[1] === 1 ? "↑" : "↓"}</span>}
+                  </button>
+                </th>
                 <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">
+                  <button className="flex items-center" onClick={() => handleSortChange("updated_at")}>
+                    {translate("last_modified", "accounts")}
+                    {sort[0] === "updated_at" && <span className="ml-1">{sort[1] === 1 ? "↑" : "↓"}</span>}
+                  </button>
+                </th>
                 <th className="text-left p-3 font-medium text-sm">{translate("actions", "accounts")}</th>
               </tr>
             </thead>
             <tbody>
-              {currentItems.length > 0 ? (
-                currentItems.map((account) => (
+              {allAccounts.length > 0 ? (
+                allAccounts.map((account) => (
                   <tr key={account.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
@@ -465,18 +449,14 @@ export function AccountsContent() {
               ) : (
                 <tr>
                   <td colSpan={6} className="text-center py-10 text-muted-foreground">
-                    {filteredAccounts.length === 0 ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <Search className="h-10 w-10 text-muted-foreground/50" />
-                        <h3 className="font-medium">No accounts found</h3>
-                        <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
-                        <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                          Clear filters
-                        </Button>
-                      </div>
-                    ) : (
-                      "No accounts found. Create one to get started."
-                    )}
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-10 w-10 text-muted-foreground/50" />
+                      <h3 className="font-medium">No accounts found</h3>
+                      <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
+                      <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                        Clear filters
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -484,11 +464,11 @@ export function AccountsContent() {
           </table>
         </div>
 
-        {totalFilteredCount > 0 && (
+        {totalCount > 0 && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              {translate("showing", "accounts")} {indexOfFirstItem + 1}-
-              {Math.min(indexOfLastItem, totalFilteredCount)} {translate("of", "accounts")} {totalFilteredCount}{" "}
+              {translate("showing", "accounts")} {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "accounts")} {totalCount}{" "}
               {translate("accounts", "accounts")}
             </div>
             <div className="flex items-center space-x-2">

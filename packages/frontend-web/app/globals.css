@@ -144,4 +144,45 @@ body {
   .theme-button::before {
     transition: background 300ms;
   }
+
+  .loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    z-index: 9999;
+  }
+  
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .loader-circle {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid black;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loader-text {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 500;
+    color: black;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
 }

@@ -10,6 +10,7 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import { hashData, encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface Account {
   doc_id: string;
@@ -45,7 +46,6 @@ export function EditAccountDialog({ onClose, account, onAccountUpdated }: EditAc
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
 
   const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment", "Favorite"];
 
@@ -66,11 +66,10 @@ export function EditAccountDialog({ onClose, account, onAccountUpdated }: EditAc
       return;
     }
 
-    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+    if (!selectedWorkspaceId || !selectedProjectId) {
       console.error("Missing required data for updating account:", {
         selectedWorkspaceId,
         selectedProjectId,
-        accessToken,
       });
       setError(translate("no_project_selected", "accounts"));
       return;
@@ -83,16 +82,11 @@ export function EditAccountDialog({ onClose, account, onAccountUpdated }: EditAc
       let encryptedHash = null;
       if (userName && password) {
         const data = { user_name: userName, password };
-        console.log("Payload data:", data);
 
         const { hash, salt } = await hashData(data);
-        console.log("Hashed data:", { hash, salt });
-
-        console.log("Calling hexToCryptoKey with key:", ENCRYPTION_KEY);
+        
         const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-        console.log("CryptoKey generated successfully");
         encryptedHash = await encrypt(hash, cryptoKey);
-        console.log("Encrypted hash:", encryptedHash);
       }
 
       const payload: any = {
@@ -104,51 +98,37 @@ export function EditAccountDialog({ onClose, account, onAccountUpdated }: EditAc
       if (userName) payload.user_name = userName;
       if (password) payload.password = password;
       if (encryptedHash) payload.data = encryptedHash;
-      console.log("API payload:", payload);
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/${selectedWorkspaceId}/${selectedProjectId}/accounts/${account.doc_id}`;
-      console.log("API URL:", url);
+      const response = await axiosInstance.put(
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/${account.doc_id}`,
+        payload
+      );
 
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "access-token": accessToken,
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      console.log("API response status:", response.status);
-
-      const contentType = response.headers.get("content-type");
-      let result;
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-        console.log("API response JSON:", result);
-      } else {
-        const textResponse = await response.text();
-        console.error("Server returned non-JSON response:", textResponse);
-        throw new Error(`Server returned non-JSON response: ${textResponse}`);
-      }
-
-      if (response.ok) {
-        console.log("Account updated successfully");
+      if (response.status >= 200 && response.status < 300) {
         onAccountUpdated();
         onClose();
       } else {
-        if (result.status_code === 400) {
-          setError(result.message || translate("invalid_input", "accounts"));
-        } else if (result.status_code === 500 || response.status === 500) {
-          setError(translate("error_updating_account", "accounts"));
-          console.error("Server error:", result);
-        } else {
-          setError(result.message || translate("failed_to_update_account", "accounts"));
-        }
+        throw new Error(response.data?.message || translate("failed_to_update_account", "accounts"));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating account:", error);
-      setError(`${translate("error_updating_account", "accounts")}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      if (error.response) {
+        // Server responded with an error status
+        if (error.response.status === 400) {
+          setError(error.response.data?.message || translate("invalid_input", "accounts"));
+        } else if (error.response.status === 500) {
+          setError(translate("error_updating_account", "accounts"));
+        } else {
+          setError(error.response.data?.message || translate("failed_to_update_account", "accounts"));
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError(translate("network_error", "accounts"));
+      } else {
+        // Something else happened
+        setError(`${translate("error_updating_account", "accounts")}: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
