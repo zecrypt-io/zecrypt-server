@@ -41,4 +41,3 @@ class GetWalletPhrasesList(BaseModel):
     tags: Optional[List[str]] = Field(default_factory=list)
     name: Optional[str] = None
     wallet_type: Optional[str] = None
-    sort: Optional[Tuple[str, int]] = None

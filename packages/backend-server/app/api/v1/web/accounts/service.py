@@ -17,7 +17,6 @@ def get_accounts(db, payload, request):
     limit = payload.get("limit", 20)
     tags = payload.get("tags", [])
     name = payload.get("name", None)
-    sort = payload.get("sort", None)
     project_id = request.path_params.get("project_id")
 
     query = {
@@ -29,8 +28,7 @@ def get_accounts(db, payload, request):
         query["lower_name"] = {"$regex": name.strip().lower()}      
 
     skip = (page - 1) * limit
-    if not sort:
-        sort = ("_id", 1)
+    sort = ("_id", 1)
 
     accounts = accounts_manager.find(
         db, query, sort=sort, skip=skip, limit=limit

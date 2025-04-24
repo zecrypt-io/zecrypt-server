@@ -19,6 +19,7 @@ def get_api_keys(db, payload, request):
     tags=payload.get("tags",[])
     status=payload.get("status",None)
     env=payload.get("env",None)
+    name=payload.get("name",None)
     project_id=request.path_params.get("project_id")
     
     query={
@@ -38,6 +39,9 @@ def get_api_keys(db, payload, request):
     
     if not sort:
         sort = ("_id", 1)
+
+    if name:
+        query["lower_name"] = {"$regex": name.strip().lower()}
 
     api_keys = api_key_manager.find(
         db, query,  sort=sort, skip=skip, limit=limit

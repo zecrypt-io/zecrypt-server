@@ -19,9 +19,8 @@ def get_wallet_phrases(db, payload, request):
     tags=payload.get("tags",[])
     name=payload.get("name",None)
     wallet_type=payload.get("wallet_type",None)
-    sort=payload.get("sort",None)
     project_id=request.path_params.get("project_id")
-    
+
     query={
         "project_id":project_id
     }
@@ -34,8 +33,7 @@ def get_wallet_phrases(db, payload, request):
         query["wallet_type"]=wallet_type
     skip = (page - 1) * limit
     
-    if not sort:
-        sort = ("_id", 1)
+    sort = ("_id", 1)
 
     wallet_phrases = wallet_phrase_manager.find(
         db, query, sort=sort, skip=skip, limit=limit

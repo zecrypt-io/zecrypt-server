@@ -8,7 +8,6 @@ class GetAccountsList(BaseModel):
     limit: int 
     name: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
-    sort: Optional[Tuple[str, int]] = None
 
 
 class AddAccount(BaseModel):

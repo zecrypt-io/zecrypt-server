@@ -28,7 +28,7 @@ async def get_accounts_api(
     user: UserDetails = Depends(get_current_user),
 ):
 
-    return get_accounts(user.get("db"), payload.model_dump())
+    return get_accounts(user.get("db"), payload.model_dump(), request)
 
 
 @router.get(ACCOUNT_DETAILS)

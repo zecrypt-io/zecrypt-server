@@ -30,5 +30,4 @@ class GetApiKeysList(BaseModel):
     tags: Optional[List[str]] = Field(default_factory=list)
     status: Optional[Literal["active", "expired"]] = None
     env: Optional[Literal["Development", "Production", "Staging"]] = None
-    sort: Optional[Tuple[str, int]] = None
     name: Optional[str] = None
