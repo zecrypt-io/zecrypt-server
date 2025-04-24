@@ -7,6 +7,7 @@ from base64 import b64encode, b64decode
 import os
 import logging
 import hmac
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad

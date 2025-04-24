@@ -1,13 +1,18 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Tuple
 
 from pydantic import BaseModel, Field
+
+
+class GetAccountsList(BaseModel):
+    page: int 
+    limit: int 
+    name: Optional[str] = None
+    tags: Optional[List[str]] = Field(default_factory=list)
 
 
 class AddAccount(BaseModel):
     name: str
     data: Optional[Any] = None
-    user_name: str
-    password: str
     website: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
 
@@ -15,7 +20,5 @@ class AddAccount(BaseModel):
 class UpdateAccount(BaseModel):
     name: Optional[str] = None
     data: Optional[Any] = None
-    user_name: Optional[str] = None
-    password: Optional[str] = None
     website: Optional[str] = None
     tags: Optional[List[str]] = None

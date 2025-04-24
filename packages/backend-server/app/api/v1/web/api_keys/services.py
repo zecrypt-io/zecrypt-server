@@ -13,13 +13,38 @@ def get_api_key_details(db, doc_id):
     )
 
 
-def get_api_keys(db, query, sort=None, projection=None, page=1, limit=20):
+def get_api_keys(db, payload, request):
+    page=payload.get("page",1)
+    limit=payload.get("limit",20)
+    tags=payload.get("tags",[])
+    status=payload.get("status",None)
+    env=payload.get("env",None)
+    name=payload.get("name",None)
+    project_id=request.path_params.get("project_id")
+    
+    query={
+        "project_id":project_id
+    }
+    
+    if tags:
+        query["tags"]={"$in":tags}
+    
+    if status:
+        query["status"]=status  
+    
+    if env:
+        query["env"]=env
+    
     skip = (page - 1) * limit
+    
     if not sort:
         sort = ("_id", 1)
 
+    if name:
+        query["lower_name"] = {"$regex": name.strip().lower()}
+
     api_keys = api_key_manager.find(
-        db, query, projection, sort=sort, skip=skip, limit=limit
+        db, query,  sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(
