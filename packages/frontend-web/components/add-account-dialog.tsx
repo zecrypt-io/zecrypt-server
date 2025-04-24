@@ -1,64 +1,222 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ChevronDown, Eye, X, Plus } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import type React from "react";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/Redux/store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useTranslator } from "@/hooks/use-translations";
+import { hashData, encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
 
 interface AddAccountDialogProps {
-  onClose: () => void
+  onClose: () => void;
+  onAccountAdded: () => void;
 }
 
-export function AddAccountDialog({ onClose }: AddAccountDialogProps) {
-  const [tags, setTags] = useState<string[]>([])
-  const [newTag, setNewTag] = useState("")
+export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogProps) {
+  const { translate } = useTranslator();
+  const [name, setName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment"]
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+
+  const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment", "Favorite"];
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag])
-      setNewTag("")
+      setTags([...tags, tag]);
+      setNewTag("");
     }
-  }
+  };
 
   const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag))
-  }
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  const handleSubmit = async () => {
+    if (!name || !userName || !password) {
+      setError(translate("please_fill_all_required_fields", "accounts"));
+      return;
+    }
+
+    if (!selectedWorkspaceId || !selectedProjectId || !accessToken) {
+      console.error("Missing required data for adding account:", {
+        selectedWorkspaceId,
+        selectedProjectId,
+        accessToken,
+      });
+      setError(translate("no_project_selected", "accounts"));
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      // Create data object
+      const data = { user_name: userName, password };
+      console.log("Payload data:", data);
+
+      // Hash the data object with fixed salt
+      const { hash, salt } = await hashData(data);
+      console.log("Hashed data:", { hash, salt });
+
+      // Encrypt the hash
+      console.log("Calling hexToCryptoKey with key:", ENCRYPTION_KEY);
+      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
+      console.log("CryptoKey generated successfully");
+      const encryptedHash = await encrypt(hash, cryptoKey);
+      console.log("Encrypted hash:", encryptedHash);
+
+      // Prepare payload with encrypted hash as data
+      const payload = {
+        name,
+        user_name: userName,
+        password,
+        website: website || null,
+        tags,
+        data: encryptedHash,
+      };
+      console.log("API payload:", payload);
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/${selectedWorkspaceId}/${selectedProjectId}/accounts`;
+      console.log("API URL:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "access-token": accessToken,
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      console.log("API response status:", response.status);
+
+      const contentType = response.headers.get("content-type");
+      let result;
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+        console.log("API response JSON:", result);
+      } else {
+        const textResponse = await response.text();
+        console.error("Server returned non-JSON response:", textResponse);
+        throw new Error(`Server returned non-JSON response: ${textResponse}`);
+      }
+
+      if (response.ok && result.status_code === 201) {
+        console.log("Account added successfully");
+        onAccountAdded();
+        onClose();
+      } else {
+        if (result.status_code === 400 && result.message === "Account already exists") {
+          setError(translate("account_already_exists", "accounts"));
+        } else if (result.status_code === 500 || response.status === 500) {
+          setError(translate("error_adding_account", "accounts"));
+          console.error("Server error:", result);
+        } else {
+          setError(result.message || translate("failed_to_add_account", "accounts"));
+        }
+      }
+    } catch (error) {
+      console.error("Error adding account:", error);
+      setError(`${translate("error_adding_account", "accounts")}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold">Add new account</h2>
+          <h2 className="text-xl font-bold">{translate("add_new_account", "accounts")}</h2>
+          {error && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Account Name</label>
+            <label className="text-sm font-medium">
+              {translate("account_name", "accounts")} <span className="text-red-500">*</span>
+            </label>
             <div className="relative">
-              <Input placeholder="start type to get account suggestion" className="pr-8" />
+              <Input
+                placeholder={translate("enter_account_name", "accounts")}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="pr-8"
+                required
+              />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Username</label>
-            <Input placeholder="type here" />
+            <label className="text-sm font-medium">
+              {translate("username", "accounts")} <span className="text-red-500">*</span>
+            </label>
+            <Input
+              placeholder={translate("enter_username", "accounts")}
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
+            <label className="text-sm font-medium">
+              {translate("password", "accounts")} <span className="text-red-500">*</span>
+            </label>
             <div className="relative">
-              <Input type="password" placeholder="type here" className="pr-8" />
-              <Eye className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder={translate("enter_password", "accounts")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-8"
+                required
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+                type="button"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tags</label>
+            <label className="text-sm font-medium">{translate("website", "accounts")}</label>
+            <Input
+              placeholder={translate("enter_website_url", "accounts")}
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("tags", "accounts")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {tags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -71,13 +229,13 @@ export function AddAccountDialog({ onClose }: AddAccountDialogProps) {
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
-                  placeholder="Add custom tag"
+                  placeholder={translate("add_custom_tag", "accounts")}
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && newTag) {
-                      e.preventDefault()
-                      addTag(newTag)
+                      e.preventDefault();
+                      addTag(newTag);
                     }
                   }}
                 />
@@ -107,49 +265,37 @@ export function AddAccountDialog({ onClose }: AddAccountDialogProps) {
               ))}
             </div>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="favorite"
-                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-              />
-              <label htmlFor="favorite" className="text-sm font-medium flex items-center gap-1">
-                <Star className="h-4 w-4 text-amber-400" />
-                Add to Favourites
-              </label>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-6">
-          <Button className="w-full">Save</Button>
+        <div className="mt-6 flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            {translate("cancel", "accounts")}
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? translate("saving", "accounts") : translate("save", "accounts")}
+          </Button>
         </div>
 
-        <Button variant="ghost" size="icon" className="absolute right-4 top-4" onClick={() => onClose()}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4"
+          onClick={onClose}
+          disabled={isSubmitting}
+          type="button"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
     </div>
-  )
-}
-
-function Star(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
+  );
 }
