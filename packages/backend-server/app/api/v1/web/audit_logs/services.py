@@ -1,5 +1,5 @@
 from app.managers import audit_log as audit_log_manager
-from app.managers.collection_names import *
+from app.managers.collection_names import PROJECT, ACCOUNT, API_KEY, WALLET_PHRASE, WORKSPACE
 from app.utils.utils import create_uuid
 from app.utils.date_utils import create_timestamp
 

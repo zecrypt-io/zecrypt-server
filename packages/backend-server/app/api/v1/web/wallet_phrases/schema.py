@@ -1,5 +1,5 @@
 from app.framework.mongo_db.base_model import BaseModel
-from typing import Optional, Any, List, Tuple
+from typing import Optional, Any, List
 from pydantic import Field
 
 

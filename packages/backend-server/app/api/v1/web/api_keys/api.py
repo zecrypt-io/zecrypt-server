@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Query, Depends, BackgroundTasks
+from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
 from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey,GetApiKeysList
 from app.api.v1.web.api_keys.services import (
@@ -11,7 +11,6 @@ from app.api.v1.web.api_keys.services import (
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 
-from app.utils.utils import filter_payload
 
 router = APIRouter()
 API_KEYS = "/{workspace_id}/{project_id}/api-keys"
