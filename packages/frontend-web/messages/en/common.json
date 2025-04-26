@@ -180,7 +180,7 @@
     "updating": "Updating...",
     "update": "Update",
     "view_details": "View Details",
-    "filter_warning": "Filters may affect pagination accuracy as server-side filtering is not supported."
+    "filter_warning": "Filters may affect pagination accuracy as server-side filtering is not supported.",
     "no_accounts_found": "No accounts found. Create one to get started.",
     "add_new_account": "Add New Account",
     "focus_search": "Focus Search",
