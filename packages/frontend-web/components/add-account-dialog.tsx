@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData, encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface AddAccountDialogProps {
@@ -64,24 +63,19 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     setError("");
 
     try {
-      // Create data object
-      const data = { user_name: userName, password };
+      // Create data object for encryption
+      const dataToEncrypt = JSON.stringify({ user_name: userName, password });
 
-      // Hash the data object with fixed salt
-      const { hash, salt } = await hashData(data);
-
-      // Encrypt the hash
+      // Encrypt the JSON string
       const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      const encryptedHash = await encrypt(hash, cryptoKey);
+      const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
 
-      // Prepare payload with encrypted hash as data
+      // Prepare payload according to backend schema
       const payload = {
         name,
-        user_name: userName,
-        password,
         website: website || null,
         tags,
-        data: encryptedHash,
+        data: encryptedData,
       };
 
       const response = await axiosInstance.post(
@@ -99,7 +93,6 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
       console.error("Error adding account:", error);
       
       if (error.response) {
-        // Server responded with an error status
         if (error.response.status === 400 && error.response.data?.message === "Account already exists") {
           setError(translate("account_already_exists", "accounts"));
         } else if (error.response.status === 500) {
@@ -108,10 +101,8 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
           setError(error.response.data?.message || translate("failed_to_add_account", "accounts"));
         }
       } else if (error.request) {
-        // Request was made but no response received
         setError(translate("network_error", "accounts"));
       } else {
-        // Something else happened
         setError(`${translate("error_adding_account", "accounts")}: ${error.message}`);
       }
     } finally {
@@ -177,7 +168,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground"
+                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
                 onClick={() => setShowPassword(!showPassword)}
                 type="button"
               >
@@ -205,39 +196,28 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
                 </Badge>
               ))}
             </div>
-
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  placeholder={translate("add_custom_tag", "accounts")}
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newTag) {
-                      e.preventDefault();
-                      addTag(newTag);
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1 h-6 w-6"
-                  onClick={() => addTag(newTag)}
-                  disabled={!newTag}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={translate("add_a_tag", "accounts")}
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag(newTag);
+                  }
+                }}
+              />
+              <Button type="button" variant="outline" size="icon" onClick={() => addTag(newTag)}>
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1 mt-2">
               {predefinedTags.map((tag) => (
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="cursor-pointer hover:bg-accent"
+                  className="cursor-pointer hover:bg-muted"
                   onClick={() => addTag(tag)}
                 >
                   {tag}
@@ -245,36 +225,21 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="mt-6 flex gap-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            {translate("cancel", "accounts")}
-          </Button>
-          <Button
-            className="flex-1"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? translate("saving", "accounts") : translate("save", "accounts")}
-          </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <Button variant="outline" className="w-full" onClick={onClose} disabled={isSubmitting}>
+              {translate("cancel", "accounts")}
+            </Button>
+            <Button
+              variant="default"
+              className="w-full bg-primary text-primary-foreground"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? `${translate("adding", "accounts")}...` : translate("add_account", "accounts")}
+            </Button>
+          </div>
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute right-4 top-4"
-          onClick={onClose}
-          disabled={isSubmitting}
-          type="button"
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

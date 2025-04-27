@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, ExternalLink, MoreHorizontal,
-  ChevronLeft, ChevronRight, X, Star
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -19,20 +19,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
 
-// Define Account interface locally
 interface Account {
   doc_id: string;
   name: string;
   lower_name: string;
-  user_name: string;
-  password: string;
+  user_name?: string;
+  password?: string;
+  data?: string | { user_name: string; password: string };
   website?: string | null;
   tags?: string[];
   created_at: string;
   updated_at: string;
   created_by: string;
   project_id: string;
+  decrypted?: boolean;
+  decryptionError?: boolean;
 }
 
 export function AccountsContent() {
@@ -51,11 +54,137 @@ export function AccountsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
-  const [sort, setSort] = useState<[string, number]>(["_id", 1]);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
+
+  // Check if a string appears to be a hash (e.g., SHA-512)
+  const isLikelyHash = (str: string): boolean => {
+    return /^[0-9a-fA-F]{128}$/.test(str);
+  };
+
+  const decryptAccountData = useCallback(async (account: Account): Promise<Account> => {
+    try {
+      if (account.data && typeof account.data === "string") {
+        try {
+          const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
+          const decryptedData = await decrypt(account.data, cryptoKey);
+
+          // Check for legacy hash
+          if (isLikelyHash(decryptedData)) {
+            console.warn("Legacy hash detected:", {
+              account_id: account.doc_id,
+              hash_preview: decryptedData.slice(0, 20) + "...",
+            });
+            return {
+              ...account,
+              user_name: "Legacy data format",
+              password: "Legacy data format",
+              decrypted: false,
+              decryptionError: true,
+            };
+          }
+
+          // Parse as JSON
+          try {
+            const parsedData = JSON.parse(decryptedData);
+            if (parsedData.user_name && parsedData.password) {
+              return {
+                ...account,
+                user_name: parsedData.user_name,
+                password: parsedData.password,
+                decrypted: true,
+              };
+            }
+            console.warn("Decrypted data missing user_name or password:", {
+              account_id: account.doc_id,
+              parsedData,
+            });
+            return {
+              ...account,
+              user_name: "Data incomplete",
+              password: "Data incomplete",
+              decrypted: false,
+              decryptionError: true,
+            };
+          } catch (jsonError) {
+            console.warn("Failed to parse decrypted data as JSON:", {
+              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
+              account_id: account.doc_id,
+              decrypted_preview: decryptedData.slice(0, 20) + "...",
+            });
+            return {
+              ...account,
+              user_name: "Invalid data format",
+              password: "Invalid data format",
+              decrypted: false,
+              decryptionError: true,
+            };
+          }
+        } catch (decryptError) {
+          console.error("Failed to decrypt data:", {
+            error: decryptError instanceof Error ? decryptError.message : String(decryptError),
+            account_id: account.doc_id,
+          });
+          return {
+            ...account,
+            user_name: "Decryption failed",
+            password: "Decryption failed",
+            decrypted: false,
+            decryptionError: true,
+          };
+        }
+      }
+
+      // Handle data as object (unlikely based on backend)
+      if (account.data && typeof account.data === "object") {
+        return {
+          ...account,
+          user_name: account.data.user_name || "Data unavailable",
+          password: account.data.password || "Data unavailable",
+          decrypted: true,
+        };
+      }
+
+      // Default case
+      return {
+        ...account,
+        user_name: "Data unavailable",
+        password: "Data unavailable",
+        decrypted: false,
+        decryptionError: true,
+      };
+    } catch (error: unknown) {
+      console.error("Failed to process account data:", {
+        error: error instanceof Error ? error.message : String(error),
+        account_id: account.doc_id,
+      });
+      return {
+        ...account,
+        user_name: "Error processing data",
+        password: "Error processing data",
+        decrypted: false,
+        decryptionError: true,
+      };
+    }
+  }, []);
+
+  // Convert category to tag format for API - Fix for tag filtering
+  const getCategoryTag = useCallback((category: string): string => {
+    switch (category.toLowerCase()) {
+      case 'personal':
+        return 'personal';
+      case 'work':
+        return 'work';
+      case 'finance':
+        return 'finance';
+      case 'favorite':
+        return 'favorite';
+      default:
+        return category.toLowerCase();
+    }
+  }, []);
 
   const fetchAccounts = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -70,54 +199,105 @@ export function AccountsContent() {
     try {
       setIsLoading(true);
 
-      // Construct payload matching GetAccountsList schema
+      // Prepare tags array with proper case handling
+      let tagsArray: string[] = [];
+      if (selectedCategory !== "all") {
+        // Try both lowercase and original case to handle potential case sensitivity in the backend
+        const categoryTag = getCategoryTag(selectedCategory);
+        tagsArray = [categoryTag];
+      }
+
       const payload = {
         page: currentPage,
         limit: itemsPerPage,
         name: searchQuery.trim() || null,
-        tags: selectedCategory !== "all" ? [selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)] : [],
-        sort: sort,
+        tags: tagsArray,
       };
+
+      console.log("Fetching accounts with payload:", payload);
 
       const response = await axiosInstance.post(
         `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
         payload
       );
 
-      // Log the response for debugging
-      console.log("Fetch accounts response:", response.data);
+      const { data: fetchedAccounts = [], count = 0, total_count = 0 } = response.data || {};
 
-      // Parse response based on backend's response_helper structure
-      const { data: fetchedAccounts, count } = response.data;
+      console.log(`Fetched ${fetchedAccounts?.length || 0} accounts, count: ${count}, total_count: ${total_count}`);
 
-      setAllAccounts(fetchedAccounts || []);
-      setTotalCount(count || fetchedAccounts?.length || 0);
+      // Decrypt accounts
+      const decryptedAccounts = await Promise.all(
+        (fetchedAccounts || []).map(decryptAccountData)
+      );
+
+      setAllAccounts(decryptedAccounts || []);
+      // Use total_count if available, otherwise estimate
+      setTotalCount(total_count || (count < itemsPerPage ? (currentPage - 1) * itemsPerPage + count : (currentPage * itemsPerPage) + 1));
+
+      // If filtering by tag returned no results, try fetching all and filtering client-side
+      if (selectedCategory !== "all" && count === 0 && currentPage === 1) {
+        console.warn(`No accounts found for tag: ${selectedCategory}. Attempting client-side filtering...`);
+        
+        // Fetch all accounts without tag filter
+        const fallbackPayload = {
+          page: 1,
+          limit: 50, // Fetch more to increase chances of finding matches
+          name: searchQuery.trim() || null,
+          tags: [],
+        };
+        
+        const fallbackResponse = await axiosInstance.post(
+          `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
+          fallbackPayload
+        );
+        
+        const { data: allFetchedAccounts = [] } = fallbackResponse.data || {};
+        
+        if (allFetchedAccounts.length > 0) {
+          // Filter client-side for the selected category
+          const categoryTag = getCategoryTag(selectedCategory);
+          const matchingAccounts = allFetchedAccounts.filter((acc: Account) => 
+            acc.tags?.some((tag: string) => 
+              tag.toLowerCase() === categoryTag.toLowerCase()
+            )
+          );
+          
+          if (matchingAccounts.length > 0) {
+            console.log(`Found ${matchingAccounts.length} accounts with tag "${selectedCategory}" via client-side filtering`);
+            const clientDecryptedAccounts = await Promise.all(
+              matchingAccounts.map(decryptAccountData)
+            );
+            setAllAccounts(clientDecryptedAccounts);
+            setTotalCount(clientDecryptedAccounts.length);
+          }
+        }
+      }
     } catch (error: any) {
       console.error("Error fetching accounts:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        alert(`${translate("error_fetching_accounts", "accounts")}: ${error.response.data?.message || error.message}`);
-      } else {
-        alert(translate("error_fetching_accounts", "accounts"));
+      let errorMessage = translate("error_fetching_accounts", "accounts");
+      if (error.response?.data?.message) {
+        errorMessage = `${errorMessage}: ${error.response.data.message}`;
       }
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, sort, ]);
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, decryptAccountData, getCategoryTag, ]);
 
   useEffect(() => {
     fetchAccounts();
   }, [fetchAccounts]);
 
+  // Shortcuts for adding accounts
   useEffect(() => {
     const handleAddAccount = () => setShowAddAccount(true);
-    document.addEventListener("toggle-add-account", handleAddAccount);
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "+") {
         e.preventDefault();
         setShowAddAccount(true);
       }
     };
+    document.addEventListener("toggle-add-account", handleAddAccount);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("toggle-add-account", handleAddAccount);
@@ -125,7 +305,7 @@ export function AccountsContent() {
     };
   }, []);
 
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
   const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
     try {
@@ -138,27 +318,17 @@ export function AccountsContent() {
   }, []);
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
-    setViewPassword(prevState => (prevState === doc_id ? null : doc_id));
+    setViewPassword(prev => (prev === doc_id ? null : doc_id));
   }, []);
 
   const clearFilters = useCallback(() => {
     setSearchQuery("");
     setSelectedCategory("all");
     setCurrentPage(1);
-    setSort(["_id", 1]);
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  }, []);
-
-  const handleSortChange = useCallback((field: string) => {
-    setSort(prev => {
-      if (prev[0] === field) {
-        return [field, prev[1] === 1 ? -1 : 1];
-      }
-      return [field, 1];
-    });
   }, []);
 
   const handleDeleteAccount = useCallback(
@@ -171,17 +341,21 @@ export function AccountsContent() {
         return;
       }
 
+      if (!confirm(translate("confirm_delete_account", "accounts"))) {
+        return;
+      }
+
       try {
         await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
-        fetchAccounts(); // Refetch accounts after deletion
+        fetchAccounts();
         alert(translate("account_deleted_successfully", "accounts"));
       } catch (error: any) {
         console.error("Error deleting account:", error);
-        if (error.response) {
-          alert(`${translate("error_deleting_account", "accounts")}: ${error.response.data?.message || error.message}`);
-        } else {
-          alert(translate("error_deleting_account", "accounts"));
+        let errorMessage = translate("error_deleting_account", "accounts");
+        if (error.response?.data?.message) {
+          errorMessage = `${errorMessage}: ${error.response.data.message}`;
         }
+        alert(errorMessage);
       }
     },
     [selectedWorkspaceId, selectedProjectId, translate, fetchAccounts]
@@ -194,9 +368,53 @@ export function AccountsContent() {
     alert(translate("account_updated_successfully", "accounts"));
   }, [fetchAccounts, translate]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategory, sort]);
+  // Debounced search input
+  const debouncedSearch = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+      }, 300);
+    };
+  }, []);
+
+  // Pagination range with dots for large page counts
+  const getPaginationRange = useCallback(() => {
+    const maxPagesToShow = 5;
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const half = Math.floor(maxPagesToShow / 2);
+      let start = Math.max(1, currentPage - half);
+      let end = Math.min(totalPages, start + maxPagesToShow - 1);
+
+      if (end - start < maxPagesToShow - 1) {
+        start = end - maxPagesToShow + 1;
+      }
+
+      if (start > 1) {
+        pageNumbers.push(1);
+        if (start > 2) pageNumbers.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pageNumbers.push("...");
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  }, [currentPage, totalPages]);
 
   if (isLoading) {
     return (
@@ -221,13 +439,18 @@ export function AccountsContent() {
               type="search"
               placeholder={translate("search", "accounts")}
               className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => debouncedSearch(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select
+              value={selectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value);
+                setCurrentPage(1);
+              }}
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="All Accounts" />
               </SelectTrigger>
@@ -236,10 +459,11 @@ export function AccountsContent() {
                 <SelectItem value="personal">Personal</SelectItem>
                 <SelectItem value="work">Work</SelectItem>
                 <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="favorite">Favorites</SelectItem>
               </SelectContent>
             </Select>
 
-            {(searchQuery || selectedCategory !== "all" || sort[0] !== "_id") && (
+            {(searchQuery || selectedCategory !== "all") && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
                 <X className="h-4 w-4 mr-2" />
                 Clear
@@ -251,7 +475,7 @@ export function AccountsContent() {
         <div className="flex items-center gap-2">
           <Button
             variant="default"
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 theme-button"
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setShowGeneratePassword(true)}
           >
             <Key className="h-4 w-4" />
@@ -269,21 +493,11 @@ export function AccountsContent() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
-                <th className="text-left p-3 font-medium text-sm">
-                  <button className="flex items-center" onClick={() => handleSortChange("name")}>
-                    {translate("account", "accounts")}
-                    {sort[0] === "name" && <span className="ml-1">{sort[1] === 1 ? "↑" : "↓"}</span>}
-                  </button>
-                </th>
+                <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">
-                  <button className="flex items-center" onClick={() => handleSortChange("updated_at")}>
-                    {translate("last_modified", "accounts")}
-                    {sort[0] === "updated_at" && <span className="ml-1">{sort[1] === 1 ? "↑" : "↓"}</span>}
-                  </button>
-                </th>
+                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("actions", "accounts")}</th>
               </tr>
             </thead>
@@ -300,12 +514,12 @@ export function AccountsContent() {
                           <p className="font-medium">{account.name}</p>
                           {account.website && (
                             <a
-                              href={account.website}
+                              href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
                             >
-                              {account.website.replace("https://", "")}
+                              {account.website.replace(/^https?:\/\//, "")}
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           )}
@@ -314,6 +528,18 @@ export function AccountsContent() {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
+                        {account.decryptionError && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Decryption error - please edit to update format</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         <span className="text-sm">{account.user_name}</span>
                         <TooltipProvider>
                           <Tooltip>
@@ -322,7 +548,8 @@ export function AccountsContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7"
-                                onClick={() => copyToClipboard(account.doc_id, "user_name", account.user_name)}
+                                onClick={() => account.user_name && account.user_name !== "Data unavailable" && account.user_name !== "Legacy data format" && copyToClipboard(account.doc_id, "user_name", account.user_name)}
+                                disabled={!account.user_name || account.user_name === "Data unavailable" || account.user_name === "Legacy data format"}
                               >
                                 {copiedField?.doc_id === account.doc_id && copiedField?.field === "user_name" ? (
                                   <Check className="h-3.5 w-3.5 text-green-500" />
@@ -333,9 +560,7 @@ export function AccountsContent() {
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>
-                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "user_name"
-                                  ? "Copied!"
-                                  : "Copy username"}
+                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "user_name" ? "Copied!" : "Copy username"}
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -345,7 +570,11 @@ export function AccountsContent() {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">
-                          {viewPassword === account.doc_id ? account.password : "••••••••"}
+                          {account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && viewPassword === account.doc_id
+                            ? account.password
+                            : account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format"
+                            ? "••••••••"
+                            : account.password}
                         </span>
                         <div className="flex items-center">
                           <TooltipProvider>
@@ -355,7 +584,8 @@ export function AccountsContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => togglePasswordVisibility(account.doc_id)}
+                                  onClick={() => account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && togglePasswordVisibility(account.doc_id)}
+                                  disabled={!account.password || account.password === "Data unavailable" || account.password === "Legacy data format"}
                                 >
                                   {viewPassword === account.doc_id ? (
                                     <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
@@ -376,7 +606,8 @@ export function AccountsContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => copyToClipboard(account.doc_id, "password", account.password)}
+                                  onClick={() => account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && copyToClipboard(account.doc_id, "password", account.password)}
+                                  disabled={!account.password || account.password === "Data unavailable" || account.password === "Legacy data format"}
                                 >
                                   {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
                                     <Check className="h-3.5 w-3.5 text-green-500" />
@@ -387,9 +618,7 @@ export function AccountsContent() {
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>
-                                  {copiedField?.doc_id === account.doc_id && copiedField?.field === "password"
-                                    ? "Copied!"
-                                    : "Copy password"}
+                                  {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? "Copied!" : "Copy password"}
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -404,7 +633,7 @@ export function AccountsContent() {
                             {tag}
                           </Badge>
                         ))}
-                        {account.tags?.includes("Favorite") && (
+                        {account.tags?.some(tag => tag.toLowerCase() === 'favorite') && (
                           <Badge
                             variant="outline"
                             className="text-xs bg-amber-100 dark:bg-amber-950 border-amber-200 dark:border-amber-800"
@@ -416,7 +645,7 @@ export function AccountsContent() {
                       </div>
                     </td>
                     <td className="p-3 text-sm text-muted-foreground">
-                      {new Date(account.updated_at).toLocaleDateString()}
+                      {new Date(account.updated_at).toLocaleDateString(currentLocale)}
                     </td>
                     <td className="p-3">
                       <DropdownMenu>
@@ -428,7 +657,7 @@ export function AccountsContent() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => {
-                              setSelectedAccount(account);
+                              setSelectedAccount({ ...account });
                               setShowEditAccount(true);
                             }}
                           >
@@ -452,7 +681,13 @@ export function AccountsContent() {
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-10 w-10 text-muted-foreground/50" />
                       <h3 className="font-medium">No accounts found</h3>
-                      <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedCategory !== "all"
+                          ? `No accounts found with tag "${selectedCategory}". Try a different tag or clear filters.`
+                          : searchQuery
+                          ? `No accounts match the search "${searchQuery}". Try adjusting your search.`
+                          : "Try adjusting your search or filter criteria."}
+                      </p>
                       <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
                         Clear filters
                       </Button>
@@ -467,7 +702,7 @@ export function AccountsContent() {
         {totalCount > 0 && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              {translate("showing", "accounts")} {(currentPage - 1) * itemsPerPage + 1}-
+              {translate("showing", "accounts")} {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
               {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "accounts")} {totalCount}{" "}
               {translate("accounts", "accounts")}
             </div>
@@ -496,42 +731,51 @@ export function AccountsContent() {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let pageNum = i + 1;
-                  if (totalPages > 5 && currentPage > 3) {
-                    pageNum = currentPage - 3 + i;
-                    if (pageNum > totalPages) {
-                      pageNum = totalPages - (4 - i);
-                    }
-                  }
-                  return (
-                    <Button
-                      key={i}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={currentPage === pageNum}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
+                {getPaginationRange().map((pageNum, index) => (
+                  <Button
+                    key={`${pageNum}-${index}`}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => typeof pageNum === "number" && handlePageChange(pageNum)}
+                    disabled={pageNum === "..." || currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
               </div>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
+                disabled={currentPage >= totalPages || allAccounts.length < itemsPerPage}
               >
                 <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage >= totalPages || allAccounts.length < itemsPerPage}
+              >
+                <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
