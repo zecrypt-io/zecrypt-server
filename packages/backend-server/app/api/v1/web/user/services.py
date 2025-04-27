@@ -2,9 +2,6 @@ from app.utils.utils import  response_helper
 from app.managers import favorite_tags as favorite_tags_manager
 from app.managers import login_activity as login_activity_manager
 from app.managers import user as user_manager
-from app.managers import accounts as account_manager
-from app.managers import api_keys as api_key_manager
-from app.managers import wallet_phrase as wallet_phrase_manager
 
 from app.utils.utils import filter_payload
 def get_favorite_tags(request, user):

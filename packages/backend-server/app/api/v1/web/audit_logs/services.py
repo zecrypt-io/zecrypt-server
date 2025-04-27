@@ -1,6 +1,6 @@
 from app.managers import audit_log as audit_log_manager
 from app.managers.collection_names import PROJECT, ACCOUNT, API_KEY, WALLET_PHRASE, WORKSPACE
-from app.utils.utils import create_uuid
+from app.utils.utils import create_uuid, response_helper
 from app.utils.date_utils import create_timestamp
 
 def get_aduit_log_actions():
@@ -10,8 +10,16 @@ def get_aduit_log_actions():
            
 
 
-def get_audit_logs(db, query, sort=None, skip=0, limit=20):
-    return audit_log_manager.find(db, query, sort=sort, skip=skip, limit=limit)
+def get_audit_logs(db, payload, request):
+    query = {
+        "workspace_id": request.path_params.get('workspace_id')
+    }
+    sort = [("created_at", -1)]
+    skip = (payload.get("page") - 1) * payload.get("limit")
+    limit = payload.get("limit")
+    total = audit_log_manager.count_documents(db, query)
+    data = audit_log_manager.find(db, query, sort=sort, skip=skip, limit=limit)
+    return response_helper(status_code=200, message="Audit logs fetched successfully", data=data, page=payload.get("page"), limit=payload.get("limit"), count=total)
 
 
 def get_audit_log_count(db, query):
