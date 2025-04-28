@@ -1,6 +1,8 @@
 import requests
 from user_agents import parse
-
+from pyotp import random_base32
+import pyotp
+from cryptography.fernet import Fernet
 from app.core.config import settings
 from app.managers import login_activity as login_activity_manager
 from app.utils.date_utils import create_timestamp
@@ -15,6 +17,22 @@ from app.utils.utils import (
 )
 from app.utils.jwt_utils import encode_token
 
+def encrypt_totp_secret(totp_secret):
+    cipher = Fernet(settings.TOTP_SECRET.encode())
+    encrypted_secret = cipher.encrypt(totp_secret.encode())
+    return encrypted_secret
+
+def decrypt_totp_secret(encrypted_secret):
+    cipher = Fernet(settings.TOTP_SECRET.encode())
+    totp_secret = cipher.decrypt(encrypted_secret).decode()
+    return totp_secret
+
+def create_profision_uri(totp_secret, email):
+    provisioning_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(
+        name=email,
+        issuer_name="Zecrypt-Server"
+    )
+    return provisioning_uri
 
 def validate_stack_auth_token(token):
     endpoint = "https://api.stack-auth.com/api/v1/users/me"
@@ -64,11 +82,9 @@ def record_login_event(request, db, user):
     login_activity_manager.insert_one(db, data)
 
 
-
-def create_user(request, db,auth_data,response,back_ground_tasks):
+def create_user(request, db,auth_data,back_ground_tasks):
     user_id = f"ZEC{id_generator(10)}"
-    token = create_jwt_token({"user": user_id})
-
+    totp_secret = random_base32()
     new_user_data = {
         "uid": auth_data.get("id"),
         "name": auth_data.get("display_name"),
@@ -77,7 +93,6 @@ def create_user(request, db,auth_data,response,back_ground_tasks):
         "email": auth_data.get("primary_email"),
         "user_id": user_id,
         "profile_url": auth_data.get("profile_image_url"),
-        "token": token,
         "language": "en",
         "auth": {
             "has_password": auth_data.get("has_password"),
@@ -87,43 +102,50 @@ def create_user(request, db,auth_data,response,back_ground_tasks):
             "passkey_auth_enabled": auth_data.get("passkey_auth_enabled"),
             "oauth_providers": auth_data.get("oauth_providers"),
         },
+        "2fa":{
+            "totp_secret": encrypt_totp_secret(totp_secret),
+        }
     }
-
     user_manager.insert_one(db, new_user_data)
     back_ground_tasks.add_task(create_project_at_signup, request, db, user_id)
-    token_data = {
+    data = {
         "user_id": user_id,
-        "profile_url": auth_data.get("profile_url"),
-        "name": auth_data.get("display_name"),
-        "access_token": token,
         "language": "en",
+        "is_new_user": True,
+        "provisioning_uri": create_profision_uri(totp_secret, auth_data.get("primary_email")),
     }
    
-    refresh_token = encode_token(user_id)
-    response.set_cookie(
-        key="access_token", value=token, httponly=True, secure=True, samesite="strict"
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-    )
     return response_helper(
-        status_code=200, message="User signed up successfully", data=token_data
+        status_code=200, message="User signed up successfully", data=data
     )
 
-def user_login(request, db, user, response,back_ground_tasks):
-    token = create_jwt_token({"user": user.get("user_id")})
-    token_data = {
+def user_login(user):
+    data = {
         "user_id": user.get("user_id"),
-        "profile_url": user.get("profile_url"),
-        "name": user.get("name"),
-        "access_token": token,
         "language": user.get("language"),
+        "is_new_user": False 
     }
+    if not user.get("2fa",{}).get("enabled"):
+        data["provisioning_uri"] = create_profision_uri(decrypt_totp_secret(user.get("2fa").get("totp_secret")), user.get("email"))
+        data["is_new_user"] = True
+    return response_helper(
+        status_code=200, message="User logged in successfully", data=data
+    )
 
+def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
+    user = user_manager.find_one(db, {"user_id": payload.get("user_id")})
+    
+    if not user:
+        return response_helper(status_code=400, message="User details not found")
+    
+    totp = pyotp.TOTP(decrypt_totp_secret(user.get("2fa").get("totp_secret")))
+    if not totp.verify(payload.get("code")):
+        return response_helper(status_code=400, message="Invalid code, Pease try again")
+    
+    token = create_jwt_token({"user": user.get("user_id")})
+    refresh_token = encode_token(user.get("user_id"))
+    
+    back_ground_tasks.add_task(record_login_event, request, db, user)
     user_manager.update_one(
         db,
         {"user_id": user.get("user_id")},
@@ -132,11 +154,13 @@ def user_login(request, db, user, response,back_ground_tasks):
                 "token": token,
                 "last_login": create_timestamp(),
                 "device_id": request.headers.get("device_id"),
+                "2fa":{
+                    "enabled": True,
+                }
             }
         },
     )
-    back_ground_tasks.add_task(record_login_event, request, db, user)
-    refresh_token = encode_token(user.get("user_id"))
+    
     response.set_cookie(
         key="access_token", value=token, httponly=True, secure=True, samesite="strict"
     )
@@ -147,6 +171,12 @@ def user_login(request, db, user, response,back_ground_tasks):
         secure=True,
         samesite="strict",
     )
-    return response_helper(
-        status_code=200, message="User logged in successfully", data=token_data
-    )
+    data = {
+        "user_id": user.get("user_id"),
+        "language": "en",
+        "token": token,
+        "refresh_token": refresh_token,
+    }
+    return response_helper(status_code=200, message="Two factor authentication verified successfully", data=data)
+    
+

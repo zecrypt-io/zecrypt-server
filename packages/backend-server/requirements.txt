@@ -13,3 +13,5 @@ logfire[fastapi]
 user-agents
 uuid7
 PyJWT
+cryptography
+fastapi-limiter
