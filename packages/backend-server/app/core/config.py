@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     STACK_AUTH_CLIENT_ID: str
     STACK_AUTH_CLIENT_SECRET: str
     AES_KEY: str
+    TOTP_SECRET: str
 
     class Config:
         case_sensitive = True

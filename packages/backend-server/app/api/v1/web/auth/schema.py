@@ -32,3 +32,7 @@ class UpdateProfile(BaseModel):
     phone_number: Optional[str] = None
     last_name: Optional[str] = None
     date_of_birth: Optional[str] = None
+
+class TwoFactorAuth(BaseModel):
+    code: str
+    user_id: str

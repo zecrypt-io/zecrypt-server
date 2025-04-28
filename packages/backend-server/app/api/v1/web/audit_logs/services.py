@@ -3,7 +3,8 @@ from app.managers.collection_names import PROJECT, ACCOUNT, API_KEY, WALLET_PHRA
 from app.utils.utils import create_uuid, response_helper
 from app.utils.date_utils import create_timestamp
 
-def get_aduit_log_actions():
+def get_audit_log_actions():
+    """Return all possible audit log actions for each collection."""
     actions = ["created", "updated", "deleted"]
     collection_names = [PROJECT, ACCOUNT, API_KEY, WALLET_PHRASE, WORKSPACE]
     return [f"{collection}.{action}" for collection in collection_names for action in actions]
@@ -11,25 +12,29 @@ def get_aduit_log_actions():
 
 
 def get_audit_logs(db, payload, request):
+    """Fetch paginated audit logs for a workspace."""
     query = {
         "workspace_id": request.path_params.get('workspace_id')
     }
     sort = [("created_at", -1)]
-    skip = (payload.get("page") - 1) * payload.get("limit")
-    limit = payload.get("limit")
+    page = payload.get("page", 1)
+    limit = payload.get("limit", 10)
+    skip = (page - 1) * limit
     total = audit_log_manager.count_documents(db, query)
     data = audit_log_manager.find(db, query, sort=sort, skip=skip, limit=limit)
-    return response_helper(status_code=200, message="Audit logs fetched successfully", data=data, page=payload.get("page"), limit=payload.get("limit"), count=total)
+    return response_helper(status_code=200, message="Audit logs fetched successfully", data=data, page=page, limit=limit, count=total)
 
 
 def get_audit_log_count(db, query):
+    """Return the count of audit logs matching the query."""
     return audit_log_manager.count_documents(db, query)
 
 
 
 def add_audit_log(db, collection_name, action, record_id, created_by, request=None):
+    """Add a new audit log entry to the database."""
     audit_log = {
-        "event":f"{collection_name}.{action}",
+        "event": f"{collection_name}.{action}",
         "collection_name": collection_name,
         "action": action,
         "created_at": create_timestamp(),
