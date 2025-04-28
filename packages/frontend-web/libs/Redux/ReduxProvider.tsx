@@ -12,7 +12,12 @@ export default function ReduxProvider({ children }: ReduxProviderProps) {
   return (
     <Provider store={store}>
       <PersistGate
-        loading={<div>Loading persisted state...</div>} // Optional: Show loading state
+        loading={
+          <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+            <div className="loader" />
+            <p className="mt-4 text-sm font-medium">Initializing application...</p>
+          </div>
+        }
         persistor={persistor}
       >
         {children}

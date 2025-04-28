@@ -6,6 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import ReduxProvider from "../libs/Redux/ReduxProvider"; // Updated import
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 

@@ -67,6 +67,13 @@ const workspaceSlice = createSlice({
         }
       }
     },
+
+    // Add to workspaceSlice.ts reducers
+    resetWorkspaceState: (state) => {
+      state.workspaces = [];
+      state.selectedWorkspaceId = null;
+      state.selectedProjectId = null;
+    },
     updateProject: (
       state,
       action: PayloadAction<{ workspaceId: string; project: Project }>
@@ -140,5 +147,6 @@ export const {
   deleteProject,
   setSelectedProject,
   setDefaultProject,
+  resetWorkspaceState,
 } = workspaceSlice.actions;
 export default workspaceSlice.reducer;
