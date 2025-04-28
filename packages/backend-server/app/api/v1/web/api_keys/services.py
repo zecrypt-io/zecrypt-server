@@ -61,16 +61,18 @@ def add_api_key(request, user, payload, background_tasks):
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
     lower_name = payload.get("name").strip().lower()
-    api_key = api_key_manager.find_one(
-        db,
-        {
+    query= {
             "lower_name": lower_name,
             "created_by": user_id,
             "project_id": project_id,
-        },
+        }
+    
+    api_key = api_key_manager.find_one(
+        db,
+        query,
     )
     if api_key:
-        return response_helper(status_code=400, message="Project already exists")
+        return response_helper(status_code=400, message="API Key already exists")
 
     timestamp = create_timestamp()
     payload.update(
