@@ -9,6 +9,7 @@ export const AUTH_ROUTES = {
   LOGIN: '/login',
   SIGNUP: '/signup',
   LOGOUT: '/logout',
+  TWO_FACTOR_AUTH: "/2fa/verify"
 };
 
 // Dashboard routes

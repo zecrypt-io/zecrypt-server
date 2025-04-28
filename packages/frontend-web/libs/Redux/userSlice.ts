@@ -1,12 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UserData {
-  user_id: string;
-  name: string;
-  profile_url: string;
-  access_token: string;
-  email?: string;
-  locale?: string; // Added to resolve type error
+  user_id: string | null;
+  name: string | null;
+  profile_url: string | null;
+  access_token: string | null;
+  refresh_token: string | null;
+  email: string | null;
+  language: string | null;
+  is_2fa_enabled: boolean;
 }
 
 interface UserState {
@@ -14,18 +16,34 @@ interface UserState {
 }
 
 const initialState: UserState = {
-  userData: null,
+  userData: {
+    user_id: null,
+    name: null,
+    profile_url: null,
+    access_token: null,
+    refresh_token: null,
+    email: null,
+    language: null,
+    is_2fa_enabled: false,
+  },
 };
 
 const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
-    setUserData: (state, action: PayloadAction<UserData>) => {
-      state.userData = action.payload;
+    setUserData: (state, action: PayloadAction<Partial<UserData>>) => {
+      if (!state.userData) {
+        state.userData = initialState.userData;
+      }
+      Object.entries(action.payload).forEach(([key, value]) => {
+        if (value !== undefined) {
+          (state.userData as any)[key] = value;
+        }
+      });
     },
     clearUserData: (state) => {
-      state.userData = null;
+      state.userData = initialState.userData;
     },
   },
 });

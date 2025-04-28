@@ -204,7 +204,7 @@
     "favorite": "Favorite",
     "no_accounts_create": "No accounts found. Create one to get started.",
     "adjust_search_filter": "Try adjusting your search or filter criteria",
-    "error_loading_workspace": "Failed to load workspace data"
+    "error_loading_workspace": "Failed to load workspace data",
     "focus_search": "Focus Search",
     "switch_project": "Switch Project"
   },
