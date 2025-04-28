@@ -41,7 +41,7 @@ async def login_api(
     if not user:
         return create_user(request, db, auth_data, back_ground_tasks)
 
-    return user_login(user)
+    return user_login(db, user)
 
 
 @router.post(LOGOUT)

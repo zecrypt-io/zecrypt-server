@@ -119,15 +119,17 @@ def create_user(request, db,auth_data,back_ground_tasks):
         status_code=200, message="User signed up successfully", data=data
     )
 
-def user_login(user):
+def user_login(db, user):
     data = {
         "user_id": user.get("user_id"),
-        "language": user.get("language"),
+        "language": user.get("language","en"),
         "is_new_user": False 
     }
     if not user.get("2fa",{}).get("enabled"):
-        data["provisioning_uri"] = create_profision_uri(decrypt_totp_secret(user.get("2fa").get("totp_secret")), user.get("email"))
+        totp_secret = random_base32()
+        data["provisioning_uri"] = create_profision_uri(totp_secret, user.get("email"))
         data["is_new_user"] = True
+        user_manager.update_one(db, {"user_id": user.get("user_id")}, {"$set": {"2fa": {"totp_secret": encrypt_totp_secret(totp_secret)}}})
     return response_helper(
         status_code=200, message="User logged in successfully", data=data
     )
