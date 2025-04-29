@@ -25,7 +25,9 @@
     "verifying_authentication": "Authentifizierung wird überprüft...",
     "2fa_verification_error": "Ungültige Bestätigungscodes. Bitte versuchen Sie es erneut.",
     "2fa_verification_success": "2FA-Bestätigung erfolgreich",
-    "verifying": "2FA-Bestätigung wird überprüft..."
+    "verifying": "2FA-Bestätigung wird überprüft...",
+    "authentication_error": "Authentifizierungsfehler",
+    "try_again": "Erneut versuchen"
  
   },
   "features": {

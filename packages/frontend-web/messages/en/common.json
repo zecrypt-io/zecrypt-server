@@ -25,8 +25,9 @@
     "verifying_authentication": "Verifying authentication...",
     "2fa_verification_error": "Invalid verification code. Please try again.",
     "2fa_verification_success": "2FA verification successful",
-    "verifying": "Verifying 2FA..."
-
+    "verifying": "Verifying 2FA...",
+    "authentication_error": "Authentication error",
+    "try_again": "Try again"
     
 
   },
@@ -291,5 +292,8 @@
     "search_passphrases": "Search Passphrases...",
     "wallet_passphrases": "Wallet Passphrases",
     "securely_store_and_manage_your_wallet_recovery_phrases": "Securely store and manage your wallet recovery phrases"
+  },
+  "key_shortcuts": {
+    "title": "Key Shortcuts"
   }
 }
