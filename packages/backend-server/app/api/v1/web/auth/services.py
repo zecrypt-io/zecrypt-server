@@ -24,8 +24,8 @@ def encrypt_totp_secret(totp_secret):
 
 def decrypt_totp_secret(encrypted_secret):
     cipher = Fernet(settings.TOTP_SECRET.encode())
-    totp_secret = cipher.decrypt(encrypted_secret).decode()
-    return totp_secret
+    totp_secret = cipher.decrypt(encrypted_secret)
+    return totp_secret.decode()
 
 def create_profision_uri(totp_secret, email):
     provisioning_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(
@@ -140,7 +140,7 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
     if not user:
         return response_helper(status_code=400, message="User details not found")
     
-    totp = pyotp.TOTP(decrypt_totp_secret(user.get("2fa").get("totp_secret")))
+    totp = pyotp.TOTP(decrypt_totp_secret(user.get("2fa",{}).get("totp_secret")))
     if not totp.verify(payload.get("code")):
         return response_helper(status_code=400, message="Invalid code, Pease try again")
     
@@ -148,6 +148,7 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
     refresh_token = encode_token(user.get("user_id"))
     
     back_ground_tasks.add_task(record_login_event, request, db, user)
+
     user_manager.update_one(
         db,
         {"user_id": user.get("user_id")},
@@ -155,9 +156,10 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
             "$set": {
                 "token": token,
                 "last_login": create_timestamp(),
-                "device_id": request.headers.get("device_id"),
+                "device_id": payload.get("device_id"),
                 "2fa":{
                     "enabled": True,
+                    "totp_secret": user.get("2fa",{}).get("totp_secret"),
                 }
             }
         },
