@@ -273,6 +273,21 @@
     "create_api_key": "API Schlüssel erstellen",
     "cancel": "Abbrechen",
     "rows_per_page": "Zeilen pro Seite:",
-    "add_key": "Schlüssel hinzufügen"
+    "add_key": "Schlüssel hinzufügen",
+    "no_api_keys_found": "Keine API Schlüssel gefunden",
+    "try_adjusting_search_or_filter": "Versuchen Sie, Ihre Suche oder Filterkriterien anzupassen"
+  },
+  "wallet_passphrases": {
+    "no_passphrases_found_search": "Keine Passphrasen passen zu Ihren Suchkriterien.",
+    "add_passphrase": "Passphrase hinzufügen",
+    "no_passphrases_found": "Keine Passphrasen gefunden",
+    "try_adjusting_search_or_filter": "Versuchen Sie, Ihre Suche oder Filterkriterien anzupassen",
+    "no_passphrases_found_message": "Sie haben noch keine Wallet Passphrasen hinzugefügt.",
+    "add_your_first_passphrase": "Ihre erste Passphrase hinzufügen",
+    "loading_passphrases": "Passphrasen werden geladen...",
+    "please_wait_while_we_fetch_your_secure_passphrases": "Bitte warten Sie, während wir Ihre sicheren Passphrasen abrufen...",
+    "search_passphrases": "Passphrasen suchen...",
+    "wallet_passphrases": "Wallet Passphrasen",
+    "securely_store_and_manage_your_wallet_recovery_phrases": "Sichern Sie und verwalten Sie Ihre Wallet Passphrasen"
   }
 }

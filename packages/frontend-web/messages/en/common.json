@@ -275,6 +275,21 @@
     "create_api_key": "Create API Key",
     "cancel": "Cancel",
     "rows_per_page": "Rows per page:",
-    "add_key": "Add Key"
+    "add_key": "Add Key",
+    "no_api_keys_found": "No API Keys Found",
+    "try_adjusting_search_or_filter": "Try adjusting your search or filter criteria"
+  },
+  "wallet_passphrases": {
+    "no_passphrases_found_search": "No passphrases match your search criteria.",
+    "add_passphrase": "Add Passphrase",
+    "no_passphrases_found": "No passphrases found",
+    "try_adjusting_search_or_filter": "Try adjusting your search or filter criteria",
+    "no_passphrases_found_message": "You haven't added any wallet passphrases yet.",
+    "add_your_first_passphrase": "Add Your First Passphrase",
+    "loading_passphrases": "Loading passphrases...",
+    "please_wait_while_we_fetch_your_secure_passphrases": "Please wait while we fetch your secure passphrases.",
+    "search_passphrases": "Search Passphrases...",
+    "wallet_passphrases": "Wallet Passphrases",
+    "securely_store_and_manage_your_wallet_recovery_phrases": "Securely store and manage your wallet recovery phrases"
   }
 }

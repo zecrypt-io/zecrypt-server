@@ -466,7 +466,7 @@ export function AccountsContent() {
             {(searchQuery || selectedCategory !== "all") && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
                 <X className="h-4 w-4 mr-2" />
-                Clear
+                {translate("clear", "accounts")}
               </Button>
             )}
           </div>
@@ -680,16 +680,16 @@ export function AccountsContent() {
                   <td colSpan={6} className="text-center py-10 text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-10 w-10 text-muted-foreground/50" />
-                      <h3 className="font-medium">No accounts found</h3>
+                      <h3 className="font-medium">{translate("no_accounts_found", "accounts")}</h3>
                       <p className="text-sm text-muted-foreground">
                         {selectedCategory !== "all"
                           ? `No accounts found with tag "${selectedCategory}". Try a different tag or clear filters.`
                           : searchQuery
                           ? `No accounts match the search "${searchQuery}". Try adjusting your search.`
-                          : "Try adjusting your search or filter criteria."}
+                          : translate("adjust_search_filter", "accounts")}
                       </p>
                       <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                        Clear filters
+                        {translate("clear_filters", "accounts")}
                       </Button>
                     </div>
                   </td>

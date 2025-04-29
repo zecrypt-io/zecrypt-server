@@ -357,7 +357,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 )}
               >
                 <User className="h-4 w-4" />
-                Accounts
+                {translate("accounts", "dashboard")}
               </Link>
               <Link
                 href={`/${currentLocale}/dashboard/api-keys`}
@@ -380,7 +380,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 >
                   <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
                 </svg>
-                API Keys
+                {translate("api_keys", "dashboard")}
               </Link>
               <Link
                 href={`/${currentLocale}/dashboard/wallet-passphrases`}
@@ -406,7 +406,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                   <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
                   <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
                 </svg>
-                Wallet Passphrases
+                {translate("wallet_passphrases", "dashboard")}
               </Link>
             </div>
           </div>

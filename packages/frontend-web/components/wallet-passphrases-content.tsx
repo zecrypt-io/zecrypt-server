@@ -29,7 +29,7 @@ import {
   deleteWalletPassphrase, 
   getWalletPassphrases 
 } from "@/libs/wallet-api"
-
+import { useTranslator } from "@/hooks/use-translations";
 // Types
 interface WalletPassphrase {
   id: string
@@ -58,6 +58,7 @@ const walletTypes = [
 
 export function WalletPassphrasesContent() {
   const router = useRouter()
+  const { translate } = useTranslator();
   const [walletPassphrases, setWalletPassphrases] = useState<WalletPassphrase[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredPassphrases, setFilteredPassphrases] = useState<WalletPassphrase[]>([])
@@ -588,15 +589,15 @@ export function WalletPassphrasesContent() {
     <div className="space-y-4 p-3 md:p-8">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold">Wallet Passphrases</h1>
-        <p className="text-muted-foreground">Securely store and manage your wallet recovery phrases</p>
+        <h1 className="text-2xl font-bold">{translate("wallet_passphrases", "wallet_passphrases")}</h1>
+        <p className="text-muted-foreground">{translate("securely_store_and_manage_your_wallet_recovery_phrases", "wallet_passphrases")}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search passphrases..."
+            placeholder={translate("search_passphrases", "wallet_passphrases")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8 h-10"
@@ -613,17 +614,17 @@ export function WalletPassphrasesContent() {
           )}
         </div>
         <Button onClick={openAddDialog} className="w-full sm:w-auto h-10">
-          <Plus className="mr-2 h-4 w-4" /> Add Passphrase
-        </Button>
+            <Plus className="mr-2 h-4 w-4" /> {translate("add_passphrase", "wallet_passphrases")}
+          </Button>
       </div>
 
       {isLoading ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-6 text-center">
             <div className="h-12 w-12 rounded-full border-4 border-muted-foreground/20 border-t-muted-foreground animate-spin mb-4"></div>
-            <h3 className="text-lg font-medium">Loading wallet passphrases...</h3>
+            <h3 className="text-lg font-medium">{translate("loading_passphrases", "wallet_passphrases")}</h3>
             <p className="text-sm text-muted-foreground mt-2">
-              Please wait while we fetch your secure passphrases.
+              {translate("please_wait_while_we_fetch_your_secure_passphrases", "wallet_passphrases")}
             </p>
           </CardContent>
         </Card>
@@ -631,14 +632,14 @@ export function WalletPassphrasesContent() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-6 text-center">
             <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No wallet passphrases found</h3>
+            <h3 className="text-lg font-medium">{translate("no_passphrases_found", "wallet_passphrases")}</h3>
             <p className="text-sm text-muted-foreground mt-2 mb-4">
               {searchTerm
-                ? "No passphrases match your search criteria."
-                : "You haven't added any wallet passphrases yet."}
+                ? translate("no_passphrases_found_search", "wallet_passphrases")
+                : translate("no_passphrases_found_message", "wallet_passphrases")}
             </p>
             <Button onClick={openAddDialog}>
-              <Plus className="mr-2 h-4 w-4" /> Add Your First Passphrase
+              <Plus className="mr-2 h-4 w-4" /> {translate("add_your_first_passphrase", "wallet_passphrases")}
             </Button>
           </CardContent>
         </Card>
