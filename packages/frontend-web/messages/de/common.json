@@ -15,7 +15,17 @@
     "email": "E-Mail",
     "password": "Passwort",
     "agreement": "Mit Ihrer Anmeldung akzeptieren Sie unsere",
-    "terms": "Nutzungsbedingungen"
+    "terms": "Nutzungsbedingungen",
+    "verification_code": "Verifikation Code",
+    "2fa_verify": "2FA Verifikation",
+    "2fa_enter_code": "Geben Sie den 6-stelligen Code aus Ihrer Authentifikator-App ein",
+    "2fa_placeholder": "z.B. 123456",
+    "cancel": "Abbrechen",
+    "verify": "Verifizieren",
+    "verifying_authentication": "Authentifizierung wird verifiziert...",
+    "2fa_verification_error": "Ungültiger Verifikation Code. Bitte versuchen Sie es erneut.",
+    "2fa_verification_success": "2FA Verifikation erfolgreich",
+    "verifying": "2FA wird verifiziert..."
   },
   "features": {
     "trial_title": "Testen Sie 3Password Familien 40 Tage kostenlos",

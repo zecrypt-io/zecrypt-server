@@ -15,7 +15,20 @@
     "email": "Email",
     "password": "Password",
     "agreement": "When signing in, you agree to our",
-    "terms": "Terms"
+    "terms": "Terms",
+    "verification_code": "Verification Code",
+    "2fa_verify": "2FA Verification",
+    "2fa_enter_code": "Enter the 6-digit code from your authenticator app",
+    "2fa_placeholder": "e.g., 123456",
+    "cancel": "Cancel",
+    "verify": "Verify",
+    "verifying_authentication": "Verifying authentication...",
+    "2fa_verification_error": "Invalid verification code. Please try again.",
+    "2fa_verification_success": "2FA verification successful",
+    "verifying": "Verifying 2FA..."
+
+    
+
   },
   "features": {
     "trial_title": "Try upto 3Password Families free for 40 days",

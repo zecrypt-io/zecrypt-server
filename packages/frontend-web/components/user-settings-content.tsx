@@ -275,7 +275,7 @@ export function UserSettingsContent() {
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/web/profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
