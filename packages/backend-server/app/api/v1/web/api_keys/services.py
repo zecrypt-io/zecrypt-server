@@ -21,11 +21,14 @@ def get_api_keys(db, payload, request):
     env=payload.get("env",None)
     name=payload.get("name",None)
     project_id=request.path_params.get("project_id")
-    
+    sort_by=payload.get("sort_by","created_at")
+    sort_order=payload.get("sort_order","asc")
     query={
+
         "project_id":project_id
     }
-    
+    if sort_by:
+        sort = (sort_by, 1 if sort_order == "asc" else -1)
     if tags:
         query["tags"]={"$in":tags}
     
