@@ -19,16 +19,7 @@ def create_initial_workspace_on_signup(db,request, user_id, workspace_id):
             "updated_at": timestamp,
         },
     )
-    # Add audit log
-    add_audit_log(
-        db,
-        "workspace",
-        "created",
-        workspace_id,
-        user_id,
-        request,
-    )
-    
+
 
 def get_workspace(query, db):
     return response_helper(

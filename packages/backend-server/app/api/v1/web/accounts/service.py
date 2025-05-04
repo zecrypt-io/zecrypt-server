@@ -59,27 +59,16 @@ def add_account(request, user, payload, background_tasks):
     if existing_account:
         return response_helper(status_code=400, message="Account already exists")
 
-    timestamp = create_timestamp()
     payload.update(
         {
             "doc_id": create_uuid(),
             "created_by": user_id,
             "lower_name": payload.get("name").strip().lower(),
-            "created_at": timestamp,
-            "updated_at": timestamp,
             "project_id": project_id,
         }
     )
     accounts_manager.insert_one(db, payload)
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        ACCOUNT,
-        "created",
-        payload.get("doc_id"),
-        payload.get("created_by"),
-        request,
-    )
+
     return response_helper(
         status_code=201, message="Account added successfully", data={},
     )
@@ -113,17 +102,6 @@ def update_account(request, user, payload, background_tasks):
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
     
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        ACCOUNT,
-        "updated",
-        doc_id,
-        user_id,
-        request,
-    )
-
 
 def delete_account(request, user, background_tasks):
     db = user.get("db")
@@ -134,14 +112,5 @@ def delete_account(request, user, background_tasks):
         return response_helper(status_code=404, message="Account details not found",)
     accounts_manager.delete_one(db, {"doc_id": doc_id})
 
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        ACCOUNT,
-        "deleted",
-        doc_id,
-        user_id,
-        request,
-    )
+
     return response_helper(status_code=200, message="Account deleted successfully", data={},)

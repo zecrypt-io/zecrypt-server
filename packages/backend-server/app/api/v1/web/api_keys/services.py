@@ -2,7 +2,6 @@ from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import api_keys as api_key_manager
 from app.managers.collection_names import API_KEY
-from app.api.v1.web.audit_logs.services import add_audit_log
 
 
 def get_api_key_details(db, doc_id):
@@ -77,29 +76,17 @@ def add_api_key(request, user, payload, background_tasks):
     if api_key:
         return response_helper(status_code=400, message="API Key already exists")
 
-    timestamp = create_timestamp()
     payload.update(
         {
             "doc_id": create_uuid(),
             "created_by": user_id,
             "lower_name": lower_name,
-            "created_at": timestamp,
-            "updated_at": timestamp,
             "project_id": project_id,
         }
     )
     api_key_manager.insert_one(db, payload)
 
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        API_KEY,
-        "created",
-        payload.get("doc_id"),
-        user_id,
-        request,
-    )
+  
     return response_helper(
         status_code=201, message="API Key added successfully", data=payload,
     )
@@ -134,16 +121,7 @@ def update_api_key(request, user, payload, background_tasks):
         db, {"doc_id": doc_id}, {"$set": payload,},
     )
 
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        API_KEY,
-        "updated",
-        doc_id,
-        user_id,
-        request,
-    )
+ 
     return response_helper(status_code=200, message="API Key updated successfully",)
 
 
@@ -156,14 +134,4 @@ def delete_api_key(request, user, background_tasks):
         return response_helper(status_code=404, message="API Key details not found",)
     api_key_manager.delete_one(db, {"doc_id": doc_id})
 
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        API_KEY,
-        "deleted",
-        doc_id,
-        user_id,
-        request,
-    )
     return response_helper(status_code=200, message="API Key deleted successfully", data={},)
