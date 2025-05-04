@@ -323,10 +323,10 @@ export function UserSettingsContent() {
             <Clock className="mr-2 h-4 w-4" />
             {translate("login_history", "user_settings")}
           </TabsTrigger>
-          <TabsTrigger value="audit">
+          {/* <TabsTrigger value="audit">
             <FileText className="mr-2 h-4 w-4" /> 
             {translate("audit_log", "user_settings")}
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Profile Tab */}
