@@ -60,6 +60,7 @@ import { locales } from "@/middleware"
 import { useTranslations } from "next-intl"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
 import { useUser } from '@stackframe/stack'
+import { getStoredUserData } from "@/libs/local-storage-utils"
 
 // Interface for login history entry
 interface LoginHistoryEntry {
@@ -274,11 +275,20 @@ export function UserSettingsContent() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    const storedUserData = getStoredUserData();
+    const accessToken = storedUserData?.access_token;
+    if (!accessToken) {
+      setError("No access token found");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "access-token": accessToken,
         },
         credentials: "include",
         body: JSON.stringify({
