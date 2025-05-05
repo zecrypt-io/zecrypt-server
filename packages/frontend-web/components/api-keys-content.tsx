@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
@@ -23,7 +23,7 @@ import { EditApiKey } from "./edit-apikey";
 interface ApiKey {
   doc_id: string;
   name: string;
-  data: { hash: string; encryptedKey: string };
+  data: string | { api_key: string };
   created_at: string;
   updated_at: string | null;
   env: "Development" | "Staging" | "Production";
@@ -54,26 +54,71 @@ export function ApiKeysContent() {
 
   const decryptApiKeyData = useCallback(async (apiKey: ApiKey): Promise<ApiKey> => {
     try {
-      if (apiKey.data?.encryptedKey) {
+      if (apiKey.data && typeof apiKey.data === "string") {
         try {
           const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-          const decryptedKey = await decrypt(apiKey.data.encryptedKey, cryptoKey);
-          return { ...apiKey, decryptedKey, decrypted: true };
+          const decryptedData = await decrypt(apiKey.data, cryptoKey);
+          try {
+            const parsedData = JSON.parse(decryptedData);
+            if (parsedData.api_key) {
+              return { ...apiKey, decryptedKey: parsedData.api_key, decrypted: true };
+            }
+            console.warn("Decrypted data missing api_key:", {
+              api_key_id: apiKey.doc_id,
+              parsedData,
+            });
+            return {
+              ...apiKey,
+              decryptedKey: "Data incomplete",
+              decrypted: false,
+              decryptionError: true,
+            };
+          } catch (jsonError) {
+            console.warn("Failed to parse decrypted data as JSON:", {
+              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
+              api_key_id: apiKey.doc_id,
+              decrypted_preview: decryptedData.slice(0, 20) + "...",
+            });
+            return {
+              ...apiKey,
+              decryptedKey: "Invalid data format",
+              decrypted: false,
+              decryptionError: true,
+            };
+          }
         } catch (decryptError) {
           console.error("Failed to decrypt API key:", {
             error: decryptError instanceof Error ? decryptError.message : String(decryptError),
             api_key_id: apiKey.doc_id,
           });
-          return { ...apiKey, decryptedKey: "Decryption failed", decrypted: false, decryptionError: true };
+          return {
+            ...apiKey,
+            decryptedKey: "Decryption failed",
+            decrypted: false,
+            decryptionError: true,
+          };
         }
       }
-      return { ...apiKey, decryptedKey: "Data unavailable", decrypted: false, decryptionError: true };
+      if (apiKey.data && typeof apiKey.data === "object" && "api_key" in apiKey.data) {
+        return { ...apiKey, decryptedKey: apiKey.data.api_key, decrypted: true };
+      }
+      return {
+        ...apiKey,
+        decryptedKey: "Data unavailable",
+        decrypted: false,
+        decryptionError: true,
+      };
     } catch (error: unknown) {
       console.error("Failed to process API key data:", {
         error: error instanceof Error ? error.message : String(error),
         api_key_id: apiKey.doc_id,
       });
-      return { ...apiKey, decryptedKey: "Error processing data", decrypted: false, decryptionError: true };
+      return {
+        ...apiKey,
+        decryptedKey: "Error processing data",
+        decrypted: false,
+        decryptionError: true,
+      };
     }
   }, []);
 
@@ -88,7 +133,11 @@ export function ApiKeysContent() {
         selectedProjectId,
       });
       setIsLoading(false);
-      alert(`${translate("error_fetching_api_keys", "api_keys")}: ${translate("no_project_selected", "api_keys")}`);
+      toast({
+        title: translate("error_fetching_api_keys", "api_keys"),
+        description: translate("no_project_selected", "api_keys"),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -112,7 +161,7 @@ export function ApiKeysContent() {
         payload
       );
 
-      const { data: fetchedApiKeys = [], count = 0, total_count = 0 } = response.data || {};
+      const { data: fetchedApiKeys = [], count = 0 } = response.data || {};
 
       const decryptedApiKeys = await Promise.all(
         fetchedApiKeys.map(async (key: any) => {
@@ -130,10 +179,23 @@ export function ApiKeysContent() {
       );
 
       setAllApiKeys(decryptedApiKeys);
-      setTotalCount(total_count || count);
+
+      let estimatedTotal;
+      if (currentPage === 1 && count < itemsPerPage) {
+        estimatedTotal = count;
+      } else if (count === itemsPerPage) {
+        estimatedTotal = currentPage * itemsPerPage + 1;
+      } else {
+        estimatedTotal = (currentPage - 1) * itemsPerPage + count;
+      }
+      setTotalCount(estimatedTotal);
     } catch (error: any) {
       console.error("Error fetching API keys:", error);
-      alert(`${translate("error_fetching_api_keys", "api_keys")}: ${error.response?.data?.message || error.message}`);
+      toast({
+        title: translate("error_fetching_api_keys", "api_keys"),
+        description: error.response?.data?.message || translate("failed_to_fetch_api_keys", "api_keys"),
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -161,9 +223,17 @@ export function ApiKeysContent() {
       await navigator.clipboard.writeText(value);
       setCopiedField({ doc_id, field });
       setTimeout(() => setCopiedField(null), 2000);
+      toast({
+        title: translate("copied", "api_keys"),
+        description: translate("api_key_copied", "api_keys"),
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
-      alert(`${translate("copy_failed", "api_keys")}: ${translate("failed_to_copy_api_key", "api_keys")}`);
+      toast({
+        title: translate("copy_failed", "api_keys"),
+        description: translate("failed_to_copy_api_key", "api_keys"),
+        variant: "destructive",
+      });
     }
   }, [translate]);
 
@@ -178,8 +248,9 @@ export function ApiKeysContent() {
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+    const validPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(validPage);
+  }, [totalPages]);
 
   const handleDeleteApiKey = useCallback(
     async (doc_id: string) => {
@@ -188,7 +259,11 @@ export function ApiKeysContent() {
           selectedWorkspaceId,
           selectedProjectId,
         });
-        alert(`${translate("error_deleting_api_key", "api_keys")}: ${translate("no_project_selected", "api_keys")}`);
+        toast({
+          title: translate("error_deleting_api_key", "api_keys"),
+          description: translate("no_project_selected", "api_keys"),
+          variant: "destructive",
+        });
         return;
       }
 
@@ -199,10 +274,17 @@ export function ApiKeysContent() {
       try {
         await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/api-keys/${doc_id}`);
         fetchApiKeys();
-        alert(translate("api_key_deleted_successfully", "api_keys"));
+        toast({
+          title: translate("api_key_deleted_successfully", "api_keys"),
+          description: translate("api_key_deleted_description", "api_keys"),
+        });
       } catch (error: any) {
         console.error("Error deleting API key:", error);
-        alert(`${translate("error_deleting_api_key", "api_keys")}: ${error.response?.data?.message || error.message}`);
+        toast({
+          title: translate("error_deleting_api_key", "api_keys"),
+          description: error.response?.data?.message || translate("failed_to_delete_api_key", "api_keys"),
+          variant: "destructive",
+        });
       }
     },
     [selectedWorkspaceId, selectedProjectId, translate, fetchApiKeys]
@@ -212,7 +294,10 @@ export function ApiKeysContent() {
     setShowEditApiKey(false);
     setSelectedApiKey(null);
     fetchApiKeys();
-    alert(translate("api_key_updated_successfully", "api_keys"));
+    toast({
+      title: translate("api_key_updated_successfully", "api_keys"),
+      description: translate("api_key_updated_description", "api_keys"),
+    });
   }, [fetchApiKeys, translate]);
 
   const debouncedSearch = useMemo(() => {
@@ -357,7 +442,7 @@ export function ApiKeysContent() {
                                 <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Decryption error - please edit to update format</p>
+                                <p>{translate("decryption_error", "api_keys")}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -388,7 +473,7 @@ export function ApiKeysContent() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>{viewKey === apiKey.doc_id ? "Hide key" : "Show key"}</p>
+                                <p>{viewKey === apiKey.doc_id ? translate("hide_key", "api_keys") : translate("show_key", "api_keys")}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -411,7 +496,7 @@ export function ApiKeysContent() {
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>
-                                  {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? "Copied!" : "Copy key"}
+                                  {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? translate("copied", "api_keys") : translate("copy_key", "api_keys")}
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -450,13 +535,13 @@ export function ApiKeysContent() {
                               setShowEditApiKey(true);
                             }}
                           >
-                            Edit
+                            {translate("edit", "api_keys")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-500"
                             onClick={() => handleDeleteApiKey(apiKey.doc_id)}
                           >
-                            Delete
+                            {translate("delete", "api_keys")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -471,9 +556,9 @@ export function ApiKeysContent() {
                       <h3 className="font-medium">{translate("no_api_keys_found", "api_keys")}</h3>
                       <p className="text-sm text-muted-foreground">
                         {selectedEnv !== "all"
-                          ? `No API keys found for environment "${selectedEnv}". Try a different environment or clear filters.`
+                          ? translate("no_api_keys_for_env", "api_keys").replace("{env}", selectedEnv)
                           : searchQuery
-                          ? `No API keys match the search "${searchQuery}". Try adjusting your search.`
+                          ? translate("no_api_keys_match_search", "api_keys").replace("{search}", searchQuery)
                           : translate("adjust_search_filter", "api_keys")}
                       </p>
                       <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
@@ -490,13 +575,12 @@ export function ApiKeysContent() {
         {totalCount > 0 && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              {translate("showing", "api_keys")} {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
-              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "api_keys")} {totalCount}{" "}
-              {translate("api_keys", "api_keys")}
+              Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} API keys
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "api_keys")}</span>
+                <span className="text-sm text-muted-foreground">Rows per page</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {

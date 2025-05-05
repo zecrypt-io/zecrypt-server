@@ -5,20 +5,26 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, X, Plus, AlertCircle } from "lucide-react";
+import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
 
 interface ApiKey {
   doc_id: string;
   name: string;
-  data: { hash: string; encryptedKey: string };
+  data: string | { api_key: string };
+  description?: string; // Added optional description field to the interface
   created_at: string;
   updated_at: string | null;
   env: "Development" | "Staging" | "Production";
   tags: string[];
+  decryptedKey?: string;
+  decrypted?: boolean;
+  decryptionError?: boolean;
 }
 
 interface EditApiKeyProps {
@@ -30,19 +36,19 @@ interface EditApiKeyProps {
 export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState(apiKey.name);
+  const [apiKeyValue, setApiKeyValue] = useState(apiKey.decryptedKey || "");
+  const [description, setDescription] = useState(apiKey.description || ""); // Added description state
+  const [showApiKey, setShowApiKey] = useState(false);
   const [env, setEnv] = useState<"Development" | "Staging" | "Production">(apiKey.env);
-  const [tags, setTags] = useState<string[]>(apiKey.tags.filter(tag => !["read", "write", "delete"].includes(tag)));
+  const [tags, setTags] = useState<string[]>(apiKey.tags);
   const [newTag, setNewTag] = useState("");
-  const [readPermission, setReadPermission] = useState(apiKey.tags.includes("read"));
-  const [writePermission, setWritePermission] = useState(apiKey.tags.includes("write"));
-  const [deletePermission, setDeletePermission] = useState(apiKey.tags.includes("delete"));
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
-  const predefinedTags = ["admin", "public"];
+  const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -70,25 +76,23 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
       return;
     }
 
-    const permissions: string[] = [];
-    if (readPermission) permissions.push("read");
-    if (writePermission) permissions.push("write");
-    if (deletePermission) permissions.push("delete");
-
-    if (permissions.length === 0) {
-      setError(translate("select_at_least_one_permission", "api_keys"));
-      return;
-    }
-
     setIsSubmitting(true);
     setError("");
 
     try {
-      const payload = {
+      const payload: any = {
         name,
         env,
-        tags: [...tags, ...permissions],
+        tags,
+        description: description || null, // Include description in payload
       };
+
+      if (apiKeyValue) {
+        const dataToEncrypt = JSON.stringify({ api_key: apiKeyValue });
+        const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
+        const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
+        payload.data = encryptedData;
+      }
 
       const response = await axiosInstance.put(
         `/${selectedWorkspaceId}/${selectedProjectId}/api-keys/${apiKey.doc_id}`,
@@ -98,6 +102,10 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
       if (response.status === 200 || (response.data && response.data.status_code === 200)) {
         onApiKeyUpdated();
         onClose();
+        toast({
+          title: translate("api_key_updated_successfully", "api_keys"),
+          description: translate("api_key_updated_description", "api_keys"),
+        });
       } else {
         throw new Error(response.data?.message || translate("failed_to_update_api_key", "api_keys"));
       }
@@ -106,6 +114,8 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
       if (error.response) {
         if (error.response.status === 400 && error.response.data?.message === "API key already exists") {
           setError(translate("api_key_already_exists", "api_keys"));
+        } else if (error.response.status === 422) {
+          setError(translate("invalid_input_data", "api_keys"));
         } else if (error.response.status === 500) {
           setError(translate("error_updating_api_key", "api_keys"));
         } else {
@@ -153,6 +163,42 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
+              {translate("api_key_description", "api_keys")}
+            </label>
+            <div className="relative">
+              <Input
+                placeholder={translate("enter_description", "api_keys")}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="pr-8"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("api_key", "api_keys")}</label>
+            <div className="relative">
+              <Input
+                type={showApiKey ? "text" : "password"}
+                placeholder={translate("enter_api_key", "api_keys")}
+                value={apiKeyValue}
+                onChange={(e) => setApiKeyValue(e.target.value)}
+                className="pr-8"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+                onClick={() => setShowApiKey(!showApiKey)}
+                type="button"
+              >
+                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
               {translate("environment", "api_keys")} <span className="text-red-500">*</span>
             </label>
             <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production")}>
@@ -165,48 +211,6 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
                 <SelectItem value="Production">{translate("production", "api_keys")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("permissions", "api_keys")}</label>
-            <div className="space-y-3 rounded-md border p-4 bg-muted/20">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="read"
-                  checked={readPermission}
-                  onChange={(e) => setReadPermission(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                />
-                <label htmlFor="read" className="text-sm font-normal cursor-pointer">
-                  {translate("read", "api_keys")}
-                </label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="write"
-                  checked={writePermission}
-                  onChange={(e) => setWritePermission(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                />
-                <label htmlFor="write" className="text-sm font-normal cursor-pointer">
-                  {translate("write", "api_keys")}
-                </label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="delete"
-                  checked={deletePermission}
-                  onChange={(e) => setDeletePermission(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                />
-                <label htmlFor="delete" className="text-sm font-normal cursor-pointer">
-                  {translate("delete", "api_keys")}
-                </label>
-              </div>
-            </div>
           </div>
 
           <div className="space-y-2">
