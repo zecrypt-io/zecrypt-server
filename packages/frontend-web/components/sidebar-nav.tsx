@@ -20,6 +20,10 @@ import {
   HardDrive,
   Key,
   Wallet,
+  Wifi,
+  Mail,
+  UserCheck,
+  KeySquare,
 } from "lucide-react"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
@@ -60,39 +64,9 @@ export const dashboardNavItems = [
     icon: <Home className="h-4 w-4" />,
   },
   {
-    title: "Accounts",
+    title: "Logins",
     href: "/dashboard/accounts",
     icon: <CreditCard className="h-4 w-4" />,
-  },
-  {
-    title: "Notes",
-    href: "/dashboard/notes",
-    icon: <FileText className="h-4 w-4" />,
-  },
-  {
-    title: "Files",
-    href: "/dashboard/files",
-    icon: <FolderOpen className="h-4 w-4" />,
-  },
-  {
-    title: "Recent",
-    href: "/dashboard/recent",
-    icon: <Clock className="h-4 w-4" />,
-  },
-  {
-    title: "Favourites",
-    href: "/dashboard/favourites",
-    icon: <Star className="h-4 w-4" />,
-  },
-  {
-    title: "Shared",
-    href: "/dashboard/shared",
-    icon: <Share2 className="h-4 w-4" />,
-  },
-  {
-    title: "Storage",
-    href: "/dashboard/storage",
-    icon: <HardDrive className="h-4 w-4" />,
   },
   {
     title: "API Keys",
@@ -100,9 +74,34 @@ export const dashboardNavItems = [
     icon: <Key className="h-4 w-4" />,
   },
   {
-    title: "Wallet Passphrases",
+    title: "Wallet Phrases",
     href: "/dashboard/wallet-passphrases",
     icon: <Wallet className="h-4 w-4" />,
+  },
+  {
+    title: "Cards",
+    href: "/dashboard/credit-cards",
+    icon: <CreditCard className="h-4 w-4" />,
+  },
+  {
+    title: "Identity",
+    href: "/dashboard/identities",
+    icon: <UserCheck className="h-4 w-4" />,
+  },
+  {
+    title: "WiFi",
+    href: "/dashboard/wifi-passwords",
+    icon: <Wifi className="h-4 w-4" />,
+  },
+  {
+    title: "Software Licenses",
+    href: "/dashboard/licenses",
+    icon: <KeySquare className="h-4 w-4" />,
+  },
+  {
+    title: "Emails",
+    href: "/dashboard/emails",
+    icon: <Mail className="h-4 w-4" />,
   },
 ]
 

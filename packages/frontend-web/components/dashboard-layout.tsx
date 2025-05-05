@@ -48,6 +48,7 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
 import { useTranslator } from "@/hooks/use-translations"
+import { dashboardNavItems } from "@/components/sidebar-nav"
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -335,79 +336,24 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </div>
             <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">{translate("dashboard", "dashboard")}</h3>
             <div className="space-y-1 mb-6">
-              <Link
-                href={`/${currentLocale}/dashboard`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <Home className="h-4 w-4" />
-                {translate("overview", "dashboard")}
-              </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/accounts`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/accounts`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <User className="h-4 w-4" />
-                {translate("accounts", "dashboard")}
-              </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/api-keys`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/api-keys`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
+              {dashboardNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={`/${currentLocale}${item.href}`}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                    pathname === `/${currentLocale}${item.href}`
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
                 >
-                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-                </svg>
-                {translate("api_keys", "dashboard")}
-              </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/wallet-passphrases`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/wallet-passphrases`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-wallet-icon lucide-wallet"
-                >
-                  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
-                  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-                </svg>
-                {translate("wallet_passphrases", "dashboard")}
-              </Link>
+                  {item.icon}
+                  {
+                    // Try to translate, but fallback to the original title if translation is missing
+                    translate(item.title.toLowerCase().replace(/\s+/g, "_"), "dashboard") || item.title
+                  }
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -536,24 +482,23 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
-          
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button
-        variant="default"
-        onClick={() => setShowGeneratePassword(true)}
-        className="theme-button flex items-center gap-2 px-4 py-2"
-      >
-        <Key className="h-5 w-5" />
-        <span>{translate("generate_password", "dashboard")}</span>
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>{translate("generate_password", "dashboard")}</p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  onClick={() => setShowGeneratePassword(true)}
+                  className="theme-button flex items-center gap-2 px-4 py-2"
+                >
+                  <Key className="h-5 w-5" />
+                  <span>{translate("generate_password", "dashboard")}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{translate("generate_password", "dashboard")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Replace WorkspaceSwitcherNav with static workspace display */}
           <div className="flex items-center gap-2 px-3 py-1.5">
