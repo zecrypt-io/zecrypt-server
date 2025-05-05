@@ -61,6 +61,8 @@ import { useTranslations } from "next-intl"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
 import { useUser } from '@stackframe/stack'
 import { getStoredUserData } from "@/libs/local-storage-utils"
+import { useSelector } from "react-redux"
+import { RootState } from "../libs/Redux/store"
 
 // Interface for login history entry
 interface LoginHistoryEntry {
@@ -91,6 +93,7 @@ export function UserSettingsContent() {
   const pathname = usePathname();
   const { translate } = useTranslator();
   const user = useUser();
+  const { userData } = useSelector((state: RootState) => state.user);
 
   
   // Login history state
@@ -284,11 +287,18 @@ export function UserSettingsContent() {
       return;
     }
     try {
+      // Get access token from user data in Redux store
+      const accessToken = userData?.access_token;
+      
+      if (!accessToken) {
+        throw new Error("Authentication required. Please log in again.");
+      }
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "access-token": accessToken,
+          "access-token": accessToken, // Add the access token in the header
         },
         credentials: "include",
         body: JSON.stringify({
