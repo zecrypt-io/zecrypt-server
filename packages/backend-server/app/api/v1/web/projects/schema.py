@@ -8,6 +8,7 @@ class AddProject(BaseModel):
     description: Optional[str]
     is_default: Optional[bool] = False
     color: Optional[str] = None
+    features: dict = {}
 
 
 class UpdateProject(BaseModel):
@@ -15,3 +16,4 @@ class UpdateProject(BaseModel):
     description: Optional[str] = None
     is_default: Optional[bool] = None
     color: Optional[str] = None
+    features: Optional[dict] = None

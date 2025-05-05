@@ -1,16 +1,9 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey,GetApiKeysList
-from app.api.v1.web.api_keys.services import (
-    delete_api_key,
-    update_api_key,
-    get_api_keys,
-    get_api_key_details,
-)
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.secrets.schema import AddSecret,GetSecretsList
-from app.api.v1.web.secrets.services import add_secret, get_secrets_details, get_secrets_list
+from app.api.v1.web.secrets.services import add_secret, get_secrets_list,delete_secret
 router = APIRouter()
 SECRETS = "/{workspace_id}/{project_id}/secrets"
 SECRETS_LIST= "/{workspace_id}/{project_id}/secrets/list"
@@ -26,7 +19,7 @@ async def get_secrets_api(
     user: UserDetails = Depends(get_current_user),
 ):
     
-    return await get_api_keys(user.get("db"), payload.model_dump(),request)
+    return await get_secrets_list(user.get("db"), payload.model_dump(),request)
 
 
 
@@ -39,20 +32,20 @@ async def create_secrets_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await get_secrets_list(request, user, payload.model_dump(), background_tasks)
+    return await add_secret(request, user, payload.model_dump(), background_tasks)
 
 
-@router.put(SECRETS_DETAILS)
-async def update_secrets_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    payload: UpdateApiKey,
-    background_tasks: BackgroundTasks,
-    user: UserDetails = Depends(get_current_user),
-):
-    return update_api_key(request, user, payload.model_dump(), background_tasks)
+# @router.put(SECRETS_DETAILS)
+# async def update_secrets_api(
+#     request: Request,
+#     workspace_id: str,
+#     project_id: str,
+#     doc_id: str,
+#     payload: UpdateApiKey,
+#     background_tasks: BackgroundTasks,
+#     user: UserDetails = Depends(get_current_user),
+# ):
+#     return update_api_key(request, user, payload.model_dump(), background_tasks)
 
 
 @router.delete(SECRETS_DETAILS)
@@ -64,4 +57,4 @@ async def delete_secrets_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_api_key(request, user, background_tasks)
+    return delete_secret(request, user, background_tasks)

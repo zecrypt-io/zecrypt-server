@@ -1,7 +1,6 @@
 from app.managers import secrets as secrets_manager
 from app.api.v1.web.secrets.utils import process_payload, build_query
 from app.utils.utils import create_uuid, response_helper
-from app.api.v1.web.audit_logs.services import add_audit_log
 
 async def add_secret(request, user, payload, background_tasks):
     db = user.get("db")
@@ -31,7 +30,7 @@ async def add_secret(request, user, payload, background_tasks):
         "project_id":project_id,
         "created_by":user.get("user_id"),
     }
-    specific_data=process_payload(payload.get("secret_type"),payload.get("payload"))
+    specific_data=process_payload(payload.get("secret_type"),payload.get("payload"),"create")
     data.update(specific_data)
     secrets_manager.insert_one(db,data)
     return response_helper(
@@ -81,6 +80,11 @@ async def update_secret(request,user,payload):
 async def delete_secret(request,user):
     db=user.get("db")
     doc_id=request.path_params.get("doc_id")
+    if not secrets_manager.find_one(db,{"_id":doc_id}):
+        return response_helper(
+            status_code=400,
+            message="Secret not found"
+        )
     secrets_manager.delete_one(db,{"_id":doc_id})
     return response_helper(
         status_code=200,
