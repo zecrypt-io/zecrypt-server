@@ -64,6 +64,7 @@ import { getStoredUserData } from "@/libs/local-storage-utils"
 import { useSelector } from "react-redux"
 import { RootState } from "../libs/Redux/store"
 
+
 // Interface for login history entry
 interface LoginHistoryEntry {
   ip_address: string;
@@ -298,6 +299,7 @@ export function UserSettingsContent() {
     try {
       // Get access token from user data in Redux store or local storage
       const accessToken = userData?.access_token || getStoredUserData()?.access_token;
+
       
       if (!accessToken) {
         throw new Error("Authentication required. Please log in again.");
@@ -307,7 +309,7 @@ export function UserSettingsContent() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "access-token": accessToken,
+          "access-token": accessToken, // Add the access token in the header
         },
         credentials: "include",
         body: JSON.stringify({
