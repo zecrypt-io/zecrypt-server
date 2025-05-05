@@ -28,8 +28,6 @@ class UpdateWalletPhrase(BaseModel):
     """
 
     name: Optional[str] = None
-    phrase: Optional[str] = None
-    wallet_address: Optional[str] = None
     wallet_type: Optional[str] = None
     tags: Optional[list[str]] = None
     data: Optional[Any] = None

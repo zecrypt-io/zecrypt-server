@@ -63,6 +63,7 @@ import { useUser } from '@stackframe/stack'
 import { useSelector } from "react-redux"
 import { RootState } from "../libs/Redux/store"
 
+
 // Interface for login history entry
 interface LoginHistoryEntry {
   ip_address: string;
@@ -277,6 +278,14 @@ export function UserSettingsContent() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    const storedUserData = getStoredUserData();
+    const accessToken = storedUserData?.access_token;
+    if (!accessToken) {
+      setError("No access token found");
+      setLoading(false);
+      return;
+    }
     try {
       // Get access token from user data in Redux store
       const accessToken = userData?.access_token;
@@ -334,10 +343,10 @@ export function UserSettingsContent() {
             <Clock className="mr-2 h-4 w-4" />
             {translate("login_history", "user_settings")}
           </TabsTrigger>
-          <TabsTrigger value="audit">
+          {/* <TabsTrigger value="audit">
             <FileText className="mr-2 h-4 w-4" /> 
             {translate("audit_log", "user_settings")}
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Profile Tab */}

@@ -13,7 +13,7 @@ from app.managers import user as user_manager
 from app.utils.jwt_utils import create_jwt_token
 from app.utils.utils import (
     response_helper,
-    id_generator,
+    create_uuid,
 )
 from app.utils.jwt_utils import encode_token
 
@@ -83,7 +83,7 @@ def record_login_event(request, db, user):
 
 
 def create_user(request, db,auth_data,back_ground_tasks):
-    user_id = f"ZEC{id_generator(10)}"
+    user_id = create_uuid()
     totp_secret = random_base32()
     new_user_data = {
         "uid": auth_data.get("id"),

@@ -4,40 +4,50 @@ from app.managers import project as project_manager
 from app.managers import api_keys as api_key_manager
 from app.managers import wallet_phrase as wallet_phrase_manager
 from app.managers import accounts as account_manager
-from app.managers.collection_names import PROJECT
-from app.api.v1.web.audit_logs.services import add_audit_log
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
-from app.managers import audit_log as audit_log_manager
 
 def create_project_at_signup(request, db, user_id):
     workspace_id = create_uuid()
-    timestamp = create_timestamp()
     create_initial_workspace_on_signup(db,request, user_id, workspace_id)
     data = {
         "created_by": user_id,
         "name": "Primary Vault",
         "lower_name": "primary vault",
-        "created_at": timestamp,
-        "updated_at": timestamp,    
         "is_default": True,
         "doc_id": create_uuid(),
         "workspace_id": workspace_id,
+        "features":{
+            "login":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "api_key":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "wallet_address":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "wifi":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "identity":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "card":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "software_license":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            }
+        }
     }
     project_manager.insert_one(db, data)
-    audit_log = {
-        "collection_name": "project",
-        "action": "created",
-        "created_at": create_timestamp(),
-        "created_by": user_id,
-        "record_id": data.get("doc_id"),
-        "doc_id": create_uuid(),
-        "message": "Project is created.",
-        "ip_address": request.client.host if request else None,
-        "user_agent": request.headers.get('User-Agent') if request else None,
-        "workspace_id": workspace_id,
-        "project_id": data.get("doc_id")
-    }
-    audit_log_manager.insert_one(db, audit_log)
 
 def get_project_details(db, doc_id):
     return response_helper(
@@ -87,23 +97,12 @@ def add_project(request, user, payload, background_tasks):
             "doc_id": create_uuid(),
             "created_by": user_id,
             "lower_name": payload.get("name").strip().lower(),
-            "created_at": timestamp,
-            "updated_at": timestamp,
             "workspace_id": workspace_id,
         }
     )
     project_manager.insert_one(db, payload)
     
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        PROJECT,
-        "created",
-        payload.get("doc_id"),
-        user_id,
-        request,
-    )
+
     return response_helper(status_code=201, message="Project added successfully", data=payload,)
 
 
@@ -138,16 +137,7 @@ def update_project(request, user, payload, background_tasks):
     if payload.get("is_default"):
         project_manager.update_many(db,{"workspace_id":workspace_id,"doc_id":{"$ne":doc_id}},{"$set":{"is_default":False}})
     
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        PROJECT,
-        "updated",
-        doc_id,
-        user_id,
-        request,
-    )
+
     return response_helper(status_code=200, message="Project updated successfully",data=project_details)
 
 
@@ -160,16 +150,7 @@ def delete_project(request, user, background_tasks):
     
     project_manager.delete_one(db, {"doc_id": doc_id})
     
-    # Add audit log
-    background_tasks.add_task(
-        add_audit_log,
-        db,
-        PROJECT,
-        "deleted",
-        doc_id,
-        user_id,
-        request,
-    )
+
     return response_helper(status_code=200, message="Project deleted successfully", data={},)
 
 
