@@ -22,10 +22,10 @@ import {
   X,
   Globe,
   Users,
-} from "lucide-react"
-import { cn } from "@/libs/utils"
-import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
-import { ThemeToggle } from "@/components/theme-toggle"
+} from "lucide-react";
+import { cn } from "@/libs/utils";
+import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,21 +33,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { UserProfileDialog } from "@/components/user-profile-dialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ProjectDialog } from "@/components/project-dialog"
-import { CommandPalette } from "@/components/command-palette"
-import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
-import { EncryptionKeyModal } from "@/components/encryption-key-modal"
-import { useRouter } from "next/navigation"
-import { locales } from "@/middleware"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserProfileDialog } from "@/components/user-profile-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ProjectDialog } from "@/components/project-dialog";
+import { CommandPalette } from "@/components/command-palette";
+import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
+import { EncryptionKeyModal } from "@/components/encryption-key-modal";
+import { useRouter } from "next/navigation";
+import { locales } from "@/middleware";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
-import { useTranslator } from "@/hooks/use-translations"
+import { useTranslator } from "@/hooks/use-translations";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -536,24 +536,23 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
-          
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button
-        variant="default"
-        onClick={() => setShowGeneratePassword(true)}
-        className="theme-button flex items-center gap-2 px-4 py-2"
-      >
-        <Key className="h-5 w-5" />
-        <span>{translate("generate_password", "dashboard")}</span>
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>{translate("generate_password", "dashboard")}</p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  onClick={() => setShowGeneratePassword(true)}
+                  className="theme-button flex items-center gap-2 px-4 py-2"
+                >
+                  <Key className="h-5 w-5" />
+                  <span>{translate("generate_password", "dashboard")}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{translate("generate_password", "dashboard")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Replace WorkspaceSwitcherNav with static workspace display */}
           <div className="flex items-center gap-2 px-3 py-1.5">

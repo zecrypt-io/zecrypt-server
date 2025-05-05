@@ -22,13 +22,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { toast } from "@/components/ui/use-toast"; // Assuming you have a toast component
+import { toast } from "@/components/ui/use-toast";
 
 export interface LoginPageProps {
-  language?: string;
+  locale?: string;
 }
 
-export function LoginPage({ language = "en" }: LoginPageProps) {
+export function LoginPage({ locale = "en" }: LoginPageProps) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const t = useTranslations("auth");
@@ -66,8 +66,8 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
       setQrSize(window.innerWidth < 768 ? 180 : 240);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -90,7 +90,6 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
           console.log("Login response:", loginResponse);
 
           if (loginResponse?.status_code === 200) {
-            // If token is present, user is fully authenticated (2FA not required or already verified)
             if (loginResponse.data.token) {
               dispatch(
                 setUserData({
@@ -100,7 +99,7 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
                   email: user?.primaryEmail || null,
                   access_token: loginResponse.data.token || null,
                   refresh_token: loginResponse.data.refresh_token || null,
-                  language: loginResponse.data.language || "en",
+                  locale: loginResponse.data.language || locale || "en", // Changed from language to locale
                   is_2fa_enabled: true,
                 })
               );
@@ -108,11 +107,10 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
                 title: t("login_successful"),
                 description: t("redirecting_to_dashboard"),
               });
-              router.push(`/${language}/dashboard`);
+              router.push(`/${locale}/dashboard`);
               return;
             }
 
-            // Handle 2FA setup or verification
             setUserId(loginResponse.data.user_id || null);
             setIsNewUser(loginResponse.data.is_new_user || false);
             setProvisioningUri(loginResponse.data.provisioning_uri || null);
@@ -147,7 +145,7 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
     } else {
       setIsAuthenticating(false);
     }
-  }, [user, dispatch, router, language, deviceId, t]);
+  }, [user, dispatch, router, locale, deviceId, t]);
 
   const handle2FAVerification = async () => {
     if (!userId || verificationCode.length !== 6) {
@@ -170,7 +168,7 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
           title: t("2fa_verified"),
           description: t("redirecting_to_dashboard"),
         });
-        
+
         dispatch(
           setUserData({
             user_id: response.data.user_id || null,
@@ -179,12 +177,12 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
             email: user?.primaryEmail || null,
             access_token: response.data.token || null,
             refresh_token: response.data.refresh_token || null,
-            language: response.data.language || "en",
+            locale: response.data.language || locale || "en", // Changed from language to locale
             is_2fa_enabled: true,
           })
         );
         setShow2FAModal(false);
-        router.push(`/${language}/dashboard`);
+        router.push(`/${locale}/dashboard`);
       } else {
         setError(t("2fa_verification_failed", { message: response.message || t("invalid_code") }));
       }
@@ -201,7 +199,7 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
       navigator.clipboard.writeText(provisioningUri)
         .then(() => {
           toast({
-            title: t("copied_to_clipboard"), 
+            title: t("copied_to_clipboard"),
             description: t("paste_in_authenticator")
           });
         })
@@ -310,7 +308,7 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
               firstTab="password"
               extraInfo={
                 <>
-                  {t("agreement")} <a href={`/${language}/terms`}>{t("terms")}</a>
+                  {t("agreement")} <a href={`/${locale}/terms`}>{t("terms")}</a>
                 </>
               }
             />
@@ -320,7 +318,6 @@ export function LoginPage({ language = "en" }: LoginPageProps) {
 
       <Dialog open={show2FAModal} onOpenChange={(open) => {
         if (!open && !isNewUser) {
-          // Only allow closing if not a new user 
           setShow2FAModal(false);
         }
       }}>

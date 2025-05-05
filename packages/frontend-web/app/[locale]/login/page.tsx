@@ -1,6 +1,6 @@
-import { LoginPage } from "@/components/login-page"
+import { LoginPage } from "@/components/login-page";
 
-export default function LocalizedLoginPage({ params }: { params: { locale: string } }) {
-  const locale = params.locale;
-  return <LoginPage locale={locale} />
-} 
+export default async function LocalizedLoginPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return <LoginPage locale={locale} />;
+}

@@ -28,8 +28,6 @@
     "verifying": "Verifying 2FA...",
     "authentication_error": "Authentication error",
     "try_again": "Try again"
-    
-
   },
   "features": {
     "trial_title": "Try upto 3Password Families free for 40 days",
@@ -148,7 +146,7 @@
   },
   "accounts": {
     "loading_accounts": "Loading accounts...",
-    "error_fetching_accounts": "Failed to fetch accounts",
+    "error Русский (Russian)fetching_accounts": "Failed to fetch accounts",
     "account_deleted_successfully": "Account deleted successfully",
     "error_deleting_account": "Failed to delete account",
     "account_updated_successfully": "Account updated successfully",
@@ -266,6 +264,7 @@
     "status": "Status",
     "actions": "Actions",
     "clear": "Clear",
+    "clear_filters": "Clear Filters",
     "create_new_api_key": "Create New API Key",
     "enter_details_for_new_api_key": "Enter the details for your new API Key",
     "api_key_name": "API Key Name",
@@ -278,7 +277,16 @@
     "rows_per_page": "Rows per page:",
     "add_key": "Add Key",
     "no_api_keys_found": "No API Keys Found",
-    "try_adjusting_search_or_filter": "Try adjusting your search or filter criteria"
+    "try_adjusting_search_or_filter": "Try adjusting your search or filter criteria",
+    "error_fetching_api_keys": "Error fetching API keys",
+    "confirm_delete_api_key": "Are you sure you want to delete this API key?",
+    "api_key_deleted_successfully": "API key deleted successfully",
+    "error_deleting_api_key": "Error deleting API key",
+    "api_key_updated_successfully": "API key updated successfully",
+    "manage_your_api_keys": "Manage your API keys",
+    "showing": "Showing",
+    "of": "of",
+    "rows_per_page": "Rows per page"
   },
   "wallet_passphrases": {
     "no_passphrases_found_search": "No passphrases match your search criteria.",
