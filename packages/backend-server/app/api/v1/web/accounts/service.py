@@ -1,8 +1,9 @@
 from app.managers import secrets as secrets_manager
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import response_helper, filter_payload, create_uuid
+from app.utils.constants import SECRET_TYPE_LOGIN
 
-data_type = "login"
+data_type = SECRET_TYPE_LOGIN
 
 
 def get_account_details(db, doc_id):
@@ -24,10 +25,15 @@ def get_accounts(db, payload, request):
     sort_order = payload.get("sort_order", "asc")
     project_id = request.path_params.get("project_id")
 
-    query = {"project_id": project_id, "secret_type": data_type, **({"tags": {"$in": tags}} if tags else {}), **({"lower_title": title.strip().lower()} if title else {})}
-   
+    query = {
+        "project_id": project_id,
+        "secret_type": data_type,
+        **({"tags": {"$in": tags}} if tags else {}),
+        **({"lower_title": title.strip().lower()} if title else {}),
+    }
+
     skip = (page - 1) * limit
-    sort = (sort_by, 1 if sort_order == "asc" else -1) 
+    sort = (sort_by, 1 if sort_order == "asc" else -1)
 
     accounts = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
 

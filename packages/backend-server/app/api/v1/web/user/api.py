@@ -9,12 +9,9 @@ from app.api.v1.web.user.services import (
 )
 from app.api.v1.web.user.schema import AddFavoriteTags, UpdateProfile
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import FAVORITE_TAGS, PROFILE, LOGIN_HISTORY
 
 router = APIRouter()
-
-FAVORITE_TAGS = "/favorite-tags"
-PROFILE = "/profile"
-LOGIN_HISTORY = "/login-history"
 
 
 @router.get(FAVORITE_TAGS)

@@ -1,8 +1,9 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
+from app.utils.constants import SECRET_TYPE_EMAIL
 
-data_type = "email"
+data_type = SECRET_TYPE_EMAIL
 
 
 def get_email_details(db, doc_id):
@@ -30,7 +31,7 @@ def get_emails(db, payload, request):
         **({"lower_title": title.strip().lower()} if title else {}),
     }
 
-    sort = (sort_by, 1 if sort_order == "asc" else -1) 
+    sort = (sort_by, 1 if sort_order == "asc" else -1)
     skip = (page - 1) * limit
 
     emails = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)

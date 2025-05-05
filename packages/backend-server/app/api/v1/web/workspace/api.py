@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, Request
 from app.api.v1.web.auth.schema import UserDetails
 from app.api.v1.web.workspace.services import load_initial_data, get_tags
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import LOAD_INITIAL_DATA, TAGS
+
 
 router = APIRouter()
-
-LOAD_INITIAL_DATA = "/load-initial-data"
-TAGS = "/{workspace_id}/tags"
 
 
 @router.post(LOAD_INITIAL_DATA)

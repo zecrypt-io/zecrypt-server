@@ -10,13 +10,10 @@ from app.managers import user as user_manager
 from app.utils.utils import (
     response_helper,
 )
+from app.api.v1.web.route_constants import LOGIN, LOGOUT, TWO_FACTOR_AUTH
 
 db = get_db()
 router = APIRouter()
-
-LOGIN = "/login"
-LOGOUT = "/logout"
-TWO_FACTOR_AUTH = "/2fa/verify"
 
 
 @router.post(LOGIN)

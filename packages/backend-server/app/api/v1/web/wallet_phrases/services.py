@@ -1,9 +1,9 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
+from app.utils.constants import SECRET_TYPE_WALLET_PHRASE
 
-
-data_type = "wallet_phrase"
+data_type = SECRET_TYPE_WALLET_PHRASE
 
 
 def get_wallet_phrase_details(db, doc_id):
@@ -43,7 +43,7 @@ def get_wallet_phrases(db, payload, request):
 
     # Calculate skip and sort options
     skip = (page - 1) * limit
-    sort = (sort_by, 1 if sort_order == "asc" else -1) 
+    sort = (sort_by, 1 if sort_order == "asc" else -1)
 
     # Execute query
     data = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)

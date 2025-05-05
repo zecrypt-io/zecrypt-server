@@ -14,12 +14,9 @@ from app.api.v1.web.identity.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import IDENTITY_LIST, IDENTITY_DETAILS, IDENTITY
 
 router = APIRouter()
-IDENTITIES = "/{workspace_id}/{project_id}/identity"
-IDENTITY_LIST = "/{workspace_id}/{project_id}/identity/list"
-IDENTITY_DETAILS = "/{workspace_id}/{project_id}/identity/{doc_id}"
 
 
 @router.post(IDENTITY_LIST)
@@ -45,7 +42,7 @@ async def get_identity_details_api(
     return get_identity_details(user.get("db"), doc_id)
 
 
-@router.post(IDENTITIES)
+@router.post(IDENTITY)
 async def create_identities_api(
     request: Request,
     workspace_id: str,

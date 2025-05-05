@@ -10,15 +10,12 @@ from app.api.v1.web.wifi.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import WIFI_LIST, WIFI_DETAILS, WIFI
 
 router = APIRouter()
-WIFIS = "/{workspace_id}/{project_id}/wifi"
-WIFIS_LIST = "/{workspace_id}/{project_id}/wifi/list"
-WIFIS_DETAILS = "/{workspace_id}/{project_id}/wifi/{doc_id}"
 
 
-@router.post(WIFIS_LIST)
+@router.post(WIFI_LIST)
 async def get_wifi_api(
     request: Request,
     workspace_id: str,
@@ -30,7 +27,7 @@ async def get_wifi_api(
     return get_wifis(user.get("db"), payload.model_dump(), request)
 
 
-@router.get(WIFIS_DETAILS)
+@router.get(WIFI_DETAILS)
 async def get_wifi_details_api(
     request: Request,
     workspace_id: str,
@@ -41,8 +38,8 @@ async def get_wifi_details_api(
     return get_wifi_details(user.get("db"), doc_id)
 
 
-@router.post(WIFIS)
-async def create_wifis_api(
+@router.post(WIFI)
+async def create_wifi_api(
     request: Request,
     workspace_id: str,
     project_id: str,
@@ -53,7 +50,7 @@ async def create_wifis_api(
     return add_wifi(request, user, payload.model_dump(), background_tasks)
 
 
-@router.put(WIFIS_DETAILS)
+@router.put(WIFI_DETAILS)
 async def update_wifi_api(
     request: Request,
     workspace_id: str,
@@ -66,7 +63,7 @@ async def update_wifi_api(
     return update_wifi(request, user, payload.model_dump(), background_tasks)
 
 
-@router.delete(WIFIS_DETAILS)
+@router.delete(WIFI_DETAILS)
 async def delete_wifi_api(
     request: Request,
     workspace_id: str,

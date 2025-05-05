@@ -10,12 +10,9 @@ from app.api.v1.web.licenses.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import LICENSE_LIST, LICENSE_DETAILS, LICENSE
 
 router = APIRouter()
-LICENSES = "/{workspace_id}/{project_id}/licenses"
-LICENSE_LIST = "/{workspace_id}/{project_id}/licenses/list"
-LICENSE_DETAILS = "/{workspace_id}/{project_id}/licenses/{doc_id}"
 
 
 @router.post(LICENSE_LIST)
@@ -41,7 +38,7 @@ async def get_license_details_api(
     return get_license_details(user.get("db"), doc_id)
 
 
-@router.post(LICENSES)
+@router.post(LICENSE)
 async def create_license_api(
     request: Request,
     workspace_id: str,

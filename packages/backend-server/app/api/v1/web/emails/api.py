@@ -10,12 +10,9 @@ from app.api.v1.web.emails.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import EMAIL_LIST, EMAIL_DETAILS, EMAILS
 
 router = APIRouter()
-EMAILS = "/{workspace_id}/{project_id}/emails"
-EMAIL_LIST = "/{workspace_id}/{project_id}/emails/list"
-EMAIL_DETAILS = "/{workspace_id}/{project_id}/emails/{doc_id}"
 
 
 @router.post(EMAIL_LIST)

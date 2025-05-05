@@ -1,8 +1,9 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
+from app.utils.constants import SECRET_TYPE_WIFI
 
-data_type = "wifi"
+data_type = SECRET_TYPE_WIFI
 
 
 def get_wifi_details(db, doc_id):

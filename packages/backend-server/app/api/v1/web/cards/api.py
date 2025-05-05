@@ -10,15 +10,12 @@ from app.api.v1.web.cards.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import CARDS_LIST, CARD_DETAILS, CARDS
 
 router = APIRouter()
-CARDS = "/{workspace_id}/{project_id}/cards"
-CARD_LIST = "/{workspace_id}/{project_id}/cards/list"
-CARD_DETAILS = "/{workspace_id}/{project_id}/cards/{doc_id}"
 
 
-@router.post(CARD_LIST)
+@router.post(CARDS_LIST)
 async def get_card_api(
     request: Request,
     workspace_id: str,

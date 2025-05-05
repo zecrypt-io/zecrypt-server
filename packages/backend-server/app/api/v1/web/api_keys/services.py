@@ -1,8 +1,9 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
+from app.utils.constants import SECRET_TYPE_API_KEY
 
-data_type = "api_key"
+data_type = SECRET_TYPE_API_KEY
 
 
 def get_api_key_details(db, doc_id):
@@ -33,7 +34,7 @@ def get_api_keys(db, payload, request):
         **({"status": status} if status else {}),
         **({"env": env} if env else {}),
     }
-    sort = (sort_by, 1 if sort_order == "asc" else -1) 
+    sort = (sort_by, 1 if sort_order == "asc" else -1)
     skip = (page - 1) * limit
 
     api_keys = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
