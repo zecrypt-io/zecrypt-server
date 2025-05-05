@@ -9,6 +9,8 @@ from app.api.v1.web.audit_logs import api as audit_logs_router
 from app.api.v1.web.user import api as user_router
 from app.api.v1.web.emails import api as emails_router
 from app.api.v1.web.identity import api as identity_router
+from app.api.v1.web.cards import api as cards_router
+
 api_router = APIRouter()
 
 api_router.prefix = "/web"
@@ -16,6 +18,7 @@ api_router.prefix = "/web"
 api_router.include_router(auth_router.router, tags=["Authentication"])
 api_router.include_router(accounts_router.router, tags=["Accounts"])
 api_router.include_router(api_keys_router.router, tags=["API Keys"])
+api_router.include_router(cards_router.router, tags=["Cards"])
 api_router.include_router(emails_router.router, tags=["Emails"])
 api_router.include_router(identity_router.router, tags=["Identities"])
 api_router.include_router(wallet_phrases_router.router, tags=["Wallet Phrases"])
