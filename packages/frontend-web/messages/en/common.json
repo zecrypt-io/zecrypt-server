@@ -27,9 +27,9 @@
     "2fa_verification_success": "2FA verification successful",
     "verifying": "Verifying 2FA...",
     "authentication_error": "Authentication error",
-    "try_again": "Try again"
-    
-
+    "try_again": "Try again",
+    "2fa_verified": "2FA Verified",
+    "redirecting_to_dashboard": "Redirecting you to dashboard..."
   },
   "features": {
     "trial_title": "Try upto 3Password Families free for 40 days",
