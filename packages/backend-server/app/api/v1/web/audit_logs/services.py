@@ -1,7 +1,6 @@
 from app.managers import audit_log as audit_log_manager
 from app.managers.collection_names import PROJECT, ACCOUNT, API_KEY, WALLET_PHRASE, WORKSPACE
 from app.utils.utils import create_uuid, response_helper
-from app.utils.date_utils import create_timestamp
 
 def get_audit_log_actions():
     """Return all possible audit log actions for each collection."""

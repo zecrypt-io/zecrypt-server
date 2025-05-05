@@ -2,62 +2,49 @@ from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
 
-data_type="api_key"
+data_type="email"
 
-def get_api_key_details(db, doc_id):
+def get_email_details(db, doc_id):
     return response_helper(
         status_code=200,
-        message="API Key details loaded successfully",
+        message="Email details loaded successfully",
         data=secrets_manager.find_one(db, {"doc_id": doc_id,"secret_type":data_type}, {"_id": False}),
     )
 
 
-def get_api_keys(db, payload, request):
+def get_emails(db, payload, request):
     page=payload.get("page",1)
     limit=payload.get("limit",20)
     tags=payload.get("tags",[])
-    status=payload.get("status",None)
-    env=payload.get("env",None)
     title=payload.get("title",None)
     project_id=request.path_params.get("project_id")
     sort_by=payload.get("sort_by","created_at")
     sort_order=payload.get("sort_order","asc")
     query={
         "secret_type":data_type,
-        "project_id":project_id
+        "project_id":project_id,
+        **({"tags": {"$in":tags}} if tags else {}),
+        **({"lower_title": title.strip().lower()} if title else {}),
     }
-    if sort_by:
-        sort = (sort_by, 1 if sort_order == "asc" else -1)
-    if tags:
-        query["tags"]={"$in":tags}
-    
-    if status:
-        query["status"]=status  
-    
-    if env:
-        query["env"]=env
-    
+
+    sort = (sort_by, 1 if sort_order == "asc" else -1) if sort_by else ("created_at",1)
     skip = (page - 1) * limit
-    
 
-    if title:
-        query["lower_title"] = title.strip().lower()
-
-    api_keys = secrets_manager.find(
+    emails = secrets_manager.find(
         db, query,  sort=sort, skip=skip, limit=limit
     )
 
     return response_helper(
         status_code=200,
-        message="API Keys loaded successfully",
-        data=api_keys,
+        message="Emails loaded successfully",
+        data=emails,
         page=page,
         limit=limit,
-        count=len(api_keys),
+        count=len(emails),
     )
 
 
-def add_api_key(request, user, payload, background_tasks):
+def add_email(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -69,12 +56,12 @@ def add_api_key(request, user, payload, background_tasks):
             "secret_type":data_type
         }
     
-    api_key = secrets_manager.find_one(
+    email = secrets_manager.find_one(
         db,
         query,
     )
-    if api_key:
-        return response_helper(status_code=400, message="API Key already exists")
+    if email:
+        return response_helper(status_code=400, message="Email already exists")
 
     payload.update(
         {
@@ -89,11 +76,11 @@ def add_api_key(request, user, payload, background_tasks):
 
   
     return response_helper(
-        status_code=201, message="API Key added successfully", data=payload,
+        status_code=201, message="Email added successfully", data=payload,
     )
 
 
-def update_api_key(request, user, payload, background_tasks):
+def update_email(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -116,23 +103,23 @@ def update_api_key(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="API Key already exists")
+            return response_helper(status_code=400, message="Email already exists")
     
     # Update account
     secrets_manager.update_one(
         db, {"doc_id": doc_id}, {"$set": payload},
     )
 
- 
-    return response_helper(status_code=200, message="API Key updated successfully",)
+    return response_helper(status_code=200, message="Email updated successfully",)
 
 
-def delete_api_key(request, user, background_tasks):
+def delete_email(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id,"secret_type":data_type}):
-        return response_helper(status_code=404, message="API Key details not found",)
+        return response_helper(status_code=404, message="Email details not found",)
+    
     secrets_manager.delete_one(db, {"doc_id": doc_id,"secret_type":data_type})
 
-    return response_helper(status_code=200, message="API Key deleted successfully", data={},)
+    return response_helper(status_code=200, message="Email deleted successfully", data={},)
