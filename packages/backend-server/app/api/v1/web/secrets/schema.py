@@ -11,7 +11,7 @@ class AddSecret(BaseModel):
     data: Optional[Any] = None
     description: Optional[str]=None
     tags: Optional[List[str]] = Field(default_factory=list)
-    secret_type: Literal["login", "api_key", "wallet_address","identity","other"] = "other"
+    secret_type: Literal["login", "api_key", "wallet_address","identity","card","wifi","software_license"] = "login"
     payload: dict
 
 
@@ -20,6 +20,6 @@ class GetSecretsList(BaseModel):
     limit: int
     tags: Optional[List[str]] = Field(default_factory=list)
     title: Optional[str] = None
-    secret_type: Optional[Literal["login", "api_key", "wallet_address","identity","other"]] = None
+    secret_type: Optional[Literal["login", "api_key", "wallet_address","identity","card","wifi","software_license"]] = "login"
     sort_by: Optional[Literal["title", "created_at"]] = "created_at"
     sort_order: Optional[Literal["asc", "desc"]] = "asc"

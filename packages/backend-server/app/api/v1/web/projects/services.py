@@ -25,9 +25,25 @@ def create_project_at_signup(request, db, user_id):
                 "enabled":True,
                 "is_client_side_encryption":False
             },
-            "wallet":{
+            "wallet_address":{
                 "enabled":True,
-                "is_client_side_encryption":True
+                "is_client_side_encryption":False
+            },
+            "wifi":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "identity":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "card":{
+                "enabled":True,
+                "is_client_side_encryption":False
+            },
+            "software_license":{
+                "enabled":True,
+                "is_client_side_encryption":False
             }
         }
     }
