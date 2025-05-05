@@ -5,7 +5,11 @@ from app.api.v1.web.wallet_phrases.services import (
     update_wallet_phrase,
     delete_wallet_phrase,
 )
-from app.api.v1.web.wallet_phrases.schema import WalletPhrase, UpdateWalletPhrase,GetWalletPhrasesList
+from app.api.v1.web.wallet_phrases.schema import (
+    WalletPhrase,
+    UpdateWalletPhrase,
+    GetWalletPhrasesList,
+)
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 

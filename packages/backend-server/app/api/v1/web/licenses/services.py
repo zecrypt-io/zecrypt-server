@@ -1,67 +1,76 @@
-from app.managers import secrets as secrets_manager
 from app.utils.date_utils import create_timestamp
-from app.utils.utils import response_helper, filter_payload, create_uuid
+from app.utils.utils import create_uuid, response_helper, filter_payload
+from app.managers import secrets as secrets_manager
 
-data_type = "login"
+data_type = "license"
 
 
-def get_account_details(db, doc_id):
+def get_license_details(db, doc_id):
     return response_helper(
         status_code=200,
-        message="Account details loaded successfully",
+        message="License details loaded successfully",
         data=secrets_manager.find_one(
             db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
         ),
     )
 
 
-def get_accounts(db, payload, request):
+def get_licenses(db, payload, request):
     page = payload.get("page", 1)
     limit = payload.get("limit", 20)
     tags = payload.get("tags", [])
     title = payload.get("title", None)
+    project_id = request.path_params.get("project_id")
     sort_by = payload.get("sort_by", "created_at")
     sort_order = payload.get("sort_order", "asc")
-    project_id = request.path_params.get("project_id")
+    query = {
+        "secret_type": data_type,
+        "project_id": project_id,
+        **({"tags": {"$in": tags}} if tags else {}),
+        **({"lower_title": title.strip().lower()} if title else {}),
+    }
 
-    query = {"project_id": project_id, "secret_type": data_type, **({"tags": {"$in": tags}} if tags else {}), **({"lower_title": title.strip().lower()} if title else {})}
-   
-    skip = (page - 1) * limit
     sort = (sort_by, 1 if sort_order == "asc" else -1) 
+    skip = (page - 1) * limit
 
-    accounts = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
+    licenses = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
 
     return response_helper(
         status_code=200,
-        message="Accounts loaded successfully",
-        data=accounts,
+        message="Licenses loaded successfully",
+        data=licenses,
         page=page,
         limit=limit,
-        count=len(accounts),
+        count=len(licenses),
     )
 
 
-def add_account(request, user, payload, background_tasks):
+def add_license(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
-    existing_account = secrets_manager.find_one(
+    lower_title = payload.get("title").strip().lower()
+    query = {
+        "lower_title": lower_title,
+        "created_by": user_id,
+        "project_id": project_id,
+        "secret_type": data_type,
+    }
+
+    license = secrets_manager.find_one(
         db,
-        {
-            "lower_title": payload.get("title").strip().lower(),
-            "created_by": user_id,
-            "project_id": project_id,
-            "secret_type": data_type,
-        },
+        query,
     )
-    if existing_account:
-        return response_helper(status_code=400, message="Account already exists")
+    if license:
+        return response_helper(
+            status_code=400, message="License details with same title already exists"
+        )
 
     payload.update(
         {
             "doc_id": create_uuid(),
             "created_by": user_id,
-            "lower_title": payload.get("title").strip().lower(),
+            "lower_title": lower_title,
             "project_id": project_id,
             "secret_type": data_type,
         }
@@ -70,18 +79,19 @@ def add_account(request, user, payload, background_tasks):
 
     return response_helper(
         status_code=201,
-        message="Account added successfully",
-        data={},
+        message="License added successfully",
+        data=payload,
     )
 
 
-def update_account(request, user, payload, background_tasks):
+def update_license(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
     doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
+
     # Process name if it exists in the payload
     if payload.get("title"):
         lower_title = payload["title"].strip().lower()
@@ -97,31 +107,38 @@ def update_account(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="Account already exists")
+            return response_helper(
+                status_code=400,
+                message="License details with same title already exists",
+            )
 
     # Update account
     secrets_manager.update_one(
         db,
         {"doc_id": doc_id},
-        {
-            "$set": payload,
-        },
+        {"$set": payload},
+    )
+
+    return response_helper(
+        status_code=200,
+        message="License details updated successfully",
     )
 
 
-def delete_account(request, user, background_tasks):
+def delete_license(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
         return response_helper(
             status_code=404,
-            message="Account details not found",
+            message="License details not found",
         )
+
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
         status_code=200,
-        message="Account deleted successfully",
+        message="License details deleted successfully",
         data={},
     )

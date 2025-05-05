@@ -20,7 +20,11 @@ def get_current_user(response: Response, token: str = Header(...)):
         raise HTTPException(status_code=401, detail="invalid_header")
     user_id = None
     try:
-        user_id = jwt.decode(token, jwt_secret, algorithms=[str(jwt_algo)],).get("user")
+        user_id = jwt.decode(
+            token,
+            jwt_secret,
+            algorithms=[str(jwt_algo)],
+        ).get("user")
     except ValidationError:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=401, detail="invalid_token")
@@ -56,7 +60,11 @@ def check_if_authenticated_admin(response: Response, token: str = Header(...)):
         raise HTTPException(status_code=400, detail=_("invalid_header"))
     user_id = None
     try:
-        user_id = jwt.decode(token, jwt_secret, algorithms=[str(jwt_algo)],).get("user")
+        user_id = jwt.decode(
+            token,
+            jwt_secret,
+            algorithms=[str(jwt_algo)],
+        ).get("user")
     except ValidationError:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=401, detail="invalid_token")
@@ -97,4 +105,3 @@ def check_if_admin_user(user_id):
         return user["user_role"] == "admin"
     else:
         raise HTTPException(status_code=404, detail=_("User details not found"))
-

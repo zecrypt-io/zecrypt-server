@@ -14,7 +14,7 @@ from app.framework.permission_services.service import get_current_user
 
 router = APIRouter()
 WIFIS = "/{workspace_id}/{project_id}/wifi"
-WIFIS_LIST= "/{workspace_id}/{project_id}/wifi/list"
+WIFIS_LIST = "/{workspace_id}/{project_id}/wifi/list"
 WIFIS_DETAILS = "/{workspace_id}/{project_id}/wifi/{doc_id}"
 
 
@@ -26,8 +26,8 @@ async def get_wifi_api(
     payload: GetWifisList,
     user: UserDetails = Depends(get_current_user),
 ):
-    
-    return get_wifis(user.get("db"), payload.model_dump(),request)
+
+    return get_wifis(user.get("db"), payload.model_dump(), request)
 
 
 @router.get(WIFIS_DETAILS)

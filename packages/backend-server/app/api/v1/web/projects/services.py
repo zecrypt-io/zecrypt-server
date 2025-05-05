@@ -5,9 +5,10 @@ from app.managers import secrets as secrets_manager
 
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 
+
 def create_project_at_signup(request, db, user_id):
     workspace_id = create_uuid()
-    create_initial_workspace_on_signup(db,request, user_id, workspace_id)
+    create_initial_workspace_on_signup(db, request, user_id, workspace_id)
     data = {
         "created_by": user_id,
         "name": "Primary Vault",
@@ -15,38 +16,18 @@ def create_project_at_signup(request, db, user_id):
         "is_default": True,
         "doc_id": create_uuid(),
         "workspace_id": workspace_id,
-        "features":{
-            "login":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "api_key":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "wallet_address":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "wifi":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "identity":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "card":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            },
-            "software_license":{
-                "enabled":True,
-                "is_client_side_encryption":False
-            }
-        }
+        "features": {
+            "login": {"enabled": True, "is_client_side_encryption": False},
+            "api_key": {"enabled": True, "is_client_side_encryption": False},
+            "wallet_address": {"enabled": True, "is_client_side_encryption": False},
+            "wifi": {"enabled": True, "is_client_side_encryption": False},
+            "identity": {"enabled": True, "is_client_side_encryption": False},
+            "card": {"enabled": True, "is_client_side_encryption": False},
+            "software_license": {"enabled": True, "is_client_side_encryption": False},
+        },
     }
     project_manager.insert_one(db, data)
+
 
 def get_project_details(db, doc_id):
     return response_helper(
@@ -99,9 +80,12 @@ def add_project(request, user, payload, background_tasks):
         }
     )
     project_manager.insert_one(db, payload)
-    
 
-    return response_helper(status_code=201, message="Project added successfully", data=payload,)
+    return response_helper(
+        status_code=201,
+        message="Project added successfully",
+        data=payload,
+    )
 
 
 def update_project(request, user, payload, background_tasks):
@@ -111,7 +95,7 @@ def update_project(request, user, payload, background_tasks):
     doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_by": user_id, "updated_at": create_timestamp()})
-    
+
     # Process name if it exists in the payload
     if payload.get("name"):
         lower_name = payload["name"].strip().lower()
@@ -129,32 +113,50 @@ def update_project(request, user, payload, background_tasks):
             return response_helper(status_code=400, message="project already exists")
 
     # Update project
-    project_details=project_manager.find_one_and_update(
-        db, {"doc_id": doc_id}, {"$set": payload})
-        
-    if payload.get("is_default"):
-        project_manager.update_many(db,{"workspace_id":workspace_id,"doc_id":{"$ne":doc_id}},{"$set":{"is_default":False}})
-    
+    project_details = project_manager.find_one_and_update(
+        db, {"doc_id": doc_id}, {"$set": payload}
+    )
 
-    return response_helper(status_code=200, message="Project updated successfully",data=project_details)
+    if payload.get("is_default"):
+        project_manager.update_many(
+            db,
+            {"workspace_id": workspace_id, "doc_id": {"$ne": doc_id}},
+            {"$set": {"is_default": False}},
+        )
+
+    return response_helper(
+        status_code=200, message="Project updated successfully", data=project_details
+    )
 
 
 def delete_project(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(status_code=404, message="Project details not found",)
-    
+        return response_helper(
+            status_code=404,
+            message="Project details not found",
+        )
+
     project_manager.delete_one(db, {"doc_id": doc_id})
-    
 
-    return response_helper(status_code=200, message="Project deleted successfully", data={},)
+    return response_helper(
+        status_code=200,
+        message="Project deleted successfully",
+        data={},
+    )
 
 
-def get_tags(db, project_id):   
+def get_tags(db, project_id):
     tags = secrets_manager.distinct(db, "tags", {"project_id": project_id})
     # Flatten all lists and get unique tags, removing null/None/empty values
-    flat_tags = [tag for sublist in tags for tag in (sublist if isinstance(sublist, list) else [sublist])]
-    unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, '', [], {})))
+    flat_tags = [
+        tag
+        for sublist in tags
+        for tag in (sublist if isinstance(sublist, list) else [sublist])
+    ]
+    unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, "", [], {})))
 
-    return response_helper(status_code=200, message="Tags loaded successfully", data=unique_tags)
+    return response_helper(
+        status_code=200, message="Tags loaded successfully", data=unique_tags
+    )

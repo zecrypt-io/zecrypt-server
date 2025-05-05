@@ -29,6 +29,7 @@ def find_one_and_update(db, query, update_query, return_document=True):
     details.pop("_id")
     return details
 
+
 def delete_one(db, query):
     db_manager.delete_one(db, collection_name, query)
 

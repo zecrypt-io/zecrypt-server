@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.api.v1.web.auth.schema import UserDetails
-from app.api.v1.web.workspace.services import  load_initial_data, get_tags
+from app.api.v1.web.workspace.services import load_initial_data, get_tags
 from app.framework.permission_services.service import get_current_user
 
 router = APIRouter()
@@ -18,8 +18,6 @@ async def load_initial_data_api(
 
 @router.get(TAGS)
 async def get_tags_api(
-    request: Request, 
-    workspace_id: str, 
-    user: UserDetails = Depends(get_current_user)
+    request: Request, workspace_id: str, user: UserDetails = Depends(get_current_user)
 ):
     return get_tags(request, user)

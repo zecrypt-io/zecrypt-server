@@ -1,5 +1,5 @@
 from typing import Optional, Literal, List, Any
-from pydantic import  Field
+from pydantic import Field
 
 
 from app.framework.mongo_db.base_model import BaseModel
@@ -8,7 +8,7 @@ from app.framework.mongo_db.base_model import BaseModel
 class AddEmail(BaseModel):
     title: str
     data: Optional[Any] = None
-    notes: Optional[str]=None
+    notes: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
 
 
@@ -19,10 +19,9 @@ class UpdateEmail(BaseModel):
     tags: Optional[List[str]] = None
 
 
-
 class GetEmailsList(BaseModel):
-    page: int 
-    limit: int 
+    page: int
+    limit: int
     tags: Optional[List[str]] = Field(default_factory=list)
     title: Optional[str] = None
     sort_by: Optional[Literal["created_at", "title"]] = "created_at"

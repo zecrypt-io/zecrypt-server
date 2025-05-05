@@ -10,6 +10,7 @@ class WalletPhrase(BaseModel):
     data: Optional[Any] = None
     notes: Optional[str] = None
 
+
 class UpdateWalletPhrase(BaseModel):
     title: Optional[str] = None
     wallet_type: Optional[str] = None

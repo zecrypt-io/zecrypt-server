@@ -14,7 +14,7 @@ from app.framework.permission_services.service import get_current_user
 
 router = APIRouter()
 CARDS = "/{workspace_id}/{project_id}/cards"
-CARD_LIST= "/{workspace_id}/{project_id}/cards/list"
+CARD_LIST = "/{workspace_id}/{project_id}/cards/list"
 CARD_DETAILS = "/{workspace_id}/{project_id}/cards/{doc_id}"
 
 
@@ -26,8 +26,8 @@ async def get_card_api(
     payload: GetCardsList,
     user: UserDetails = Depends(get_current_user),
 ):
-    
-    return get_cards(user.get("db"), payload.model_dump(),request)
+
+    return get_cards(user.get("db"), payload.model_dump(), request)
 
 
 @router.get(CARD_DETAILS)

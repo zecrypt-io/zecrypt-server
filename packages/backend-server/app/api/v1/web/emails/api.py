@@ -14,7 +14,7 @@ from app.framework.permission_services.service import get_current_user
 
 router = APIRouter()
 EMAILS = "/{workspace_id}/{project_id}/emails"
-EMAIL_LIST= "/{workspace_id}/{project_id}/emails/list"
+EMAIL_LIST = "/{workspace_id}/{project_id}/emails/list"
 EMAIL_DETAILS = "/{workspace_id}/{project_id}/emails/{doc_id}"
 
 
@@ -26,8 +26,8 @@ async def get_email_api(
     payload: GetEmailsList,
     user: UserDetails = Depends(get_current_user),
 ):
-    
-    return get_emails(user.get("db"), payload.model_dump(),request)
+
+    return get_emails(user.get("db"), payload.model_dump(), request)
 
 
 @router.get(EMAIL_DETAILS)

@@ -3,7 +3,8 @@ from app.managers import project as project_manager
 from app.managers import secrets as secrets_manager
 from app.utils.utils import response_helper
 
-def create_initial_workspace_on_signup(db,request, user_id, workspace_id):
+
+def create_initial_workspace_on_signup(db, request, user_id, workspace_id):
     workspace_manager.insert_one(
         db,
         {
@@ -43,14 +44,25 @@ def load_initial_data(request, user):
         count=len(workspaces),
     )
 
-def get_tags(request, user):   
+
+def get_tags(request, user):
     db = user.get("db")
     workspace_id = request.path_params.get("workspace_id")
     project_ids = project_manager.distinct(db, "doc_id", {"workspace_id": workspace_id})
-    tags = secrets_manager.distinct(db, "tags", {"access": {"$ne":False}, "project_id": {"$in": project_ids}})
+    tags = secrets_manager.distinct(
+        db, "tags", {"access": {"$ne": False}, "project_id": {"$in": project_ids}}
+    )
 
     # Flatten all lists and get unique tags, removing null/None/empty values
-    flat_tags = [tag for sublist in tags for tag in (sublist if isinstance(sublist, list) else [sublist])]
-    unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, '', [], {})))
+    flat_tags = [
+        tag
+        for sublist in tags
+        for tag in (sublist if isinstance(sublist, list) else [sublist])
+    ]
+    unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, "", [], {})))
 
-    return response_helper(status_code=200, message="Tags loaded successfully", data=unique_tags,)
+    return response_helper(
+        status_code=200,
+        message="Tags loaded successfully",
+        data=unique_tags,
+    )
