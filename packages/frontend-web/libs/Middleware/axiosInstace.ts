@@ -43,7 +43,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (axios.isAxiosError(error) && error.response) {
       const { status } = error.response;
-      if (status === 401 || status === 404) {
+      if (status === 401) {
         store.dispatch(clearUserData());
         localStorage.clear();
         if (typeof window !== 'undefined') {
