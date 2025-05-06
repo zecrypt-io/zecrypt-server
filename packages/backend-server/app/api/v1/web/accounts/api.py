@@ -10,12 +10,9 @@ from app.api.v1.web.accounts.service import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import ACCOUNTS_LIST, ACCOUNT_DETAILS, ACCOUNTS
 
 router = APIRouter()
-ACCOUNTS = "/{workspace_id}/{project_id}/accounts"
-ACCOUNTS_LIST = "/{workspace_id}/{project_id}/accounts/list"
-
-ACCOUNT_DETAILS = "/{workspace_id}/{project_id}/accounts/{doc_id}"
 
 
 @router.post(ACCOUNTS_LIST)

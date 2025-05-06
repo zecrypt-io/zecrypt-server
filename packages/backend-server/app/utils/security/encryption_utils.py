@@ -118,6 +118,7 @@ def validate_access_token(access_token, user_id):
     else:
         return False
 
+
 def hash_data(data, salt=None):
     """
     Securely hashes a given string or dict using SHA-256 with optional salt.
@@ -132,7 +133,7 @@ def hash_data(data, salt=None):
         salt = os.urandom(16)  # Generate 16-byte random salt
 
     if isinstance(salt, str):
-        salt = salt.encode('utf-8')
-    
-    hash_input = salt + data_str.encode('utf-8')
+        salt = salt.encode("utf-8")
+
+    hash_input = salt + data_str.encode("utf-8")
     return hashlib.sha512(hash_input).hexdigest(), salt.hex()

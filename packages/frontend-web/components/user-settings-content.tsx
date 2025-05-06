@@ -61,6 +61,9 @@ import { useTranslations } from "next-intl"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
 import { useUser } from '@stackframe/stack'
 import { getStoredUserData } from "@/libs/local-storage-utils"
+import { useSelector } from "react-redux"
+import { RootState } from "../libs/Redux/store"
+
 
 // Interface for login history entry
 interface LoginHistoryEntry {
@@ -91,6 +94,7 @@ export function UserSettingsContent() {
   const pathname = usePathname();
   const { translate } = useTranslator();
   const user = useUser();
+  const { userData } = useSelector((state: RootState) => state.user);
 
   
   // Login history state
@@ -109,34 +113,50 @@ export function UserSettingsContent() {
       setLoading(true);
       setError(null);
       try {
-        // If we have user data from @stackframe/stack, use it
-        if (user) {
-          setName(user.displayName || "");
-          setEmail(user.primaryEmail || "");
-          setAvatarSrc(user.profileImageUrl || "/placeholder.svg?height=128&width=128");
+        // Get access token from Redux or local storage
+        const accessToken = userData?.access_token || 
+          (getStoredUserData()?.access_token);
+        
+        if (!accessToken) {
+          console.error("No access token available");
           setLoading(false);
           return;
+        }
+        
+        // If we have user data from @stackframe/stack, we can still use it for basic info
+        if (user) {
+          setEmail(user.primaryEmail || "");
+          // Don't set the name and avatar yet as we'll get them from API
         }
 
-        // Fallback to API call if no user data from @stackframe/stack
+        // Use the GET /api/v1/web/profile endpoint with proper access token
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          method: 'GET',
+          headers: {
+            'access-token': accessToken
+          },
           credentials: "include",
         });
+        
         if (!res.ok) {
-          // Silently log the error without setting it to state
-          console.error("Failed to fetch profile");
+          console.error("Failed to fetch profile:", res.status);
           setLoading(false);
           return;
         }
+        
         const data = await res.json();
+        console.log("Profile data:", data);
+        
         if (data?.data) {
           setName(data.data.name || "");
-          setEmail(data.data.email || "");
+          // If email not set from user above, set it from API response
+          if (!user?.primaryEmail) {
+            setEmail(data.data.email || "");
+          }
           setAvatarSrc(data.data.profile_url || "/placeholder.svg?height=128&width=128");
           setCurrentLocale(data.data.language || "en");
         }
       } catch (err: any) {
-        // Silently log the error without setting it to state
         console.error("Error fetching profile:", err.message || "Failed to load profile");
       } finally {
         setLoading(false);
@@ -276,19 +296,20 @@ export function UserSettingsContent() {
     setError(null);
     setSuccess(null);
 
-    const storedUserData = getStoredUserData();
-    const accessToken = storedUserData?.access_token;
-    if (!accessToken) {
-      setError("No access token found");
-      setLoading(false);
-      return;
-    }
     try {
+      // Get access token from user data in Redux store or local storage
+      const accessToken = userData?.access_token || getStoredUserData()?.access_token;
+
+      
+      if (!accessToken) {
+        throw new Error("Authentication required. Please log in again.");
+      }
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "access-token": accessToken,
+          "access-token": accessToken, // Add the access token in the header
         },
         credentials: "include",
         body: JSON.stringify({
@@ -296,8 +317,14 @@ export function UserSettingsContent() {
           language: currentLocale,
         }),
       });
+      
       if (!res.ok) throw new Error("Failed to update profile");
+      
+      const data = await res.json();
+      console.log("Profile update response:", data);
+      
       setSuccess("Profile updated successfully");
+      
       // Optionally update the URL to reflect the new locale
       const segments = pathname?.split('/') || [];
       if (segments.length > 1 && locales.includes(segments[1] as any)) {

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey,GetApiKeysList
+from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey, GetApiKeysList
 from app.api.v1.web.api_keys.services import (
     delete_api_key,
     update_api_key,
@@ -10,15 +10,12 @@ from app.api.v1.web.api_keys.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-
+from app.api.v1.web.route_constants import API_KEYS_LIST, API_KEY_DETAILS, API_KEYS
 
 router = APIRouter()
-API_KEYS = "/{workspace_id}/{project_id}/api-keys"
-API_KEY_LIST= "/{workspace_id}/{project_id}/api-keys/list"
-API_KEY_DETAILS = "/{workspace_id}/{project_id}/api-keys/{doc_id}"
 
 
-@router.post(API_KEY_LIST)
+@router.post(API_KEYS_LIST)
 async def get_api_key_api(
     request: Request,
     workspace_id: str,
@@ -26,8 +23,8 @@ async def get_api_key_api(
     payload: GetApiKeysList,
     user: UserDetails = Depends(get_current_user),
 ):
-    
-    return get_api_keys(user.get("db"), payload.model_dump(),request)
+
+    return get_api_keys(user.get("db"), payload.model_dump(), request)
 
 
 @router.get(API_KEY_DETAILS)

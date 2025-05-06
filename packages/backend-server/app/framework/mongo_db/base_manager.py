@@ -1,8 +1,9 @@
 from app.utils.date_utils import create_timestamp
 
+
 def insert_one(db, collection_name, data):
-    data["created_at"]=create_timestamp()
-    data["updated_at"]=create_timestamp()
+    data["created_at"] = create_timestamp()
+    data["updated_at"] = create_timestamp()
     return db[collection_name].insert_one(data)
 
 
@@ -32,7 +33,9 @@ def delete_one(db, collection_name, query, hard_delete=False):
     if hard_delete:
         db[collection_name].delete_one(query)
     else:
-        db[collection_name].update_one(query, {"$set": {"access": False,"deleted_at":create_timestamp()}})
+        db[collection_name].update_one(
+            query, {"$set": {"access": False, "deleted_at": create_timestamp()}}
+        )
 
 
 def delete_many(db, collection_name, query):

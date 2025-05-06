@@ -9,7 +9,8 @@ jwt_algorithm = settings.JWT_ALGORITHM
 
 
 def create_jwt_token(
-    data: dict, expires_delta: timedelta = None,
+    data: dict,
+    expires_delta: timedelta = None,
 ):
     to_encode = data.copy()
     if expires_delta:

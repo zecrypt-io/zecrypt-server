@@ -5,14 +5,20 @@ from app.api.v1.web.wallet_phrases.services import (
     update_wallet_phrase,
     delete_wallet_phrase,
 )
-from app.api.v1.web.wallet_phrases.schema import WalletPhrase, UpdateWalletPhrase,GetWalletPhrasesList
+from app.api.v1.web.wallet_phrases.schema import (
+    WalletPhrase,
+    UpdateWalletPhrase,
+    GetWalletPhrasesList,
+)
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import (
+    WALLET_PHRASE_LIST,
+    WALLET_PHRASES,
+    WALLET_PHRASE_DETAILS,
+)
 
 router = APIRouter()
-WALLET_PHRASES = "/{workspace_id}/{project_id}/wallet-phrases"
-WALLET_PHRASE_LIST = "/{workspace_id}/{project_id}/wallet-phrases/list"
-WALLET_PHRASE_DETAILS = "/{workspace_id}/{project_id}/wallet-phrases/{doc_id}"
 
 
 @router.post(WALLET_PHRASE_LIST)
