@@ -1,3 +1,5 @@
+'use client';
+
 import { useTranslator } from "@/hooks/use-translations";
 
 export default function SoftwareLicensesPage() {

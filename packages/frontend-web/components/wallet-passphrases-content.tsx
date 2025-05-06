@@ -1,4 +1,3 @@
-
 "use client";
 
 import type React from "react";
@@ -898,16 +897,16 @@ export function WalletPassphrasesContent() {
           <DialogHeader>
             <DialogTitle>{translate("delete_passphrase", "wallet_passphrases")}</DialogTitle>
             <DialogDescription>
-              {translate("delete_passphrase_confirm", "wallet_passphrases")}
+              Are you sure you want to delete this passphrase? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <p className="font-medium">{currentPassphrase?.name}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {translate("cancel", "common")}
+              Cancel
             </Button>
             <Button variant="destructive" onClick={deletePassphrase}>
-              {translate("delete", "common")}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
