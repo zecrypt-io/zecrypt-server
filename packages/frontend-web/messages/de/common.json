@@ -32,12 +32,12 @@
     "redirecting_to_dashboard": "Weiterleitung zum Dashboard..."
   },
   "features": {
-    "trial_title": "Versuchen Sie bis zu 3 Passwortfamilien kostenlos für 40 Tage",
-    "unlimited_devices": "5 Familienmitglieder, unbegrenzte Geräte",
+    "trial_title": "Ihr passwortmanager für alles",
+    "unlimited_devices": "Bis zu 5 Projekte pro Benutzer, unbegrenzte Geräte - komplett kostenlos für immer",
     "shared_vaults": "Freigegebene Tresore lassen Familienmitglieder auswählen, was sie teilen (oder privat halten)",
     "advanced_security": "Erweiterte Sicherheit mit authentifiziertem Verschlüsselung, PAKE und mehr",
     "security_alerts": "Alerts für kompromittierte Websites und schwache Passwörter",
-    "multi_platform": "Verfügbar auf Mac, iOS, Windows, Android, Chrome OS und Linux",
+    "multi_platform": "Verfügbar auf Mac, iOS, Windows, Android, Chrome OS und Linux - ( bald verfügbar )",
     "looking_for_options": "Suchen Sie nach einem individuellen, Team- oder Geschäftskonto?",
     "see_options": "Alle Kontenoptionen anzeigen"
   },

@@ -32,12 +32,12 @@
     "redirecting_to_dashboard": "Redirecting you to dashboard..."
   },
   "features": {
-    "trial_title": "Try upto 3Password Families free for 40 days",
-    "unlimited_devices": "5 family members, unlimited devices",
-    "shared_vaults": "Shared vaults let family members choose what they want to share (or keep private)",
-    "advanced_security": "Advanced security with authenticated encryption, PAKE, and more",
-    "security_alerts": "Alerts for compromised websites and vulnerable passwords",
-    "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux",
+    "trial_title": "Your all-in-one password manager",
+    "unlimited_devices": "Up to 5 projects per user, unlimited devices—completely free forever",
+    "shared_vaults": "Effortlessly share credentials with teammates and family",
+    "advanced_security": "Military-grade encryption (AES-GCM) for rock-solid security",
+    "security_alerts": "Instant breach alerts so you’re always one step ahead",
+    "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux - (coming soon)",
     "looking_for_options": "Looking for an individual, team, or business account?",
     "see_options": "See all account options"
   },

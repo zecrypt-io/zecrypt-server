@@ -8,9 +8,9 @@ ACCOUNTS_LIST = BASE_URL + "/accounts/list"
 ACCOUNT_DETAILS = BASE_URL + "/accounts/{doc_id}"
 
 # API Keys
-API_KEYS = BASE_URL + "/api_keys"
-API_KEYS_LIST = BASE_URL + "/api_keys/list"
-API_KEY_DETAILS = BASE_URL + "/api_keys/{doc_id}"
+API_KEYS = BASE_URL + "/api-keys"
+API_KEYS_LIST = BASE_URL + "/api-keys/list"
+API_KEY_DETAILS = BASE_URL + "/api-keys/{doc_id}"
 
 # Wallet Phrases
 WALLET_PHRASES = BASE_URL + "/wallet-phrases"
