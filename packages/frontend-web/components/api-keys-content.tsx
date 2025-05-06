@@ -1,547 +1,396 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/Redux/store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  Copy,
-  Edit,
-  Plus,
-  Trash2,
-  Key,
-  AlertCircle,
-  X,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Calendar,
-  Clock,
-  Shield,
-  Tag,
-} from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { toast } from "@/components/ui/use-toast"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { cn } from "@/libs/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useTranslator } from "@/hooks/use-translations"
+  Key, Plus, Search, Copy, Check, Eye, EyeOff, MoreHorizontal,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import { useTranslator } from "@/hooks/use-translations";
+import axiosInstance from "../libs/Middleware/axiosInstace";
+import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { AddApiKey } from "./add-apikey";
+import { EditApiKey } from "./edit-apikey";
 
 interface ApiKey {
-  id: string
-  name: string
-  key: string
-  created: string
-  lastUsed: string | null
-  status: "active" | "expired" | "revoked"
-  permissions: string[]
-  type: "test" | "live"
-  expiresIn: string
+  doc_id: string;
+  name: string;
+  data: string | { api_key: string };
+  created_at: string;
+  updated_at: string | null;
+  env: "Development" | "Staging" | "Production";
+  tags: string[];
+  decryptedKey?: string;
+  decrypted?: boolean;
+  decryptionError?: boolean;
 }
 
 export function ApiKeysContent() {
-  const allApiKeys: ApiKey[] = [
-    {
-      id: "1",
-      name: "Production API Key",
-      key: "zk_live_••••••••••••••••••••••••••••••",
-      created: "2023-10-15",
-      lastUsed: "2023-11-28",
-      status: "active",
-      permissions: ["read", "write"],
-      type: "live",
-      expiresIn: "Never",
-    },
-    {
-      id: "2",
-      name: "Testing API Key",
-      key: "zk_test_••••••••••••••••••••••••••••••",
-      created: "2023-11-01",
-      lastUsed: "2023-11-25",
-      status: "active",
-      permissions: ["read"],
-      type: "test",
-      expiresIn: "30 days",
-    },
-    {
-      id: "3",
-      name: "Legacy API Key",
-      key: "zk_legacy_••••••••••••••••••••••••••••",
-      created: "2023-05-10",
-      lastUsed: null,
-      status: "expired",
-      permissions: ["read", "write", "delete"],
-      type: "live",
-      expiresIn: "Expired",
-    },
-    {
-      id: "4",
-      name: "Development API Key",
-      key: "zk_test_••••••••••••••••••••••••••••••",
-      created: "2023-09-22",
-      lastUsed: "2023-11-20",
-      status: "active",
-      permissions: ["read", "write"],
-      type: "test",
-      expiresIn: "60 days",
-    },
-    {
-      id: "5",
-      name: "Staging Environment",
-      key: "zk_test_••••••••••••••••••••••••••••••",
-      created: "2023-10-05",
-      lastUsed: "2023-11-15",
-      status: "active",
-      permissions: ["read", "write"],
-      type: "test",
-      expiresIn: "45 days",
-    },
-    {
-      id: "6",
-      name: "Mobile App Integration",
-      key: "zk_live_••••••••••••••••••••••••••••••",
-      created: "2023-08-12",
-      lastUsed: "2023-11-27",
-      status: "active",
-      permissions: ["read"],
-      type: "live",
-      expiresIn: "Never",
-    },
-    {
-      id: "7",
-      name: "Analytics Service",
-      key: "zk_live_••••••••••••••••••••••••••••••",
-      created: "2023-07-30",
-      lastUsed: "2023-11-26",
-      status: "active",
-      permissions: ["read"],
-      type: "live",
-      expiresIn: "Never",
-    },
-    {
-      id: "8",
-      name: "Temporary Access",
-      key: "zk_test_••••••••••••••••••••••••••••••",
-      created: "2023-11-10",
-      lastUsed: null,
-      status: "active",
-      permissions: ["read", "write", "delete"],
-      type: "test",
-      expiresIn: "7 days",
-    },
-  ]
+  const { translate } = useTranslator();
+  const [showAddApiKey, setShowAddApiKey] = useState(false);
+  const [showEditApiKey, setShowEditApiKey] = useState(false);
+  const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | null>(null);
+  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
+  const [viewKey, setViewKey] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedEnv, setSelectedEnv] = useState("all");
+  const [allApiKeys, setAllApiKeys] = useState<ApiKey[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(5)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
-  const [typeFilter, setTypeFilter] = useState<string | null>(null)
-  const [showAddKeyModal, setShowAddKeyModal] = useState(false)
-  const [newKeyName, setNewKeyName] = useState("")
-  const [readPermission, setReadPermission] = useState(true)
-  const [writePermission, setWritePermission] = useState(false)
-  const [deletePermission, setDeletePermission] = useState(false)
-  const [keyType, setKeyType] = useState<"test" | "live">("test")
-  const [keyExpiration, setKeyExpiration] = useState<"never" | "30days" | "90days" | "1year">("never")
-  const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null)
-  const [showKeyDialog, setShowKeyDialog] = useState(false)
-  const [showEditKeyModal, setShowEditKeyModal] = useState(false)
-  const [editingKey, setEditingKey] = useState<ApiKey | null>(null)
-  const [editKeyName, setEditKeyName] = useState("")
-  const [editReadPermission, setEditReadPermission] = useState(false)
-  const [editWritePermission, setEditWritePermission] = useState(false)
-  const [editDeletePermission, setEditDeletePermission] = useState(false)
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(allApiKeys)
-  const { translate } = useTranslator()
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
+
+  const decryptApiKeyData = useCallback(async (apiKey: ApiKey): Promise<ApiKey> => {
+    try {
+      if (apiKey.data && typeof apiKey.data === "string") {
+        try {
+          const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
+          const decryptedData = await decrypt(apiKey.data, cryptoKey);
+          try {
+            const parsedData = JSON.parse(decryptedData);
+            if (parsedData.api_key) {
+              return { ...apiKey, decryptedKey: parsedData.api_key, decrypted: true };
+            }
+            console.warn("Decrypted data missing api_key:", {
+              api_key_id: apiKey.doc_id,
+              parsedData,
+            });
+            return {
+              ...apiKey,
+              decryptedKey: "Data incomplete",
+              decrypted: false,
+              decryptionError: true,
+            };
+          } catch (jsonError) {
+            console.warn("Failed to parse decrypted data as JSON:", {
+              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
+              api_key_id: apiKey.doc_id,
+              decrypted_preview: decryptedData.slice(0, 20) + "...",
+            });
+            return {
+              ...apiKey,
+              decryptedKey: "Invalid data format",
+              decrypted: false,
+              decryptionError: true,
+            };
+          }
+        } catch (decryptError) {
+          console.error("Failed to decrypt API key:", {
+            error: decryptError instanceof Error ? decryptError.message : String(decryptError),
+            api_key_id: apiKey.doc_id,
+          });
+          return {
+            ...apiKey,
+            decryptedKey: "Decryption failed",
+            decrypted: false,
+            decryptionError: true,
+          };
+        }
+      }
+      if (apiKey.data && typeof apiKey.data === "object" && "api_key" in apiKey.data) {
+        return { ...apiKey, decryptedKey: apiKey.data.api_key, decrypted: true };
+      }
+      return {
+        ...apiKey,
+        decryptedKey: "Data unavailable",
+        decrypted: false,
+        decryptionError: true,
+      };
+    } catch (error: unknown) {
+      console.error("Failed to process API key data:", {
+        error: error instanceof Error ? error.message : String(error),
+        api_key_id: apiKey.doc_id,
+      });
+      return {
+        ...apiKey,
+        decryptedKey: "Error processing data",
+        decrypted: false,
+        decryptionError: true,
+      };
+    }
+  }, []);
+
+  const getEnvTag = useCallback((env: string): string => {
+    return env.toLowerCase();
+  }, []);
+
+  const fetchApiKeys = useCallback(async () => {
+    if (!selectedWorkspaceId || !selectedProjectId) {
+      console.error("Missing required data for fetching API keys:", {
+        selectedWorkspaceId,
+        selectedProjectId,
+      });
+      setIsLoading(false);
+      toast({
+        title: translate("error_fetching_api_keys", "api_keys"),
+        description: translate("no_project_selected", "api_keys"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      let tagsArray: string[] = [];
+      if (selectedEnv !== "all") {
+        tagsArray = [getEnvTag(selectedEnv)];
+      }
+
+      const payload = {
+        page: currentPage,
+        limit: itemsPerPage,
+        name: searchQuery.trim() || null,
+        env: selectedEnv !== "all" ? selectedEnv : null,
+        tags: tagsArray,
+      };
+
+      const response = await axiosInstance.post(
+        `/${selectedWorkspaceId}/${selectedProjectId}/api-keys/list`,
+        payload
+      );
+
+      const { data: fetchedApiKeys = [], count = 0 } = response.data || {};
+
+      const decryptedApiKeys = await Promise.all(
+        fetchedApiKeys.map(async (key: any) => {
+          const apiKey: ApiKey = {
+            doc_id: key.doc_id,
+            name: key.name,
+            data: key.data,
+            created_at: key.created_at,
+            updated_at: key.updated_at,
+            env: key.env,
+            tags: key.tags || [],
+          };
+          return decryptApiKeyData(apiKey);
+        })
+      );
+
+      setAllApiKeys(decryptedApiKeys);
+
+      let estimatedTotal;
+      if (currentPage === 1 && count < itemsPerPage) {
+        estimatedTotal = count;
+      } else if (count === itemsPerPage) {
+        estimatedTotal = currentPage * itemsPerPage + 1;
+      } else {
+        estimatedTotal = (currentPage - 1) * itemsPerPage + count;
+      }
+      setTotalCount(estimatedTotal);
+    } catch (error: any) {
+      console.error("Error fetching API keys:", error);
+      toast({
+        title: translate("error_fetching_api_keys", "api_keys"),
+        description: error.response?.data?.message || translate("failed_to_fetch_api_keys", "api_keys"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedEnv, decryptApiKeyData, getEnvTag, ]);
+
   useEffect(() => {
-    const handleAddKey = () => setShowAddKeyModal(true)
+    fetchApiKeys();
+  }, [fetchApiKeys]);
 
-    document.addEventListener("toggle-add-key", handleAddKey)
-
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "+") {
-        e.preventDefault()
-        setShowAddKeyModal(true)
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowAddApiKey(true);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+
+  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField({ doc_id, field });
+      setTimeout(() => setCopiedField(null), 2000);
+      toast({
+        title: translate("copied", "api_keys"),
+        description: translate("api_key_copied", "api_keys"),
+      });
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      toast({
+        title: translate("copy_failed", "api_keys"),
+        description: translate("failed_to_copy_api_key", "api_keys"),
+        variant: "destructive",
+      });
+    }
+  }, [translate]);
+
+  const toggleKeyVisibility = useCallback((doc_id: string) => {
+    setViewKey(prev => (prev === doc_id ? null : doc_id));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedEnv("all");
+    setCurrentPage(1);
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    const validPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(validPage);
+  }, [totalPages]);
+
+  const handleDeleteApiKey = useCallback(
+    async (doc_id: string) => {
+      if (!selectedWorkspaceId || !selectedProjectId) {
+        console.error("Missing required data for deleting API key:", {
+          selectedWorkspaceId,
+          selectedProjectId,
+        });
+        toast({
+          title: translate("error_deleting_api_key", "api_keys"),
+          description: translate("no_project_selected", "api_keys"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!confirm(translate("confirm_delete_api_key", "api_keys"))) {
+        return;
+      }
+
+      try {
+        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/api-keys/${doc_id}`);
+        fetchApiKeys();
+        toast({
+          title: translate("api_key_deleted_successfully", "api_keys"),
+          description: translate("api_key_deleted_description", "api_keys"),
+        });
+      } catch (error: any) {
+        console.error("Error deleting API key:", error);
+        toast({
+          title: translate("error_deleting_api_key", "api_keys"),
+          description: error.response?.data?.message || translate("failed_to_delete_api_key", "api_keys"),
+          variant: "destructive",
+        });
+      }
+    },
+    [selectedWorkspaceId, selectedProjectId, translate, fetchApiKeys]
+  );
+
+  const handleApiKeyUpdated = useCallback(() => {
+    setShowEditApiKey(false);
+    setSelectedApiKey(null);
+    fetchApiKeys();
+    toast({
+      title: translate("api_key_updated_successfully", "api_keys"),
+      description: translate("api_key_updated_description", "api_keys"),
+    });
+  }, [fetchApiKeys, translate]);
+
+  const debouncedSearch = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+      }, 300);
+    };
+  }, []);
+
+  const getPaginationRange = useCallback(() => {
+    const maxPagesToShow = 5;
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const half = Math.floor(maxPagesToShow / 2);
+      let start = Math.max(1, currentPage - half);
+      let end = Math.min(totalPages, start + maxPagesToShow - 1);
+
+      if (end - start < maxPagesToShow - 1) {
+        start = end - maxPagesToShow + 1;
+      }
+
+      if (start > 1) {
+        pageNumbers.push(1);
+        if (start > 2) pageNumbers.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pageNumbers.push("...");
+        pageNumbers.push(totalPages);
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown)
+    return pageNumbers;
+  }, [currentPage, totalPages]);
 
-    return () => {
-      document.removeEventListener("toggle-add-key", handleAddKey)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [])
-
-  const filteredApiKeys = apiKeys.filter((key) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      key.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      key.key.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === null || statusFilter === "all" || key.status === statusFilter
-    const matchesType = typeFilter === null || typeFilter === "all" || key.type === typeFilter
-    return matchesSearch && matchesStatus && matchesType
-  })
-
-  const totalPages = Math.ceil(filteredApiKeys.length / itemsPerPage)
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredApiKeys.slice(indexOfFirstItem, indexOfLastItem)
-
-  const resetAddForm = () => {
-    setNewKeyName("")
-    setReadPermission(true)
-    setWritePermission(false)
-    setDeletePermission(false)
-    setKeyType("test")
-    setKeyExpiration("never")
-  }
-
-  const handleCreateKey = () => {
-    if (!newKeyName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a name for your API key",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const permissions: string[] = []
-    if (readPermission) permissions.push("read")
-    if (writePermission) permissions.push("write")
-    if (deletePermission) permissions.push("delete")
-
-    if (permissions.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one permission",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const generatedKey = `zk_${keyType}_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
-    setNewlyCreatedKey(generatedKey)
-    setShowKeyDialog(true)
-
-    let expiresIn = "Never"
-    if (keyExpiration === "30days") expiresIn = "30 days"
-    if (keyExpiration === "90days") expiresIn = "90 days"
-    if (keyExpiration === "1year") expiresIn = "1 year"
-
-    const newKey: ApiKey = {
-      id: (apiKeys.length + 1).toString(),
-      name: newKeyName,
-      key: `zk_${keyType}_••••••••••••••••••••••••••••••`,
-      created: new Date().toISOString().split("T")[0],
-      lastUsed: null,
-      status: "active",
-      permissions,
-      type: keyType,
-      expiresIn,
-    }
-
-    setApiKeys([...apiKeys, newKey])
-    resetAddForm()
-    setShowAddKeyModal(false)
-  }
-
-  const startEditingKey = (id: string) => {
-    const keyToEdit = apiKeys.find((key) => key.id === id)
-    if (!keyToEdit) return
-
-    setEditingKey(keyToEdit)
-    setEditKeyName(keyToEdit.name)
-    setEditReadPermission(keyToEdit.permissions.includes("read"))
-    setEditWritePermission(keyToEdit.permissions.includes("write"))
-    setEditDeletePermission(keyToEdit.permissions.includes("delete"))
-    setShowEditKeyModal(true)
-  }
-
-  const saveEditedKey = () => {
-    if (!editKeyName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a name for your API key",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const permissions: string[] = []
-    if (editReadPermission) permissions.push("read")
-    if (editWritePermission) permissions.push("write")
-    if (editDeletePermission) permissions.push("delete")
-
-    if (permissions.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one permission",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (editingKey) {
-      setApiKeys(
-        apiKeys.map((key) =>
-          key.id === editingKey.id
-            ? {
-                ...key,
-                name: editKeyName,
-                permissions,
-              }
-            : key,
-        ),
-      )
-      toast({
-        title: "API Key Updated",
-        description: "The API key has been successfully updated.",
-      })
-      setShowEditKeyModal(false)
-    }
-  }
-
-  const handleRevokeKey = (id: string) => {
-    setApiKeys(apiKeys.map((key) => (key.id === id ? { ...key, status: "revoked" } : key)))
-    toast({
-      title: "API Key Revoked",
-      description: "The API key has been successfully revoked.",
-    })
-  }
-
-  const handleCopyKey = (key: string) => {
-    navigator.clipboard.writeText(key)
-    toast({
-      title: "Copied to clipboard",
-      description: "API key has been copied to your clipboard.",
-    })
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-      case "expired":
-        return (
-          <Badge variant="outline" className="text-amber-500 border-amber-500">
-            Expired
-          </Badge>
-        )
-      case "revoked":
-        return <Badge variant="destructive">Revoked</Badge>
-      default:
-        return null
-    }
-  }
-
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "live":
-        return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-            Live
-          </Badge>
-        )
-      case "test":
-        return (
-          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100">
-            Test
-          </Badge>
-        )
-      default:
-        return null
-    }
-  }
-
-  const clearFilters = () => {
-    setSearchQuery("")
-    setStatusFilter(null)
-    setTypeFilter(null)
-    setCurrentPage(1)
-  }
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const EditApiKeyDialog = () => {
-    if (!editingKey) return null
-
+  if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-foreground">{translate("edit_api_key", "api_keys")}</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowEditKeyModal(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="edit-key-name" className="text-sm font-medium text-foreground">
-                {translate("api_key_name", "api_keys")}
-              </Label>
-              <Input
-                id="edit-key-name"
-                placeholder={translate("enter_api_key_name", "api_keys")}
-                value={editKeyName}
-                onChange={(e) => setEditKeyName(e.target.value)}
-                className="h-10 border-border focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-foreground">Permissions</Label>
-              <div className="space-y-4 rounded-md border p-4 bg-muted/20">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="read"
-                    checked={editReadPermission}
-                    onChange={(e) => setEditReadPermission(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                  />
-                  <Label htmlFor="read" className="text-sm font-normal text-foreground cursor-pointer">
-                    Read
-                  </Label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="write"
-                    checked={editWritePermission}
-                    onChange={(e) => setEditWritePermission(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                  />
-                  <Label htmlFor="write" className="text-sm font-normal text-foreground cursor-pointer">
-                    Write
-                  </Label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="delete"
-                    checked={editDeletePermission}
-                    onChange={(e) => setEditDeletePermission(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                  />
-                  <Label htmlFor="delete" className="text-sm font-normal text-foreground cursor-pointer">
-                    Delete
-                  </Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-end gap-3">
-            <Button
-              variant="outline"
-              className="h-10 px-4 text-muted-foreground hover:text-foreground hover:border-foreground"
-              onClick={() => setShowEditKeyModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={saveEditedKey}
-            >
-              Save Changes
-            </Button>
-          </div>
-        </div>
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">{translate("loading_api_keys", "api_keys")}</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="flex-1 flex-col space-y-6 p-6 md:p-8">
-      {/* Header */}
+    <div className="p-6">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold tracking-tight">{translate("title", "api_keys")}</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {translate("description", "api_keys")}
-        </p>
+        <h1 className="text-2xl font-bold">{translate("api_keys", "api_keys")}</h1>
+        <p className="text-muted-foreground">{translate("manage_your_api_keys", "api_keys")}</p>
       </div>
 
-      {/* Filters and Actions */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+        <div className="flex flex-1 gap-4 w-full md:w-auto">
           <div className="relative w-full md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder={translate("search", "api_keys")}
-              className="pl-8 w-full h-10"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setCurrentPage(1)
-              }}
+              className="pl-8 w-full"
+              onChange={(e) => debouncedSearch(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Select
-              value={statusFilter || "all"}
+              value={selectedEnv}
               onValueChange={(value) => {
-                setStatusFilter(value === "all" ? null : value)
-                setCurrentPage(1)
+                setSelectedEnv(value);
+                setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-[150px] h-10">
-                <SelectValue placeholder="Status" />
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="All Environments" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="revoked">Revoked</SelectItem>
+                <SelectItem value="all">All Environments</SelectItem>
+                <SelectItem value="Development">Development</SelectItem>
+                <SelectItem value="Staging">Staging</SelectItem>
+                <SelectItem value="Production">Production</SelectItem>
               </SelectContent>
             </Select>
-
-            <Select
-              value={typeFilter || "all"}
-              onValueChange={(value) => {
-                setTypeFilter(value === "all" ? null : value)
-                setCurrentPage(1)
-              }}
-            >
-              <SelectTrigger className="w-[150px] h-10">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="live">Live</SelectItem>
-                <SelectItem value="test">Test</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {(searchQuery || statusFilter || typeFilter) && (
+            {(searchQuery || selectedEnv !== "all") && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
                 <X className="h-4 w-4 mr-2" />
                 {translate("clear", "api_keys")}
@@ -550,155 +399,193 @@ export function ApiKeysContent() {
           </div>
         </div>
         <Button
-          onClick={() => setShowAddKeyModal(true)}
-          className="w-full md:w-auto flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10"
+          variant="outline"
+          className="gap-2"
+          onClick={() => setShowAddApiKey(true)}
         >
           <Plus className="h-4 w-4" />
-          {translate("add_key", "api_keys")}
+          {translate("add_api_key", "api_keys")}
         </Button>
       </div>
 
-      {/* Table and Pagination */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-[200px] p-3 font-medium text-sm">{translate("name", "api_keys")}</TableHead>
-                <TableHead className="p-3 font-medium text-sm">{translate("key", "api_keys")}</TableHead>
-                <TableHead className="w-[100px] p-3 font-medium text-sm">{translate("type", "api_keys")}</TableHead>
-                <TableHead className="w-[120px] p-3 font-medium text-sm">{translate("created", "api_keys")}</TableHead>
-                <TableHead className="w-[120px] p-3 font-medium text-sm">{translate("expires", "api_keys")}</TableHead>
-                <TableHead className="w-[100px] p-3 font-medium text-sm">{translate("status", "api_keys")}</TableHead>
-                <TableHead className="w-[80px] p-3 font-medium text-sm text-right">{translate("actions", "api_keys")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentItems.length > 0 ? (
-                currentItems.map((key) => (
-                  <TableRow
-                    key={key.id}
-                    className={cn(
-                      "group hover:bg-muted/50 transition-colors border-t border-border",
-                      key.status !== "active" && "opacity-60",
-                    )}
-                  >
-                    <TableCell className="p-3">
-                      <div className="font-medium">{key.name}</div>
-                    </TableCell>
-                    <TableCell className="p-3">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="text-left p-3 font-medium text-sm">{translate("name", "api_keys")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("key", "api_keys")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("env", "api_keys")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("tags", "api_keys")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "api_keys")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("actions", "api_keys")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allApiKeys.length > 0 ? (
+                allApiKeys.map((apiKey) => (
+                  <tr key={apiKey.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
+                          {apiKey.name.charAt(0).toUpperCase()}
+                        </div>
+                        <p className="font-medium">{apiKey.name}</p>
+                      </div>
+                    </td>
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm">{key.key}</span>
-                        {key.status === "active" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleCopyKey(key.key)}
-                          >
-                            <Copy className="h-3 w-3" />
+                        {apiKey.decryptionError && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{translate("decryption_error", "api_keys")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <span className="text-sm font-mono">
+                          {apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && viewKey === apiKey.doc_id
+                            ? apiKey.decryptedKey
+                            : apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable"
+                            ? "••••••••"
+                            : apiKey.decryptedKey}
+                        </span>
+                        <div className="flex items-center">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && toggleKeyVisibility(apiKey.doc_id)}
+                                  disabled={!apiKey.decryptedKey || apiKey.decryptedKey === "Data unavailable"}
+                                >
+                                  {viewKey === apiKey.doc_id ? (
+                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{viewKey === apiKey.doc_id ? translate("hide_key", "api_keys") : translate("show_key", "api_keys")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && copyToClipboard(apiKey.doc_id, "key", apiKey.decryptedKey)}
+                                  disabled={!apiKey.decryptedKey || apiKey.decryptedKey === "Data unavailable"}
+                                >
+                                  {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
+                                    <Check className="h-3.5 w-3.5 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? translate("copied", "api_keys") : translate("copy_key", "api_keys")}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <Badge variant="secondary" className="text-xs">
+                        {apiKey.env}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex flex-wrap gap-1">
+                        {apiKey.tags?.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">
+                      {apiKey.updated_at ? new Date(apiKey.updated_at).toLocaleDateString(currentLocale) : "-"}
+                    </td>
+                    <td className="p-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-3">
-                      <div className="flex items-center gap-1.5">
-                        {key.type === "live" ? (
-                          <Shield className="h-3.5 w-3.5 text-blue-500" />
-                        ) : (
-                          <Tag className="h-3.5 w-3.5 text-purple-500" />
-                        )}
-                        {getTypeBadge(key.type)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-3">
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        {key.created}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-3">
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        {key.expiresIn}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-3">{getStatusBadge(key.status)}</TableCell>
-                    <TableCell className="p-3 text-right">
-                      {key.status === "active" && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-[160px]">
-                            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                              API Key Options
-                            </DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => startEditingKey(key.id)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>Edit</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleCopyKey(key.key)}>
-                              <Copy className="mr-2 h-4 w-4" />
-                              <span>Copy Key</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleRevokeKey(key.id)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Revoke</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedApiKey({ ...apiKey });
+                              setShowEditApiKey(true);
+                            }}
+                          >
+                            {translate("edit", "api_keys")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-500"
+                            onClick={() => handleDeleteApiKey(apiKey.doc_id)}
+                          >
+                            {translate("delete", "api_keys")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                    {filteredApiKeys.length === 0 ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <Search className="h-10 w-10 text-muted-foreground/50" />
-                        <h3 className="font-medium">{translate("no_api_keys_found", "api_keys")}</h3>
-                        <p className="text-sm text-muted-foreground">{translate("try_adjusting_search_or_filter", "api_keys")}</p>
-                        <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                          {translate("clear", "api_keys")}
-                        </Button>
-                      </div>
-                    ) : (
-                      translate("no_api_keys_found", "api_keys")
-                    )}
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={6} className="text-center py-10 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-10 w-10 text-muted-foreground/50" />
+                      <h3 className="font-medium">{translate("no_api_keys_found", "api_keys")}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedEnv !== "all"
+                          ? translate("no_api_keys_for_env", "api_keys").replace("{env}", selectedEnv)
+                          : searchQuery
+                          ? translate("no_api_keys_match_search", "api_keys").replace("{search}", searchQuery)
+                          : translate("adjust_search_filter", "api_keys")}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                        {translate("clear_filters", "api_keys")}
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
 
-        {/* Updated Pagination */}
-        {filteredApiKeys.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-4 border-t bg-card">
+        {totalCount > 0 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredApiKeys.length)} of{" "}
-              {filteredApiKeys.length} keys
+              Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} API keys
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "api_keys")}</span>
+                <span className="text-sm text-muted-foreground">Rows per page</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {
-                    setItemsPerPage(Number(value))
-                    setCurrentPage(1)
+                    setItemsPerPage(Number(value));
+                    setCurrentPage(1);
                   }}
                 >
                   <SelectTrigger className="h-8 w-[70px]">
@@ -716,163 +603,68 @@ export function ApiKeysContent() {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let pageNum = i + 1
-                  if (totalPages > 5 && currentPage > 3) {
-                    pageNum = currentPage - 3 + i
-                    if (pageNum > totalPages) {
-                      pageNum = totalPages - (4 - i)
-                    }
-                  }
-                  return (
-                    <Button
-                      key={i}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={currentPage === pageNum}
-                    >
-                      {pageNum}
-                    </Button>
-                  )
-                })}
+                {getPaginationRange().map((pageNum, index) => (
+                  <Button
+                    key={`${pageNum}-${index}`}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => typeof pageNum === "number" && handlePageChange(pageNum)}
+                    disabled={pageNum === "..." || currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
               </div>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
+                disabled={currentPage >= totalPages}
               >
                 <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage >= totalPages}
+              >
+                <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Add API Key Modal */}
-      <Dialog open={showAddKeyModal} onOpenChange={setShowAddKeyModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{translate("create_new_api_key", "api_keys")}</DialogTitle>
-            <DialogDescription>{translate("enter_details_for_new_api_key", "api_keys")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="key-name">{translate("api_key_name", "api_keys")}</Label>
-              <Input
-                id="key-name"
-                placeholder={translate("enter_api_key_name", "api_keys")}
-                value={newKeyName}
-                onChange={(e) => setNewKeyName(e.target.value)}
-                className="mt-1.5 h-10"
-              />
-            </div>
-
-            <div>
-              <Label>{translate("key_type", "api_keys")}</Label>
-              <RadioGroup
-                value={keyType}
-                onValueChange={(value) => setKeyType(value as "test" | "live")}
-                className="flex gap-4 mt-1.5"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem id="test-key" value="test" />
-                  <Label htmlFor="test-key" className="font-normal">
-                    Test
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem id="live-key" value="live" />
-                  <Label htmlFor="live-key" className="font-normal">
-                    Live
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Label>{translate("key_preview", "api_keys")}</Label>
-              <div className="mt-1.5 border rounded-md bg-muted/30 overflow-hidden">
-                <div className="p-3 h-20 flex items-center">
-                  <code className="text-sm font-mono w-full break-all">{`zk_${keyType}_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`}</code>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-               {translate("key_preview_description", "api_keys")}
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddKeyModal(false)}>
-              {translate("cancel", "api_keys")}
-            </Button>
-            <Button onClick={handleCreateKey} className="bg-primary text-primary-foreground">
-              <Key className="mr-2 h-4 w-4" />
-              {translate("create_api_key", "api_keys")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* New API Key Dialog */}
-      <Dialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Your New API Key</DialogTitle>
-            <DialogDescription>
-              This key will only be displayed once. Please copy it now and store it securely.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center space-x-2 mt-4">
-            <div className="grid flex-1 gap-2">
-              <Label htmlFor="newApiKey" className="sr-only">
-                API Key
-              </Label>
-              <Input id="newApiKey" value={newlyCreatedKey || ""} readOnly className="font-mono text-sm h-10" />
-            </div>
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={() => newlyCreatedKey && handleCopyKey(newlyCreatedKey)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-800">
-              <p className="font-medium">Important Security Notice</p>
-              <p className="mt-1">
-                This API key grants access to your Zecrypt account. Never share it publicly or commit it to version
-                control.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="mt-4">
-            <Button
-              type="button"
-              onClick={() => {
-                setNewlyCreatedKey(null)
-                setShowKeyDialog(false)
-              }}
-            >
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {showEditKeyModal && <EditApiKeyDialog />}
+      {showAddApiKey && <AddApiKey onClose={() => setShowAddApiKey(false)} onApiKeyAdded={fetchApiKeys} />}
+      {showEditApiKey && selectedApiKey && (
+        <EditApiKey
+          apiKey={selectedApiKey}
+          onClose={() => {
+            setShowEditApiKey(false);
+            setSelectedApiKey(null);
+          }}
+          onApiKeyUpdated={handleApiKeyUpdated}
+        />
+      )}
     </div>
-  )
+  );
 }

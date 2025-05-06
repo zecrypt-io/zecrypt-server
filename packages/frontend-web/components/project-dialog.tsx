@@ -29,10 +29,22 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { addProject, updateProject, deleteProject, setSelectedProject } from "@/libs/Redux/workspaceSlice";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useTranslator } from "@/hooks/use-translations";
 
 interface ProjectDialogProps {
   onClose: () => void;
 }
+
+const defaultFeatures = {
+  login: { enabled: false, is_client_side_encryption: false },
+  api_key: { enabled: false, is_client_side_encryption: false },
+  wallet_address: { enabled: false, is_client_side_encryption: false },
+  wifi: { enabled: false, is_client_side_encryption: false },
+  identity: { enabled: false, is_client_side_encryption: false },
+  card: { enabled: false, is_client_side_encryption: false },
+  software_license: { enabled: false, is_client_side_encryption: false },
+};
 
 export function ProjectDialog({ onClose }: ProjectDialogProps) {
   const [activeTab, setActiveTab] = useState("select");
@@ -56,6 +68,10 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
           isDefault: project.is_default,
           created_by: project.created_by ?? "unknown",
           created_at: project.created_at ?? new Date().toISOString(),
+          features: {
+            ...defaultFeatures,
+            ...(project.features || {}),
+          },
         })) || []
     : [];
 
@@ -209,6 +225,7 @@ interface EditProjectDialogProps {
     isDefault: boolean;
     created_by: string;
     created_at: string;
+    features: { [key: string]: { enabled: boolean; is_client_side_encryption: boolean } };
   };
   workspaceId: string;
   onClose: () => void;
@@ -219,6 +236,7 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
   const [description, setDescription] = useState(project.description);
   const [color, setColor] = useState(project.color);
   const [isDefault, setIsDefault] = useState(project.isDefault);
+  const [features, setFeatures] = useState({ ...defaultFeatures, ...project.features });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -234,6 +252,30 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
     { name: "Rose", value: "#f43f5e" },
     { name: "Violet", value: "#8b5cf6" },
   ];
+
+  const featureOptions = [
+    { key: "login", label: "Accounts" },
+    { key: "api_key", label: "API Keys" },
+    { key: "wallet_address", label: "Wallet Passphrases" },
+    { key: "wifi", label: "Wi-Fi" },
+    { key: "identity", label: "Identity" },
+    { key: "card", label: "Cards" },
+    { key: "software_license", label: "Software Licenses" },
+  ] as const;
+
+  const { translate } = useTranslator();
+
+  type FeatureKey = typeof featureOptions[number]["key"];
+
+  const handleFeatureToggle = (featureKey: FeatureKey) => {
+    setFeatures((prev) => ({
+      ...prev,
+      [featureKey]: {
+        ...prev[featureKey],
+        enabled: !prev[featureKey]?.enabled,
+      },
+    }));
+  };
 
   const handleSave = async () => {
     if (!accessToken) {
@@ -258,6 +300,7 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
       description: trimmedDescription,
       is_default: isDefault,
       color,
+      features,
     };
 
     try {
@@ -292,6 +335,7 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
         updated_at: result.data.updated_at || new Date().toISOString(),
         is_default: isDefault,
         workspace_id: workspaceId,
+        features: { ...defaultFeatures, ...(result.data.features || {}) },
       };
 
       dispatch(
@@ -344,8 +388,8 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-          <DialogDescription>Update your project details</DialogDescription>
+          <DialogTitle>{translate("edit_project", "dashboard")}</DialogTitle>
+          <DialogDescription>{translate("update_project_details", "dashboard")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -353,23 +397,23 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
             <p className="text-sm text-red-500">{error}</p>
           )}
           <div className="space-y-2">
-            <Label htmlFor="project-name">Project Name</Label>
+            <Label htmlFor="project-name">{translate("project_name", "dashboard")}</Label>
             <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project-description">Description (Optional)</Label>
+            <Label htmlFor="project-description">{translate("description", "dashboard")} ({translate("optional", "dashboard")})</Label>
             <Textarea
               id="project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Describe the purpose of this project"
+              placeholder={translate("describe_project_purpose", "dashboard")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Project Color</Label>
+            <Label>{translate("project_color", "dashboard")}</Label>
             <div className="flex flex-wrap gap-2">
               {colors.map((c) => (
                 <button
@@ -388,26 +432,43 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>{translate("enabled_modules", "dashboard")}</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {featureOptions.map((option) => (
+                <div key={option.key} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`feature-${option.key}`}
+                    checked={features[option.key]?.enabled || false}
+                    onCheckedChange={() => handleFeatureToggle(option.key)}
+                  />
+                  <Label htmlFor={`feature-${option.key}`} className="cursor-pointer">
+                    {translate(option.label.toLowerCase(), "dashboard")}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="default-project"
               checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
+              onCheckedChange={(checked) => setIsDefault(!!checked)}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <Label htmlFor="default-project" className="cursor-pointer">
-              Set as default project
+              {translate("set_as_default_project", "dashboard")}
             </Label>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
+            {translate("cancel", "dashboard")}
           </Button>
           <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
-            {isLoading ? "Saving..." : "Save Changes"}
+            {isLoading ? translate("saving", "dashboard") : translate("save_changes", "dashboard")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -423,8 +484,9 @@ interface CreateProjectDialogProps {
 function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("#10b981"); // Default to Emerald
+  const [color, setColor] = useState("#10b981");
   const [isDefault, setIsDefault] = useState(false);
+  const [features, setFeatures] = useState(defaultFeatures);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -440,6 +502,30 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     { name: "Rose", value: "#f43f5e" },
     { name: "Violet", value: "#8b5cf6" },
   ];
+
+  const featureOptions = [
+    { key: "login", label: "Accounts" },
+    { key: "api_key", label: "API Keys" },
+    { key: "wallet_address", label: "Wallet Passphrases" },
+    { key: "wifi", label: "Wi-Fi" },
+    { key: "identity", label: "Identity" },
+    { key: "card", label: "Cards" },
+    { key: "software_license", label: "Software Licenses" },
+  ] as const;
+
+  const { translate } = useTranslator();
+
+  type FeatureKey = typeof featureOptions[number]["key"];
+
+  const handleFeatureToggle = (featureKey: FeatureKey) => {
+    setFeatures((prev) => ({
+      ...prev,
+      [featureKey]: {
+        ...prev[featureKey],
+        enabled: !prev[featureKey]?.enabled,
+      },
+    }));
+  };
 
   const handleCreate = async () => {
     if (!accessToken) {
@@ -464,6 +550,7 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
       description: trimmedDescription,
       is_default: isDefault,
       color,
+      features,
     };
 
     try {
@@ -495,6 +582,7 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
         updated_at: result.data.updated_at || new Date().toISOString(),
         is_default: isDefault,
         workspace_id: result.data.workspace_id || workspaceId,
+        features: { ...defaultFeatures, ...(result.data.features || {}) },
       };
 
       dispatch(
@@ -548,8 +636,8 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
-          <DialogDescription>Add a new project to organize your passwords and files</DialogDescription>
+          <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
+          <DialogDescription>{translate("add_new_project_description", "dashboard")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -557,28 +645,28 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
             <p className="text-sm text-red-500">{error}</p>
           )}
           <div className="space-y-2">
-            <Label htmlFor="new-project-name">Project Name</Label>
+            <Label htmlFor="new-project-name">{translate("project_name", "dashboard")}</Label>
             <Input
               id="new-project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Project"
+              placeholder={translate("my_project", "dashboard")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-project-description">Description (Optional)</Label>
+            <Label htmlFor="new-project-description">{translate("description", "dashboard")} ({translate("optional", "dashboard")})</Label>
             <Textarea
               id="new-project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the purpose of this project"
+              placeholder={translate("describe_project_purpose", "dashboard")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Project Color</Label>
+            <Label>{translate("project_color", "dashboard")}</Label>
             <div className="flex flex-wrap gap-2">
               {colors.map((c) => (
                 <button
@@ -597,26 +685,43 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>{translate("enabled_modules", "dashboard")}</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {featureOptions.map((option) => (
+                <div key={option.key} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`feature-${option.key}`}
+                    checked={features[option.key]?.enabled || false}
+                    onCheckedChange={() => handleFeatureToggle(option.key)}
+                  />
+                  <Label htmlFor={`feature-${option.key}`} className="cursor-pointer">
+                    {translate(option.label.toLowerCase(), "dashboard")}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="default-project"
               checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
+              onCheckedChange={(checked) => setIsDefault(!!checked)}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <Label htmlFor="default-project" className="cursor-pointer">
-              Set as default project
+              {translate("set_as_default_project", "dashboard")}
             </Label>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
+            {translate("cancel", "dashboard")}
           </Button>
           <Button onClick={handleCreate} disabled={isLoading || !name.trim()}>
-            {isLoading ? "Creating..." : "Create Project"}
+            {isLoading ? translate("creating", "dashboard") : translate("create_project", "dashboard")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -636,6 +741,8 @@ function DeleteProjectDialog({ projectId, projectName }: DeleteProjectDialogProp
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+
+  const { translate } = useTranslator();
 
   const handleDelete = async () => {
     if (!accessToken) {
@@ -692,22 +799,22 @@ function DeleteProjectDialog({ projectId, projectName }: DeleteProjectDialogProp
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <DialogTitle>Delete project</DialogTitle>
+          <DialogTitle>{translate("delete_project", "dashboard")}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete "{projectName}"? This action cannot be undone.
+            {translate("confirm_delete_project", "dashboard", { projectName })}
           </DialogDescription>
         </AlertDialogHeader>
         {error && (
           <p className="text-sm text-red-500">{error}</p>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{translate("cancel", "dashboard")}</AlertDialogCancel>
           <AlertDialogAction
             className="bg-red-500 hover:bg-red-600"
             onClick={handleDelete}
             disabled={isLoading}
           >
-            {isLoading ? "Deleting..." : "Delete"}
+            {isLoading ? translate("deleting", "dashboard") : translate("delete", "dashboard")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

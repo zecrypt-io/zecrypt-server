@@ -1,5 +1,21 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface Feature {
+  enabled: boolean;
+  is_client_side_encryption: boolean;
+}
+
+export interface Features {
+  login?: Feature;
+  api_key?: Feature;
+  wallet_address?: Feature;
+  wifi?: Feature;
+  identity?: Feature;
+  card?: Feature;
+  software_license?: Feature;
+  [key: string]: Feature | undefined;
+}
+
 export interface Project {
   project_id: string;
   name: string;
@@ -11,6 +27,7 @@ export interface Project {
   updated_at: string;
   is_default: boolean;
   workspace_id: string;
+  features: Features;
 }
 
 export interface Workspace {
@@ -56,9 +73,9 @@ const workspaceSlice = createSlice({
           ...project,
           description: project.description ?? "",
           color: project.color ?? "#4f46e5",
+          features: project.features ?? {},
         });
         if (project.is_default) {
-          // Unset other defaults
           workspace.projects.forEach((p) => {
             if (p.project_id !== project.project_id) {
               p.is_default = false;
@@ -67,8 +84,6 @@ const workspaceSlice = createSlice({
         }
       }
     },
-
-    // Add to workspaceSlice.ts reducers
     resetWorkspaceState: (state) => {
       state.workspaces = [];
       state.selectedWorkspaceId = null;
@@ -91,9 +106,9 @@ const workspaceSlice = createSlice({
             ...project,
             description: project.description ?? "",
             color: project.color ?? "#4f46e5",
+            features: project.features ?? {},
           };
           if (project.is_default) {
-            // Unset other defaults
             workspace.projects.forEach((p, index) => {
               if (index !== projectIndex) {
                 p.is_default = false;

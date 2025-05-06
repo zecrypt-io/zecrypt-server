@@ -22,10 +22,10 @@ import {
   X,
   Globe,
   Users,
-} from "lucide-react"
-import { cn } from "@/libs/utils"
-import { GeneratePasswordDialog } from "@/components/generate-password-dialog"
-import { ThemeToggle } from "@/components/theme-toggle"
+} from "lucide-react";
+import { cn } from "@/libs/utils";
+import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,21 +33,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { UserProfileDialog } from "@/components/user-profile-dialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ProjectDialog } from "@/components/project-dialog"
-import { CommandPalette } from "@/components/command-palette"
-import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help"
-import { EncryptionKeyModal } from "@/components/encryption-key-modal"
-import { useRouter } from "next/navigation"
-import { locales } from "@/middleware"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserProfileDialog } from "@/components/user-profile-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ProjectDialog } from "@/components/project-dialog";
+import { CommandPalette } from "@/components/command-palette";
+import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
+import { EncryptionKeyModal } from "@/components/encryption-key-modal";
+import { useRouter } from "next/navigation";
+import { locales } from "@/middleware";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
-import { useTranslator } from "@/hooks/use-translations"
+import { useTranslator } from "@/hooks/use-translations";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -73,6 +73,165 @@ function Star(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+const defaultFeatures = {
+  login: { enabled: false, is_client_side_encryption: false },
+  api_key: { enabled: false, is_client_side_encryption: false },
+  wallet_address: { enabled: false, is_client_side_encryption: false },
+  wifi: { enabled: false, is_client_side_encryption: false },
+  identity: { enabled: false, is_client_side_encryption: false },
+  card: { enabled: false, is_client_side_encryption: false },
+  software_license: { enabled: false, is_client_side_encryption: false },
+};
+
+// Map features to sidebar menu items
+const featureMenuItems: {
+  key: keyof typeof defaultFeatures;
+  labelKey: string;
+  path: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    key: "login",
+    labelKey: "accounts",
+    path: "/dashboard/accounts", // Maps to existing accounts UI
+    icon: <User className="h-4 w-4" />,
+  },
+  {
+    key: "api_key",
+    labelKey: "api_keys",
+    path: "/dashboard/api-keys",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+      </svg>
+    ),
+  },
+  {
+    key: "wallet_address",
+    labelKey: "wallet_passphrases",
+    path: "/dashboard/wallet-passphrases",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-wallet-icon lucide-wallet"
+      >
+        <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+        <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+      </svg>
+    ),
+  },
+  {
+    key: "wifi",
+    labelKey: "wifi",
+    path: "/dashboard/wifi",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <line x1="12" y1="20" x2="12.01" y2="20" />
+      </svg>
+    ),
+  },
+  {
+    key: "identity",
+    labelKey: "identity",
+    path: "/dashboard/identity",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
+    key: "card",
+    labelKey: "cards",
+    path: "/dashboard/cards",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M7 15h0M2 9.5h20" />
+      </svg>
+    ),
+  },
+  {
+    key: "software_license",
+    labelKey: "software_licenses",
+    path: "/dashboard/software-licenses",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M15 3h6v6" />
+        <path d="M10 14 21 3" />
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      </svg>
+    ),
+  },
+];
+
 export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProps) {
   const pathname = usePathname();
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
@@ -85,7 +244,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
 
   const [currentLocale, setCurrentLocale] = useState(locale);
   
-  // Language labels
   const languageLabels: Record<string, string> = {
     af: "Afrikaans",
     ar: "Arabic (عربى)",
@@ -126,7 +284,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
 
-  // Get selected and default project from Redux
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const selectedProject = useSelector((state: RootState) =>
@@ -145,7 +302,11 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   );
   const displayProject = selectedProject || defaultProject;
 
-  // Get selected workspace name from Redux
+  // Normalize features for displayProject
+  const normalizedFeatures = displayProject
+    ? { ...defaultFeatures, ...(displayProject.features || {}) }
+    : defaultFeatures;
+
   const selectedWorkspace = useSelector((state: RootState) => 
     Array.isArray(state.workspace.workspaces) 
       ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId) 
@@ -157,7 +318,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
   };
 
-  // Define handleLogout using useCallback to avoid recreating it on every render
   const handleLogout = useCallback(async () => {
     try {
       if (user) {
@@ -171,23 +331,19 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       console.error("Error during logout:", error);
     }
   }, [user, dispatch, router, currentLocale]);
- 
-  // Switch language function
+
   const switchLanguage = (newLocale: string) => {
     if (newLocale === currentLocale) return;
     
-    // Create a new path with the updated locale
     const segments = pathname?.split('/') || [];
-    segments[1] = newLocale; // Replace the locale segment
+    segments[1] = newLocale;
     const newPath = segments.join('/');
     
-    // Navigate to the new path
     router.push(newPath);
     setCurrentLocale(newLocale);
   };
 
   useEffect(() => {
-    // Set the current locale when component mounts
     if (locale) {
       setCurrentLocale(locale);
     }
@@ -221,35 +377,35 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
       }
 
       switch (e.key.toLowerCase()) {
-        case "k": // Command palette is handled separately
-          break
-        case "g": // Generate password
-          setShowGeneratePassword(true)
-          break
-        case "p": // Project switcher
-          setShowProjectDialog(true)
-          break
-        case "d": // Dashboard
-          router.push(`/${currentLocale}/dashboard`)
-          break
-        case "a": // Accounts
-          router.push(`/${currentLocale}/dashboard/accounts`)
-          break
-        case "f": // Files
-          router.push(`/${currentLocale}/dashboard/files`)
-          break
-        case "n": // Notifications
-          router.push(`/${currentLocale}/dashboard/notifications`)
-          break
-        case "s": // Settings
-          router.push(`/${currentLocale}/dashboard/user-settings`)
-          break
-        case "t": // Toggle theme
-          document.dispatchEvent(new CustomEvent("toggle-theme-event"))
-          break
-        case "l": // Logout
+        case "k":
+          break;
+        case "g":
+          setShowGeneratePassword(true);
+          break;
+        case "p":
+          setShowProjectDialog(true);
+          break;
+        case "d":
+          router.push(`/${currentLocale}/dashboard`);
+          break;
+        case "a":
+          router.push(`/${currentLocale}/dashboard/accounts`);
+          break;
+        case "f":
+          router.push(`/${currentLocale}/dashboard/files`);
+          break;
+        case "n":
+          router.push(`/${currentLocale}/dashboard/notifications`);
+          break;
+        case "s":
+          router.push(`/${currentLocale}/dashboard/user-settings`);
+          break;
+        case "t":
+          document.dispatchEvent(new CustomEvent("toggle-theme-event"));
+          break;
+        case "l":
           handleLogout();
-          break
+          break;
       }
     };
 
@@ -282,12 +438,10 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   };
 
   const handleEncryptionKeyCancel = () => {
-    // If user cancels, redirect back to login with the current locale
-    setShowEncryptionKeyModal(false)
-    router.push(`/${currentLocale}/login`)
-  }
+    setShowEncryptionKeyModal(false);
+    router.push(`/${currentLocale}/login`);
+  };
 
-  // Sort locales by display name
   const sortedLocales = [...locales].sort((a, b) => {
     const nameA = languageLabels[a] || a;
     const nameB = languageLabels[b] || b;
@@ -295,6 +449,11 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   });
 
   const { translate } = useTranslator();
+
+  // Filter menu items based on enabled features
+  const enabledMenuItems = displayProject
+    ? featureMenuItems.filter((item) => normalizedFeatures[item.key]?.enabled)
+    : [];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -347,67 +506,21 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 <Home className="h-4 w-4" />
                 {translate("overview", "dashboard")}
               </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/accounts`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/accounts`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <User className="h-4 w-4" />
-                {translate("accounts", "dashboard")}
-              </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/api-keys`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/api-keys`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
+              {enabledMenuItems.map((item) => (
+                <Link
+                  key={item.key}
+                  href={`/${currentLocale}${item.path}`}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                    pathname === `/${currentLocale}${item.path}`
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
                 >
-                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-                </svg>
-                {translate("api_keys", "dashboard")}
-              </Link>
-              <Link
-                href={`/${currentLocale}/dashboard/wallet-passphrases`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                  pathname === `/${currentLocale}/dashboard/wallet-passphrases`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-wallet-icon lucide-wallet"
-                >
-                  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
-                  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-                </svg>
-                {translate("wallet_passphrases", "dashboard")}
-              </Link>
+                  {item.icon}
+                  {translate(item.labelKey, "dashboard")}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -536,32 +649,29 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
             </form>
           </div>
 
-          
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button
-        variant="default"
-        onClick={() => setShowGeneratePassword(true)}
-        className="theme-button flex items-center gap-2 px-4 py-2"
-      >
-        <Key className="h-5 w-5" />
-        <span>{translate("generate_password", "dashboard")}</span>
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>{translate("generate_password", "dashboard")}</p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  onClick={() => setShowGeneratePassword(true)}
+                  className="theme-button flex items-center gap-2 px-4 py-2"
+                >
+                  <Key className="h-5 w-5" />
+                  <span>{translate("generate_password", "dashboard")}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{translate("generate_password", "dashboard")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          {/* Replace WorkspaceSwitcherNav with static workspace display */}
           <div className="flex items-center gap-2 px-3 py-1.5">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">{workspaceName}</span>
           </div>
 
-          {/* Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
