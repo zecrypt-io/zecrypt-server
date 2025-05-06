@@ -47,7 +47,7 @@ axiosInstance.interceptors.response.use(
         store.dispatch(clearUserData());
         localStorage.clear();
         if (typeof window !== 'undefined') {
-          const language = store.getState().user.userData?.language || 'en'; // Using 'language' as in your newer code
+          const language = store.getState().user.userData?.locale || 'en'; // Using 'language' as in your newer code
           window.location.href = `/${language}/login`;
         }
         console.error('Unauthorized or Not Found:', error.response.data?.message || 'Redirecting to login');

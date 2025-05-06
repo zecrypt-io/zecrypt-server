@@ -10,10 +10,8 @@ export const loadInitialData = async (accessToken: string) => {
     const response = await axiosInstance.post('/load-initial-data');
     
 
-    
     const data = response.data;
     
-    // Transform API response into Workspace[] format
     const workspaces = data.data.map((workspace: any) => ({
       workspaceId: workspace.doc_id,
       name: workspace.name,
@@ -31,6 +29,7 @@ export const loadInitialData = async (accessToken: string) => {
         updated_at: project.updated_at,
         is_default: project.is_default,
         workspace_id: project.workspace_id,
+        features: project.features || {},
       })),
     }));
     

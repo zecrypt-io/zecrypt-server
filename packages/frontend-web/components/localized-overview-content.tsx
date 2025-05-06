@@ -9,18 +9,18 @@ import {
   FileText 
 } from "lucide-react";
 import { useTranslator } from "@/hooks/use-translations";
-import { useUser } from "@stackframe/stack";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { loadInitialData } from "@/libs/getWorkspace";
 import { Workspace } from "@/libs/Redux/workspaceSlice";
+import { useFormatter } from "next-intl"; // Add next-intl formatter
 
 export function LocalizedOverviewContent() {
   const { translate } = useTranslator();
+  const format = useFormatter(); // Add formatter
   const dispatch = useDispatch<AppDispatch>();
-  // const { user } = useUser();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
@@ -46,6 +46,18 @@ export function LocalizedOverviewContent() {
   // Calculate totals from Redux state
   const totalProjects = workspaces?.reduce((sum, ws) => sum + ws.projects.length, 0) || 0;
   const totalWorkspaces = workspaces?.length || 0;
+
+  // Placeholder for dynamic stats (to be fetched from backend)
+  const stats = {
+    totalPasswords: 124, // Replace with API call
+    totalAccounts: 34,   // Replace with API call
+    totalFolders: 8,     // Replace with API call
+    teamMembers: 4,      // Replace with API call
+    passwordsTrend: "+12%", // Replace with API calculation
+    accountsTrend: "+5%",   // Replace with API calculation
+    foldersTrend: "+2%",    // Replace with API calculation
+    workspacesTrend: "+10%", // Replace with API calculation
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +99,14 @@ export function LocalizedOverviewContent() {
 
     fetchData();
   }, [accessToken, dispatch, selectedProjectId]);
+
+  // Mock recent activities with dynamic time formatting
+  const recentActivities = [
+    { type: "password_updated", timestamp: new Date(Date.now() - 5 * 60 * 1000) }, // 5 minutes ago
+    { type: "note_created", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) }, // 2 hours ago
+    { type: "password_updated", timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // 1 day ago
+    { type: "note_created", timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }, // 3 days ago
+  ];
 
   return (
     <div className="p-6">
@@ -132,10 +152,10 @@ export function LocalizedOverviewContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">124</div>
+            <div className="text-3xl font-bold">{stats.totalPasswords}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">+12%</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.passwordsTrend}</span> {translate('from_last_month', 'dashboard')}
             </div>
           </CardContent>
         </Card>
@@ -150,10 +170,10 @@ export function LocalizedOverviewContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">34</div>
+            <div className="text-3xl font-bold">{stats.totalAccounts}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">+5%</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.accountsTrend}</span> {translate('from_last_month', 'dashboard')}
             </div>
           </CardContent>
         </Card>
@@ -168,10 +188,10 @@ export function LocalizedOverviewContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">8</div>
+            <div className="text-3xl font-bold">{stats.totalFolders}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">+2%</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.foldersTrend}</span> {translate('from_last_month', 'dashboard')}
             </div>
           </CardContent>
         </Card>
@@ -189,7 +209,7 @@ export function LocalizedOverviewContent() {
             <div className="text-3xl font-bold">{totalWorkspaces}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">+10%</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.workspacesTrend}</span> {translate('from_last_month', 'dashboard')}
             </div>
           </CardContent>
         </Card>
@@ -202,10 +222,10 @@ export function LocalizedOverviewContent() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-start gap-4 p-3 hover:bg-muted/50 rounded-lg transition-colors">
+              {recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-start gap-4 p-3 hover:bg-muted/50 rounded-lg transition-colors">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    {i % 2 === 0 ? (
+                    {activity.type === "password_updated" ? (
                       <Lock className="h-4 w-4 text-primary" />
                     ) : (
                       <FileText className="h-4 w-4 text-primary" />
@@ -214,18 +234,10 @@ export function LocalizedOverviewContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="font-medium truncate">
-                        {i % 2 === 0 
-                          ? translate('password_updated', 'activity')
-                          : translate('note_created', 'activity')}
+                        {translate(activity.type, 'activity')}
                       </p>
                       <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                        {i === 1 
-                          ? translate('just_now', 'time')
-                          : i === 2 
-                            ? translate('hours_ago', 'time', { hours: 2 })
-                            : i === 3 
-                              ? translate('yesterday', 'time')
-                              : translate('days_ago', 'time', { days: 3 })}
+                        {format.relativeTime(activity.timestamp, new Date())}
                       </span>
                     </div>
                   </div>
@@ -260,7 +272,7 @@ export function LocalizedOverviewContent() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{translate('team_members', 'dashboard')}</span>
                 </div>
-                <span className="text-sm font-medium">4</span>
+                <span className="text-sm font-medium">{stats.teamMembers}</span>
               </div>
             </div>
           </CardContent>

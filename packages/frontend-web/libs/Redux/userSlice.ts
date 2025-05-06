@@ -7,7 +7,7 @@ interface UserData {
   access_token: string | null;
   refresh_token: string | null;
   email: string | null;
-  language: string | null;
+  locale: string | null; // Changed from language to locale
   is_2fa_enabled: boolean;
 }
 
@@ -23,7 +23,7 @@ const initialState: UserState = {
     access_token: null,
     refresh_token: null,
     email: null,
-    language: null,
+    locale: null, // Changed from language to locale
     is_2fa_enabled: false,
   },
 };

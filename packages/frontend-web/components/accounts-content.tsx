@@ -20,6 +20,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { useFormatter } from "next-intl"; // Add next-intl formatter
 
 interface Account {
   doc_id: string;
@@ -41,6 +42,7 @@ interface Account {
 export function AccountsContent() {
   const { translate } = useTranslator();
   const router = useRouter();
+  const format = useFormatter(); // Add formatter for date
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showEditAccount, setShowEditAccount] = useState(false);
@@ -71,7 +73,6 @@ export function AccountsContent() {
           const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
           const decryptedData = await decrypt(account.data, cryptoKey);
 
-          // Check for legacy hash
           if (isLikelyHash(decryptedData)) {
             console.warn("Legacy hash detected:", {
               account_id: account.doc_id,
@@ -86,7 +87,6 @@ export function AccountsContent() {
             };
           }
 
-          // Parse as JSON
           try {
             const parsedData = JSON.parse(decryptedData);
             if (parsedData.user_name && parsedData.password) {
@@ -137,7 +137,6 @@ export function AccountsContent() {
         }
       }
 
-      // Handle data as object (unlikely based on backend)
       if (account.data && typeof account.data === "object") {
         return {
           ...account,
@@ -147,7 +146,6 @@ export function AccountsContent() {
         };
       }
 
-      // Default case
       return {
         ...account,
         user_name: "Data unavailable",
@@ -170,7 +168,6 @@ export function AccountsContent() {
     }
   }, []);
 
-  // Convert category to tag format for API - Fix for tag filtering
   const getCategoryTag = useCallback((category: string): string => {
     switch (category.toLowerCase()) {
       case 'personal':
@@ -199,10 +196,8 @@ export function AccountsContent() {
     try {
       setIsLoading(true);
 
-      // Prepare tags array with proper case handling
       let tagsArray: string[] = [];
       if (selectedCategory !== "all") {
-        // Try both lowercase and original case to handle potential case sensitivity in the backend
         const categoryTag = getCategoryTag(selectedCategory);
         tagsArray = [categoryTag];
       }
@@ -225,23 +220,19 @@ export function AccountsContent() {
 
       console.log(`Fetched ${fetchedAccounts?.length || 0} accounts, count: ${count}, total_count: ${total_count}`);
 
-      // Decrypt accounts
       const decryptedAccounts = await Promise.all(
         (fetchedAccounts || []).map(decryptAccountData)
       );
 
       setAllAccounts(decryptedAccounts || []);
-      // Use total_count if available, otherwise estimate
       setTotalCount(total_count || (count < itemsPerPage ? (currentPage - 1) * itemsPerPage + count : (currentPage * itemsPerPage) + 1));
 
-      // If filtering by tag returned no results, try fetching all and filtering client-side
       if (selectedCategory !== "all" && count === 0 && currentPage === 1) {
         console.warn(`No accounts found for tag: ${selectedCategory}. Attempting client-side filtering...`);
         
-        // Fetch all accounts without tag filter
         const fallbackPayload = {
           page: 1,
-          limit: 50, // Fetch more to increase chances of finding matches
+          limit: 50,
           name: searchQuery.trim() || null,
           tags: [],
         };
@@ -254,7 +245,6 @@ export function AccountsContent() {
         const { data: allFetchedAccounts = [] } = fallbackResponse.data || {};
         
         if (allFetchedAccounts.length > 0) {
-          // Filter client-side for the selected category
           const categoryTag = getCategoryTag(selectedCategory);
           const matchingAccounts = allFetchedAccounts.filter((acc: Account) => 
             acc.tags?.some((tag: string) => 
@@ -282,13 +272,12 @@ export function AccountsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, decryptAccountData, getCategoryTag, ]);
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, decryptAccountData, getCategoryTag]);
 
   useEffect(() => {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  // Shortcuts for adding accounts
   useEffect(() => {
     const handleAddAccount = () => setShowAddAccount(true);
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -368,7 +357,6 @@ export function AccountsContent() {
     alert(translate("account_updated_successfully", "accounts"));
   }, [fetchAccounts, translate]);
 
-  // Debounced search input
   const debouncedSearch = useMemo(() => {
     let timeoutId: NodeJS.Timeout;
     return (value: string) => {
@@ -380,7 +368,6 @@ export function AccountsContent() {
     };
   }, []);
 
-  // Pagination range with dots for large page counts
   const getPaginationRange = useCallback(() => {
     const maxPagesToShow = 5;
     const pageNumbers: (number | string)[] = [];
@@ -645,7 +632,11 @@ export function AccountsContent() {
                       </div>
                     </td>
                     <td className="p-3 text-sm text-muted-foreground">
-                      {new Date(account.updated_at).toLocaleDateString(currentLocale)}
+                      {format.dateTime(new Date(account.updated_at), { // Use next-intl formatter
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                     </td>
                     <td className="p-3">
                       <DropdownMenu>
