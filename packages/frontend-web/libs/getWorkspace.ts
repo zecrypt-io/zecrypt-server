@@ -9,9 +9,7 @@ export const loadInitialData = async (accessToken: string) => {
   try {
     const response = await axiosInstance.post('/load-initial-data');
     
-    // Log response information
-    console.log("Raw response status:", response.status);
-    console.log("Raw response data:", JSON.stringify(response.data, null, 2));
+
     
     const data = response.data;
     
