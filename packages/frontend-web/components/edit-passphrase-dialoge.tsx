@@ -24,7 +24,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "@/libs/crypto";
+import { hashData } from "@/libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface WalletPassphrase {
@@ -38,7 +38,6 @@ interface WalletPassphrase {
   createdAt: Date;
   lastAccessed: Date;
   data?: string;
-  decrypted?: boolean;
 }
 
 interface EditPassphraseDialogProps {
@@ -199,14 +198,14 @@ export function EditPassphraseDialog({
       return;
     }
 
-    if (!validatePassphrase(formData.passphrase) || !passphrase) {
+    if (!validatePassphrase(formData.passphrase)) {
       return;
     }
 
-    if (!workspaceId || !projectId || !accessToken) {
+    if (!workspaceId || !projectId || !accessToken || !passphrase) {
       toast({
         title: "Error",
-        description: "No workspace or project selected",
+        description: "No workspace or project selected, or no passphrase to edit",
         variant: "destructive",
       });
       return;
@@ -215,51 +214,47 @@ export function EditPassphraseDialog({
     setIsSubmitting(true);
 
     try {
-      // Create data object for encryption
-      const dataToEncrypt = JSON.stringify({
+      // Create data object
+      const dataToSend = JSON.stringify({
         passphrase: formData.passphrase,
         walletAddress: formData.walletAddress || null,
       });
 
-      // Encrypt the JSON string (no hashing, to match AddPassphraseDialog)
-      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
+      // Hash the data for security verification
+      const hashedData = await hashData(dataToSend);
 
-      // Prepare payload matching backend UpdateWalletPhrase schema
+      // Prepare payload
       const formattedTags = formData.tags
         .split(",")
         .map((tag) => tag.trim())
-        .filter(Boolean);
+        .filter((tag) => tag !== "");
 
       const payload = {
         name: formData.name,
         wallet_type: formData.walletType,
+        wallet_address: formData.walletAddress || null,
+        notes: formData.notes || null,
         tags: formattedTags,
-        data: encryptedData,
-        // Note: Do not include 'phrase' or 'wallet_address' as they're in 'data'
-        // If backend still requires 'phrase' temporarily, uncomment below:
-        // phrase: "",
-        // wallet_address: formData.walletAddress || null,
+        data: dataToSend,
+        hash: hashedData.hash,
       };
 
       const response = await axiosInstance.put(
-        `/${workspaceId}/${projectId}/wallet-phrases/${passphrase.id}`,
+        `/${workspaceId}/${projectId}/wallet-passphrases/${passphrase.id}`,
         payload,
         { headers: { "access-token": accessToken } }
       );
 
-      if (response.status === 200 || (response.data && response.data.status_code === 200)) {
+      if (response.status === 200) {
         const updatedPassphrase: WalletPassphrase = {
           ...passphrase,
           name: formData.name,
           walletType: formData.walletType,
           passphrase: formData.passphrase,
           walletAddress: formData.walletAddress,
+          notes: formData.notes,
           tags: formattedTags,
-          notes: formData.notes, // Store notes locally, as backend doesn't support it
-          data: encryptedData,
-          decrypted: true,
-          lastAccessed: new Date(),
+          data: dataToSend,
         };
 
         onEdit(updatedPassphrase);
@@ -267,52 +262,19 @@ export function EditPassphraseDialog({
         resetFormData();
 
         toast({
-          title: "Passphrase updated",
-          description: "Your wallet passphrase has been updated successfully.",
+          title: "Success",
+          description: "Wallet passphrase updated successfully",
         });
       } else {
-        throw new Error(response.data?.message || translate("failed_to_update_passphrase", "wallet_passphrases"));
+        throw new Error("Failed to update wallet passphrase");
       }
-    } catch (error: any) {
-      console.error("Error updating passphrase:", error);
-
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.message === "Wallet phrase already exists") {
-          setNameExistsError(translate("wallet_phrase_already_exists", "wallet_passphrases"));
-        } else if (error.response.status === 422) {
-          const details = error.response.data?.detail || [];
-          const errorMessages = details.map((err: any) => err.msg).join(", ");
-          toast({
-            title: "Error",
-            description: errorMessages || translate("invalid_input", "wallet_passphrases"),
-            variant: "destructive",
-          });
-        } else if (error.response.status === 500) {
-          toast({
-            title: "Error",
-            description: translate("error_updating_passphrase", "wallet_passphrases"),
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: error.response.data?.message || translate("failed_to_update_passphrase", "wallet_passphrases"),
-            variant: "destructive",
-          });
-        }
-      } else if (error.request) {
-        toast({
-          title: "Error",
-          description: translate("network_error", "wallet_passphrases"),
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: `${translate("error_updating_passphrase", "wallet_passphrases")}: ${error.message}`,
-          variant: "destructive",
-        });
-      }
+    } catch (error) {
+      console.error("Error updating wallet passphrase:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update wallet passphrase",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
