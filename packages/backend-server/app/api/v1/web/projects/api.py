@@ -73,7 +73,7 @@ async def delete_project_api(
 
 
 @router.get(TAGS)
-async def get_tags_api(
+async def get_projecttags_api(
     request: Request,
     workspace_id: str,
     project_id: str,
