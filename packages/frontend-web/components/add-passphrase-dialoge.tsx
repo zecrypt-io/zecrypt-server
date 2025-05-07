@@ -24,7 +24,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "@/libs/crypto";
+import { hashData } from "@/libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface WalletPassphrase {
@@ -38,7 +38,6 @@ interface WalletPassphrase {
   createdAt: Date;
   lastAccessed: Date;
   data?: string;
-  decrypted?: boolean;
 }
 
 interface AddPassphraseDialogProps {
@@ -185,28 +184,29 @@ export function AddPassphraseDialog({
     setIsSubmitting(true);
 
     try {
-      // Create data object for encryption
-      const dataToEncrypt = JSON.stringify({
+      // Create data object 
+      const dataToSend = JSON.stringify({
         passphrase: formData.passphrase,
         walletAddress: formData.walletAddress || null,
       });
 
-      // Encrypt the JSON string
-      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
+      // Hash the data for security verification
+      const hashedData = await hashData(dataToSend);
 
       // Prepare payload matching updated backend WalletPhrase schema
       const formattedTags = formData.tags
         .split(",")
         .map((tag) => tag.trim())
-        .filter(Boolean);
+        .filter((tag) => tag !== "");
 
       const payload = {
         name: formData.name,
         wallet_type: formData.walletType,
+        wallet_address: formData.walletAddress || null,
+        notes: formData.notes || null,
         tags: formattedTags,
-        data: encryptedData,
-        phrase: "", // Placeholder to satisfy current schema
+        data: dataToSend,
+        hash: hashedData.hash,
       };
 
       const response = await axiosInstance.post(
@@ -226,8 +226,7 @@ export function AddPassphraseDialog({
           notes: formData.notes,
           createdAt: new Date(),
           lastAccessed: new Date(),
-          data: encryptedData,
-          decrypted: true,
+          data: dataToSend,
         };
 
         onAdd(newPassphrase);

@@ -5,26 +5,30 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData, encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface Account {
   doc_id: string;
-  name: string;
+  name?: string;
+  title?: string;
   lower_name: string;
   user_name?: string;
   password?: string;
   data?: string | { user_name: string; password: string };
   website?: string | null;
+  notes?: string | null;
   tags?: string[];
   created_at: string;
   updated_at: string;
   created_by: string;
   project_id: string;
-  decrypted?: boolean;
 }
 
 interface EditAccountDialogProps {
@@ -35,10 +39,10 @@ interface EditAccountDialogProps {
 
 export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAccountDialogProps) {
   const { translate } = useTranslator();
-  const [name, setName] = useState(account.name);
-  const [userName, setUserName] = useState(account.user_name || "");
+  const [name, setName] = useState(account.title || account.name || "");
   const [password, setPassword] = useState(account.password || "");
   const [website, setWebsite] = useState(account.website || "");
+  const [notes, setNotes] = useState(account.notes || "");
   const [tags, setTags] = useState<string[]>(account.tags || []);
   const [newTag, setNewTag] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -61,8 +65,10 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
     setTags(tags.filter((t) => t !== tag));
   };
 
-  const handleSubmit = async () => {
-    if (!name || !userName || !password) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!name || !password) {
       setError(translate("please_fill_all_required_fields", "accounts"));
       return;
     }
@@ -80,35 +86,30 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
     setError("");
 
     try {
-      // Create data object for encryption
-      const dataToEncrypt = { user_name: userName, password };
-      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      
-      let encryptedData;
-      
-      if (password !== account.password) {
-        // Only encrypt if password was changed
-        encryptedData = await encrypt(JSON.stringify(dataToEncrypt), cryptoKey);
-      } else {
-        // Use existing data if password wasn't changed
-        encryptedData = typeof account.data === 'string' ? account.data : 
-                        await encrypt(JSON.stringify(dataToEncrypt), cryptoKey);
-      }
+      // Hash the password for security
+      const hashedData = await hashData(password);
 
-      // Prepare payload according to backend schema
+      // Create payload according to API specification
       const payload = {
-        name,
+        title: name,
+        data: password,
+        hash: hashedData.hash,
         website: website || null,
-        tags,
-        data: encryptedData,
+        tags: tags,
+        notes: notes || null
       };
 
       const response = await axiosInstance.put(
-        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/${account.doc_id}`,
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/${account.doc_id}`, 
         payload
       );
 
-      if (response.status === 200 || (response.data && response.data.status_code === 200)) {
+      if (response.status === 200) {
+        toast({
+          title: translate("success"),
+          description: translate("account_updated_successfully", "accounts"),
+        });
+
         onAccountUpdated();
         onClose();
       } else {
@@ -116,10 +117,14 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
       }
     } catch (error: any) {
       console.error("Error updating account:", error);
+      console.error("Error details:", error.response?.data);
       
       if (error.response) {
         if (error.response.status === 400) {
           setError(error.response.data?.message || translate("invalid_input", "accounts"));
+        } else if (error.response.status === 422) {
+          const errorMessages = error.response.data?.detail?.map((err: any) => err.msg).join(", ");
+          setError(errorMessages || translate("validation_error", "accounts"));
         } else if (error.response.status === 404) {
           setError(translate("account_not_found", "accounts"));
         } else if (error.response.status === 500) {
@@ -169,18 +174,6 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {translate("username", "accounts")} <span className="text-red-500">*</span>
-            </label>
-            <Input
-              placeholder={translate("enter_username", "accounts")}
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
               {translate("password", "accounts")} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -210,6 +203,15 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
               placeholder={translate("enter_website_url", "accounts")}
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("notes", "accounts")}</label>
+            <Input
+              placeholder={translate("enter_notes", "accounts")}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 
