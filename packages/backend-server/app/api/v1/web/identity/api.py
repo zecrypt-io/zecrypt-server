@@ -3,7 +3,6 @@ from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from app.api.v1.web.identity.schema import (
     UpdateIdentity,
     AddIdentity,
-    GetIdentitiesList,
 )
 from app.api.v1.web.identity.services import (
     delete_identity,
@@ -14,21 +13,20 @@ from app.api.v1.web.identity.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import IDENTITY_LIST, IDENTITY_DETAILS, IDENTITY
+from app.api.v1.web.route_constants import IDENTITY_DETAILS, IDENTITY
 
 router = APIRouter()
 
 
-@router.post(IDENTITY_LIST)
+@router.get(IDENTITY)
 async def get_identity_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: GetIdentitiesList,
     user: UserDetails = Depends(get_current_user),
 ):
 
-    return get_identities(user.get("db"), payload.model_dump(), request)
+    return get_identities(user.get("db"), request)
 
 
 @router.get(IDENTITY_DETAILS)

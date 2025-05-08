@@ -16,32 +16,18 @@ def get_identity_details(db, doc_id):
     )
 
 
-def get_identities(db, payload, request):
-    page = payload.get("page", 1)
-    limit = payload.get("limit", 20)
-    tags = payload.get("tags", [])
-    title = payload.get("title", None)
-    project_id = request.path_params.get("project_id")
-    sort_by = payload.get("sort_by", "created_at")
-    sort_order = payload.get("sort_order", "asc")
+def get_identities(db, request):
     query = {
         "secret_type": data_type,
-        "project_id": project_id,
-        **({"tags": {"$in": tags}} if tags else {}),
-        **({"lower_title": title.strip().lower()} if title else {}),
+        "project_id": request.path_params.get("project_id"),
     }
 
-    sort = (sort_by, 1 if sort_order == "asc" else -1)
-    skip = (page - 1) * limit
-
-    identities = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
+    identities = secrets_manager.find(db, query)
 
     return response_helper(
         status_code=200,
         message="Identities loaded successfully",
         data=identities,
-        page=page,
-        limit=limit,
         count=len(identities),
     )
 
@@ -57,11 +43,7 @@ def add_identity(request, user, payload, background_tasks):
         "project_id": project_id,
         "secret_type": data_type,
     }
-
-    identity = secrets_manager.find_one(
-        db,
-        query,
-    )
+    identity = secrets_manager.find_one(db, query,)
     if identity:
         return response_helper(
             status_code=400, message="Identity details with same title already exists"
@@ -79,9 +61,7 @@ def add_identity(request, user, payload, background_tasks):
     secrets_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="Identity details added successfully",
-        data=payload,
+        status_code=201, message="Identity details added successfully", data=payload,
     )
 
 
@@ -113,14 +93,11 @@ def update_identity(request, user, payload, background_tasks):
             )
 
     secrets_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {"$set": payload},
+        db, {"doc_id": doc_id}, {"$set": payload},
     )
 
     return response_helper(
-        status_code=200,
-        message="Identity details updated successfully",
+        status_code=200, message="Identity details updated successfully",
     )
 
 
@@ -129,15 +106,10 @@ def delete_identity(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Identity details not found",
-        )
+        return response_helper(status_code=404, message="Identity details not found",)
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
-        status_code=200,
-        message="Identity details deleted successfully",
-        data={},
+        status_code=200, message="Identity details deleted successfully", data={},
     )

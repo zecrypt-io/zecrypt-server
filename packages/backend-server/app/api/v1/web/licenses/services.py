@@ -16,32 +16,18 @@ def get_license_details(db, doc_id):
     )
 
 
-def get_licenses(db, payload, request):
-    page = payload.get("page", 1)
-    limit = payload.get("limit", 20)
-    tags = payload.get("tags", [])
-    title = payload.get("title", None)
-    project_id = request.path_params.get("project_id")
-    sort_by = payload.get("sort_by", "created_at")
-    sort_order = payload.get("sort_order", "asc")
+def get_licenses(db, request):
     query = {
         "secret_type": data_type,
-        "project_id": project_id,
-        **({"tags": {"$in": tags}} if tags else {}),
-        **({"lower_title": title.strip().lower()} if title else {}),
+        "project_id": request.path_params.get("project_id"),
     }
 
-    sort = (sort_by, 1 if sort_order == "asc" else -1)
-    skip = (page - 1) * limit
-
-    licenses = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
+    licenses = secrets_manager.find(db, query)
 
     return response_helper(
         status_code=200,
         message="Licenses loaded successfully",
         data=licenses,
-        page=page,
-        limit=limit,
         count=len(licenses),
     )
 
@@ -58,10 +44,7 @@ def add_license(request, user, payload, background_tasks):
         "secret_type": data_type,
     }
 
-    license = secrets_manager.find_one(
-        db,
-        query,
-    )
+    license = secrets_manager.find_one(db, query,)
     if license:
         return response_helper(
             status_code=400, message="License details with same title already exists"
@@ -79,9 +62,7 @@ def add_license(request, user, payload, background_tasks):
     secrets_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="License added successfully",
-        data=payload,
+        status_code=201, message="License added successfully", data=payload,
     )
 
 
@@ -115,14 +96,11 @@ def update_license(request, user, payload, background_tasks):
 
     # Update account
     secrets_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {"$set": payload},
+        db, {"doc_id": doc_id}, {"$set": payload},
     )
 
     return response_helper(
-        status_code=200,
-        message="License details updated successfully",
+        status_code=200, message="License details updated successfully",
     )
 
 
@@ -131,15 +109,10 @@ def delete_license(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="License details not found",
-        )
+        return response_helper(status_code=404, message="License details not found",)
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
-        status_code=200,
-        message="License details deleted successfully",
-        data={},
+        status_code=200, message="License details deleted successfully", data={},
     )

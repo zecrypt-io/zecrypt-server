@@ -16,33 +16,16 @@ def get_account_details(db, doc_id):
     )
 
 
-def get_accounts(db, payload, request):
-    page = payload.get("page", 1)
-    limit = payload.get("limit", 20)
-    tags = payload.get("tags", [])
-    title = payload.get("title", None)
-    sort_by = payload.get("sort_by", "created_at")
-    sort_order = payload.get("sort_order", "asc")
-    project_id = request.path_params.get("project_id")
-
+def get_accounts(db, request):
     query = {
-        "project_id": project_id,
+        "project_id": request.path_params.get("project_id"),
         "secret_type": data_type,
-        **({"tags": {"$in": tags}} if tags else {}),
-        **({"lower_title": title.strip().lower()} if title else {}),
     }
-
-    skip = (page - 1) * limit
-    sort = (sort_by, 1 if sort_order == "asc" else -1)
-
-    accounts = secrets_manager.find(db, query, sort=sort, skip=skip, limit=limit)
-
+    accounts = secrets_manager.find(db, query)
     return response_helper(
         status_code=200,
         message="Accounts loaded successfully",
         data=accounts,
-        page=page,
-        limit=limit,
         count=len(accounts),
     )
 
@@ -75,9 +58,7 @@ def add_account(request, user, payload, background_tasks):
     secrets_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="Account added successfully",
-        data={},
+        status_code=201, message="Account added successfully", data={},
     )
 
 
@@ -107,11 +88,7 @@ def update_account(request, user, payload, background_tasks):
 
     # Update account
     secrets_manager.update_one(
-        db,
-        {"doc_id": doc_id},
-        {
-            "$set": payload,
-        },
+        db, {"doc_id": doc_id}, {"$set": payload,},
     )
 
 
@@ -120,14 +97,9 @@ def delete_account(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Account details not found",
-        )
+        return response_helper(status_code=404, message="Account details not found",)
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
-        status_code=200,
-        message="Account deleted successfully",
-        data={},
+        status_code=200, message="Account deleted successfully", data={},
     )

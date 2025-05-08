@@ -82,9 +82,7 @@ def add_project(request, user, payload, background_tasks):
     project_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201,
-        message="Project added successfully",
-        data=payload,
+        status_code=201, message="Project added successfully", data=payload,
     )
 
 
@@ -133,17 +131,12 @@ def delete_project(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(
-            status_code=404,
-            message="Project details not found",
-        )
+        return response_helper(status_code=404, message="Project details not found",)
 
     project_manager.delete_one(db, {"doc_id": doc_id})
 
     return response_helper(
-        status_code=200,
-        message="Project deleted successfully",
-        data={},
+        status_code=200, message="Project deleted successfully", data={},
     )
 
 

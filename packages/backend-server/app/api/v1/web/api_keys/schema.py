@@ -23,15 +23,3 @@ class UpdateApiKey(BaseModel):
         Literal["Development", "Production", "Staging", "Testing", "Local", "UAT"]
     ] = None
     tags: Optional[List[str]] = None
-
-
-class GetApiKeysList(BaseModel):
-    page: int
-    limit: int
-    tags: Optional[List[str]] = Field(default_factory=list)
-    env: Optional[
-        Literal["Development", "Production", "Staging", "Testing", "Local", "UAT"]
-    ] = None
-    title: Optional[str] = None
-    sort_by: Optional[Literal["created_at", "title"]] = "created_at"
-    sort_order: Optional[Literal["asc", "desc"]] = "asc"

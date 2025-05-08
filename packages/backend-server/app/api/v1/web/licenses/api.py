@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.licenses.schema import UpdateLicense, AddLicense, GetLicensesList
+from app.api.v1.web.licenses.schema import UpdateLicense, AddLicense
 from app.api.v1.web.licenses.services import (
     delete_license,
     update_license,
@@ -10,21 +10,20 @@ from app.api.v1.web.licenses.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import LICENSE_LIST, LICENSE_DETAILS, LICENSE
+from app.api.v1.web.route_constants import LICENSE_DETAILS, LICENSE
 
 router = APIRouter()
 
 
-@router.post(LICENSE_LIST)
+@router.get(LICENSE)
 async def get_license_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: GetLicensesList,
     user: UserDetails = Depends(get_current_user),
 ):
 
-    return get_licenses(user.get("db"), payload.model_dump(), request)
+    return get_licenses(user.get("db"), request)
 
 
 @router.get(LICENSE_DETAILS)

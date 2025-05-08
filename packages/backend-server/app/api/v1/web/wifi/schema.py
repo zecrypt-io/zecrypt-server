@@ -7,6 +7,7 @@ from app.framework.mongo_db.base_model import BaseModel
 
 class AddWifi(BaseModel):
     title: str
+    security_type: Optional[str] = None
     data: Optional[Any] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = Field(default_factory=list)
@@ -14,15 +15,8 @@ class AddWifi(BaseModel):
 
 class UpdateWifi(BaseModel):
     title: Optional[str] = None
+    security_type: Optional[str] = None
     data: Optional[Any] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
 
-
-class GetWifisList(BaseModel):
-    page: int
-    limit: int
-    tags: Optional[List[str]] = Field(default_factory=list)
-    title: Optional[str] = None
-    sort_by: Optional[Literal["created_at", "title"]] = "created_at"
-    sort_order: Optional[Literal["asc", "desc"]] = "asc"

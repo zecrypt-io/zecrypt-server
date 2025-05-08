@@ -62,7 +62,5 @@ def get_tags(request, user):
     unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, "", [], {})))
 
     return response_helper(
-        status_code=200,
-        message="Tags loaded successfully",
-        data=unique_tags,
+        status_code=200, message="Tags loaded successfully", data=unique_tags,
     )

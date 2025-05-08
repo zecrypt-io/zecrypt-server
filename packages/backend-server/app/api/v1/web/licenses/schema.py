@@ -20,11 +20,3 @@ class UpdateLicense(BaseModel):
     tags: Optional[List[str]] = None
     expires_at: Optional[str] = None
 
-
-class GetLicensesList(BaseModel):
-    page: int
-    limit: int
-    tags: Optional[List[str]] = Field(default_factory=list)
-    title: Optional[str] = None
-    sort_by: Optional[Literal["created_at", "title"]] = "created_at"
-    sort_order: Optional[Literal["asc", "desc"]] = "asc"

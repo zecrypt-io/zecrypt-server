@@ -1,15 +1,11 @@
 from fastapi import APIRouter, Request, BackgroundTasks, Response, Depends
 from app.api.v1.web.auth.schema import Login, UserDetails, TwoFactorAuth
-from app.api.v1.web.auth.services import (
-    validate_stack_auth_token,
-)
+from app.api.v1.web.auth.services import validate_stack_auth_token
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.auth.services import create_user, user_login, verify_two_factor_auth
 from app.framework.mongo_db.db import get_db
 from app.managers import user as user_manager
-from app.utils.utils import (
-    response_helper,
-)
+from app.utils.utils import response_helper
 from app.api.v1.web.route_constants import LOGIN, LOGOUT, TWO_FACTOR_AUTH
 
 db = get_db()
@@ -27,8 +23,7 @@ async def login_api(
     auth_data = validate_stack_auth_token(payload.get("uid"))
     if not auth_data:
         return response_helper(
-            status_code=400,
-            message="Authentication failed, Please try again",
+            status_code=400, message="Authentication failed, Please try again",
         )
     user = user_manager.find_one(
         db, {"uid": auth_data.get("id"), "access": {"$ne": False}}, {"_id": False}

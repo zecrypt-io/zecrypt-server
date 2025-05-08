@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.emails.schema import UpdateEmail, AddEmail, GetEmailsList
+from app.api.v1.web.emails.schema import UpdateEmail, AddEmail
 from app.api.v1.web.emails.services import (
     delete_email,
     update_email,
@@ -10,21 +10,20 @@ from app.api.v1.web.emails.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import EMAIL_LIST, EMAIL_DETAILS, EMAILS
+from app.api.v1.web.route_constants import EMAIL_DETAILS, EMAILS
 
 router = APIRouter()
 
 
-@router.post(EMAIL_LIST)
+@router.get(EMAILS)
 async def get_email_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: GetEmailsList,
     user: UserDetails = Depends(get_current_user),
 ):
 
-    return get_emails(user.get("db"), payload.model_dump(), request)
+    return get_emails(user.get("db"), request)
 
 
 @router.get(EMAIL_DETAILS)

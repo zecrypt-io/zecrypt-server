@@ -8,12 +8,10 @@ from app.api.v1.web.wallet_phrases.services import (
 from app.api.v1.web.wallet_phrases.schema import (
     WalletPhrase,
     UpdateWalletPhrase,
-    GetWalletPhrasesList,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.route_constants import (
-    WALLET_PHRASE_LIST,
     WALLET_PHRASES,
     WALLET_PHRASE_DETAILS,
 )
@@ -21,15 +19,14 @@ from app.api.v1.web.route_constants import (
 router = APIRouter()
 
 
-@router.post(WALLET_PHRASE_LIST)
+@router.get(WALLET_PHRASES)
 async def get_wallet_phrases_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: GetWalletPhrasesList,
     user: UserDetails = Depends(get_current_user),
 ):
-    return get_wallet_phrases(user.get("db"), payload.model_dump(), request)
+    return get_wallet_phrases(user.get("db"), request)
 
 
 @router.post(WALLET_PHRASES)
