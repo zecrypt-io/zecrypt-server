@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { FIXED_SALT } from "../libs/crypto";
 import { useFormatter } from "next-intl"; // Add next-intl formatter
+import { toast } from "@/components/ui/use-toast";
 
 interface Account {
   doc_id: string;
@@ -281,14 +282,21 @@ export function AccountsContent() {
       try {
         await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
         fetchAccounts();
-        alert(translate("account_deleted_successfully", "accounts"));
+        toast({
+          title: "Success",
+          description: translate("account_deleted_successfully", "accounts"),
+        });
       } catch (error: any) {
         console.error("Error deleting account:", error);
         let errorMessage = translate("error_deleting_account", "accounts");
         if (error.response?.data?.message) {
           errorMessage = `${errorMessage}: ${error.response.data.message}`;
         }
-        alert(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
     },
     [selectedWorkspaceId, selectedProjectId, translate, fetchAccounts]
@@ -298,7 +306,10 @@ export function AccountsContent() {
     setShowEditAccount(false);
     setSelectedAccount(null);
     fetchAccounts();
-    alert(translate("account_updated_successfully", "accounts"));
+    toast({
+      title: "Success",
+      description: translate("account_updated_successfully", "accounts"),
+    });
   }, [fetchAccounts, translate]);
 
   const debouncedSearch = useMemo(() => {

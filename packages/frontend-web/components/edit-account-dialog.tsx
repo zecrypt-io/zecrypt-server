@@ -138,7 +138,7 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
 
       if (response.status === 200) {
         toast({
-          title: translate("success"),
+          title: "Success",
           description: translate("account_updated_successfully", "accounts"),
         });
 
@@ -175,8 +175,8 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-6">
+      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative my-auto">
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold">{translate("edit_account", "accounts")}</h2>
           {error && (
@@ -187,7 +187,7 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <label className="text-sm font-medium">
               {translate("account_name", "accounts")} <span className="text-red-500">*</span>
