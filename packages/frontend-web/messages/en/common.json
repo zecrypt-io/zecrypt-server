@@ -75,7 +75,7 @@
     "unlimited_devices": "Up to 5 projects per user, unlimited devices—completely free forever",
     "shared_vaults": "Effortlessly share credentials with teammates and family",
     "advanced_security": "Military-grade encryption (AES-GCM) for rock-solid security",
-    "security_alerts": "Instant breach alerts so you’re always one step ahead",
+    "security_alerts": "Instant breach alerts so you're always one step ahead",
     "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux - (coming soon)",
     "looking_for_options": "Looking for an individual, team, or business account?",
     "see_options": "See all account options"
@@ -238,6 +238,9 @@
     "enter_password": "Enter password",
     "website": "Website",
     "enter_website": "Enter website URL",
+    "enter_website_url": "Enter website URL",
+    "notes": "Notes",
+    "enter_notes": "Enter notes",
     "tags": "Tags",
     "enter_tags_comma_separated": "Enter tags (comma-separated)",
     "accounts": "Accounts",
@@ -286,7 +289,10 @@
     "adjust_search_filter": "Try adjusting your search or filter criteria",
     "error_loading_workspace": "Failed to load workspace data",
     "focus_search": "Focus Search",
-    "switch_project": "Switch Project"
+    "switch_project": "Switch Project",
+    "add_a_tag": "Add a tag",
+    "edit_account": "Edit Account",
+    "update_account": "Update Account"
   },
   "api_keys": {
     "title": "API Keys",
