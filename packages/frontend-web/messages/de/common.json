@@ -3,6 +3,15 @@
     "title": "Zecrypt",
     "description": "Schützen Sie Ihre Daten mit Zecrypt"
   },
+  "common": {
+    "loading": "Wird geladen...",
+    "saving": "Wird gespeichert...",
+    "deleting": "Wird gelöscht...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "try_again": "Erneut versuchen"
+  },
   "licenses": {
     "software_licenses": "Software-Lizenzen",
     "add_license": "Lizenz hinzufügen",
