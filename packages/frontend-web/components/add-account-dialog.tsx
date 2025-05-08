@@ -19,6 +19,7 @@ interface AddAccountDialogProps {
 export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
@@ -63,15 +64,20 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     setError("");
 
     try {
-      // Hash the password for security
-      const hashedData = await hashData(password);
+      // Create credentials object with username and password
+      const credentials = {
+        username: username || "",
+        password: password
+      };
+
+      // Hash the credentials object for security
+      const hashedData = await hashData(credentials);
 
       // Prepare payload according to API specification
       const payload = {
         title: name,
-        data: password,
-        hash: hashedData.hash,
-        website: website || null,
+        data: hashedData.hash,
+        url: website || null,
         tags,
         notes: notes || null
       };
@@ -140,6 +146,17 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
               />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {translate("username", "accounts")}
+            </label>
+            <Input
+              placeholder={translate("enter_username", "accounts")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">

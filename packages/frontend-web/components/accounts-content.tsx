@@ -28,9 +28,11 @@ interface Account {
   title?: string;
   lower_name: string;
   user_name?: string;
+  username?: string;
   password?: string;
-  data?: string;
+  data?: string | { username: string; password: string };
   website?: string | null;
+  url?: string | null;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -49,6 +51,7 @@ export function AccountsContent() {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
+  const [viewUsername, setViewUsername] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [allAccounts, setAllAccounts] = useState<Account[]>([]);
@@ -78,17 +81,46 @@ export function AccountsContent() {
         account.title = account.name;
       }
 
-      // Data field directly contains the password
+      // Legacy data format handling
       if (account.data && typeof account.data === "string") {
+        try {
+          // First attempt to parse as JSON (for accounts saved with the previous implementation)
+          const parsedData = JSON.parse(account.data);
+          if (parsedData && typeof parsedData === "object") {
+            // Extract username and password from the parsed object
+            if ("username" in parsedData && "password" in parsedData) {
+              return {
+                ...account,
+                username: parsedData.username,
+                password: parsedData.password
+              };
+            }
+          }
+        } catch (e) {
+          // If it's not JSON, it could be just a password (old format) or a hash (new format)
+          // Just use it as the password for display purposes
+        }
+
+        // If JSON parsing failed or format was unexpected, use data as password 
+        // (simplest approach for backward compatibility)
         return {
           ...account,
-          password: account.data
+          password: "••••••••" // Show masked password for security
         };
+      } else if (account.data && typeof account.data === "object") {
+        // Handle case where data is already an object
+        if ("username" in account.data && "password" in account.data) {
+          return {
+            ...account,
+            username: account.data.username,
+            password: account.data.password
+          };
+        }
       }
 
       return {
         ...account,
-        password: "Data unavailable"
+        password: "••••••••" // Data is now a hash, so we just display masked password
       };
     } catch (error: unknown) {
       console.error("Failed to process account data:", {
@@ -203,8 +235,9 @@ export function AccountsContent() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
-  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
+  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string | undefined) => {
     try {
+      if (!value) return;
       await navigator.clipboard.writeText(value);
       setCopiedField({ doc_id, field });
       setTimeout(() => setCopiedField(null), 2000);
@@ -215,6 +248,10 @@ export function AccountsContent() {
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
     setViewPassword(prev => (prev === doc_id ? null : doc_id));
+  }, []);
+
+  const toggleUsernameVisibility = useCallback((doc_id: string) => {
+    setViewUsername(prev => (prev === doc_id ? null : doc_id));
   }, []);
 
   const clearFilters = useCallback(() => {
@@ -388,6 +425,7 @@ export function AccountsContent() {
             <thead>
               <tr className="bg-muted/50">
                 <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("website", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
@@ -406,18 +444,81 @@ export function AccountsContent() {
                         </div>
                         <div>
                           <p className="font-medium">{account.title || account.name}</p>
-                          {account.website && (
+                          {(account.website || account.url) && (
                             <a
-                              href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
+                              href={
+                                (account.website || account.url || "").startsWith("http") 
+                                  ? (account.website || account.url || "") 
+                                  : `https://${account.website || account.url || ""}`
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
                             >
-                              {account.website.replace(/^https?:\/\//, "")}
+                              {(account.website || account.url || "").replace(/^https?:\/\//, "")}
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           )}
                         </div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono">
+                          {account.username && account.username.length > 0 && viewUsername === account.doc_id
+                            ? account.username
+                            : account.username && account.username.length > 0
+                            ? "••••••••"
+                            : "-"}
+                        </span>
+                        {account.username && account.username.length > 0 && (
+                          <div className="flex items-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => toggleUsernameVisibility(account.doc_id)}
+                                  >
+                                    {viewUsername === account.doc_id ? (
+                                      <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                    ) : (
+                                      <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{viewUsername === account.doc_id ? "Hide username" : "Show username"}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => account.username && copyToClipboard(account.doc_id, "username", account.username)}
+                                  >
+                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? (
+                                      <Check className="h-3.5 w-3.5 text-green-500" />
+                                    ) : (
+                                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? "Copied!" : "Copy username"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="p-3">
@@ -480,14 +581,18 @@ export function AccountsContent() {
                       </div>
                     </td>
                     <td className="p-3">
-                      {account.website && (
+                      {(account.website || account.url) && (
                         <a
-                          href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
+                          href={
+                            (account.website || account.url || "").startsWith("http") 
+                              ? (account.website || account.url || "") 
+                              : `https://${account.website || account.url || ""}`
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
                         >
-                          {account.website.replace(/^https?:\/\//, "")}
+                          {(account.website || account.url || "").replace(/^https?:\/\//, "")}
                         </a>
                       )}
                     </td>
