@@ -135,16 +135,20 @@ export function AccountsContent() {
         tagsArray = [getCategoryTag(selectedCategory)];
       }
 
-      const payload = {
-        page: currentPage,
-        limit: itemsPerPage,
-        name: searchQuery.trim() || null,
-        tags: tagsArray.length > 0 ? tagsArray : undefined,
-      };
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      if (searchQuery.trim()) {
+        queryParams.append('name', searchQuery.trim());
+      }
+      
+      if (tagsArray.length > 0) {
+        tagsArray.forEach(tag => queryParams.append('tags', tag));
+      }
 
-      const response = await axiosInstance.post(
-        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
-        payload
+      // Use the new GET endpoint with query parameters
+      const response = await axiosInstance.get(
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
       );
 
       if (response.status === 200) {
