@@ -26,16 +26,6 @@ async def get_wifi_api(
     return get_wifis(user.get("db"), request)
 
 
-@router.get(WIFI_DETAILS)
-async def get_wifi_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_wifi_details(user.get("db"), doc_id)
-
 
 @router.post(WIFI)
 async def create_wifi_api(

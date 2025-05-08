@@ -26,17 +26,6 @@ async def get_card_api(
     return get_cards(user.get("db"), request)
 
 
-@router.get(CARD_DETAILS)
-async def get_card_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_card_details(user.get("db"), doc_id)
-
-
 @router.post(CARDS)
 async def create_cards_api(
     request: Request,

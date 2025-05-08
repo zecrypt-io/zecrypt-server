@@ -25,17 +25,6 @@ async def get_api_key_api(
     return get_api_keys(user.get("db"), request)
 
 
-@router.get(API_KEY_DETAILS)
-async def get_api_key_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_api_key_details(user.get("db"), doc_id)
-
-
 @router.post(API_KEYS)
 async def create_api_keys_api(
     request: Request,

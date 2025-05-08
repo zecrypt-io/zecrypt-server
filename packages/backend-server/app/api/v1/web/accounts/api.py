@@ -24,18 +24,6 @@ async def get_accounts_api(
 ):
     return get_accounts(user.get("db"), request)
 
-
-@router.get(ACCOUNT_DETAILS)
-async def get_account_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_account_details(user.get("db"), doc_id)
-
-
 @router.post(ACCOUNTS)
 async def create_account_api(
     request: Request,

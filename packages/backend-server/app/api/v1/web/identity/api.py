@@ -29,17 +29,6 @@ async def get_identity_api(
     return get_identities(user.get("db"), request)
 
 
-@router.get(IDENTITY_DETAILS)
-async def get_identity_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_identity_details(user.get("db"), doc_id)
-
-
 @router.post(IDENTITY)
 async def create_identities_api(
     request: Request,

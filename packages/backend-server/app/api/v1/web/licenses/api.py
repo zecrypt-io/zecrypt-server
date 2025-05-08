@@ -26,17 +26,6 @@ async def get_license_api(
     return get_licenses(user.get("db"), request)
 
 
-@router.get(LICENSE_DETAILS)
-async def get_license_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_license_details(user.get("db"), doc_id)
-
-
 @router.post(LICENSE)
 async def create_license_api(
     request: Request,

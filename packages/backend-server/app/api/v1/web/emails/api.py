@@ -26,16 +26,6 @@ async def get_email_api(
     return get_emails(user.get("db"), request)
 
 
-@router.get(EMAIL_DETAILS)
-async def get_email_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_email_details(user.get("db"), doc_id)
-
 
 @router.post(EMAILS)
 async def create_emails_api(
