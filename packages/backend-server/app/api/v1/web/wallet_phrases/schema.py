@@ -1,6 +1,5 @@
 from app.framework.mongo_db.base_model import BaseModel
-from typing import Optional, Any, List, Literal
-from pydantic import Field
+from typing import Optional, Any
 
 
 class WalletPhrase(BaseModel):

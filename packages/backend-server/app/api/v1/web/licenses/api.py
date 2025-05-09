@@ -6,7 +6,6 @@ from app.api.v1.web.licenses.services import (
     update_license,
     add_license,
     get_licenses,
-    get_license_details,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user

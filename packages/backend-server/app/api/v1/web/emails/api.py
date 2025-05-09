@@ -6,7 +6,6 @@ from app.api.v1.web.emails.services import (
     update_email,
     add_email,
     get_emails,
-    get_email_details,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
