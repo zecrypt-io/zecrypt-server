@@ -11,7 +11,6 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle, CheckCircle } from "luc
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface Account {
@@ -119,13 +118,13 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
         password: password
       };
 
-      // Hash the credentials object for security
-      const hashedData = await hashData(credentials);
+      // Convert credentials object to JSON string for the data field
+      const credentialsString = JSON.stringify(credentials);
 
       // Create payload according to API specification
       const payload = {
         title: name,
-        data: hashedData.hash, // Send only the hash value, not the JSON string
+        data: credentialsString,
         url: website || null,
         tags: tags,
         notes: notes || null

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, ExternalLink, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -22,6 +22,14 @@ import axiosInstance from "../libs/Middleware/axiosInstace";
 import { FIXED_SALT } from "../libs/crypto";
 import { useFormatter } from "next-intl"; // Add next-intl formatter
 import { toast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Account {
   doc_id: string;
@@ -49,6 +57,8 @@ export function AccountsContent() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showEditAccount, setShowEditAccount] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
@@ -60,6 +70,7 @@ export function AccountsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
@@ -265,22 +276,28 @@ export function AccountsContent() {
     setCurrentPage(page);
   }, []);
 
+  const confirmDeleteAccount = useCallback((doc_id: string) => {
+    setAccountToDelete(doc_id);
+    setShowDeleteConfirmation(true);
+  }, []);
+
   const handleDeleteAccount = useCallback(
-    async (doc_id: string) => {
-      if (!selectedWorkspaceId || !selectedProjectId) {
+    async () => {
+      if (!selectedWorkspaceId || !selectedProjectId || !accountToDelete) {
         console.error("Missing required data for deleting account:", {
           selectedWorkspaceId,
           selectedProjectId,
+          accountToDelete,
         });
         return;
       }
 
-      if (!confirm(translate("confirm_delete_account", "accounts"))) {
-        return;
-      }
+      setIsDeleting(true);
 
       try {
-        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
+        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${accountToDelete}`);
+        setShowDeleteConfirmation(false);
+        setAccountToDelete(null);
         fetchAccounts();
         toast({
           title: "Success",
@@ -297,9 +314,11 @@ export function AccountsContent() {
           description: errorMessage,
           variant: "destructive",
         });
+      } finally {
+        setIsDeleting(false);
       }
     },
-    [selectedWorkspaceId, selectedProjectId, translate, fetchAccounts]
+    [selectedWorkspaceId, selectedProjectId, accountToDelete, translate, fetchAccounts]
   );
 
   const handleAccountUpdated = useCallback(() => {
@@ -650,7 +669,7 @@ export function AccountsContent() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-500"
-                            onClick={() => handleDeleteAccount(account.doc_id)}
+                            onClick={() => confirmDeleteAccount(account.doc_id)}
                           >
                             Delete
                           </DropdownMenuItem>
@@ -778,6 +797,33 @@ export function AccountsContent() {
           onAccountUpdated={handleAccountUpdated}
         />
       )}
+
+      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{translate("confirm_deletion", "accounts")}</DialogTitle>
+            <DialogDescription>
+              {translate("confirm_delete_account_description", "accounts")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeleteConfirmation(false)}
+              disabled={isDeleting}
+            >
+              {translate("cancel", "accounts")}
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? `${translate("deleting", "accounts")}...` : translate("delete", "accounts")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

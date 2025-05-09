@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface AddAccountDialogProps {
@@ -70,13 +69,13 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
         password: password
       };
 
-      // Hash the credentials object for security
-      const hashedData = await hashData(credentials);
+      // Convert credentials object to JSON string for the data field
+      const credentialsString = JSON.stringify(credentials);
 
-      // Prepare payload according to API specification
+      // Prepare payload - use the stringified credentials as data
       const payload = {
         title: name,
-        data: hashedData.hash,
+        data: credentialsString,
         url: website || null,
         tags,
         notes: notes || null
