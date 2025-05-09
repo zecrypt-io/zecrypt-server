@@ -19,24 +19,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { FIXED_SALT } from "../libs/crypto";
 import { useFormatter } from "next-intl"; // Add next-intl formatter
 
 interface Account {
   doc_id: string;
-  name: string;
+  name?: string;
+  title?: string;
   lower_name: string;
   user_name?: string;
   password?: string;
-  data?: string | { user_name: string; password: string };
+  data?: string;
   website?: string | null;
+  notes?: string | null;
   tags?: string[];
   created_at: string;
   updated_at: string;
   created_by: string;
   project_id: string;
-  decrypted?: boolean;
-  decryptionError?: boolean;
 }
 
 export function AccountsContent() {
@@ -66,92 +66,29 @@ export function AccountsContent() {
     return /^[0-9a-fA-F]{128}$/.test(str);
   };
 
-  const decryptAccountData = useCallback(async (account: Account): Promise<Account> => {
+  const processAccountData = useCallback(async (account: Account): Promise<Account> => {
     try {
-      if (account.data && typeof account.data === "string") {
-        try {
-          const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-          const decryptedData = await decrypt(account.data, cryptoKey);
-
-          if (isLikelyHash(decryptedData)) {
-            console.warn("Legacy hash detected:", {
-              account_id: account.doc_id,
-              hash_preview: decryptedData.slice(0, 20) + "...",
-            });
-            return {
-              ...account,
-              user_name: "Legacy data format",
-              password: "Legacy data format",
-              decrypted: false,
-              decryptionError: true,
-            };
-          }
-
-          try {
-            const parsedData = JSON.parse(decryptedData);
-            if (parsedData.user_name && parsedData.password) {
-              return {
-                ...account,
-                user_name: parsedData.user_name,
-                password: parsedData.password,
-                decrypted: true,
-              };
-            }
-            console.warn("Decrypted data missing user_name or password:", {
-              account_id: account.doc_id,
-              parsedData,
-            });
-            return {
-              ...account,
-              user_name: "Data incomplete",
-              password: "Data incomplete",
-              decrypted: false,
-              decryptionError: true,
-            };
-          } catch (jsonError) {
-            console.warn("Failed to parse decrypted data as JSON:", {
-              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
-              account_id: account.doc_id,
-              decrypted_preview: decryptedData.slice(0, 20) + "...",
-            });
-            return {
-              ...account,
-              user_name: "Invalid data format",
-              password: "Invalid data format",
-              decrypted: false,
-              decryptionError: true,
-            };
-          }
-        } catch (decryptError) {
-          console.error("Failed to decrypt data:", {
-            error: decryptError instanceof Error ? decryptError.message : String(decryptError),
-            account_id: account.doc_id,
-          });
-          return {
-            ...account,
-            user_name: "Decryption failed",
-            password: "Decryption failed",
-            decrypted: false,
-            decryptionError: true,
-          };
-        }
+      // If the account already has processed data, use it
+      if (account.password) {
+        return account;
+      }
+      
+      // For backward compatibility, set title if only name exists
+      if (!account.title && account.name) {
+        account.title = account.name;
       }
 
-      if (account.data && typeof account.data === "object") {
+      // Data field directly contains the password
+      if (account.data && typeof account.data === "string") {
         return {
           ...account,
-          user_name: account.data.user_name || "Data unavailable",
-          password: account.data.password || "Data unavailable",
-          decrypted: true,
+          password: account.data
         };
       }
 
       return {
         ...account,
-        user_name: "Data unavailable",
-        password: "Data unavailable",
-        decrypted: false,
-        decryptionError: true,
+        password: "Data unavailable"
       };
     } catch (error: unknown) {
       console.error("Failed to process account data:", {
@@ -160,10 +97,7 @@ export function AccountsContent() {
       });
       return {
         ...account,
-        user_name: "Error processing data",
-        password: "Error processing data",
-        decrypted: false,
-        decryptionError: true,
+        password: "Error processing data"
       };
     }
   }, []);
@@ -198,81 +132,50 @@ export function AccountsContent() {
 
       let tagsArray: string[] = [];
       if (selectedCategory !== "all") {
-        const categoryTag = getCategoryTag(selectedCategory);
-        tagsArray = [categoryTag];
+        tagsArray = [getCategoryTag(selectedCategory)];
       }
 
       const payload = {
         page: currentPage,
         limit: itemsPerPage,
         name: searchQuery.trim() || null,
-        tags: tagsArray,
+        tags: tagsArray.length > 0 ? tagsArray : undefined,
       };
-
-      console.log("Fetching accounts with payload:", payload);
 
       const response = await axiosInstance.post(
         `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
         payload
       );
 
-      const { data: fetchedAccounts = [], count = 0, total_count = 0 } = response.data || {};
-
-      console.log(`Fetched ${fetchedAccounts?.length || 0} accounts, count: ${count}, total_count: ${total_count}`);
-
-      const decryptedAccounts = await Promise.all(
-        (fetchedAccounts || []).map(decryptAccountData)
-      );
-
-      setAllAccounts(decryptedAccounts || []);
-      setTotalCount(total_count || (count < itemsPerPage ? (currentPage - 1) * itemsPerPage + count : (currentPage * itemsPerPage) + 1));
-
-      if (selectedCategory !== "all" && count === 0 && currentPage === 1) {
-        console.warn(`No accounts found for tag: ${selectedCategory}. Attempting client-side filtering...`);
+      if (response.status === 200) {
+        const { data: fetchedAccounts = [], count = 0 } = response.data || {};
         
-        const fallbackPayload = {
-          page: 1,
-          limit: 50,
-          name: searchQuery.trim() || null,
-          tags: [],
-        };
-        
-        const fallbackResponse = await axiosInstance.post(
-          `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
-          fallbackPayload
+        // Process the account data
+        const processedAccounts = await Promise.all(
+          fetchedAccounts.map(processAccountData)
         );
+
+        setAllAccounts(processedAccounts);
         
-        const { data: allFetchedAccounts = [] } = fallbackResponse.data || {};
-        
-        if (allFetchedAccounts.length > 0) {
-          const categoryTag = getCategoryTag(selectedCategory);
-          const matchingAccounts = allFetchedAccounts.filter((acc: Account) => 
-            acc.tags?.some((tag: string) => 
-              tag.toLowerCase() === categoryTag.toLowerCase()
-            )
-          );
-          
-          if (matchingAccounts.length > 0) {
-            console.log(`Found ${matchingAccounts.length} accounts with tag "${selectedCategory}" via client-side filtering`);
-            const clientDecryptedAccounts = await Promise.all(
-              matchingAccounts.map(decryptAccountData)
-            );
-            setAllAccounts(clientDecryptedAccounts);
-            setTotalCount(clientDecryptedAccounts.length);
-          }
+        // Set total count based on pagination
+        let estimatedTotal;
+        if (currentPage === 1 && count < itemsPerPage) {
+          estimatedTotal = count;
+        } else if (count === itemsPerPage) {
+          estimatedTotal = currentPage * itemsPerPage + 1;
+        } else {
+          estimatedTotal = (currentPage - 1) * itemsPerPage + count;
         }
+        setTotalCount(estimatedTotal);
+      } else {
+        console.error("Error in accounts response:", response);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching accounts:", error);
-      let errorMessage = translate("error_fetching_accounts", "accounts");
-      if (error.response?.data?.message) {
-        errorMessage = `${errorMessage}: ${error.response.data.message}`;
-      }
-      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, decryptAccountData, getCategoryTag]);
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, getCategoryTag, processAccountData]);
 
   useEffect(() => {
     fetchAccounts();
@@ -481,8 +384,8 @@ export function AccountsContent() {
             <thead>
               <tr className="bg-muted/50">
                 <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("website", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("actions", "accounts")}</th>
@@ -495,10 +398,10 @@ export function AccountsContent() {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                          {account.name.charAt(0).toUpperCase()}
+                          {(account.title || account.name || "A").charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-medium">{account.name}</p>
+                          <p className="font-medium">{account.title || account.name}</p>
                           {account.website && (
                             <a
                               href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
@@ -515,51 +418,10 @@ export function AccountsContent() {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        {account.decryptionError && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Decryption error - please edit to update format</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                        <span className="text-sm">{account.user_name}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => account.user_name && account.user_name !== "Data unavailable" && account.user_name !== "Legacy data format" && copyToClipboard(account.doc_id, "user_name", account.user_name)}
-                                disabled={!account.user_name || account.user_name === "Data unavailable" || account.user_name === "Legacy data format"}
-                              >
-                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "user_name" ? (
-                                  <Check className="h-3.5 w-3.5 text-green-500" />
-                                ) : (
-                                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "user_name" ? "Copied!" : "Copy username"}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">
-                          {account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && viewPassword === account.doc_id
+                          {account.password && account.password !== "Data unavailable" && viewPassword === account.doc_id
                             ? account.password
-                            : account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format"
+                            : account.password && account.password !== "Data unavailable"
                             ? "••••••••"
                             : account.password}
                         </span>
@@ -571,8 +433,8 @@ export function AccountsContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && togglePasswordVisibility(account.doc_id)}
-                                  disabled={!account.password || account.password === "Data unavailable" || account.password === "Legacy data format"}
+                                  onClick={() => account.password && account.password !== "Data unavailable" && togglePasswordVisibility(account.doc_id)}
+                                  disabled={!account.password || account.password === "Data unavailable"}
                                 >
                                   {viewPassword === account.doc_id ? (
                                     <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
@@ -593,8 +455,8 @@ export function AccountsContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Data unavailable" && account.password !== "Legacy data format" && copyToClipboard(account.doc_id, "password", account.password)}
-                                  disabled={!account.password || account.password === "Data unavailable" || account.password === "Legacy data format"}
+                                  onClick={() => account.password && account.password !== "Data unavailable" && copyToClipboard(account.doc_id, "password", account.password)}
+                                  disabled={!account.password || account.password === "Data unavailable"}
                                 >
                                   {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
                                     <Check className="h-3.5 w-3.5 text-green-500" />
@@ -612,6 +474,18 @@ export function AccountsContent() {
                           </TooltipProvider>
                         </div>
                       </div>
+                    </td>
+                    <td className="p-3">
+                      {account.website && (
+                        <a
+                          href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
+                        >
+                          {account.website.replace(/^https?:\/\//, "")}
+                        </a>
+                      )}
                     </td>
                     <td className="p-3">
                       <div className="flex flex-wrap gap-1">
@@ -654,7 +528,6 @@ export function AccountsContent() {
                           >
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-500"
                             onClick={() => handleDeleteAccount(account.doc_id)}

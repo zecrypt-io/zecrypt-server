@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
-import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface AddAccountDialogProps {
@@ -19,9 +19,9 @@ interface AddAccountDialogProps {
 export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState("");
-  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [website, setWebsite] = useState("");
+  const [notes, setNotes] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -45,7 +45,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
   };
 
   const handleSubmit = async () => {
-    if (!name || !userName || !password) {
+    if (!name || !password) {
       setError(translate("please_fill_all_required_fields", "accounts"));
       return;
     }
@@ -63,19 +63,17 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     setError("");
 
     try {
-      // Create data object for encryption
-      const dataToEncrypt = JSON.stringify({ user_name: userName, password });
+      // Hash the password for security
+      const hashedData = await hashData(password);
 
-      // Encrypt the JSON string
-      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
-
-      // Prepare payload according to backend schema
+      // Prepare payload according to API specification
       const payload = {
-        name,
+        title: name,
+        data: password,
+        hash: hashedData.hash,
         website: website || null,
         tags,
-        data: encryptedData,
+        notes: notes || null
       };
 
       const response = await axiosInstance.post(
@@ -83,7 +81,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
         payload
       );
 
-      if (response.status === 201 || (response.data && response.data.status_code === 201)) {
+      if (response.status === 200 || response.status === 201 || (response.data && response.data.status_code === 201)) {
         onAccountAdded();
         onClose();
       } else {
@@ -91,10 +89,14 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
       }
     } catch (error: any) {
       console.error("Error adding account:", error);
+      console.error("Error details:", error.response?.data);
       
       if (error.response) {
         if (error.response.status === 400 && error.response.data?.message === "Account already exists") {
           setError(translate("account_already_exists", "accounts"));
+        } else if (error.response.status === 422) {
+          const errorMessages = error.response.data?.detail?.map((err: any) => err.msg).join(", ");
+          setError(errorMessages || translate("validation_error", "accounts"));
         } else if (error.response.status === 500) {
           setError(translate("error_adding_account", "accounts"));
         } else {
@@ -142,18 +144,6 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {translate("username", "accounts")} <span className="text-red-500">*</span>
-            </label>
-            <Input
-              placeholder={translate("enter_username", "accounts")}
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
               {translate("password", "accounts")} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -183,6 +173,15 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
               placeholder={translate("enter_website_url", "accounts")}
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("notes", "accounts")}</label>
+            <Input
+              placeholder={translate("enter_notes", "accounts")}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 

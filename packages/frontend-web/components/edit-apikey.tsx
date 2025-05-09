@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { hashData } from "../libs/crypto";
 
 interface ApiKey {
   doc_id: string;
@@ -22,9 +22,7 @@ interface ApiKey {
   updated_at: string | null;
   env: "Development" | "Staging" | "Production";
   tags: string[];
-  decryptedKey?: string;
-  decrypted?: boolean;
-  decryptionError?: boolean;
+  displayKey?: string;
 }
 
 interface EditApiKeyProps {
@@ -36,7 +34,7 @@ interface EditApiKeyProps {
 export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState(apiKey.name);
-  const [apiKeyValue, setApiKeyValue] = useState(apiKey.decryptedKey || "");
+  const [apiKeyValue, setApiKeyValue] = useState(apiKey.displayKey || "");
   const [description, setDescription] = useState(apiKey.description || ""); // Added description state
   const [showApiKey, setShowApiKey] = useState(false);
   const [env, setEnv] = useState<"Development" | "Staging" | "Production">(apiKey.env);
@@ -88,10 +86,11 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
       };
 
       if (apiKeyValue) {
-        const dataToEncrypt = JSON.stringify({ api_key: apiKeyValue });
-        const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-        const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
-        payload.data = encryptedData;
+        const dataToSend = JSON.stringify({ api_key: apiKeyValue });
+        // Hash the data for security verification
+        const hashedData = await hashData(dataToSend);
+        payload.data = dataToSend;
+        payload.hash = hashedData.hash;
       }
 
       const response = await axiosInstance.put(

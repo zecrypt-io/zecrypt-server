@@ -1,0 +1,10 @@
+# Secret Types
+SECRET_TYPE_LICENSE = "license"
+SECRET_TYPE_API_KEY = "api_key"
+SECRET_TYPE_WALLET_PHRASE = "wallet_phrase"
+SECRET_TYPE_WIFI = "wifi"
+SECRET_TYPE_LICENSE = "license"
+SECRET_TYPE_LOGIN = "login"
+SECRET_TYPE_IDENTITY = "identity"
+SECRET_TYPE_EMAIL = "email"
+SECRET_TYPE_CARD = "card"

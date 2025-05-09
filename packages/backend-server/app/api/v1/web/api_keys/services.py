@@ -1,59 +1,34 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
-from app.managers import api_keys as api_key_manager
-from app.managers.collection_names import API_KEY
+from app.managers import secrets as secrets_manager
+from app.utils.constants import SECRET_TYPE_API_KEY
+
+data_type = SECRET_TYPE_API_KEY
 
 
 def get_api_key_details(db, doc_id):
     return response_helper(
         status_code=200,
         message="API Key details loaded successfully",
-        data=api_key_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
+        data=secrets_manager.find_one(
+            db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
+        ),
     )
 
 
-def get_api_keys(db, payload, request):
-    page=payload.get("page",1)
-    limit=payload.get("limit",20)
-    tags=payload.get("tags",[])
-    status=payload.get("status",None)
-    env=payload.get("env",None)
-    name=payload.get("name",None)
-    project_id=request.path_params.get("project_id")
-    sort_by=payload.get("sort_by","created_at")
-    sort_order=payload.get("sort_order","asc")
-    query={
-
-        "project_id":project_id
+def get_api_keys(db, request):   
+    query = {
+        "secret_type": data_type,
+        "project_id": request.path_params.get("project_id"),
+       
     }
-    if sort_by:
-        sort = (sort_by, 1 if sort_order == "asc" else -1)
-    if tags:
-        query["tags"]={"$in":tags}
-    
-    if status:
-        query["status"]=status  
-    
-    if env:
-        query["env"]=env
-    
-    skip = (page - 1) * limit
-    
-    sort = ("_id", 1)
-
-    if name:
-        query["lower_name"] = {"$regex": name.strip().lower()}
-
-    api_keys = api_key_manager.find(
-        db, query,  sort=sort, skip=skip, limit=limit
-    )
+  
+    api_keys = secrets_manager.find(db, query)
 
     return response_helper(
         status_code=200,
         message="API Keys loaded successfully",
         data=api_keys,
-        page=page,
-        limit=limit,
         count=len(api_keys),
     )
 
@@ -62,17 +37,15 @@ def add_api_key(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
-    lower_name = payload.get("name").strip().lower()
-    query= {
-            "lower_name": lower_name,
-            "created_by": user_id,
-            "project_id": project_id,
-        }
-    
-    api_key = api_key_manager.find_one(
-        db,
-        query,
-    )
+    lower_title = payload.get("title").strip().lower()
+    query = {
+        "lower_title": lower_title,
+        "created_by": user_id,
+        "project_id": project_id,
+        "secret_type": data_type,
+    }
+
+    api_key = secrets_manager.find_one(db, query,)
     if api_key:
         return response_helper(status_code=400, message="API Key already exists")
 
@@ -80,13 +53,13 @@ def add_api_key(request, user, payload, background_tasks):
         {
             "doc_id": create_uuid(),
             "created_by": user_id,
-            "lower_name": lower_name,
+            "lower_title": lower_title,
             "project_id": project_id,
+            "secret_type": data_type,
         }
     )
-    api_key_manager.insert_one(db, payload)
+    secrets_manager.insert_one(db, payload)
 
-  
     return response_helper(
         status_code=201, message="API Key added successfully", data=payload,
     )
@@ -99,39 +72,40 @@ def update_api_key(request, user, payload, background_tasks):
     doc_id = request.path_params.get("doc_id")
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
-    
-    # Process name if it exists in the payload
-    if payload.get("name"):
-        lower_name = payload["name"].strip().lower()
-        payload["lower_name"] = lower_name
 
-        existing_account = api_key_manager.find_one(
+    # Process name if it exists in the payload
+    if payload.get("title"):
+        lower_title = payload["title"].strip().lower()
+        payload["lower_title"] = lower_title
+
+        existing_account = secrets_manager.find_one(
             db,
             {
                 "project_id": project_id,
-                "lower_name": lower_name,
+                "lower_title": lower_title,
                 "doc_id": {"$ne": doc_id},
+                "secret_type": data_type,
             },
         )
         if existing_account:
             return response_helper(status_code=400, message="API Key already exists")
-    
+
     # Update account
-    api_key_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload,},
+    secrets_manager.update_one(
+        db, {"doc_id": doc_id}, {"$set": payload},
     )
 
- 
     return response_helper(status_code=200, message="API Key updated successfully",)
 
 
 def delete_api_key(request, user, background_tasks):
     db = user.get("db")
-    user_id = user.get("user_id")
     doc_id = request.path_params.get("doc_id")
 
-    if not api_key_manager.find_one(db, {"doc_id": doc_id}):
+    if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
         return response_helper(status_code=404, message="API Key details not found",)
-    api_key_manager.delete_one(db, {"doc_id": doc_id})
+    secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(status_code=200, message="API Key deleted successfully", data={},)
+    return response_helper(
+        status_code=200, message="API Key deleted successfully", data={},
+    )

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount, GetAccountsList
+from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
 from app.api.v1.web.accounts.service import (
     get_accounts,
     get_account_details,
@@ -10,36 +10,19 @@ from app.api.v1.web.accounts.service import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import ACCOUNT_DETAILS, ACCOUNTS
 
 router = APIRouter()
-ACCOUNTS = "/{workspace_id}/{project_id}/accounts"
-ACCOUNTS_LIST = "/{workspace_id}/{project_id}/accounts/list"
-
-ACCOUNT_DETAILS = "/{workspace_id}/{project_id}/accounts/{doc_id}"
 
 
-@router.post(ACCOUNTS_LIST)
+@router.get(ACCOUNTS)
 async def get_accounts_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: GetAccountsList,
     user: UserDetails = Depends(get_current_user),
 ):
-
-    return get_accounts(user.get("db"), payload.model_dump(), request)
-
-
-@router.get(ACCOUNT_DETAILS)
-async def get_account_details_api(
-    request: Request,
-    workspace_id: str,
-    project_id: str,
-    doc_id: str,
-    user: UserDetails = Depends(get_current_user),
-):
-    return get_account_details(user.get("db"), doc_id)
-
+    return get_accounts(user.get("db"), request)
 
 @router.post(ACCOUNTS)
 async def create_account_api(

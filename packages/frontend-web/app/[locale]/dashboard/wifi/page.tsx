@@ -1,16 +1,12 @@
-import { useTranslator } from "@/hooks/use-translations";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { WifiContent } from "@/components/wifi-content";
 
-export default function WifiPage() {
-  const { translate } = useTranslator();
+export default async function WifiPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">{translate("wifi", "dashboard")}</h1>
-      <p className="mt-4 text-muted-foreground">
-        {translate("wifi_coming_soon", "dashboard", {
-          default: "Wi-Fi module is under development.",
-        })}
-      </p>
-    </div>
+    <DashboardLayout locale={locale}>
+      <WifiContent />
+    </DashboardLayout>
   );
 }

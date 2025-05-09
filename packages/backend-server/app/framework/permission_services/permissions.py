@@ -97,4 +97,3 @@ def check_if_admin_user(user_id):
         return user["user_role"] == "admin"
     else:
         raise HTTPException(status_code=404, detail=_("User details not found"))
-

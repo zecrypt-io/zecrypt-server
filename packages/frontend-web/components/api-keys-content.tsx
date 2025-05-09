@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { FIXED_SALT } from "../libs/crypto";
 import { AddApiKey } from "./add-apikey";
 import { EditApiKey } from "./edit-apikey";
 
@@ -28,9 +28,7 @@ interface ApiKey {
   updated_at: string | null;
   env: "Development" | "Staging" | "Production";
   tags: string[];
-  decryptedKey?: string;
-  decrypted?: boolean;
-  decryptionError?: boolean;
+  displayKey?: string;
 }
 
 export function ApiKeysContent() {
@@ -52,61 +50,33 @@ export function ApiKeysContent() {
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
 
-  const decryptApiKeyData = useCallback(async (apiKey: ApiKey): Promise<ApiKey> => {
+  const processApiKeyData = useCallback(async (apiKey: ApiKey): Promise<ApiKey> => {
     try {
       if (apiKey.data && typeof apiKey.data === "string") {
         try {
-          const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-          const decryptedData = await decrypt(apiKey.data, cryptoKey);
-          try {
-            const parsedData = JSON.parse(decryptedData);
-            if (parsedData.api_key) {
-              return { ...apiKey, decryptedKey: parsedData.api_key, decrypted: true };
-            }
-            console.warn("Decrypted data missing api_key:", {
-              api_key_id: apiKey.doc_id,
-              parsedData,
-            });
-            return {
-              ...apiKey,
-              decryptedKey: "Data incomplete",
-              decrypted: false,
-              decryptionError: true,
-            };
-          } catch (jsonError) {
-            console.warn("Failed to parse decrypted data as JSON:", {
-              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
-              api_key_id: apiKey.doc_id,
-              decrypted_preview: decryptedData.slice(0, 20) + "...",
-            });
-            return {
-              ...apiKey,
-              decryptedKey: "Invalid data format",
-              decrypted: false,
-              decryptionError: true,
-            };
+          // Try to parse as JSON first
+          const parsedData = JSON.parse(apiKey.data);
+          if (parsedData.api_key) {
+            return { ...apiKey, displayKey: parsedData.api_key };
           }
-        } catch (decryptError) {
-          console.error("Failed to decrypt API key:", {
-            error: decryptError instanceof Error ? decryptError.message : String(decryptError),
-            api_key_id: apiKey.doc_id,
-          });
           return {
             ...apiKey,
-            decryptedKey: "Decryption failed",
-            decrypted: false,
-            decryptionError: true,
+            displayKey: "Data incomplete",
+          };
+        } catch (jsonError) {
+          // If not JSON, use the string directly
+          return {
+            ...apiKey,
+            displayKey: apiKey.data,
           };
         }
       }
       if (apiKey.data && typeof apiKey.data === "object" && "api_key" in apiKey.data) {
-        return { ...apiKey, decryptedKey: apiKey.data.api_key, decrypted: true };
+        return { ...apiKey, displayKey: apiKey.data.api_key };
       }
       return {
         ...apiKey,
-        decryptedKey: "Data unavailable",
-        decrypted: false,
-        decryptionError: true,
+        displayKey: "Data unavailable",
       };
     } catch (error: unknown) {
       console.error("Failed to process API key data:", {
@@ -115,9 +85,7 @@ export function ApiKeysContent() {
       });
       return {
         ...apiKey,
-        decryptedKey: "Error processing data",
-        decrypted: false,
-        decryptionError: true,
+        displayKey: "Error processing data",
       };
     }
   }, []);
@@ -163,7 +131,7 @@ export function ApiKeysContent() {
 
       const { data: fetchedApiKeys = [], count = 0 } = response.data || {};
 
-      const decryptedApiKeys = await Promise.all(
+      const processedApiKeys = await Promise.all(
         fetchedApiKeys.map(async (key: any) => {
           const apiKey: ApiKey = {
             doc_id: key.doc_id,
@@ -174,11 +142,11 @@ export function ApiKeysContent() {
             env: key.env,
             tags: key.tags || [],
           };
-          return decryptApiKeyData(apiKey);
+          return processApiKeyData(apiKey);
         })
       );
 
-      setAllApiKeys(decryptedApiKeys);
+      setAllApiKeys(processedApiKeys);
 
       let estimatedTotal;
       if (currentPage === 1 && count < itemsPerPage) {
@@ -199,7 +167,7 @@ export function ApiKeysContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedEnv, decryptApiKeyData, getEnvTag, ]);
+  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedEnv, processApiKeyData, getEnvTag, translate]);
 
   useEffect(() => {
     fetchApiKeys();
@@ -435,24 +403,8 @@ export function ApiKeysContent() {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        {apiKey.decryptionError && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{translate("decryption_error", "api_keys")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
                         <span className="text-sm font-mono">
-                          {apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && viewKey === apiKey.doc_id
-                            ? apiKey.decryptedKey
-                            : apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable"
-                            ? "••••••••"
-                            : apiKey.decryptedKey}
+                          {apiKey.displayKey}
                         </span>
                         <div className="flex items-center">
                           <TooltipProvider>
@@ -462,30 +414,8 @@ export function ApiKeysContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && toggleKeyVisibility(apiKey.doc_id)}
-                                  disabled={!apiKey.decryptedKey || apiKey.decryptedKey === "Data unavailable"}
-                                >
-                                  {viewKey === apiKey.doc_id ? (
-                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-                                  ) : (
-                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{viewKey === apiKey.doc_id ? translate("hide_key", "api_keys") : translate("show_key", "api_keys")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => apiKey.decryptedKey && apiKey.decryptedKey !== "Data unavailable" && copyToClipboard(apiKey.doc_id, "key", apiKey.decryptedKey)}
-                                  disabled={!apiKey.decryptedKey || apiKey.decryptedKey === "Data unavailable"}
+                                  onClick={() => apiKey.displayKey && copyToClipboard(apiKey.doc_id, "key", apiKey.displayKey)}
+                                  disabled={!apiKey.displayKey}
                                 >
                                   {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
                                     <Check className="h-3.5 w-3.5 text-green-500" />

@@ -11,11 +11,9 @@ from app.api.v1.web.projects.services import (
     get_tags,
 )
 from app.framework.permission_services.service import get_current_user
+from app.api.v1.web.route_constants import PROJECTS, PROJECT_DETAILS, TAGS
 
 router = APIRouter()
-PROJECTS = "/{workspace_id}/projects"
-PROJECT_DETAILS = "/{workspace_id}/projects/{doc_id}"
-TAGS = "/{workspace_id}/{project_id}/tags"
 
 
 @router.get(PROJECTS)
@@ -75,7 +73,7 @@ async def delete_project_api(
 
 
 @router.get(TAGS)
-async def get_tags_api(
+async def get_project_tags_api(
     request: Request,
     workspace_id: str,
     project_id: str,

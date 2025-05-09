@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { encrypt, hexToCryptoKey, ENCRYPTION_KEY } from "../libs/crypto";
+import { hashData } from "../libs/crypto";
 
 interface ApiKey {
   doc_id: string;
@@ -75,19 +75,19 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
     setError("");
 
     try {
-      // Create data object for encryption
-      const dataToEncrypt = JSON.stringify({ api_key: apiKey });
+      // Create data object with the API key
+      const dataToSend = JSON.stringify({ api_key: apiKey });
 
-      // Encrypt the JSON string
-      const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-      const encryptedData = await encrypt(dataToEncrypt, cryptoKey);
+      // Hash the data for security verification
+      const hashedData = await hashData(dataToSend);
 
       // Include description field in the payload, even if it's empty
       const payload = {
         name,
         env,
         tags,
-        data: encryptedData,
+        data: dataToSend,
+        hash: hashedData.hash,
         description: description || null, // Ensure description is included
       };
 

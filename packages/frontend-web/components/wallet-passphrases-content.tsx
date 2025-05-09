@@ -1,4 +1,3 @@
-
 "use client";
 
 import type React from "react";
@@ -52,7 +51,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { useTranslator } from "@/hooks/use-translations";
-import { decrypt, hexToCryptoKey, ENCRYPTION_KEY } from "@/libs/crypto";
+import { FIXED_SALT } from "@/libs/crypto";
 import { AddPassphraseDialog } from "./add-passphrase-dialoge";
 import { EditPassphraseDialog } from "./edit-passphrase-dialoge";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
@@ -69,8 +68,6 @@ interface WalletPassphrase {
   createdAt: Date;
   lastAccessed: Date;
   data?: string;
-  decrypted?: boolean;
-  decryptionError?: boolean;
 }
 
 export function WalletPassphrasesContent() {
@@ -120,114 +117,61 @@ export function WalletPassphrasesContent() {
     return /^[0-9a-fA-F]{64,128}$/.test(str);
   };
 
-  // Decrypt wallet passphrase data
-  const decryptWalletData = useCallback(async (wallet: any): Promise<WalletPassphrase> => {
+  // Process wallet passphrase data
+  const processWalletData = useCallback(async (wallet: any): Promise<WalletPassphrase> => {
     try {
       if (wallet.data && typeof wallet.data === "string") {
         try {
-          const cryptoKey = await hexToCryptoKey(ENCRYPTION_KEY);
-          const decryptedData = await decrypt(wallet.data, cryptoKey);
-
-          if (isLikelyHash(decryptedData)) {
-            console.warn("Legacy hash detected:", {
-              doc_id: wallet.doc_id,
-              hash_preview: decryptedData.slice(0, 20) + "...",
-            });
+          // Try to parse the data as JSON
+          const parsedData = JSON.parse(wallet.data);
+          if (parsedData.passphrase) {
             return {
               id: wallet.doc_id,
               name: wallet.name,
               walletType: wallet.wallet_type || "Other",
-              passphrase: "Legacy data format",
-              walletAddress: wallet.wallet_address || "Legacy data format",
+              passphrase: parsedData.passphrase,
+              walletAddress: parsedData.walletAddress || wallet.wallet_address || "",
               tags: wallet.tags || [],
               notes: wallet.notes || "",
               createdAt: new Date(wallet.created_at),
               lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
               data: wallet.data,
-              decrypted: false,
-              decryptionError: true,
             };
           }
-
-          try {
-            const parsedData = JSON.parse(decryptedData);
-            if (parsedData.passphrase) {
-              return {
-                id: wallet.doc_id,
-                name: wallet.name,
-                walletType: wallet.wallet_type || "Other",
-                passphrase: parsedData.passphrase,
-                walletAddress: parsedData.walletAddress || wallet.wallet_address || "",
-                tags: wallet.tags || [],
-                notes: wallet.notes || "",
-                createdAt: new Date(wallet.created_at),
-                lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
-                data: wallet.data,
-                decrypted: true,
-              };
-            }
-            console.warn("Decrypted data missing passphrase:", {
-              doc_id: wallet.doc_id,
-              parsedData,
-            });
-            return {
-              id: wallet.doc_id,
-              name: wallet.name,
-              walletType: wallet.wallet_type || "Other",
-              passphrase: "Data incomplete",
-              walletAddress: wallet.wallet_address || "Data incomplete",
-              tags: wallet.tags || [],
-              notes: wallet.notes || "",
-              createdAt: new Date(wallet.created_at),
-              lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
-              data: wallet.data,
-              decrypted: false,
-              decryptionError: true,
-            };
-          } catch (jsonError) {
-            console.warn("Failed to parse decrypted data as JSON:", {
-              error: jsonError instanceof Error ? jsonError.message : String(jsonError),
-              doc_id: wallet.doc_id,
-              decrypted_preview: decryptedData.slice(0, 20) + "...",
-            });
-            return {
-              id: wallet.doc_id,
-              name: wallet.name,
-              walletType: wallet.wallet_type || "Other",
-              passphrase: "Invalid data format",
-              walletAddress: wallet.wallet_address || "Invalid data format",
-              tags: wallet.tags || [],
-              notes: wallet.notes || "",
-              createdAt: new Date(wallet.created_at),
-              lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
-              data: wallet.data,
-              decrypted: false,
-              decryptionError: true,
-            };
-          }
-        } catch (decryptError) {
-          console.error("Failed to decrypt data:", {
-            error: decryptError instanceof Error ? decryptError.message : String(decryptError),
+          console.warn("Data missing passphrase:", {
             doc_id: wallet.doc_id,
+            parsedData,
           });
           return {
             id: wallet.doc_id,
             name: wallet.name,
             walletType: wallet.wallet_type || "Other",
-            passphrase: "Decryption failed",
-            walletAddress: wallet.wallet_address || "Decryption failed",
+            passphrase: "Data incomplete",
+            walletAddress: wallet.wallet_address || "Data incomplete",
             tags: wallet.tags || [],
             notes: wallet.notes || "",
             createdAt: new Date(wallet.created_at),
             lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
             data: wallet.data,
-            decrypted: false,
-            decryptionError: true,
+          };
+        } catch (jsonError) {
+          // If not JSON, use the data as the passphrase directly
+          return {
+            id: wallet.doc_id,
+            name: wallet.name,
+            walletType: wallet.wallet_type || "Other",
+            passphrase: wallet.data,
+            walletAddress: wallet.wallet_address || "",
+            tags: wallet.tags || [],
+            notes: wallet.notes || "",
+            createdAt: new Date(wallet.created_at),
+            lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
+            data: wallet.data,
           };
         }
       }
-
-      console.warn("No encrypted data field available:", { doc_id: wallet.doc_id });
+      
+      // If no data or not a string, return with placeholders
       return {
         id: wallet.doc_id,
         name: wallet.name,
@@ -239,27 +183,23 @@ export function WalletPassphrasesContent() {
         createdAt: new Date(wallet.created_at),
         lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
         data: wallet.data,
-        decrypted: false,
-        decryptionError: true,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to process wallet data:", {
         error: error instanceof Error ? error.message : String(error),
-        doc_id: wallet.doc_id || "unknown",
+        doc_id: wallet.doc_id,
       });
       return {
-        id: wallet.doc_id || "unknown",
-        name: wallet.name || "Unknown",
+        id: wallet.doc_id,
+        name: wallet.name,
         walletType: wallet.wallet_type || "Other",
-        passphrase: "Processing failed",
-        walletAddress: "Processing failed",
+        passphrase: "Error processing data",
+        walletAddress: wallet.wallet_address || "Error processing data",
         tags: wallet.tags || [],
         notes: wallet.notes || "",
-        createdAt: new Date(wallet.created_at || Date.now()),
-        lastAccessed: new Date(wallet.last_accessed || wallet.created_at || Date.now()),
+        createdAt: new Date(wallet.created_at),
+        lastAccessed: new Date(wallet.last_accessed || wallet.created_at),
         data: wallet.data,
-        decrypted: false,
-        decryptionError: true,
       };
     }
   }, []);
@@ -280,35 +220,33 @@ export function WalletPassphrasesContent() {
     try {
       setIsLoading(true);
       setApiError(false);
-      const payload = {
-        page: currentPage,
-        limit: itemsPerPage,
-        tags: [],
-        name: searchTerm.trim() || null,
-      };
-
-      console.log("Fetching wallet passphrases with payload:", payload);
 
       const response = await axiosInstance.post(
-        `/${selectedWorkspaceId}/${selectedProjectId}/wallet-phrases/list`,
-        payload,
-        { headers: { "access-token": accessToken } }
+        `/${selectedWorkspaceId}/${selectedProjectId}/wallet-passphrases/list`,
+        {
+          page: currentPage,
+          limit: itemsPerPage,
+          name: searchTerm.trim() || null,
+        }
       );
 
-      const { data: fetchedPassphrases = [], count = 0, total_count = 0 } = response.data || {};
+      if (response.status === 200) {
+        const { data: fetchedPassphrases = [], count = 0 } = response.data || {};
+        
+        // Process the passphrase data
+        const processedPassphrases = await Promise.all(
+          fetchedPassphrases.map(processWalletData)
+        );
 
-      console.log(`Fetched ${fetchedPassphrases.length} passphrases, count: ${count}, total_count: ${total_count}`);
-
-      const decryptedPassphrases = await Promise.all(fetchedPassphrases.map(decryptWalletData));
-      setWalletPassphrases(decryptedPassphrases);
-
-      // Improved totalCount logic: assume more pages exist unless count < itemsPerPage on a later page
-      setTotalCount(
-        total_count ||
-          (count < itemsPerPage && currentPage > 1
+        setWalletPassphrases(processedPassphrases);
+        
+        // Improved totalCount logic: assume more pages exist unless count < itemsPerPage on a later page
+        setTotalCount(
+          count < itemsPerPage && currentPage > 1
             ? (currentPage - 1) * itemsPerPage + count
-            : currentPage * itemsPerPage + (count === itemsPerPage ? 1 : 0))
-      );
+            : currentPage * itemsPerPage + (count === itemsPerPage ? 1 : 0)
+        );
+      }
     } catch (error) {
       console.error("Failed to fetch wallet passphrases:", error);
       toast({
@@ -322,7 +260,7 @@ export function WalletPassphrasesContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, accessToken, currentPage, itemsPerPage, searchTerm, decryptWalletData]);
+  }, [selectedWorkspaceId, selectedProjectId, accessToken, currentPage, itemsPerPage, searchTerm, processWalletData]);
 
   // Initial fetch on mount and when workspace/project/token/itemsPerPage change
   useEffect(() => {
@@ -386,7 +324,7 @@ export function WalletPassphrasesContent() {
       if (selectedWorkspaceId && selectedProjectId && accessToken) {
         try {
           await axiosInstance.put(
-            `/${selectedWorkspaceId}/${selectedProjectId}/wallet-phrases/${id}`,
+            `/${selectedWorkspaceId}/${selectedProjectId}/wallet-passphrases/${id}`,
             { last_accessed: new Date().toISOString() },
             { headers: { "access-token": accessToken } }
           );
@@ -446,7 +384,7 @@ export function WalletPassphrasesContent() {
 
     try {
       await axiosInstance.delete(
-        `/${selectedWorkspaceId}/${selectedProjectId}/wallet-phrases/${currentPassphrase.id}`,
+        `/${selectedWorkspaceId}/${selectedProjectId}/wallet-passphrases/${currentPassphrase.id}`,
         { headers: { "access-token": accessToken } }
       );
 
@@ -665,13 +603,8 @@ export function WalletPassphrasesContent() {
                     <TableCell className="p-3">{passphrase.walletType}</TableCell>
                     <TableCell className="p-3">
                       <div className="flex items-center space-x-2">
-                        {passphrase.decryptionError && (
-                          <span title="Decryption error">
-                            <AlertCircle className="h-4 w-4 text-amber-500 mr-1" />
-                          </span>
-                        )}
                         <div className="max-w-[200px] truncate font-mono text-sm">
-                          {visiblePassphrases[passphrase.id] && !passphrase.decryptionError
+                          {visiblePassphrases[passphrase.id]
                             ? passphrase.passphrase
                             : "••••••••••••••••••••••••"}
                         </div>
@@ -680,7 +613,6 @@ export function WalletPassphrasesContent() {
                           size="icon"
                           onClick={() => toggleVisibility(passphrase.id)}
                           title={visiblePassphrases[passphrase.id] ? "Hide passphrase" : "Show passphrase"}
-                          disabled={passphrase.decryptionError}
                         >
                           {visiblePassphrases[passphrase.id] ? (
                             <EyeOff className="h-4 w-4" />
@@ -693,7 +625,6 @@ export function WalletPassphrasesContent() {
                           size="icon"
                           onClick={() => copyToClipboard(passphrase.id, passphrase.passphrase)}
                           title="Copy to clipboard"
-                          disabled={passphrase.decryptionError}
                         >
                           {copiedId === passphrase.id ? (
                             <Check className="h-4 w-4 text-green-500" />
@@ -704,7 +635,7 @@ export function WalletPassphrasesContent() {
                       </div>
                     </TableCell>
                     <TableCell className="p-3">
-                      {passphrase.walletAddress && !passphrase.decryptionError ? (
+                      {passphrase.walletAddress && (
                         <div className="flex items-center space-x-2">
                           <div className="max-w-[160px] truncate font-mono text-xs">
                             {visibleAddresses[passphrase.id]
@@ -738,8 +669,6 @@ export function WalletPassphrasesContent() {
                             )}
                           </Button>
                         </div>
-                      ) : (
-                        "-"
                       )}
                     </TableCell>
                     <TableCell className="p-3">
@@ -898,16 +827,16 @@ export function WalletPassphrasesContent() {
           <DialogHeader>
             <DialogTitle>{translate("delete_passphrase", "wallet_passphrases")}</DialogTitle>
             <DialogDescription>
-              {translate("delete_passphrase_confirm", "wallet_passphrases")}
+              Are you sure you want to delete this passphrase? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <p className="font-medium">{currentPassphrase?.name}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {translate("cancel", "common")}
+              Cancel
             </Button>
             <Button variant="destructive" onClick={deletePassphrase}>
-              {translate("delete", "common")}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
