@@ -157,7 +157,15 @@
     "identity_coming_soon": "Identity module is under development.",
     "cards_coming_soon": "Cards module is under development.",
     "software_licenses_coming_soon": "Software Licenses module is under development.",
-    "wifi_coming_soon": "Wi-Fi module is under development."
+    "wifi_coming_soon": "Wi-Fi module is under development.",
+    "accounts": "Accounts",
+    "api_keys": "API Keys",
+    "wallet_passphrases": "Wallet Passphrases",
+    "identity": "Identity",
+    "cards": "Cards",
+    "software_licenses": "Software Licenses",
+    "wifi": "Wi-Fi",
+    "email":"E-Mail"
   },
   "activity": {
     "password_updated": "Password updated",
