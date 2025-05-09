@@ -23,7 +23,8 @@ async def login_api(
     auth_data = validate_stack_auth_token(payload.get("uid"))
     if not auth_data:
         return response_helper(
-            status_code=400, message="Authentication failed, Please try again",
+            status_code=400,
+            message="Authentication failed, Please try again",
         )
     user = user_manager.find_one(
         db, {"uid": auth_data.get("id"), "access": {"$ne": False}}, {"_id": False}

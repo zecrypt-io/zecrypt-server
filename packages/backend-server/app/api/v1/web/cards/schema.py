@@ -19,4 +19,3 @@ class UpdateCard(BaseModel):
     brand: Optional[str] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
-

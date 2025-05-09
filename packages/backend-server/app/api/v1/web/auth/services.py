@@ -105,7 +105,9 @@ def create_user(request, db, auth_data, back_ground_tasks):
             "passkey_auth_enabled": auth_data.get("passkey_auth_enabled"),
             "oauth_providers": auth_data.get("oauth_providers"),
         },
-        "2fa": {"totp_secret": encrypt_totp_secret(totp_secret),},
+        "2fa": {
+            "totp_secret": encrypt_totp_secret(totp_secret),
+        },
     }
     user_manager.insert_one(db, new_user_data)
     back_ground_tasks.add_task(create_project_at_signup, request, db, user_id)

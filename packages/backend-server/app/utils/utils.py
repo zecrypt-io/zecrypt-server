@@ -16,7 +16,7 @@ def response_helper(
     data=None,
     description: str = None,
     error: str = None,
-    **kwargs
+    **kwargs,
 ):
     result = {"status_code": status_code, "message": message}
     if description is not None:

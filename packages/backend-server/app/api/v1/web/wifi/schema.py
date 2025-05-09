@@ -19,4 +19,3 @@ class UpdateWifi(BaseModel):
     data: Optional[Any] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
-

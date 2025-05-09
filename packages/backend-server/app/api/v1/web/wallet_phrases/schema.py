@@ -16,4 +16,3 @@ class UpdateWalletPhrase(BaseModel):
     tags: Optional[list[str]] = None
     data: Optional[Any] = None
     notes: Optional[str] = None
-

@@ -32,7 +32,8 @@ def update_favorite_tags(request, user, payload):
         db, query, {**update_ops, "$setOnInsert": {"created_by": user_id}}, upsert=True
     )
     return response_helper(
-        status_code=200, message="Favorite tags updated successfully",
+        status_code=200,
+        message="Favorite tags updated successfully",
     )
 
 
@@ -65,12 +66,17 @@ def get_login_history(request, user):
 
 
 def update_profile(request, user, payload):
-
     payload = filter_payload(payload)
 
     if payload:
         query = {"user_id": user.get("user_id")}
         user_manager.update_one(user.get("db"), query, {"$set": payload})
-        return response_helper(status_code=200, message="Profile updated successfully",)
+        return response_helper(
+            status_code=200,
+            message="Profile updated successfully",
+        )
     else:
-        return response_helper(status_code=200, message="No changes to update",)
+        return response_helper(
+            status_code=200,
+            message="No changes to update",
+        )

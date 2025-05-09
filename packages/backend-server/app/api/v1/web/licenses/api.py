@@ -21,7 +21,6 @@ async def get_license_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_licenses(user.get("db"), request)
 
 

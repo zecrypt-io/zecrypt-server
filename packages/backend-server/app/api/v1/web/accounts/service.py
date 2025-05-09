@@ -58,7 +58,9 @@ def add_account(request, user, payload, background_tasks):
     secrets_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201, message="Account added successfully", data={},
+        status_code=201,
+        message="Account added successfully",
+        data={},
     )
 
 
@@ -88,7 +90,11 @@ def update_account(request, user, payload, background_tasks):
 
     # Update account
     secrets_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload,},
+        db,
+        {"doc_id": doc_id},
+        {
+            "$set": payload,
+        },
     )
 
 
@@ -97,9 +103,14 @@ def delete_account(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(status_code=404, message="Account details not found",)
+        return response_helper(
+            status_code=404,
+            message="Account details not found",
+        )
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
-        status_code=200, message="Account deleted successfully", data={},
+        status_code=200,
+        message="Account deleted successfully",
+        data={},
     )

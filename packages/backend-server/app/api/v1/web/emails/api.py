@@ -21,9 +21,7 @@ async def get_email_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_emails(user.get("db"), request)
-
 
 
 @router.post(EMAILS)

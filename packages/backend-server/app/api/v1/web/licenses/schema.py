@@ -19,4 +19,3 @@ class UpdateLicense(BaseModel):
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
     expires_at: Optional[str] = None
-

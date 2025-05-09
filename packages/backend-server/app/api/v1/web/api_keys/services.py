@@ -16,13 +16,12 @@ def get_api_key_details(db, doc_id):
     )
 
 
-def get_api_keys(db, request):   
+def get_api_keys(db, request):
     query = {
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
-       
     }
-  
+
     api_keys = secrets_manager.find(db, query)
 
     return response_helper(
@@ -45,7 +44,10 @@ def add_api_key(request, user, payload, background_tasks):
         "secret_type": data_type,
     }
 
-    api_key = secrets_manager.find_one(db, query,)
+    api_key = secrets_manager.find_one(
+        db,
+        query,
+    )
     if api_key:
         return response_helper(status_code=400, message="API Key already exists")
 
@@ -61,7 +63,9 @@ def add_api_key(request, user, payload, background_tasks):
     secrets_manager.insert_one(db, payload)
 
     return response_helper(
-        status_code=201, message="API Key added successfully", data=payload,
+        status_code=201,
+        message="API Key added successfully",
+        data=payload,
     )
 
 
@@ -92,10 +96,15 @@ def update_api_key(request, user, payload, background_tasks):
 
     # Update account
     secrets_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload},
+        db,
+        {"doc_id": doc_id},
+        {"$set": payload},
     )
 
-    return response_helper(status_code=200, message="API Key updated successfully",)
+    return response_helper(
+        status_code=200,
+        message="API Key updated successfully",
+    )
 
 
 def delete_api_key(request, user, background_tasks):
@@ -103,9 +112,14 @@ def delete_api_key(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(status_code=404, message="API Key details not found",)
+        return response_helper(
+            status_code=404,
+            message="API Key details not found",
+        )
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
     return response_helper(
-        status_code=200, message="API Key deleted successfully", data={},
+        status_code=200,
+        message="API Key deleted successfully",
+        data={},
     )

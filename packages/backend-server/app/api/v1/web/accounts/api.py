@@ -23,6 +23,7 @@ async def get_accounts_api(
 ):
     return get_accounts(user.get("db"), request)
 
+
 @router.post(ACCOUNTS)
 async def create_account_api(
     request: Request,

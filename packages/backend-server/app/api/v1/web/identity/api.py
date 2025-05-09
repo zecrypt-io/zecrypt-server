@@ -24,7 +24,6 @@ async def get_identity_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_identities(user.get("db"), request)
 
 

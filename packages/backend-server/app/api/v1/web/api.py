@@ -13,6 +13,7 @@ from app.api.v1.web.cards import api as cards_router
 from app.api.v1.web.wifi import api as wifi_router
 from app.api.v1.web.licenses import api as licenses_router
 from app.api.v1.web.ssh_keys import api as ssh_keys_router
+
 api_router = APIRouter()
 
 api_router.prefix = "/web"

@@ -17,14 +17,11 @@ def get_wallet_phrase_details(db, doc_id):
 
 
 def get_wallet_phrases(db, request):
-    
     # Build query with optional filters
     query = {
         "project_id": request.path_params.get("project_id"),
         "secret_type": data_type,
-      
     }
-   
 
     # Execute query
     data = secrets_manager.find(db, query)
@@ -98,11 +95,17 @@ def update_wallet_phrase(request, user, payload, background_tasks):
             )
     # Update wallet phrase
     secrets_manager.update_one(
-        db, {"doc_id": doc_id}, {"$set": payload,},
+        db,
+        {"doc_id": doc_id},
+        {
+            "$set": payload,
+        },
     )
 
     return response_helper(
-        status_code=200, message="Wallet phrase updated successfully", data=payload,
+        status_code=200,
+        message="Wallet phrase updated successfully",
+        data=payload,
     )
 
 
@@ -111,9 +114,12 @@ def delete_wallet_phrase(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
         return response_helper(
-            status_code=404, message="Wallet phrase details not found",
+            status_code=404,
+            message="Wallet phrase details not found",
         )
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
     return response_helper(
-        status_code=200, message="Wallet phrase deleted successfully", data={},
+        status_code=200,
+        message="Wallet phrase deleted successfully",
+        data={},
     )
