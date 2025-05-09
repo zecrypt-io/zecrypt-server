@@ -30,16 +30,16 @@ import { EditLicenseDialog } from "./edit-license-dialog";
 
 interface License {
   doc_id: string;
-  title?: string;
-  name?: string;
-  license_key?: string;
-  expiry_date?: string;
-  software?: string;
+  title: string;
+  lower_name?: string;
+  license_key: string;
   notes?: string | null;
   tags?: string[];
-  data?: string | { license_key: string; expiry_date: string | null };
   created_at: string;
   updated_at: string;
+  created_by?: string;
+  project_id?: string;
+  expires_at?: string | null;
 }
 
 export function LicensesContent() {
@@ -182,41 +182,6 @@ export function LicensesContent() {
     }
   };
 
-  // Extract license key and expiry date from data field if available
-  const getLicenseData = (license: License) => {
-    try {
-      if (license.data && typeof license.data === 'string') {
-        try {
-          const parsedData = JSON.parse(license.data);
-          return {
-            license_key: parsedData.license_key || license.license_key || '',
-            expiry_date: parsedData.expiry_date || license.expiry_date || ''
-          };
-        } catch (e) {
-          // If parsing fails, use direct properties
-          return {
-            license_key: license.license_key || '',
-            expiry_date: license.expiry_date || ''
-          };
-        }
-      } else if (license.data && typeof license.data === 'object') {
-        return {
-          license_key: license.data.license_key || license.license_key || '',
-          expiry_date: license.data.expiry_date || license.expiry_date || ''
-        };
-      }
-      return {
-        license_key: license.license_key || '',
-        expiry_date: license.expiry_date || ''
-      };
-    } catch (e) {
-      return {
-        license_key: license.license_key || '',
-        expiry_date: license.expiry_date || ''
-      };
-    }
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -286,8 +251,7 @@ export function LicensesContent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">{translate("name", "licenses", { default: "Name" })}</TableHead>
-                  <TableHead>{translate("software", "licenses", { default: "Software" })}</TableHead>
+                  <TableHead className="w-[200px]">{translate("software_name", "licenses", { default: "Software" })}</TableHead>
                   <TableHead>{translate("license_key", "licenses", { default: "License Key" })}</TableHead>
                   <TableHead>{translate("expiry_date", "licenses", { default: "Expiry Date" })}</TableHead>
                   <TableHead>{translate("tags", "licenses", { default: "Tags" })}</TableHead>
@@ -296,60 +260,63 @@ export function LicensesContent() {
               </TableHeader>
               <TableBody>
                 {licensesToDisplay.map((license) => {
-                  const licenseData = getLicenseData(license);
                   return (
                     <TableRow key={license.doc_id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Key className="h-4 w-4 text-muted-foreground" />
-                          <span>{license.title || license.name}</span>
+                          <span>{license.title || 'N/A'}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{license.software}</TableCell>
                       <TableCell className="font-mono">
                         <div className="flex items-center gap-2">
                           <span>
-                            {viewLicenseKey === license.doc_id ? licenseData.license_key : "••••-••••-••••-••••"}
+                            {viewLicenseKey === license.doc_id ? license.license_key : "••••-••••-••••-••••"}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
-                          >
-                            {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => copyToClipboard(license.doc_id, "license_key", licenseData.license_key)}
-                          >
-                            {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
+                          {license.license_key && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
+                              >
+                                {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => copyToClipboard(license.doc_id, "license_key", license.license_key)}
+                              >
+                                {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {licenseData.expiry_date && (
+                        {license.expires_at && (
                           <div className="flex items-center gap-2">
-                            <span className={`${isExpired(licenseData.expiry_date) ? 'text-red-500' : (daysUntilExpiry(licenseData.expiry_date) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
-                              {formatDate(licenseData.expiry_date)}
+                            <span className={`${isExpired(license.expires_at) ? 'text-red-500' : (daysUntilExpiry(license.expires_at) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
+                              {formatDate(license.expires_at)}
                             </span>
-                            {isExpired(licenseData.expiry_date) ? (
+                            {isExpired(license.expires_at) ? (
                               <Badge variant="destructive" className="text-xs">
                                 {translate("expired", "licenses", { default: "Expired" })}
                               </Badge>
-                            ) : daysUntilExpiry(licenseData.expiry_date) < 30 ? (
+                            ) : daysUntilExpiry(license.expires_at) < 30 ? (
                               <Badge variant="outline" className="text-xs text-amber-500 border-amber-500">
                                 {translate("expiring_soon", "licenses", { default: "Expiring soon" })}
                               </Badge>
                             ) : null}
                           </div>
                         )}
+                        {!license.expires_at && '-'}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">

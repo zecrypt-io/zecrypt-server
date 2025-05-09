@@ -204,26 +204,14 @@ export function EditLicenseDialog({ license, open, onClose, onLicenseUpdated }: 
         <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <Label htmlFor="edit_name">
-              {translate("name", "licenses", { default: "Name" })} <span className="text-red-500">*</span>
+              {translate("software_name", "licenses", { default: "Software Name" })} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="edit_name"
-              placeholder={translate("enter_license_name", "licenses", { default: "Enter license name" })}
+              placeholder={translate("enter_software_name", "licenses", { default: "Enter software name" })}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit_software">
-              {translate("software", "licenses", { default: "Software" })}
-            </Label>
-            <Input
-              id="edit_software"
-              placeholder={translate("enter_software_name", "licenses", { default: "Enter software name" })}
-              value={software}
-              onChange={(e) => setSoftware(e.target.value)}
             />
           </div>
 

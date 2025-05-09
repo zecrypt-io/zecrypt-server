@@ -6,13 +6,13 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 
-interface License {
+// Raw data structure from API GET /licenses
+interface LicenseFromAPI {
   doc_id: string;
   title?: string;
-  name?: string;
-  lower_name: string;
-  license_key: string;
-  expiry_date: string;
+  name?: string; // API might send this or title, or both
+  lower_name: string; // Typically for server-side search optimization
+  data: string; // JSON string: e.g., {"license_key": "some_encrypted_or_plain_key"}
   software?: string;
   notes?: string | null;
   tags?: string[];
@@ -20,6 +20,22 @@ interface License {
   updated_at: string;
   created_by: string;
   project_id: string;
+  expires_at?: string | null; // Correct field for expiry
+}
+
+// Processed license structure for the component
+interface License {
+  doc_id: string;
+  title: string; // This is the Software Name
+  lower_name: string; // Keep if API uses it for search/sorting related to title
+  license_key: string; // Extracted from data
+  notes?: string | null;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  project_id: string;
+  expires_at?: string | null;
 }
 
 interface UseLicenseManagementProps {
@@ -30,7 +46,7 @@ interface UseLicenseManagementProps {
 
 interface UseLicenseManagementReturn {
   licensesToDisplay: License[];
-  allRawLicenses: License[];
+  allRawLicenses: LicenseFromAPI[]; // Store raw response
   isLoading: boolean;
   totalCount: number;
   currentPage: number;
@@ -57,31 +73,48 @@ export function useLicenseManagement({
   initialItemsPerPage = 5,
 }: UseLicenseManagementProps): UseLicenseManagementReturn {
   const { translate } = useTranslator();
-  const [allRawLicenses, setAllRawLicenses] = useState<License[]>([]);
+  const [allRawLicenses, setAllRawLicenses] = useState<LicenseFromAPI[]>([]);
   const [processedLicenses, setProcessedLicenses] = useState<License[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
 
-  const processLicenseData = useCallback(async (license: License): Promise<License> => {
-    // Process license data if needed
+  const processLicenseData = useCallback(async (licenseRaw: LicenseFromAPI): Promise<License> => {
+    let extractedLicenseKey = '';
     try {
-      // Ensure title is set
-      if (!license.title && license.name) {
-        license.title = license.name;
+      if (licenseRaw.data) {
+        const parsedData = JSON.parse(licenseRaw.data);
+        if (parsedData && typeof parsedData.license_key === 'string') {
+          extractedLicenseKey = parsedData.license_key;
+        }
       }
-
-      return {
-        ...license,
-      };
-    } catch (error: unknown) {
-      console.error("Failed to process license data in hook:", {
+    } catch (error) {
+      console.error("Failed to parse license data field in hook:", {
         error: error instanceof Error ? error.message : String(error),
-        license_id: license.doc_id,
+        license_id: licenseRaw.doc_id,
+        rawData: licenseRaw.data,
       });
-      return license;
     }
+
+    // Use title as the primary software name, fallback to name if title is not present
+    const softwareName = licenseRaw.title || licenseRaw.name || 'Untitled Software';
+
+    return {
+      // Spread minimal necessary fields from licenseRaw, then override/set specific ones
+      doc_id: licenseRaw.doc_id,
+      lower_name: licenseRaw.lower_name, // Assuming this is tied to how API searches on title/name
+      created_at: licenseRaw.created_at,
+      updated_at: licenseRaw.updated_at,
+      created_by: licenseRaw.created_by,
+      project_id: licenseRaw.project_id,
+      notes: licenseRaw.notes,
+      tags: licenseRaw.tags,
+      // Processed fields
+      title: softwareName, // This is now the Software Name
+      license_key: extractedLicenseKey,
+      expires_at: licenseRaw.expires_at,
+    };
   }, []);
 
   const fetchLicenses = useCallback(async () => {
@@ -99,7 +132,7 @@ export function useLicenseManagement({
       }
       const queryParams = new URLSearchParams();
       if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim());
+        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
       }
       if (tagsArray.length > 0) {
         tagsArray.forEach(tag => queryParams.append('tags', tag));
@@ -110,7 +143,7 @@ export function useLicenseManagement({
       );
 
       if (response.status === 200) {
-        const { data: fetchedLicenses = [] } = response.data || {};
+        const { data: fetchedLicenses = [] }: { data: LicenseFromAPI[] } = response.data || {};
         setAllRawLicenses(fetchedLicenses);
         const processed = await Promise.all(fetchedLicenses.map(processLicenseData));
         setProcessedLicenses(processed);
@@ -145,7 +178,7 @@ export function useLicenseManagement({
     goToPage,
     getPaginationRange 
   } = useClientPagination<License>({
-    data: processedLicenses,
+    data: processedLicenses, // Use processed licenses for pagination
     itemsPerPage,
   });
 
@@ -157,7 +190,7 @@ export function useLicenseManagement({
     try {
       await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/licenses/${doc_id}`);
       toast({ title: translate("success", "actions"), description: translate("license_deleted_successfully", "licenses", { default: "License deleted successfully" }) });
-      fetchLicenses();
+      fetchLicenses(); // Re-fetch to update the list
     } catch (error: any) {
       let errorMessage = translate("error_deleting_license", "licenses", { default: "Error deleting license" });
       if (error.response?.data?.message) {
@@ -165,7 +198,8 @@ export function useLicenseManagement({
       }
       toast({ title: translate("error", "actions"), description: errorMessage, variant: "destructive" });
     }
-  }, [selectedWorkspaceId, selectedProjectId, fetchLicenses, translate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWorkspaceId, selectedProjectId, fetchLicenses]);
 
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
@@ -173,7 +207,6 @@ export function useLicenseManagement({
     setCurrentPage(1);
   }, [setCurrentPage]);
 
-  // Debounced search query setter
   const setSearchQuery = useMemo(() => {
     let timeoutId: NodeJS.Timeout;
     return (value: string) => {
