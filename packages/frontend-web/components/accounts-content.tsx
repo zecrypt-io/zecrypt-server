@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, ExternalLink, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -19,8 +19,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { FIXED_SALT } from "../libs/crypto";
-import { useFormatter } from "next-intl"; // Add next-intl formatter
+import { useFormatter } from "next-intl";
+import { toast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAccountManagement } from "@/hooks/use-account-management";
 
 interface Account {
   doc_id: string;
@@ -28,9 +37,11 @@ interface Account {
   title?: string;
   lower_name: string;
   user_name?: string;
+  username?: string;
   password?: string;
-  data?: string;
+  data?: string | { username: string; password: string };
   website?: string | null;
+  url?: string | null;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -42,271 +53,112 @@ interface Account {
 export function AccountsContent() {
   const { translate } = useTranslator();
   const router = useRouter();
-  const format = useFormatter(); // Add formatter for date
-  const [showAddAccount, setShowAddAccount] = useState(false);
-  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
-  const [showEditAccount, setShowEditAccount] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
-  const [viewPassword, setViewPassword] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [allAccounts, setAllAccounts] = useState<Account[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [isLoading, setIsLoading] = useState(true);
+  const format = useFormatter();
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
 
-  // Check if a string appears to be a hash (e.g., SHA-512)
-  const isLikelyHash = (str: string): boolean => {
-    return /^[0-9a-fA-F]{128}$/.test(str);
-  };
+  const {
+    accountsToDisplay,
+    isLoading,
+    totalCount,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    getPaginationRange,
+    itemsPerPage,
+    setItemsPerPage,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    handleDeleteAccount: handleDeleteAccountFromHook,
+    fetchAccounts,
+    clearFilters,
+    nextPage,
+    prevPage,
+    goToPage
+  } = useAccountManagement({
+    selectedWorkspaceId,
+    selectedProjectId,
+    initialItemsPerPage: 5
+  });
 
-  const processAccountData = useCallback(async (account: Account): Promise<Account> => {
-    try {
-      // If the account already has processed data, use it
-      if (account.password) {
-        return account;
-      }
-      
-      // For backward compatibility, set title if only name exists
-      if (!account.title && account.name) {
-        account.title = account.name;
-      }
+  const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
+  const [showEditAccount, setShowEditAccount] = useState(false);
+  const [selectedAccountForEdit, setSelectedAccountForEdit] = useState<Account | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
-      // Data field directly contains the password
-      if (account.data && typeof account.data === "string") {
-        return {
-          ...account,
-          password: account.data
-        };
-      }
-
-      return {
-        ...account,
-        password: "Data unavailable"
-      };
-    } catch (error: unknown) {
-      console.error("Failed to process account data:", {
-        error: error instanceof Error ? error.message : String(error),
-        account_id: account.doc_id,
-      });
-      return {
-        ...account,
-        password: "Error processing data"
-      };
-    }
-  }, []);
-
-  const getCategoryTag = useCallback((category: string): string => {
-    switch (category.toLowerCase()) {
-      case 'personal':
-        return 'personal';
-      case 'work':
-        return 'work';
-      case 'finance':
-        return 'finance';
-      case 'favorite':
-        return 'favorite';
-      default:
-        return category.toLowerCase();
-    }
-  }, []);
-
-  const fetchAccounts = useCallback(async () => {
-    if (!selectedWorkspaceId || !selectedProjectId) {
-      console.error("Missing required data for fetching accounts:", {
-        selectedWorkspaceId,
-        selectedProjectId,
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      let tagsArray: string[] = [];
-      if (selectedCategory !== "all") {
-        tagsArray = [getCategoryTag(selectedCategory)];
-      }
-
-      const payload = {
-        page: currentPage,
-        limit: itemsPerPage,
-        name: searchQuery.trim() || null,
-        tags: tagsArray.length > 0 ? tagsArray : undefined,
-      };
-
-      const response = await axiosInstance.post(
-        `/${selectedWorkspaceId}/${selectedProjectId}/accounts/list`,
-        payload
-      );
-
-      if (response.status === 200) {
-        const { data: fetchedAccounts = [], count = 0 } = response.data || {};
-        
-        // Process the account data
-        const processedAccounts = await Promise.all(
-          fetchedAccounts.map(processAccountData)
-        );
-
-        setAllAccounts(processedAccounts);
-        
-        // Set total count based on pagination
-        let estimatedTotal;
-        if (currentPage === 1 && count < itemsPerPage) {
-          estimatedTotal = count;
-        } else if (count === itemsPerPage) {
-          estimatedTotal = currentPage * itemsPerPage + 1;
-        } else {
-          estimatedTotal = (currentPage - 1) * itemsPerPage + count;
-        }
-        setTotalCount(estimatedTotal);
-      } else {
-        console.error("Error in accounts response:", response);
-      }
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedCategory, getCategoryTag, processAccountData]);
+  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
+  const [viewPassword, setViewPassword] = useState<string | null>(null);
+  const [viewUsername, setViewUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts]);
-
-  useEffect(() => {
-    const handleAddAccount = () => setShowAddAccount(true);
+    const handleAddAccountListener = () => setShowAddAccount(true);
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "+") {
         e.preventDefault();
         setShowAddAccount(true);
       }
     };
-    document.addEventListener("toggle-add-account", handleAddAccount);
+    document.addEventListener("toggle-add-account", handleAddAccountListener);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("toggle-add-account", handleAddAccount);
+      document.removeEventListener("toggle-add-account", handleAddAccountListener);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
-
-  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
+  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string | undefined) => {
     try {
+      if (!value) return;
       await navigator.clipboard.writeText(value);
       setCopiedField({ doc_id, field });
       setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
+      toast({ title: translate("error", "common"), description: translate("copy_failed", "accounts"), variant: "destructive" });
     }
-  }, []);
+  }, [translate]);
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
     setViewPassword(prev => (prev === doc_id ? null : doc_id));
   }, []);
 
-  const clearFilters = useCallback(() => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setCurrentPage(1);
+  const toggleUsernameVisibility = useCallback((doc_id: string) => {
+    setViewUsername(prev => (prev === doc_id ? null : doc_id));
   }, []);
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
-
-  const handleDeleteAccount = useCallback(
-    async (doc_id: string) => {
-      if (!selectedWorkspaceId || !selectedProjectId) {
-        console.error("Missing required data for deleting account:", {
-          selectedWorkspaceId,
-          selectedProjectId,
-        });
-        return;
-      }
-
-      if (!confirm(translate("confirm_delete_account", "accounts"))) {
-        return;
-      }
-
-      try {
-        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
-        fetchAccounts();
-        alert(translate("account_deleted_successfully", "accounts"));
-      } catch (error: any) {
-        console.error("Error deleting account:", error);
-        let errorMessage = translate("error_deleting_account", "accounts");
-        if (error.response?.data?.message) {
-          errorMessage = `${errorMessage}: ${error.response.data.message}`;
-        }
-        alert(errorMessage);
-      }
-    },
-    [selectedWorkspaceId, selectedProjectId, translate, fetchAccounts]
-  );
+  const handleOpenEditDialog = (account: Account) => {
+    setSelectedAccountForEdit(account);
+    setShowEditAccount(true);
+  };
 
   const handleAccountUpdated = useCallback(() => {
     setShowEditAccount(false);
-    setSelectedAccount(null);
+    setSelectedAccountForEdit(null);
     fetchAccounts();
-    alert(translate("account_updated_successfully", "accounts"));
+    toast({ title: translate("success", "common"), description: translate("account_updated_successfully", "accounts") });
   }, [fetchAccounts, translate]);
 
-  const debouncedSearch = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    return (value: string) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setSearchQuery(value);
-        setCurrentPage(1);
-      }, 300);
-    };
-  }, []);
+  const confirmDelete = (doc_id: string) => {
+    setAccountToDelete(doc_id);
+    setShowDeleteConfirmation(true);
+  };
 
-  const getPaginationRange = useCallback(() => {
-    const maxPagesToShow = 5;
-    const pageNumbers: (number | string)[] = [];
+  const executeDeleteAccount = async () => {
+    if (!accountToDelete) return;
+    setIsProcessingDelete(true);
+    await handleDeleteAccountFromHook(accountToDelete);
+    setShowDeleteConfirmation(false);
+    setAccountToDelete(null);
+    setIsProcessingDelete(false);
+  };
 
-    if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      const half = Math.floor(maxPagesToShow / 2);
-      let start = Math.max(1, currentPage - half);
-      let end = Math.min(totalPages, start + maxPagesToShow - 1);
-
-      if (end - start < maxPagesToShow - 1) {
-        start = end - maxPagesToShow + 1;
-      }
-
-      if (start > 1) {
-        pageNumbers.push(1);
-        if (start > 2) pageNumbers.push("...");
-      }
-
-      for (let i = start; i <= end; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (end < totalPages) {
-        if (end < totalPages - 1) pageNumbers.push("...");
-        pageNumbers.push(totalPages);
-      }
-    }
-
-    return pageNumbers;
-  }, [currentPage, totalPages]);
-
-  if (isLoading) {
+  if (isLoading && accountsToDisplay.length === 0) {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>
@@ -329,30 +181,26 @@ export function AccountsContent() {
               type="search"
               placeholder={translate("search", "accounts")}
               className="pl-8 w-full"
-              onChange={(e) => debouncedSearch(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Select
               value={selectedCategory}
-              onValueChange={(value) => {
-                setSelectedCategory(value);
-                setCurrentPage(1);
-              }}
+              onValueChange={setSelectedCategory}
             >
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Accounts" />
+                <SelectValue placeholder={translate("all_accounts", "accounts")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Accounts</SelectItem>
-                <SelectItem value="personal">Personal</SelectItem>
-                <SelectItem value="work">Work</SelectItem>
-                <SelectItem value="finance">Finance</SelectItem>
-                <SelectItem value="favorite">Favorites</SelectItem>
+                <SelectItem value="all">{translate("all_accounts", "accounts")}</SelectItem>
+                <SelectItem value="personal">{translate("personal", "accounts")}</SelectItem>
+                <SelectItem value="work">{translate("work", "accounts")}</SelectItem>
+                <SelectItem value="finance">{translate("finance", "accounts")}</SelectItem>
+                <SelectItem value="favorite">{translate("favorite", "accounts")}</SelectItem>
               </SelectContent>
             </Select>
-
             {(searchQuery || selectedCategory !== "all") && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
                 <X className="h-4 w-4 mr-2" />
@@ -361,7 +209,6 @@ export function AccountsContent() {
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <Button
             variant="default"
@@ -384,6 +231,7 @@ export function AccountsContent() {
             <thead>
               <tr className="bg-muted/50">
                 <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("website", "accounts")}</th>
                 <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
@@ -392,8 +240,14 @@ export function AccountsContent() {
               </tr>
             </thead>
             <tbody>
-              {allAccounts.length > 0 ? (
-                allAccounts.map((account) => (
+              {isLoading && accountsToDisplay.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-10 text-muted-foreground">
+                    {translate("loading_accounts", "accounts")}
+                  </td>
+                </tr>
+              ) : accountsToDisplay.length > 0 ? (
+                accountsToDisplay.map((account) => (
                   <tr key={account.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
@@ -402,14 +256,14 @@ export function AccountsContent() {
                         </div>
                         <div>
                           <p className="font-medium">{account.title || account.name}</p>
-                          {account.website && (
+                          {(account.website || account.url) && (
                             <a
-                              href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
+                              href={((account.website || account.url || "").startsWith("http") ? (account.website || account.url || "") : `https://${account.website || account.url || ""}`)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
                             >
-                              {account.website.replace(/^https?:\/\//, "")}
+                              {(account.website || account.url || "").replace(/^https?:\/\//, "")}
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           )}
@@ -419,71 +273,82 @@ export function AccountsContent() {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">
-                          {account.password && account.password !== "Data unavailable" && viewPassword === account.doc_id
-                            ? account.password
-                            : account.password && account.password !== "Data unavailable"
+                          {account.username && account.username.length > 0 && viewUsername === account.doc_id
+                            ? account.username
+                            : account.username && account.username.length > 0
                             ? "••••••••"
-                            : account.password}
+                            : "-"}
                         </span>
-                        <div className="flex items-center">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Data unavailable" && togglePasswordVisibility(account.doc_id)}
-                                  disabled={!account.password || account.password === "Data unavailable"}
-                                >
-                                  {viewPassword === account.doc_id ? (
-                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-                                  ) : (
-                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{viewPassword === account.doc_id ? "Hide password" : "Show password"}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Data unavailable" && copyToClipboard(account.doc_id, "password", account.password)}
-                                  disabled={!account.password || account.password === "Data unavailable"}
-                                >
-                                  {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
-                                    <Check className="h-3.5 w-3.5 text-green-500" />
-                                  ) : (
-                                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? "Copied!" : "Copy password"}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
+                        {account.username && account.username.length > 0 && (
+                          <div className="flex items-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleUsernameVisibility(account.doc_id)}>
+                                    {viewUsername === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{viewUsername === account.doc_id ? translate("hide_username", "accounts") : translate("show_username", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => account.username && copyToClipboard(account.doc_id, "username", account.username)}>
+                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? translate("copied", "accounts") : translate("copy_username", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="p-3">
-                      {account.website && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono">
+                          {account.password && account.password !== "Error processing data" && viewPassword === account.doc_id
+                            ? account.password
+                            : account.password && account.password !== "Error processing data"
+                            ? "••••••••"
+                            : account.password}
+                        </span>
+                        {account.password && account.password !== "-" && account.password !== "Error processing data" && (
+                          <div className="flex items-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePasswordVisibility(account.doc_id)}>
+                                    {viewPassword === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{viewPassword === account.doc_id ? translate("hide_password", "accounts") : translate("show_password", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => account.password && copyToClipboard(account.doc_id, "password", account.password)}>
+                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? translate("copied", "accounts") : translate("copy_password", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {(account.website || account.url) && (
                         <a
-                          href={account.website.startsWith("http") ? account.website : `https://${account.website}`}
+                          href={((account.website || account.url || "").startsWith("http") ? (account.website || account.url || "") : `https://${account.website || account.url || ""}`)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
                         >
-                          {account.website.replace(/^https?:\/\//, "")}
+                          {(account.website || account.url || "").replace(/^https?:\/\//, "")}
                         </a>
                       )}
                     </td>
@@ -495,22 +360,15 @@ export function AccountsContent() {
                           </Badge>
                         ))}
                         {account.tags?.some(tag => tag.toLowerCase() === 'favorite') && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs bg-amber-100 dark:bg-amber-950 border-amber-200 dark:border-amber-800"
-                          >
+                          <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
                             <Star className="h-3 w-3 text-amber-500 mr-1" />
-                            Favorite
+                            {translate("favorite", "accounts")}
                           </Badge>
                         )}
                       </div>
                     </td>
                     <td className="p-3 text-sm text-muted-foreground">
-                      {format.dateTime(new Date(account.updated_at), { // Use next-intl formatter
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {format.dateTime(new Date(account.updated_at), { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
                     <td className="p-3">
                       <DropdownMenu>
@@ -520,19 +378,11 @@ export function AccountsContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedAccount({ ...account });
-                              setShowEditAccount(true);
-                            }}
-                          >
-                            Edit
+                          <DropdownMenuItem onClick={() => handleOpenEditDialog(account)}>
+                            {translate("edit", "accounts")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-500"
-                            onClick={() => handleDeleteAccount(account.doc_id)}
-                          >
-                            Delete
+                          <DropdownMenuItem className="text-red-500" onClick={() => confirmDelete(account.doc_id)}>
+                            {translate("delete", "accounts")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -541,16 +391,17 @@ export function AccountsContent() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-muted-foreground">
+                  <td colSpan={7} className="text-center py-10 text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-10 w-10 text-muted-foreground/50" />
                       <h3 className="font-medium">{translate("no_accounts_found", "accounts")}</h3>
                       <p className="text-sm text-muted-foreground">
                         {selectedCategory !== "all"
-                          ? `No accounts found with tag "${selectedCategory}". Try a different tag or clear filters.`
+                          ? translate("no_accounts_tag_specific", "accounts", { category: selectedCategory })
                           : searchQuery
-                          ? `No accounts match the search "${searchQuery}". Try adjusting your search.`
-                          : translate("adjust_search_filter", "accounts")}
+                          ? translate("no_accounts_search_specific", "accounts", { searchQuery: searchQuery })
+                          : translate("no_accounts_create", "accounts")
+                        }
                       </p>
                       <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
                         {translate("clear_filters", "accounts")}
@@ -563,23 +414,17 @@ export function AccountsContent() {
           </table>
         </div>
 
-        {totalCount > 0 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              {translate("showing", "accounts")} {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
-              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "accounts")} {totalCount}{" "}
-              {translate("accounts", "accounts")}
+              {translate("showing", "accounts")}{' '}
+              {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-{Math.min(currentPage * itemsPerPage, totalCount)}{' '}
+              {translate("of", "accounts")} {totalCount} {translate("accounts", "accounts")}
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
                 <span className="text-sm text-muted-foreground">{translate("rows_per_page", "accounts")}</span>
-                <Select
-                  value={itemsPerPage.toString()}
-                  onValueChange={(value) => {
-                    setItemsPerPage(Number(value));
-                    setCurrentPage(1);
-                  }}
-                >
+                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue placeholder={itemsPerPage.toString()} />
                   </SelectTrigger>
@@ -591,22 +436,10 @@ export function AccountsContent() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage === 1}>
                 <ChevronsLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevPage} disabled={currentPage === 1}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex items-center gap-1">
@@ -616,29 +449,17 @@ export function AccountsContent() {
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => typeof pageNum === "number" && handlePageChange(pageNum)}
+                    onClick={() => typeof pageNum === "number" && goToPage(pageNum)}
                     disabled={pageNum === "..." || currentPage === pageNum}
                   >
                     {pageNum}
                   </Button>
                 ))}
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages || allAccounts.length < itemsPerPage}
-              >
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextPage} disabled={currentPage >= totalPages}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage >= totalPages || allAccounts.length < itemsPerPage}
-              >
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages}>
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
@@ -646,15 +467,29 @@ export function AccountsContent() {
         )}
       </div>
 
+      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{translate("confirm_deletion", "accounts")}</DialogTitle>
+            <DialogDescription>{translate("confirm_delete_account_description", "accounts")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)} disabled={isProcessingDelete}>
+              {translate("cancel", "accounts")}
+            </Button>
+            <Button variant="destructive" onClick={executeDeleteAccount} disabled={isProcessingDelete}>
+              {isProcessingDelete ? `${translate("deleting", "accounts")}...` : translate("delete", "accounts")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {showAddAccount && <AddAccountDialog onClose={() => setShowAddAccount(false)} onAccountAdded={fetchAccounts} />}
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
-      {showEditAccount && selectedAccount && (
+      {showEditAccount && selectedAccountForEdit && (
         <EditAccountDialog
-          account={selectedAccount}
-          onClose={() => {
-            setShowEditAccount(false);
-            setSelectedAccount(null);
-          }}
+          account={selectedAccountForEdit}
+          onClose={() => { setShowEditAccount(false); setSelectedAccountForEdit(null); }}
           onAccountUpdated={handleAccountUpdated}
         />
       )}

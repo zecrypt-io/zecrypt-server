@@ -11,7 +11,6 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle, CheckCircle } from "luc
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface Account {
@@ -20,9 +19,11 @@ interface Account {
   title?: string;
   lower_name: string;
   user_name?: string;
+  username?: string;
   password?: string;
-  data?: string | { user_name: string; password: string };
+  data?: string | { username: string; password: string };
   website?: string | null;
+  url?: string | null;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -39,9 +40,34 @@ interface EditAccountDialogProps {
 
 export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAccountDialogProps) {
   const { translate } = useTranslator();
+  
+  // Parse the username and password from account.data if it's a JSON string
+  const parseAccountData = () => {
+    try {
+      if (account.data && typeof account.data === 'string') {
+        try {
+          const parsedData = JSON.parse(account.data);
+          if (parsedData && typeof parsedData === 'object' && 'username' in parsedData && 'password' in parsedData) {
+            return parsedData;
+          }
+        } catch (e) {
+          // If not parseable as JSON, just use as-is
+        }
+      } else if (account.data && typeof account.data === 'object' && 'username' in account.data && 'password' in account.data) {
+        return account.data;
+      }
+      return { username: account.username || account.user_name || '', password: account.password || '' };
+    } catch (e) {
+      return { username: account.username || account.user_name || '', password: account.password || '' };
+    }
+  };
+
+  const accountData = parseAccountData();
+  
   const [name, setName] = useState(account.title || account.name || "");
-  const [password, setPassword] = useState(account.password || "");
-  const [website, setWebsite] = useState(account.website || "");
+  const [username, setUsername] = useState(accountData.username || "");
+  const [password, setPassword] = useState(accountData.password || "");
+  const [website, setWebsite] = useState(account.url || account.website || "");
   const [notes, setNotes] = useState(account.notes || "");
   const [tags, setTags] = useState<string[]>(account.tags || []);
   const [newTag, setNewTag] = useState("");
@@ -86,15 +112,20 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
     setError("");
 
     try {
-      // Hash the password for security
-      const hashedData = await hashData(password);
+      // Create credentials object with username and password
+      const credentials = {
+        username: username || "",
+        password: password
+      };
+
+      // Convert credentials object to JSON string for the data field
+      const credentialsString = JSON.stringify(credentials);
 
       // Create payload according to API specification
       const payload = {
         title: name,
-        data: password,
-        hash: hashedData.hash,
-        website: website || null,
+        data: credentialsString,
+        url: website || null,
         tags: tags,
         notes: notes || null
       };
@@ -106,7 +137,7 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
 
       if (response.status === 200) {
         toast({
-          title: translate("success"),
+          title: "Success",
           description: translate("account_updated_successfully", "accounts"),
         });
 
@@ -143,8 +174,8 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-6">
+      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative my-auto">
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold">{translate("edit_account", "accounts")}</h2>
           {error && (
@@ -155,7 +186,7 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <label className="text-sm font-medium">
               {translate("account_name", "accounts")} <span className="text-red-500">*</span>
@@ -170,6 +201,17 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
               />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {translate("username", "accounts")}
+            </label>
+            <Input
+              placeholder={translate("enter_username", "accounts")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
