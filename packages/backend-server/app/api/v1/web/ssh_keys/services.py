@@ -1,9 +1,9 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
-from app.utils.constants import SECRET_TYPE_API_KEY
+from app.utils.constants import SECRET_TYPE_SSH_KEY
 
-data_type = SECRET_TYPE_API_KEY
+data_type = SECRET_TYPE_SSH_KEY
 
 
 def get_ssh_key_details(db, doc_id):
