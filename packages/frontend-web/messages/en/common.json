@@ -75,7 +75,8 @@
     "updating": "Updating...",
     "deleting": "Deleting...",
     "notes": "Notes",
-    "software_name": "Software Name"
+    "software_name": "Software Name",
+    "rows_per_page": "Rows per page"
   },
   "navigation": {
     "home": "Home",
