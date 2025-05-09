@@ -37,6 +37,6 @@ jobs:
           if ! git diff --quiet; then
             git add .
             git commit -m "Apply Ruff formatting"
-            
             BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
             git push origin HEAD:$BRANCH
+          fi
