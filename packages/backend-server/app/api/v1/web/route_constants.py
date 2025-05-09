@@ -35,6 +35,10 @@ LICENSE_DETAILS = BASE_URL + "/licenses/{doc_id}"
 EMAILS = BASE_URL + "/emails"
 EMAIL_DETAILS = BASE_URL + "/emails/{doc_id}"
 
+# SSH Keys
+SSH_KEYS = BASE_URL + "/ssh-keys"
+SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
+
 # Login
 LOGIN = "/login"
 LOGOUT = "/logout"
