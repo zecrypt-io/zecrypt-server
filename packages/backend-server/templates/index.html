@@ -100,12 +100,8 @@
   <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-6">
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between">
-        <!-- Logo -->
-        <a href="#" class="flex items-center space-x-2">
-          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <span class="text-black font-bold text-xl">Z</span>
-          </div>
-          <span class="font-bold text-xl">Zecrypt</span>
+         <a href="/" class="flex items-center space-x-2">
+          <img src="/static/logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
         </a>
 
         <!-- Desktop Navigation -->
@@ -559,10 +555,9 @@ const encryptData = async (data, userKey) => {
     <div class="container px-4 mx-auto">
       <div class="flex flex-col items-center justify-center text-center">
         <div class="flex items-center space-x-2 mb-4">
-          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <span class="text-black font-bold text-xl">Z</span>
-          </div>
-          <span class="font-bold text-xl">Zecrypt</span>
+          <a href="/">
+            <img src="/static/logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
+          </a>
         </div>
         <p class="text-gray-400 text-sm max-w-md mb-6">
           End-to-end encrypted storage for your sensitive data. Simple, secure, and open source.

@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
-import { hashData } from "../libs/crypto";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface AddAccountDialogProps {
@@ -19,6 +18,7 @@ interface AddAccountDialogProps {
 export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
@@ -63,15 +63,20 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     setError("");
 
     try {
-      // Hash the password for security
-      const hashedData = await hashData(password);
+      // Create credentials object with username and password
+      const credentials = {
+        username: username || "",
+        password: password
+      };
 
-      // Prepare payload according to API specification
+      // Convert credentials object to JSON string for the data field
+      const credentialsString = JSON.stringify(credentials);
+
+      // Prepare payload - use the stringified credentials as data
       const payload = {
         title: name,
-        data: password,
-        hash: hashedData.hash,
-        website: website || null,
+        data: credentialsString,
+        url: website || null,
         tags,
         notes: notes || null
       };
@@ -113,8 +118,8 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-6">
+      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative my-auto">
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold">{translate("add_new_account", "accounts")}</h2>
           {error && (
@@ -125,7 +130,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <label className="text-sm font-medium">
               {translate("account_name", "accounts")} <span className="text-red-500">*</span>
@@ -140,6 +145,17 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
               />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {translate("username", "accounts")}
+            </label>
+            <Input
+              placeholder={translate("enter_username", "accounts")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">

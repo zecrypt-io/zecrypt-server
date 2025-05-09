@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
+from fastapi.staticfiles import StaticFiles
 from app.api.v1.api import api_router
 
 app = FastAPI(
@@ -26,6 +26,9 @@ app.add_middleware(
 # Templates (HTML)
 templates = Jinja2Templates(directory="templates")
 
+# Static files
+static_files = StaticFiles(directory="static")
+app.mount("/static", static_files)
 
 # Landing page route
 @app.get("/", response_class=HTMLResponse)
