@@ -93,7 +93,9 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "submit": "Senden",
-    "confirm": "Bestätigen"
+    "confirm": "Bestätigen",
+    "success": "Erfolg",
+    "error": "Fehler"
   },
   "dashboard": {
     "welcome_back": "Willkommen zurück in Ihrem sicheren Arbeitsbereich",
@@ -247,8 +249,14 @@
     "copy_password": "Passwort kopieren",
     "show_password": "Passwort anzeigen",
     "hide_password": "Passwort ausblenden",
+    "show_username": "Benutzername anzeigen",
+    "hide_username": "Benutzername ausblenden",
     "edit": "Bearbeiten",
     "delete": "Löschen",
+    "confirm_deletion": "Löschen bestätigen",
+    "confirm_delete_account": "Sind Sie sicher, dass Sie dieses Konto löschen möchten?",
+    "confirm_delete_account_description": "Diese Aktion kann nicht rückgängig gemacht werden und löscht die Kontoanmeldedaten dauerhaft.",
+    "deleting": "Löschen...",
     "showing": "Anzeigen",
     "of": "von",
     "rows_per_page": "Zeilen pro Seite",
