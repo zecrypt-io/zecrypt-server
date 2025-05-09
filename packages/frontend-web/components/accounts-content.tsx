@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useClientPagination } from "@/hooks/use-client-pagination";
+import { useAccountManagement } from "@/hooks/use-account-management";
 
 interface Account {
   doc_id: string;
@@ -54,158 +54,60 @@ export function AccountsContent() {
   const { translate } = useTranslator();
   const router = useRouter();
   const format = useFormatter();
-  const [showAddAccount, setShowAddAccount] = useState(false);
-  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
-  const [showEditAccount, setShowEditAccount] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
-  const [viewPassword, setViewPassword] = useState<string | null>(null);
-  const [viewUsername, setViewUsername] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [allAccounts, setAllAccounts] = useState<Account[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
-
-  const isLikelyHash = (str: string): boolean => {
-    return /^[0-9a-fA-F]{128}$/.test(str);
-  };
-
-  const processAccountData = useCallback(async (account: Account): Promise<Account> => {
-    try {
-      if (account.password) {
-        return account;
-      }
-      if (!account.title && account.name) {
-        account.title = account.name;
-      }
-      if (account.data && typeof account.data === "string") {
-        try {
-          const parsedData = JSON.parse(account.data);
-          if (parsedData && typeof parsedData === 'object') {
-            if ("username" in parsedData && "password" in parsedData) {
-              return {
-                ...account,
-                username: parsedData.username,
-                password: parsedData.password
-              };
-            }
-          }
-        } catch (e) {
-          // Continue to the next check
-        }
-        return {
-          ...account,
-          password: "••••••••"
-        };
-      } else if (account.data && typeof account.data === 'object') {
-        if ("username" in account.data && "password" in account.data) {
-          return {
-            ...account,
-            username: account.data.username,
-            password: account.data.password
-          };
-        }
-      }
-      return {
-        ...account,
-        password: "••••••••"
-      };
-    } catch (error: unknown) {
-      console.error("Failed to process account data:", {
-        error: error instanceof Error ? error.message : String(error),
-        account_id: account.doc_id,
-      });
-      return {
-        ...account,
-        password: "Error processing data"
-      };
-    }
-  }, []);
-
-  const getCategoryTag = useCallback((category: string): string => {
-    switch (category.toLowerCase()) {
-      case 'personal': return 'personal';
-      case 'work': return 'work';
-      case 'finance': return 'finance';
-      case 'favorite': return 'favorite';
-      default: return category.toLowerCase();
-    }
-  }, []);
-
-  const fetchAccounts = useCallback(async () => {
-    if (!selectedWorkspaceId || !selectedProjectId) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      setIsLoading(true);
-      let tagsArray: string[] = [];
-      if (selectedCategory !== "all") {
-        tagsArray = [getCategoryTag(selectedCategory)];
-      }
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim());
-      }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
-      const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/accounts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
-      );
-      if (response.status === 200) {
-        const { data: fetchedAccounts = [] } = response.data || {};
-        const processedAccounts = await Promise.all(
-          fetchedAccounts.map(processAccountData)
-        );
-        setAllAccounts(processedAccounts);
-      } else {
-        console.error("Error in accounts response:", response);
-        setAllAccounts([]);
-      }
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      setAllAccounts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedCategory, getCategoryTag, processAccountData]);
-
-  useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts]);
 
   const {
-    paginatedData,
-    totalPages,
+    accountsToDisplay,
+    isLoading,
+    totalCount,
     currentPage,
     setCurrentPage,
+    totalPages,
+    getPaginationRange,
+    itemsPerPage,
+    setItemsPerPage,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    handleDeleteAccount: handleDeleteAccountFromHook,
+    fetchAccounts,
+    clearFilters,
     nextPage,
     prevPage,
-    goToPage,
-    getPaginationRange,
-  } = useClientPagination({ data: allAccounts, itemsPerPage });
+    goToPage
+  } = useAccountManagement({
+    selectedWorkspaceId,
+    selectedProjectId,
+    initialItemsPerPage: 5
+  });
+
+  const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
+  const [showEditAccount, setShowEditAccount] = useState(false);
+  const [selectedAccountForEdit, setSelectedAccountForEdit] = useState<Account | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  const [isProcessingDelete, setIsProcessingDelete] = useState(false);
+
+  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
+  const [viewPassword, setViewPassword] = useState<string | null>(null);
+  const [viewUsername, setViewUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleAddAccount = () => setShowAddAccount(true);
+    const handleAddAccountListener = () => setShowAddAccount(true);
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "+") {
         e.preventDefault();
         setShowAddAccount(true);
       }
     };
-    document.addEventListener("toggle-add-account", handleAddAccount);
+    document.addEventListener("toggle-add-account", handleAddAccountListener);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("toggle-add-account", handleAddAccount);
+      document.removeEventListener("toggle-add-account", handleAddAccountListener);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
@@ -218,8 +120,9 @@ export function AccountsContent() {
       setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
+      toast({ title: translate("error", "common"), description: translate("copy_failed", "accounts"), variant: "destructive" });
     }
-  }, []);
+  }, [translate]);
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
     setViewPassword(prev => (prev === doc_id ? null : doc_id));
@@ -229,69 +132,33 @@ export function AccountsContent() {
     setViewUsername(prev => (prev === doc_id ? null : doc_id));
   }, []);
 
-  const clearFilters = useCallback(() => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-
-  const confirmDeleteAccount = useCallback((doc_id: string) => {
-    setAccountToDelete(doc_id);
-    setShowDeleteConfirmation(true);
-  }, []);
-
-  const handleDeleteAccount = useCallback(
-    async () => {
-      if (!selectedWorkspaceId || !selectedProjectId || !accountToDelete) {
-        return;
-      }
-      setIsDeleting(true);
-      try {
-        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${accountToDelete}`);
-        setShowDeleteConfirmation(false);
-        setAccountToDelete(null);
-        fetchAccounts();
-        toast({
-          title: "Success",
-          description: translate("account_deleted_successfully", "accounts"),
-        });
-      } catch (error: any) {
-        let errorMessage = translate("error_deleting_account", "accounts");
-        if (error.response?.data?.message) {
-          errorMessage = `${errorMessage}: ${error.response.data.message}`;
-        }
-        toast({ title: "Error", description: errorMessage, variant: "destructive" });
-      } finally {
-        setIsDeleting(false);
-      }
-    },
-    [selectedWorkspaceId, selectedProjectId, accountToDelete, translate, fetchAccounts]
-  );
+  const handleOpenEditDialog = (account: Account) => {
+    setSelectedAccountForEdit(account);
+    setShowEditAccount(true);
+  };
 
   const handleAccountUpdated = useCallback(() => {
     setShowEditAccount(false);
-    setSelectedAccount(null);
+    setSelectedAccountForEdit(null);
     fetchAccounts();
-    toast({ title: "Success", description: translate("account_updated_successfully", "accounts") });
+    toast({ title: translate("success", "common"), description: translate("account_updated_successfully", "accounts") });
   }, [fetchAccounts, translate]);
 
-  const debouncedSearch = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    return (value: string) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setSearchQuery(value);
-        setCurrentPage(1);
-      }, 300);
-    };
-  }, [setCurrentPage]);
-
-  const handleItemsPerPageChange = (value: string) => {
-    setItemsPerPage(Number(value));
-    setCurrentPage(1);
+  const confirmDelete = (doc_id: string) => {
+    setAccountToDelete(doc_id);
+    setShowDeleteConfirmation(true);
   };
-  
-  if (isLoading && allAccounts.length === 0) {
+
+  const executeDeleteAccount = async () => {
+    if (!accountToDelete) return;
+    setIsProcessingDelete(true);
+    await handleDeleteAccountFromHook(accountToDelete);
+    setShowDeleteConfirmation(false);
+    setAccountToDelete(null);
+    setIsProcessingDelete(false);
+  };
+
+  if (isLoading && accountsToDisplay.length === 0) {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>
@@ -314,16 +181,14 @@ export function AccountsContent() {
               type="search"
               placeholder={translate("search", "accounts")}
               className="pl-8 w-full"
-              onChange={(e) => debouncedSearch(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Select
               value={selectedCategory}
-              onValueChange={(value) => {
-                setSelectedCategory(value);
-                setCurrentPage(1);
-              }}
+              onValueChange={setSelectedCategory}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder={translate("all_accounts", "accounts")} />
@@ -375,14 +240,14 @@ export function AccountsContent() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && paginatedData.length === 0 ? (
+              {isLoading && accountsToDisplay.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-10 text-muted-foreground">
                     {translate("loading_accounts", "accounts")}
                   </td>
                 </tr>
-              ) : paginatedData.length > 0 ? (
-                paginatedData.map((account) => (
+              ) : accountsToDisplay.length > 0 ? (
+                accountsToDisplay.map((account) => (
                   <tr key={account.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
@@ -449,40 +314,30 @@ export function AccountsContent() {
                             ? "••••••••"
                             : account.password}
                         </span>
-                        <div className="flex items-center">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Error processing data" && togglePasswordVisibility(account.doc_id)}
-                                  disabled={!account.password || account.password === "Error processing data"}
-                                >
-                                  {viewPassword === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>{viewPassword === account.doc_id ? translate("hide_password", "accounts") : translate("show_password", "accounts")}</p></TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => account.password && account.password !== "Error processing data" && copyToClipboard(account.doc_id, "password", account.password)}
-                                  disabled={!account.password || account.password === "Error processing data"}
-                                >
-                                  {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? translate("copied", "accounts") : translate("copy_password", "accounts")}</p></TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
+                        {account.password && account.password !== "-" && account.password !== "Error processing data" && (
+                          <div className="flex items-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePasswordVisibility(account.doc_id)}>
+                                    {viewPassword === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{viewPassword === account.doc_id ? translate("hide_password", "accounts") : translate("show_password", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => account.password && copyToClipboard(account.doc_id, "password", account.password)}>
+                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? translate("copied", "accounts") : translate("copy_password", "accounts")}</p></TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="p-3">
@@ -523,10 +378,10 @@ export function AccountsContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedAccount({ ...account }); setShowEditAccount(true); }}>
+                          <DropdownMenuItem onClick={() => handleOpenEditDialog(account)}>
                             {translate("edit", "accounts")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-500" onClick={() => confirmDeleteAccount(account.doc_id)}>
+                          <DropdownMenuItem className="text-red-500" onClick={() => confirmDelete(account.doc_id)}>
                             {translate("delete", "accounts")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -545,7 +400,8 @@ export function AccountsContent() {
                           ? translate("no_accounts_tag_specific", "accounts", { category: selectedCategory })
                           : searchQuery
                           ? translate("no_accounts_search_specific", "accounts", { searchQuery: searchQuery })
-                          : translate("adjust_search_filter", "accounts")}
+                          : translate("no_accounts_create", "accounts")
+                        }
                       </p>
                       <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
                         {translate("clear_filters", "accounts")}
@@ -562,13 +418,13 @@ export function AccountsContent() {
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
               {translate("showing", "accounts")}{' '}
-              {Math.min((currentPage - 1) * itemsPerPage + 1, allAccounts.length)}-{Math.min(currentPage * itemsPerPage, allAccounts.length)}{' '}
-              {translate("of", "accounts")} {allAccounts.length} {translate("accounts", "accounts")}
+              {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-{Math.min(currentPage * itemsPerPage, totalCount)}{' '}
+              {translate("of", "accounts")} {totalCount} {translate("accounts", "accounts")}
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
                 <span className="text-sm text-muted-foreground">{translate("rows_per_page", "accounts")}</span>
-                <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue placeholder={itemsPerPage.toString()} />
                   </SelectTrigger>
@@ -618,11 +474,11 @@ export function AccountsContent() {
             <DialogDescription>{translate("confirm_delete_account_description", "accounts")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)} disabled={isDeleting}>
+            <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)} disabled={isProcessingDelete}>
               {translate("cancel", "accounts")}
             </Button>
-            <Button variant="destructive" onClick={handleDeleteAccount} disabled={isDeleting}>
-              {isDeleting ? `${translate("deleting", "accounts")}...` : translate("delete", "accounts")}
+            <Button variant="destructive" onClick={executeDeleteAccount} disabled={isProcessingDelete}>
+              {isProcessingDelete ? `${translate("deleting", "accounts")}...` : translate("delete", "accounts")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -630,10 +486,10 @@ export function AccountsContent() {
 
       {showAddAccount && <AddAccountDialog onClose={() => setShowAddAccount(false)} onAccountAdded={fetchAccounts} />}
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
-      {showEditAccount && selectedAccount && (
+      {showEditAccount && selectedAccountForEdit && (
         <EditAccountDialog
-          account={selectedAccount}
-          onClose={() => { setShowEditAccount(false); setSelectedAccount(null); }}
+          account={selectedAccountForEdit}
+          onClose={() => { setShowEditAccount(false); setSelectedAccountForEdit(null); }}
           onAccountUpdated={handleAccountUpdated}
         />
       )}

@@ -84,7 +84,9 @@
     "save": "Save",
     "cancel": "Cancel",
     "submit": "Submit",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error"
   },
   "dashboard": {
     "welcome_back": "Welcome back to your secure workspace",
@@ -264,6 +266,8 @@
     "copy_password": "Copy Password",
     "show_password": "Show Password",
     "hide_password": "Hide Password",
+    "show_username": "Show Username",
+    "hide_username": "Hide Username",
     "edit": "Edit",
     "delete": "Delete",
     "confirm_deletion": "Confirm Deletion",
