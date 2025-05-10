@@ -1,0 +1,271 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/libs/Redux/store';
+import axiosInstance from '@/libs/Middleware/axiosInstace';
+import { toast } from '@/components/ui/use-toast';
+import { useTranslator } from '@/hooks/use-translations';
+import { useClientPagination } from '@/hooks/use-client-pagination';
+
+// Raw data structure from API GET /identity
+interface IdentityFromAPI {
+  doc_id: string;
+  title: string;
+  lower_name: string; // Typically for server-side search optimization
+  data: string; // JSON string with encrypted fields
+  notes?: string | null;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  project_id: string;
+}
+
+// Processed identity structure for the component
+interface Identity {
+  doc_id: string;
+  title: string;
+  lower_name: string;
+  first_name: string; // Extracted from data
+  last_name: string; // Extracted from data
+  email: string; // Extracted from data
+  phone: string; // Extracted from data
+  address: string; // Extracted from data
+  date_of_birth: string; // Extracted from data
+  national_id: string; // Extracted from data
+  notes?: string | null;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  project_id: string;
+}
+
+interface UseIdentityManagementProps {
+  selectedWorkspaceId: string | null;
+  selectedProjectId: string | null;
+  initialItemsPerPage?: number;
+}
+
+interface UseIdentityManagementReturn {
+  identitiesToDisplay: Identity[];
+  allRawIdentities: IdentityFromAPI[]; // Store raw response
+  isLoading: boolean;
+  totalCount: number;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  totalPages: number;
+  getPaginationRange: () => (number | string)[];
+  itemsPerPage: number;
+  setItemsPerPage: (items: number) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedTag: string;
+  setSelectedTag: (tag: string) => void;
+  handleDeleteIdentity: (doc_id: string) => Promise<void>;
+  fetchIdentities: () => Promise<void>;
+  clearFilters: () => void;
+  nextPage: () => void;
+  prevPage: () => void;
+  goToPage: (page: number) => void;
+}
+
+export function useIdentityManagement({
+  selectedWorkspaceId,
+  selectedProjectId,
+  initialItemsPerPage = 5,
+}: UseIdentityManagementProps): UseIdentityManagementReturn {
+  const { translate } = useTranslator();
+  const [allRawIdentities, setAllRawIdentities] = useState<IdentityFromAPI[]>([]);
+  const [processedIdentities, setProcessedIdentities] = useState<Identity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQueryState] = useState("");
+  const [selectedTag, setSelectedTagState] = useState("all");
+  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+
+  const processIdentityData = useCallback(async (identityRaw: IdentityFromAPI): Promise<Identity> => {
+    let firstName = '';
+    let lastName = '';
+    let email = '';
+    let phone = '';
+    let address = '';
+    let dateOfBirth = '';
+    let nationalId = '';
+    
+    try {
+      if (identityRaw.data) {
+        const parsedData = JSON.parse(identityRaw.data);
+        if (parsedData) {
+          firstName = parsedData.first_name || '';
+          lastName = parsedData.last_name || '';
+          email = parsedData.email || '';
+          phone = parsedData.phone || '';
+          address = parsedData.address || '';
+          dateOfBirth = parsedData.date_of_birth || '';
+          nationalId = parsedData.national_id || '';
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse identity data field in hook:", {
+        error: error instanceof Error ? error.message : String(error),
+        identity_id: identityRaw.doc_id,
+        rawData: identityRaw.data,
+      });
+    }
+
+    return {
+      doc_id: identityRaw.doc_id,
+      title: identityRaw.title,
+      lower_name: identityRaw.lower_name,
+      created_at: identityRaw.created_at,
+      updated_at: identityRaw.updated_at,
+      created_by: identityRaw.created_by,
+      project_id: identityRaw.project_id,
+      notes: identityRaw.notes,
+      tags: identityRaw.tags,
+      // Processed fields
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      phone: phone,
+      address: address,
+      date_of_birth: dateOfBirth,
+      national_id: nationalId
+    };
+  }, []);
+
+  const fetchIdentities = useCallback(async () => {
+    if (!selectedWorkspaceId || !selectedProjectId) {
+      setAllRawIdentities([]);
+      setProcessedIdentities([]);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      let tagsArray: string[] = [];
+      if (selectedTag !== "all") {
+        tagsArray = [selectedTag];
+      }
+      
+      const queryParams = new URLSearchParams();
+      if (searchQuery.trim()) {
+        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
+      }
+      if (tagsArray.length > 0) {
+        tagsArray.forEach(tag => queryParams.append('tags', tag));
+      }
+
+      const response = await axiosInstance.get(
+        `/${selectedWorkspaceId}/${selectedProjectId}/identity${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      );
+
+      if (response.status === 200) {
+        const { data: fetchedIdentities = [] }: { data: IdentityFromAPI[] } = response.data || {};
+        setAllRawIdentities(fetchedIdentities);
+        const processed = await Promise.all(fetchedIdentities.map(processIdentityData));
+          
+        setProcessedIdentities(processed);
+      } else {
+        console.error("Error in identities response (hook):", response);
+        setAllRawIdentities([]);
+        setProcessedIdentities([]);
+        toast({ title: translate("error", "actions"), description: translate("error_fetching_identities", "identity", { default: "Error fetching identities" }), variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error fetching identities (hook):", error);
+      setAllRawIdentities([]);
+      setProcessedIdentities([]);
+      toast({ title: translate("error", "actions"), description: translate("error_fetching_identities", "identity", { default: "Error fetching identities" }), variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, processIdentityData]);
+
+  useEffect(() => {
+    fetchIdentities();
+  }, [fetchIdentities]);
+
+  const { 
+    paginatedData: identitiesToDisplay,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    nextPage,
+    prevPage,
+    goToPage,
+    getPaginationRange 
+  } = useClientPagination<Identity>({
+    data: processedIdentities, // Use processed identities for pagination
+    itemsPerPage,
+  });
+
+  const handleDeleteIdentity = useCallback(async (doc_id: string) => {
+    if (!selectedWorkspaceId || !selectedProjectId) {
+      toast({ title: translate("error", "actions"), description: translate("missing_auth_or_selection", "identity", { default: "Missing authentication or selection" }), variant: "destructive" });
+      return;
+    }
+    try {
+      await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/identity/${doc_id}`);
+      toast({ title: translate("success", "actions"), description: translate("identity_deleted_successfully", "identity", { default: "Identity deleted successfully" }) });
+      fetchIdentities(); // Re-fetch to update the list
+    } catch (error: any) {
+      let errorMessage = translate("error_deleting_identity", "identity", { default: "Error deleting identity" });
+      if (error.response?.data?.message) {
+        errorMessage = `${errorMessage}: ${error.response.data.message}`;
+      }
+      toast({ title: translate("error", "actions"), description: errorMessage, variant: "destructive" });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWorkspaceId, selectedProjectId, fetchIdentities]);
+
+  const clearFilters = useCallback(() => {
+    setSearchQueryState("");
+    setSelectedTagState("all");
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  const setSearchQuery = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQueryState(value);
+        setCurrentPage(1);
+      }, 300);
+    };
+  }, [setCurrentPage]);
+
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  const setItemsPerPage = useCallback((items: number) => {
+    setItemsPerPageState(items);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  return {
+    identitiesToDisplay,
+    allRawIdentities,
+    isLoading,
+    totalCount: processedIdentities.length,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    getPaginationRange,
+    itemsPerPage,
+    setItemsPerPage,
+    searchQuery,
+    setSearchQuery,
+    selectedTag,
+    setSelectedTag,
+    handleDeleteIdentity,
+    fetchIdentities,
+    clearFilters,
+    nextPage,
+    prevPage,
+    goToPage
+  };
+} 
