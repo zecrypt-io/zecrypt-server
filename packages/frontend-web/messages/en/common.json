@@ -532,7 +532,7 @@
     "server_error": "A server error occurred. Please try again later",
     "identities": "Identities",
     "search_identities": "Search identities...",
-    "filter_by_tag": "Filter by tag", 
+    "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",
     "search": "Search",
     "loading_identities": "Loading identities...",
@@ -598,7 +598,8 @@
     "confirm_deletion": "Confirm Deletion",
     "delete_identity_confirmation": "Are you sure you want to delete this identity? This action cannot be undone.",
     "error_fetching_identities": "Error fetching identities",
-    "national_id_required": "National ID is required"
+    "national_id_required": "National ID is required",
+    "identity_type": "Identity Type"
   },
   "cards": {
     "title": "Cards",

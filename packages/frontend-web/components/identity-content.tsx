@@ -195,7 +195,8 @@ export function IdentityContent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">{translate("name", "identity", { default: "Name" })}</TableHead>
+                  <TableHead className="w-[150px]">{translate("identity_type", "identity", { default: "Identity Type" })}</TableHead>
+                  <TableHead className="w-[200px]">{translate("full_name", "identity", { default: "Full Name" })}</TableHead>
                   <TableHead>{translate("national_id", "identity", { default: "National ID" })}</TableHead>
                   <TableHead>{translate("contact", "identity", { default: "Contact" })}</TableHead>
                   <TableHead>{translate("address", "identity", { default: "Address" })}</TableHead>
@@ -207,10 +208,10 @@ export function IdentityContent() {
                 {identitiesToDisplay.map((identity) => (
                   <TableRow key={identity.doc_id}>
                     <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span>{identity.title}</span>
-                        <span className="text-sm text-muted-foreground">{identity.first_name} {identity.last_name}</span>
-                      </div>
+                      {identity.title}
+                    </TableCell>
+                    <TableCell>
+                      {identity.first_name} {identity.last_name}
                     </TableCell>
                     <TableCell className="font-mono">
                       <div className="flex items-center gap-2">
