@@ -232,14 +232,14 @@ export function CardsContent() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
                                 onClick={() => toggleDataVisibility(card.doc_id)}
-                              >
+                        >
                                 {viewSensitiveData === card.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                              </Button>
+                        </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                               {viewSensitiveData === card.doc_id
@@ -251,18 +251,18 @@ export function CardsContent() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
                                 onClick={() => copyToClipboard(card.doc_id, "number", card.number)}
-                              >
+                        >
                                 {copiedField?.id === card.doc_id && copiedField?.field === "number" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                               {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
@@ -278,18 +278,18 @@ export function CardsContent() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
                                 onClick={() => copyToClipboard(card.doc_id, "cvv", card.cvv)}
-                              >
+                        >
                                 {copiedField?.id === card.doc_id && copiedField?.field === "cvv" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                               {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
