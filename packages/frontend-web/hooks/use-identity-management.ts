@@ -5,7 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
+import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -147,26 +147,31 @@ export function useIdentityManagement({
     }
     setIsLoading(true);
     try {
-      // Update to fetch all identities and filter client-side
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
-      }
-      // Remove server-side tag filtering since we'll do it client-side
-      // if (tagsArray.length > 0) {
-      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
-      // }
-
+      // Fetch all identities - don't filter on server for multi-field search
       const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/identity${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+        `/${selectedWorkspaceId}/${selectedProjectId}/identity`
       );
 
       if (response.status === 200) {
         const { data: fetchedIdentities = [] }: { data: IdentityFromAPI[] } = response.data || {};
         setAllRawIdentities(fetchedIdentities);
-        const processed = await Promise.all(fetchedIdentities.map(processIdentityData));
+        let processed = await Promise.all(fetchedIdentities.map(processIdentityData));
         
-        // Apply tag filtering using our utility function
+        // Apply multi-field search if there's a search query
+        if (searchQuery.trim()) {
+          processed = searchItemsMultiField(processed, searchQuery, [
+            'title',  // identity type
+            'first_name', 
+            'last_name',
+            'email',
+            'phone',
+            'address',
+            'national_id',
+            'tags'
+          ]);
+        }
+        
+        // Apply tag filtering 
         const filteredIdentities = filterItemsByTag(processed, selectedTag);
           
         // Apply sorting if a sort config is set
@@ -241,7 +246,7 @@ export function useIdentityManagement({
       timeoutId = setTimeout(() => {
         setSearchQueryState(value);
         setCurrentPage(1);
-      }, 300);
+      }, 300); // 300ms debounce for search as user types
     };
   }, [setCurrentPage]);
 

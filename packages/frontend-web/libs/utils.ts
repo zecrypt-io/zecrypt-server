@@ -99,3 +99,54 @@ export function sortItems<T extends Record<string, any>>(
       : (bValue > aValue ? 1 : -1);
   });
 }
+
+/**
+ * Search items across multiple fields
+ * @param items Array of items to search
+ * @param searchQuery Search query string
+ * @param searchFields Array of fields to search in
+ * @returns Filtered array of items that match the search query
+ */
+export function searchItemsMultiField<T extends Record<string, any>>(
+  items: T[],
+  searchQuery: string,
+  searchFields: string[]
+): T[] {
+  if (!searchQuery || searchQuery.trim() === '') {
+    return items;
+  }
+
+  const query = searchQuery.trim().toLowerCase();
+  
+  return items.filter(item => {
+    return searchFields.some(field => {
+      // Handle nested fields with dot notation (e.g., 'user.name')
+      const fieldValue = field.includes('.')
+        ? getNestedValue(item, field)
+        : item[field];
+        
+      // Handle arrays (like tags)
+      if (Array.isArray(fieldValue)) {
+        return fieldValue.some(value => 
+          String(value).toLowerCase().includes(query)
+        );
+      }
+      
+      // Handle strings and numbers
+      return fieldValue !== undefined && fieldValue !== null &&
+        String(fieldValue).toLowerCase().includes(query);
+    });
+  });
+}
+
+/**
+ * Helper function to get nested object values using dot notation
+ * @param obj Object to extract value from
+ * @param path Path to the value using dot notation (e.g., 'user.address.city')
+ * @returns The value at the specified path or undefined if not found
+ */
+function getNestedValue(obj: Record<string, any>, path: string): any {
+  return path.split('.').reduce((current, key) => 
+    current && current[key] !== undefined ? current[key] : undefined, obj
+  );
+}

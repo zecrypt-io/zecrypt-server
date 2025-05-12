@@ -547,7 +547,6 @@
     "validation_error": "Invalid input data. Please check your entries",
     "server_error": "A server error occurred. Please try again later",
     "identities": "Identities",
-    "search_identities": "Search identities...",
     "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",
     "search": "Search",
@@ -623,7 +622,10 @@
     "sort_by_updated": "Sort by Updated Date",
     "ascending": "Ascending",
     "descending": "Descending",
-    "clear_sort": "Clear Sort"
+    "clear_sort": "Clear Sort",
+    "search_identities": "Search identities...",
+    "search_across_all_fields": "Search across all fields...",
+    "searches_all_fields": "Searches name, type, contact, address, ID and tags"
   },
   "cards": {
     "title": "Cards",

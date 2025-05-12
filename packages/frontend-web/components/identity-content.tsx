@@ -151,14 +151,25 @@ export function IdentityContent() {
 
       {/* Search and Filter */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative">
+        <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={translate("search_identities", "identity", { default: "Search identities..." })}
+            placeholder={translate("search_across_all_fields", "identity", { default: "Search across all fields..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <Select value={selectedTag} onValueChange={setSelectedTag}>
           <SelectTrigger className="w-full">
@@ -176,11 +187,16 @@ export function IdentityContent() {
           onSortChange={setSortConfig} 
           namespace="identity"
         />
-        <div className="flex gap-2">
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            {translate("clear_filters", "identity", { default: "Clear Filters" })}
-          </Button>
-        </div>
+        {(searchQuery || selectedTag !== 'all' || sortConfig) && (
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={clearFilters}
+            >
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "identity", { default: "Clear Filters" })}
+            </Button>
+        )}
       </div>
 
       {/* Identities Table */}
