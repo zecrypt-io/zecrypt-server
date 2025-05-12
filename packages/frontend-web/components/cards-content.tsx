@@ -70,6 +70,9 @@ export function CardsContent() {
     setSearchQuery,
     selectedBrand,
     setSelectedBrand,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
     handleDeleteCard: handleDeleteCardFromHook,
     fetchCards,
     clearFilters,
@@ -151,7 +154,7 @@ export function CardsContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -172,6 +175,17 @@ export function CardsContent() {
             <SelectItem value="american express">American Express</SelectItem>
             <SelectItem value="discover">Discover</SelectItem>
             <SelectItem value="other">{translate("other", "cards", { default: "Other" })}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "cards", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "cards", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex gap-2">

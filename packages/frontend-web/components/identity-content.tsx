@@ -61,7 +61,8 @@ export function IdentityContent() {
     clearFilters,
     nextPage,
     prevPage,
-    goToPage
+    goToPage,
+    uniqueTags
   } = useIdentityManagement({
     selectedWorkspaceId,
     selectedProjectId,
@@ -162,10 +163,9 @@ export function IdentityContent() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{translate("all_tags", "identity", { default: "All Tags" })}</SelectItem>
-            {/* Tag options would be dynamically populated based on unique tags in all identities */}
-            <SelectItem value="Personal">Personal</SelectItem>
-            <SelectItem value="Work">Work</SelectItem>
-            <SelectItem value="Travel">Travel</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex gap-2">

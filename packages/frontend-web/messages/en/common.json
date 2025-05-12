@@ -688,7 +688,9 @@
     "brand_required": "Brand is required",
     "error_adding_card": "Error adding card",
     "error_updating_card": "Error updating card",
-    "other": "Other"
+    "other": "Other",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags"
   },
   "software_licenses": {
     "title": "Software Licenses",

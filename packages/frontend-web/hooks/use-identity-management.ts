@@ -5,6 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
+import { filterItemsByTag } from '@/libs/utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -61,6 +62,7 @@ interface UseIdentityManagementReturn {
   setSearchQuery: (query: string) => void;
   selectedTag: string;
   setSelectedTag: (tag: string) => void;
+  uniqueTags: string[];
   handleDeleteIdentity: (doc_id: string) => Promise<void>;
   fetchIdentities: () => Promise<void>;
   clearFilters: () => void;
@@ -142,18 +144,15 @@ export function useIdentityManagement({
     }
     setIsLoading(true);
     try {
-      let tagsArray: string[] = [];
-      if (selectedTag !== "all") {
-        tagsArray = [selectedTag];
-      }
-      
+      // Update to fetch all identities and filter client-side
       const queryParams = new URLSearchParams();
       if (searchQuery.trim()) {
         queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
       }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
+      // Remove server-side tag filtering since we'll do it client-side
+      // if (tagsArray.length > 0) {
+      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
+      // }
 
       const response = await axiosInstance.get(
         `/${selectedWorkspaceId}/${selectedProjectId}/identity${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
@@ -163,8 +162,11 @@ export function useIdentityManagement({
         const { data: fetchedIdentities = [] }: { data: IdentityFromAPI[] } = response.data || {};
         setAllRawIdentities(fetchedIdentities);
         const processed = await Promise.all(fetchedIdentities.map(processIdentityData));
+        
+        // Apply tag filtering using our new utility function
+        const filteredIdentities = filterItemsByTag(processed, selectedTag);
           
-        setProcessedIdentities(processed);
+        setProcessedIdentities(filteredIdentities);
       } else {
         console.error("Error in identities response (hook):", response);
         setAllRawIdentities([]);
@@ -246,6 +248,17 @@ export function useIdentityManagement({
     setCurrentPage(1);
   }, [setCurrentPage]);
 
+  // Add useMemo to get unique tags from all identities for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    processedIdentities.forEach(identity => {
+      if (identity.tags && Array.isArray(identity.tags)) {
+        identity.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [processedIdentities]);
+
   return {
     identitiesToDisplay,
     allRawIdentities,
@@ -261,6 +274,7 @@ export function useIdentityManagement({
     setSearchQuery,
     selectedTag,
     setSelectedTag,
+    uniqueTags,
     handleDeleteIdentity,
     fetchIdentities,
     clearFilters,

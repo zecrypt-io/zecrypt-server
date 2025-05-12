@@ -5,6 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
+import { filterItemsByTag } from '@/libs/utils';
 
 // Raw data structure from API GET /cards
 interface CardFromAPI {
@@ -61,6 +62,9 @@ interface UseCardManagementReturn {
   setSearchQuery: (query: string) => void;
   selectedBrand: string;
   setSelectedBrand: (brand: string) => void;
+  selectedTag: string;
+  setSelectedTag: (tag: string) => void;
+  uniqueTags: string[];
   handleDeleteCard: (doc_id: string) => Promise<void>;
   fetchCards: () => Promise<void>;
   clearFilters: () => void;
@@ -80,6 +84,7 @@ export function useCardManagement({
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedBrand, setSelectedBrandState] = useState("all");
+  const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
 
   const processCardData = useCallback(async (cardRaw: CardFromAPI): Promise<Card> => {
@@ -138,18 +143,15 @@ export function useCardManagement({
     }
     setIsLoading(true);
     try {
-      let tagsArray: string[] = [];
-      if (selectedBrand !== "all") {
-        // For brand filtering, we don't use tags but will filter client-side
-      }
-      
+      // Update to fetch all cards and filter client-side
       const queryParams = new URLSearchParams();
       if (searchQuery.trim()) {
         queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
       }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
+      // Remove server-side tag filtering since we'll do it client-side
+      // if (tagsArray.length > 0) {
+      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
+      // }
 
       const response = await axiosInstance.get(
         `/${selectedWorkspaceId}/${selectedProjectId}/cards${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
@@ -160,10 +162,15 @@ export function useCardManagement({
         setAllRawCards(fetchedCards);
         const processed = await Promise.all(fetchedCards.map(processCardData));
         
-        // Filter by brand if selected
-        const filteredCards = selectedBrand !== "all" 
-          ? processed.filter(card => card.brand.toLowerCase() === selectedBrand.toLowerCase())
-          : processed;
+        // Apply tag filtering using our new utility function
+        let filteredCards = filterItemsByTag(processed, selectedTag);
+        
+        // Then apply brand filtering if needed
+        if (selectedBrand !== "all") {
+          filteredCards = filteredCards.filter(card => 
+            card.brand.toLowerCase() === selectedBrand.toLowerCase()
+          );
+        }
           
         setProcessedCards(filteredCards);
       } else {
@@ -181,7 +188,7 @@ export function useCardManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedBrand, processCardData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedBrand, selectedTag, processCardData]);
 
   useEffect(() => {
     fetchCards();
@@ -223,18 +230,13 @@ export function useCardManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedBrandState("all");
+    setSelectedTagState("all");
     setCurrentPage(1);
   }, [setCurrentPage]);
 
-  const setSearchQuery = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    return (value: string) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setSearchQueryState(value);
-        setCurrentPage(1);
-      }, 300);
-    };
+  const setSearchQuery = useCallback((query: string) => {
+    setSearchQueryState(query);
+    setCurrentPage(1);
   }, [setCurrentPage]);
 
   const setSelectedBrand = useCallback((brand: string) => {
@@ -242,10 +244,25 @@ export function useCardManagement({
     setCurrentPage(1);
   }, [setCurrentPage]);
 
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
   const setItemsPerPage = useCallback((items: number) => {
     setItemsPerPageState(items);
     setCurrentPage(1);
   }, [setCurrentPage]);
+
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    processedCards.forEach(card => {
+      if (card.tags && Array.isArray(card.tags)) {
+        card.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [processedCards]);
 
   return {
     cardsToDisplay,
@@ -262,6 +279,9 @@ export function useCardManagement({
     setSearchQuery,
     selectedBrand,
     setSelectedBrand,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
     handleDeleteCard,
     fetchCards,
     clearFilters,
