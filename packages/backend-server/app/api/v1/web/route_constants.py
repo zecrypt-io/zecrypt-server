@@ -43,6 +43,9 @@ SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
 LOGIN = "/login"
 LOGOUT = "/logout"
 TWO_FACTOR_AUTH = "/2fa/verify"
+GET_KEYS = "/get-key"
+UPDATE_KEYS = "/update-key"
+
 
 # Audit Logs
 AUDIT_LOGS = "/{workspace_id}/audit-logs"

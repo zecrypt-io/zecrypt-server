@@ -37,3 +37,7 @@ class UpdateProfile(BaseModel):
 class TwoFactorAuth(BaseModel):
     code: str
     user_id: str
+
+class UpdateKeys(BaseModel):
+    public_key: str
+    private_key: str

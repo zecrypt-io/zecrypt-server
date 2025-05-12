@@ -3,30 +3,6 @@ from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import project as project_manager
 from app.managers import secrets as secrets_manager
 
-from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
-
-
-def create_project_at_signup(request, db, user_id):
-    workspace_id = create_uuid()
-    create_initial_workspace_on_signup(db, request, user_id, workspace_id)
-    data = {
-        "created_by": user_id,
-        "name": "Primary Vault",
-        "lower_name": "primary vault",
-        "is_default": True,
-        "doc_id": create_uuid(),
-        "workspace_id": workspace_id,
-        "features": {
-            "login": {"enabled": True, "is_client_side_encryption": False},
-            "api_key": {"enabled": True, "is_client_side_encryption": False},
-            "wallet_address": {"enabled": True, "is_client_side_encryption": False},
-            "wifi": {"enabled": True, "is_client_side_encryption": False},
-            "identity": {"enabled": True, "is_client_side_encryption": False},
-            "card": {"enabled": True, "is_client_side_encryption": False},
-            "software_license": {"enabled": True, "is_client_side_encryption": False},
-        },
-    }
-    project_manager.insert_one(db, data)
 
 
 def get_project_details(db, doc_id):
