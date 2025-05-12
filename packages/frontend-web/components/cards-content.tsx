@@ -28,6 +28,7 @@ import { AddCardDialog } from "@/components/add-card-dialog";
 import { EditCardDialog } from "@/components/edit-card-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface Card {
   doc_id: string;
@@ -70,6 +71,11 @@ export function CardsContent() {
     setSearchQuery,
     selectedBrand,
     setSelectedBrand,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteCard: handleDeleteCardFromHook,
     fetchCards,
     clearFilters,
@@ -151,15 +157,26 @@ export function CardsContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={translate("search_cards", "cards", { default: "Search cards..." })}
+            placeholder={translate("search_across_all_fields", "cards", { default: "Search across all fields..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <Select value={selectedBrand} onValueChange={setSelectedBrand}>
           <SelectTrigger className="w-full">
@@ -174,11 +191,28 @@ export function CardsContent() {
             <SelectItem value="other">{translate("other", "cards", { default: "Other" })}</SelectItem>
           </SelectContent>
         </Select>
-        <div className="flex gap-2">
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "cards", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "cards", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="cards"
+        />
+        {(searchQuery || selectedBrand !== 'all' || selectedTag !== 'all' || sortConfig) && (
           <Button variant="outline" className="w-full" onClick={clearFilters}>
+            <X className="h-3 w-3 mr-1" />
             {translate("clear_filters", "cards", { default: "Clear Filters" })}
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Cards Table */}

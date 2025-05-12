@@ -10,7 +10,15 @@
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",
-    "try_again": "Try again"
+    "try_again": "Try again",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "licenses": {
     "software_licenses": "Software Licenses",
@@ -76,7 +84,19 @@
     "deleting": "Deleting...",
     "notes": "Notes",
     "software_name": "Software Name",
-    "rows_per_page": "Rows per page"
+    "rows_per_page": "Rows per page",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort",
+    "search_licenses": "Search licenses...",
+    "search_across_all_fields": "Search across all fields...",
+    "add_a_tag": "Add a tag",
+    "update_api_key": "Update API Key"
   },
   "navigation": {
     "home": "Home",
@@ -531,7 +551,6 @@
     "validation_error": "Invalid input data. Please check your entries",
     "server_error": "A server error occurred. Please try again later",
     "identities": "Identities",
-    "search_identities": "Search identities...",
     "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",
     "search": "Search",
@@ -599,7 +618,18 @@
     "delete_identity_confirmation": "Are you sure you want to delete this identity? This action cannot be undone.",
     "error_fetching_identities": "Error fetching identities",
     "national_id_required": "National ID is required",
-    "identity_type": "Identity Type"
+    "identity_type": "Identity Type",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort",
+    "search_identities": "Search identities...",
+    "search_across_all_fields": "Search across all fields...",
+    "searches_all_fields": "Searches name, type, contact, address, ID and tags"
   },
   "cards": {
     "title": "Cards",
@@ -688,7 +718,18 @@
     "brand_required": "Brand is required",
     "error_adding_card": "Error adding card",
     "error_updating_card": "Error updating card",
-    "other": "Other"
+    "other": "Other",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort",
+    "search_across_all_fields": "Search across all fields..."
   },
   "software_licenses": {
     "title": "Software Licenses",

@@ -5,6 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
+import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -61,6 +62,9 @@ interface UseIdentityManagementReturn {
   setSearchQuery: (query: string) => void;
   selectedTag: string;
   setSelectedTag: (tag: string) => void;
+  uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteIdentity: (doc_id: string) => Promise<void>;
   fetchIdentities: () => Promise<void>;
   clearFilters: () => void;
@@ -81,6 +85,7 @@ export function useIdentityManagement({
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
 
   const processIdentityData = useCallback(async (identityRaw: IdentityFromAPI): Promise<Identity> => {
     let firstName = '';
@@ -142,29 +147,37 @@ export function useIdentityManagement({
     }
     setIsLoading(true);
     try {
-      let tagsArray: string[] = [];
-      if (selectedTag !== "all") {
-        tagsArray = [selectedTag];
-      }
-      
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
-      }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
-
+      // Fetch all identities - don't filter on server for multi-field search
       const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/identity${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+        `/${selectedWorkspaceId}/${selectedProjectId}/identity`
       );
 
       if (response.status === 200) {
         const { data: fetchedIdentities = [] }: { data: IdentityFromAPI[] } = response.data || {};
         setAllRawIdentities(fetchedIdentities);
-        const processed = await Promise.all(fetchedIdentities.map(processIdentityData));
+        let processed = await Promise.all(fetchedIdentities.map(processIdentityData));
+        
+        // Apply multi-field search if there's a search query
+        if (searchQuery.trim()) {
+          processed = searchItemsMultiField(processed, searchQuery, [
+            'title',  // identity type
+            'first_name', 
+            'last_name',
+            'email',
+            'phone',
+            'address',
+            'national_id',
+            'tags'
+          ]);
+        }
+        
+        // Apply tag filtering 
+        const filteredIdentities = filterItemsByTag(processed, selectedTag);
           
-        setProcessedIdentities(processed);
+        // Apply sorting if a sort config is set
+        const sortedIdentities = sortItems(filteredIdentities, sortConfig);
+        
+        setProcessedIdentities(sortedIdentities);
       } else {
         console.error("Error in identities response (hook):", response);
         setAllRawIdentities([]);
@@ -180,7 +193,7 @@ export function useIdentityManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, processIdentityData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, sortConfig, processIdentityData]);
 
   useEffect(() => {
     fetchIdentities();
@@ -222,6 +235,7 @@ export function useIdentityManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedTagState("all");
+    setSortConfigState(null);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -232,7 +246,7 @@ export function useIdentityManagement({
       timeoutId = setTimeout(() => {
         setSearchQueryState(value);
         setCurrentPage(1);
-      }, 300);
+      }, 300); // 300ms debounce for search as user types
     };
   }, [setCurrentPage]);
 
@@ -245,6 +259,22 @@ export function useIdentityManagement({
     setItemsPerPageState(items);
     setCurrentPage(1);
   }, [setCurrentPage]);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  // Add useMemo to get unique tags from all identities for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    processedIdentities.forEach(identity => {
+      if (identity.tags && Array.isArray(identity.tags)) {
+        identity.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [processedIdentities]);
 
   return {
     identitiesToDisplay,
@@ -261,6 +291,9 @@ export function useIdentityManagement({
     setSearchQuery,
     selectedTag,
     setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteIdentity,
     fetchIdentities,
     clearFilters,
