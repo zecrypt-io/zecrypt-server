@@ -5,7 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
+import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 // Raw data structure from API GET /licenses
 interface LicenseFromAPI {
@@ -131,24 +131,24 @@ export function useLicenseManagement({
     }
     setIsLoading(true);
     try {
-      // Update to fetch all licenses and filter client-side
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
-      }
-      // Remove server-side tag filtering since we'll do it client-side
-      // if (tagsArray.length > 0) {
-      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
-      // }
-
+      // Fetch all licenses without filtering on server for multi-field search
       const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/licenses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+        `/${selectedWorkspaceId}/${selectedProjectId}/licenses`
       );
 
       if (response.status === 200) {
         const { data: fetchedLicenses = [] }: { data: LicenseFromAPI[] } = response.data || {};
         setAllRawLicenses(fetchedLicenses);
-        const processed = await Promise.all(fetchedLicenses.map(processLicenseData));
+        let processed = await Promise.all(fetchedLicenses.map(processLicenseData));
+        
+        // Apply multi-field search if there's a search query
+        if (searchQuery.trim()) {
+          processed = searchItemsMultiField(processed, searchQuery, [
+            'title',        // Software name
+            'license_key',  // License key
+            'tags'          // Tags
+          ]);
+        }
         
         // Apply tag filtering
         const filteredLicenses = filterItemsByTag(processed, selectedTag);
