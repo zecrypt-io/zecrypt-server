@@ -10,7 +10,15 @@
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",
-    "try_again": "Try again"
+    "try_again": "Try again",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "licenses": {
     "software_licenses": "Software Licenses",
@@ -599,7 +607,15 @@
     "delete_identity_confirmation": "Are you sure you want to delete this identity? This action cannot be undone.",
     "error_fetching_identities": "Error fetching identities",
     "national_id_required": "National ID is required",
-    "identity_type": "Identity Type"
+    "identity_type": "Identity Type",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "cards": {
     "title": "Cards",
@@ -690,7 +706,15 @@
     "error_updating_card": "Error updating card",
     "other": "Other",
     "filter_by_tag": "Filter by tag",
-    "all_tags": "All Tags"
+    "all_tags": "All Tags",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "software_licenses": {
     "title": "Software Licenses",

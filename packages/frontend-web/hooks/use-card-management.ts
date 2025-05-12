@@ -5,7 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { filterItemsByTag } from '@/libs/utils';
+import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
 
 // Raw data structure from API GET /cards
 interface CardFromAPI {
@@ -65,6 +65,8 @@ interface UseCardManagementReturn {
   selectedTag: string;
   setSelectedTag: (tag: string) => void;
   uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteCard: (doc_id: string) => Promise<void>;
   fetchCards: () => Promise<void>;
   clearFilters: () => void;
@@ -86,6 +88,7 @@ export function useCardManagement({
   const [selectedBrand, setSelectedBrandState] = useState("all");
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
 
   const processCardData = useCallback(async (cardRaw: CardFromAPI): Promise<Card> => {
     let cardHolderName = '';
@@ -162,7 +165,7 @@ export function useCardManagement({
         setAllRawCards(fetchedCards);
         const processed = await Promise.all(fetchedCards.map(processCardData));
         
-        // Apply tag filtering using our new utility function
+        // Apply tag filtering using our utility function
         let filteredCards = filterItemsByTag(processed, selectedTag);
         
         // Then apply brand filtering if needed
@@ -171,8 +174,11 @@ export function useCardManagement({
             card.brand.toLowerCase() === selectedBrand.toLowerCase()
           );
         }
+        
+        // Apply sorting if a sort config is set
+        const sortedCards = sortItems(filteredCards, sortConfig);
           
-        setProcessedCards(filteredCards);
+        setProcessedCards(sortedCards);
       } else {
         console.error("Error in cards response (hook):", response);
         setAllRawCards([]);
@@ -188,7 +194,7 @@ export function useCardManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedBrand, selectedTag, processCardData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedBrand, selectedTag, sortConfig, processCardData]);
 
   useEffect(() => {
     fetchCards();
@@ -231,6 +237,7 @@ export function useCardManagement({
     setSearchQueryState("");
     setSelectedBrandState("all");
     setSelectedTagState("all");
+    setSortConfigState(null);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -251,6 +258,11 @@ export function useCardManagement({
 
   const setItemsPerPage = useCallback((items: number) => {
     setItemsPerPageState(items);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -282,6 +294,8 @@ export function useCardManagement({
     selectedTag,
     setSelectedTag,
     uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteCard,
     fetchCards,
     clearFilters,

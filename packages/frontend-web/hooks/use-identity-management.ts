@@ -5,7 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { filterItemsByTag } from '@/libs/utils';
+import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -63,6 +63,8 @@ interface UseIdentityManagementReturn {
   selectedTag: string;
   setSelectedTag: (tag: string) => void;
   uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteIdentity: (doc_id: string) => Promise<void>;
   fetchIdentities: () => Promise<void>;
   clearFilters: () => void;
@@ -83,6 +85,7 @@ export function useIdentityManagement({
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
 
   const processIdentityData = useCallback(async (identityRaw: IdentityFromAPI): Promise<Identity> => {
     let firstName = '';
@@ -163,10 +166,13 @@ export function useIdentityManagement({
         setAllRawIdentities(fetchedIdentities);
         const processed = await Promise.all(fetchedIdentities.map(processIdentityData));
         
-        // Apply tag filtering using our new utility function
+        // Apply tag filtering using our utility function
         const filteredIdentities = filterItemsByTag(processed, selectedTag);
           
-        setProcessedIdentities(filteredIdentities);
+        // Apply sorting if a sort config is set
+        const sortedIdentities = sortItems(filteredIdentities, sortConfig);
+        
+        setProcessedIdentities(sortedIdentities);
       } else {
         console.error("Error in identities response (hook):", response);
         setAllRawIdentities([]);
@@ -182,7 +188,7 @@ export function useIdentityManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, processIdentityData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, sortConfig, processIdentityData]);
 
   useEffect(() => {
     fetchIdentities();
@@ -224,6 +230,7 @@ export function useIdentityManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedTagState("all");
+    setSortConfigState(null);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -245,6 +252,11 @@ export function useIdentityManagement({
 
   const setItemsPerPage = useCallback((items: number) => {
     setItemsPerPageState(items);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -275,6 +287,8 @@ export function useIdentityManagement({
     selectedTag,
     setSelectedTag,
     uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteIdentity,
     fetchIdentities,
     clearFilters,

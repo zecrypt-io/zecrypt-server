@@ -28,6 +28,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { useIdentityManagement } from "@/hooks/use-identity-management";
 import { AddIdentityDialog } from "./add-identity-dialog";
 import { EditIdentityDialog } from "./edit-identity-dialog";
+import { SortButton } from "@/components/ui/sort-button";
 
 export function IdentityContent() {
   const { translate } = useTranslator();
@@ -62,7 +63,9 @@ export function IdentityContent() {
     nextPage,
     prevPage,
     goToPage,
-    uniqueTags
+    uniqueTags,
+    sortConfig,
+    setSortConfig
   } = useIdentityManagement({
     selectedWorkspaceId,
     selectedProjectId,
@@ -147,7 +150,7 @@ export function IdentityContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -168,6 +171,11 @@ export function IdentityContent() {
             ))}
           </SelectContent>
         </Select>
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="identity"
+        />
         <div className="flex gap-2">
           <Button variant="outline" className="w-full" onClick={clearFilters}>
             {translate("clear_filters", "identity", { default: "Clear Filters" })}

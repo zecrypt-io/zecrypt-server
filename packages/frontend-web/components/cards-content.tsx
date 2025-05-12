@@ -28,6 +28,7 @@ import { AddCardDialog } from "@/components/add-card-dialog";
 import { EditCardDialog } from "@/components/edit-card-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface Card {
   doc_id: string;
@@ -73,6 +74,8 @@ export function CardsContent() {
     selectedTag,
     setSelectedTag,
     uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteCard: handleDeleteCardFromHook,
     fetchCards,
     clearFilters,
@@ -154,7 +157,7 @@ export function CardsContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -188,6 +191,11 @@ export function CardsContent() {
             ))}
           </SelectContent>
         </Select>
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="cards"
+        />
         <div className="flex gap-2">
           <Button variant="outline" className="w-full" onClick={clearFilters}>
             {translate("clear_filters", "cards", { default: "Clear Filters" })}
