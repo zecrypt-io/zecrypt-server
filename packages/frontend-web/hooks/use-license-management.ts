@@ -5,6 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
+import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
 
 // Raw data structure from API GET /licenses
 interface LicenseFromAPI {
@@ -59,6 +60,9 @@ interface UseLicenseManagementReturn {
   setSearchQuery: (query: string) => void;
   selectedTag: string;
   setSelectedTag: (category: string) => void;
+  uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteLicense: (doc_id: string) => Promise<void>;
   fetchLicenses: () => Promise<void>;
   clearFilters: () => void;
@@ -79,6 +83,7 @@ export function useLicenseManagement({
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
 
   const processLicenseData = useCallback(async (licenseRaw: LicenseFromAPI): Promise<License> => {
     let extractedLicenseKey = '';
@@ -126,17 +131,15 @@ export function useLicenseManagement({
     }
     setIsLoading(true);
     try {
-      let tagsArray: string[] = [];
-      if (selectedTag !== "all") {
-        tagsArray = [selectedTag];
-      }
+      // Update to fetch all licenses and filter client-side
       const queryParams = new URLSearchParams();
       if (searchQuery.trim()) {
         queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
       }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
+      // Remove server-side tag filtering since we'll do it client-side
+      // if (tagsArray.length > 0) {
+      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
+      // }
 
       const response = await axiosInstance.get(
         `/${selectedWorkspaceId}/${selectedProjectId}/licenses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
@@ -146,7 +149,14 @@ export function useLicenseManagement({
         const { data: fetchedLicenses = [] }: { data: LicenseFromAPI[] } = response.data || {};
         setAllRawLicenses(fetchedLicenses);
         const processed = await Promise.all(fetchedLicenses.map(processLicenseData));
-        setProcessedLicenses(processed);
+        
+        // Apply tag filtering
+        const filteredLicenses = filterItemsByTag(processed, selectedTag);
+        
+        // Apply sorting if a sort config is set
+        const sortedLicenses = sortItems(filteredLicenses, sortConfig);
+        
+        setProcessedLicenses(sortedLicenses);
       } else {
         console.error("Error in licenses response (hook):", response);
         setAllRawLicenses([]);
@@ -162,7 +172,7 @@ export function useLicenseManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, processLicenseData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, sortConfig, processLicenseData]);
 
   useEffect(() => {
     fetchLicenses();
@@ -204,6 +214,7 @@ export function useLicenseManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedTagState("all");
+    setSortConfigState(null);
     setCurrentPage(1);
   }, [setCurrentPage]);
 
@@ -222,6 +233,22 @@ export function useLicenseManagement({
     setSelectedTagState(tag);
     setCurrentPage(1);
   }, [setCurrentPage]);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  // Add useMemo to get unique tags from all licenses for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    processedLicenses.forEach(license => {
+      if (license.tags && Array.isArray(license.tags)) {
+        license.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [processedLicenses]);
 
   const setItemsPerPage = useCallback((items: number) => {
     setItemsPerPageState(items);
@@ -243,6 +270,9 @@ export function useLicenseManagement({
     setSearchQuery,
     selectedTag,
     setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteLicense,
     fetchLicenses,
     clearFilters,

@@ -84,7 +84,15 @@
     "deleting": "Deleting...",
     "notes": "Notes",
     "software_name": "Software Name",
-    "rows_per_page": "Rows per page"
+    "rows_per_page": "Rows per page",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "navigation": {
     "home": "Home",
