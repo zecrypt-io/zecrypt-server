@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,24 +15,28 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
+import { useFormatter } from "next-intl";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { FIXED_SALT } from "../libs/crypto";
 import { AddApiKey } from "./add-apikey";
 import { EditApiKey } from "./edit-apikey";
 
 interface ApiKey {
   doc_id: string;
-  name: string;
-  data: string | { api_key: string };
+  title: string;
+  lower_title: string;
+  data: string;
+  notes?: string | null;
+  env: "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT";
+  tags?: string[];
   created_at: string;
   updated_at: string | null;
-  env: "Development" | "Staging" | "Production";
-  tags: string[];
-  displayKey?: string;
+  created_by: string;
+  project_id: string;
 }
 
 export function ApiKeysContent() {
   const { translate } = useTranslator();
+  const format = useFormatter();
   const [showAddApiKey, setShowAddApiKey] = useState(false);
   const [showEditApiKey, setShowEditApiKey] = useState(false);
   const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | null>(null);
@@ -41,58 +45,12 @@ export function ApiKeysContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEnv, setSelectedEnv] = useState("all");
   const [allApiKeys, setAllApiKeys] = useState<ApiKey[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const currentLocale = useSelector((state: RootState) => state.user.userData?.locale || "en");
-
-  const processApiKeyData = useCallback(async (apiKey: ApiKey): Promise<ApiKey> => {
-    try {
-      if (apiKey.data && typeof apiKey.data === "string") {
-        try {
-          // Try to parse as JSON first
-          const parsedData = JSON.parse(apiKey.data);
-          if (parsedData.api_key) {
-            return { ...apiKey, displayKey: parsedData.api_key };
-          }
-          return {
-            ...apiKey,
-            displayKey: "Data incomplete",
-          };
-        } catch (jsonError) {
-          // If not JSON, use the string directly
-          return {
-            ...apiKey,
-            displayKey: apiKey.data,
-          };
-        }
-      }
-      if (apiKey.data && typeof apiKey.data === "object" && "api_key" in apiKey.data) {
-        return { ...apiKey, displayKey: apiKey.data.api_key };
-      }
-      return {
-        ...apiKey,
-        displayKey: "Data unavailable",
-      };
-    } catch (error: unknown) {
-      console.error("Failed to process API key data:", {
-        error: error instanceof Error ? error.message : String(error),
-        api_key_id: apiKey.doc_id,
-      });
-      return {
-        ...apiKey,
-        displayKey: "Error processing data",
-      };
-    }
-  }, []);
-
-  const getEnvTag = useCallback((env: string): string => {
-    return env.toLowerCase();
-  }, []);
 
   const fetchApiKeys = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -111,52 +69,18 @@ export function ApiKeysContent() {
 
     try {
       setIsLoading(true);
-      let tagsArray: string[] = [];
-      if (selectedEnv !== "all") {
-        tagsArray = [getEnvTag(selectedEnv)];
-      }
+      const response = await axiosInstance.get(`/${selectedWorkspaceId}/${selectedProjectId}/api-keys`);
 
-      const payload = {
-        page: currentPage,
-        limit: itemsPerPage,
-        name: searchQuery.trim() || null,
-        env: selectedEnv !== "all" ? selectedEnv : null,
-        tags: tagsArray,
-      };
-
-      const response = await axiosInstance.post(
-        `/${selectedWorkspaceId}/${selectedProjectId}/api-keys/list`,
-        payload
-      );
-
-      const { data: fetchedApiKeys = [], count = 0 } = response.data || {};
-
-      const processedApiKeys = await Promise.all(
-        fetchedApiKeys.map(async (key: any) => {
-          const apiKey: ApiKey = {
-            doc_id: key.doc_id,
-            name: key.name,
-            data: key.data,
-            created_at: key.created_at,
-            updated_at: key.updated_at,
-            env: key.env,
-            tags: key.tags || [],
-          };
-          return processApiKeyData(apiKey);
-        })
-      );
-
-      setAllApiKeys(processedApiKeys);
-
-      let estimatedTotal;
-      if (currentPage === 1 && count < itemsPerPage) {
-        estimatedTotal = count;
-      } else if (count === itemsPerPage) {
-        estimatedTotal = currentPage * itemsPerPage + 1;
+      if (response.status === 200 && response.data?.data) {
+        setAllApiKeys(response.data.data);
       } else {
-        estimatedTotal = (currentPage - 1) * itemsPerPage + count;
+        console.error("Unexpected response format:", response);
+        toast({
+          title: translate("error_fetching_api_keys", "api_keys"),
+          description: translate("failed_to_fetch_api_keys", "api_keys"),
+          variant: "destructive",
+        });
       }
-      setTotalCount(estimatedTotal);
     } catch (error: any) {
       console.error("Error fetching API keys:", error);
       toast({
@@ -167,7 +91,7 @@ export function ApiKeysContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, currentPage, itemsPerPage, searchQuery, selectedEnv, processApiKeyData, getEnvTag, translate]);
+  }, [selectedWorkspaceId, selectedProjectId]);
 
   useEffect(() => {
     fetchApiKeys();
@@ -184,7 +108,32 @@ export function ApiKeysContent() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Filter and paginate API keys locally
+  const filteredApiKeys = useMemo(() => {
+    let result = allApiKeys;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(apiKey =>
+        apiKey.title.toLowerCase().includes(query) ||
+        apiKey.notes?.toLowerCase().includes(query)
+      );
+    }
+
+    if (selectedEnv !== "all") {
+      result = result.filter(apiKey => apiKey.env.toLowerCase() === selectedEnv.toLowerCase());
+    }
+
+    return result;
+  }, [allApiKeys, searchQuery, selectedEnv]);
+
+  const totalCount = filteredApiKeys.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const paginatedApiKeys = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredApiKeys.slice(start, end);
+  }, [filteredApiKeys, currentPage, itemsPerPage]);
 
   const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
     try {
@@ -216,9 +165,8 @@ export function ApiKeysContent() {
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
-    const validPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(validPage);
-  }, [totalPages]);
+    setCurrentPage(page);
+  }, []);
 
   const handleDeleteApiKey = useCallback(
     async (doc_id: string) => {
@@ -356,6 +304,9 @@ export function ApiKeysContent() {
                 <SelectItem value="Development">Development</SelectItem>
                 <SelectItem value="Staging">Staging</SelectItem>
                 <SelectItem value="Production">Production</SelectItem>
+                <SelectItem value="Testing">Testing</SelectItem>
+                <SelectItem value="Local">Local</SelectItem>
+                <SelectItem value="UAT">UAT</SelectItem>
               </SelectContent>
             </Select>
             {(searchQuery || selectedEnv !== "all") && (
@@ -390,21 +341,21 @@ export function ApiKeysContent() {
               </tr>
             </thead>
             <tbody>
-              {allApiKeys.length > 0 ? (
-                allApiKeys.map((apiKey) => (
+              {paginatedApiKeys.length > 0 ? (
+                paginatedApiKeys.map((apiKey) => (
                   <tr key={apiKey.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                          {apiKey.name.charAt(0).toUpperCase()}
+                          {apiKey.title.charAt(0).toUpperCase()}
                         </div>
-                        <p className="font-medium">{apiKey.name}</p>
+                        <p className="font-medium">{apiKey.title}</p>
                       </div>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">
-                          {apiKey.displayKey}
+                          {viewKey === apiKey.doc_id ? apiKey.data : "••••••••"}
                         </span>
                         <div className="flex items-center">
                           <TooltipProvider>
@@ -414,8 +365,26 @@ export function ApiKeysContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7"
-                                  onClick={() => apiKey.displayKey && copyToClipboard(apiKey.doc_id, "key", apiKey.displayKey)}
-                                  disabled={!apiKey.displayKey}
+                                  onClick={() => toggleKeyVisibility(apiKey.doc_id)}
+                                >
+                                  {viewKey === apiKey.doc_id ? (
+                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{viewKey === apiKey.doc_id ? translate("hide_key", "api_keys") : translate("show_key", "api_keys")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => copyToClipboard(apiKey.doc_id, "key", apiKey.data)}
                                 >
                                   {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
                                     <Check className="h-3.5 w-3.5 text-green-500" />
@@ -449,7 +418,13 @@ export function ApiKeysContent() {
                       </div>
                     </td>
                     <td className="p-3 text-sm text-muted-foreground">
-                      {apiKey.updated_at ? new Date(apiKey.updated_at).toLocaleDateString(currentLocale) : "-"}
+                      {apiKey.updated_at
+                        ? format.dateTime(new Date(apiKey.updated_at), {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "-"}
                     </td>
                     <td className="p-3">
                       <DropdownMenu>
@@ -505,12 +480,12 @@ export function ApiKeysContent() {
         {totalCount > 0 && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-muted-foreground">
-              Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
-              {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} API keys
+              {translate("showing", "api_keys")} {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "api_keys")} {totalCount} {translate("api_keys", "api_keys")}
             </div>
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">Rows per page</span>
+                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "api_keys")}</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {

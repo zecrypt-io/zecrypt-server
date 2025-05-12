@@ -13,16 +13,6 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { hashData } from "../libs/crypto";
 
-interface ApiKey {
-  doc_id: string;
-  name: string;
-  data: string;
-  created_at: string;
-  updated_at: string | null;
-  env: "Development" | "Staging" | "Production";
-  tags: string[];
-}
-
 interface AddApiKeyProps {
   onClose: () => void;
   onApiKeyAdded: () => void;
@@ -30,11 +20,11 @@ interface AddApiKeyProps {
 
 export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
   const { translate } = useTranslator();
-  const [name, setName] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [description, setDescription] = useState(""); // Added description field
+  const [title, setTitle] = useState("");
+  const [data, setData] = useState("");
+  const [notes, setNotes] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [env, setEnv] = useState<"Development" | "Staging" | "Production">("Development");
+  const [env, setEnv] = useState<"Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT">("Development");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
@@ -46,8 +36,9 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
   const addTag = (tag: string) => {
-    if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+    const normalizedTag = tag.toLowerCase().trim();
+    if (normalizedTag && !tags.includes(normalizedTag)) {
+      setTags([...tags, normalizedTag]);
       setNewTag("");
     }
   };
@@ -57,7 +48,7 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
   };
 
   const handleSubmit = async () => {
-    if (!name || !apiKey) {
+    if (!title || !data) {
       setError(translate("please_fill_all_required_fields", "api_keys"));
       return;
     }
@@ -75,23 +66,15 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
     setError("");
 
     try {
-      // Create data object with the API key
-      const dataToSend = JSON.stringify({ api_key: apiKey });
+      const hashedData = await hashData(data);
 
-      // Hash the data for security verification
-      const hashedData = await hashData(dataToSend);
-
-      // Include description field in the payload, even if it's empty
       const payload = {
-        name,
+        title,
+        data,
+        notes: notes || null,
         env,
         tags,
-        data: dataToSend,
-        hash: hashedData.hash,
-        description: description || null, // Ensure description is included
       };
-
-      console.log("Sending payload:", JSON.stringify(payload));
 
       const response = await axiosInstance.post(
         `/${selectedWorkspaceId}/${selectedProjectId}/api-keys`,
@@ -110,22 +93,12 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
       }
     } catch (error: any) {
       console.error("Error adding API key:", error);
-      console.error("Error response:", error.response?.data);
-      
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.message === "API key already exists") {
-          setError(translate("api_key_already_exists", "api_keys"));
-        } else if (error.response.status === 422) {
-          setError(`${translate("invalid_input_data", "api_keys")}: ${JSON.stringify(error.response.data?.detail || {})}`);
-        } else if (error.response.status === 500) {
-          setError(translate("error_adding_api_key", "api_keys"));
-        } else {
-          setError(error.response.data?.message || translate("failed_to_add_api_key", "api_keys"));
-        }
-      } else if (error.request) {
-        setError(translate("network_error", "api_keys"));
+      if (error.response?.status === 400 && error.response.data?.message === "API key already exists") {
+        setError(translate("api_key_already_exists", "api_keys"));
+      } else if (error.response?.status === 422) {
+        setError(translate("invalid_input_data", "api_keys"));
       } else {
-        setError(`${translate("error_adding_api_key", "api_keys")}: ${error.message}`);
+        setError(error.response?.data?.message || translate("failed_to_add_api_key", "api_keys"));
       }
     } finally {
       setIsSubmitting(false);
@@ -153,26 +126,12 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
             <div className="relative">
               <Input
                 placeholder={translate("enter_api_key_name", "api_keys")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="pr-8"
                 required
               />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("api_key_description", "api_keys")}
-            </label>
-            <div className="relative">
-              <Input
-                placeholder={translate("enter_description", "api_keys")}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="pr-8"
-              />
             </div>
           </div>
 
@@ -184,8 +143,8 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
               <Input
                 type={showApiKey ? "text" : "password"}
                 placeholder={translate("enter_api_key", "api_keys")}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                value={data}
+                onChange={(e) => setData(e.target.value)}
                 className="pr-8"
                 required
               />
@@ -202,10 +161,19 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("notes", "api_keys")}</label>
+            <Input
+              placeholder={translate("enter_notes", "api_keys")}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium">
               {translate("environment", "api_keys")} <span className="text-red-500">*</span>
             </label>
-            <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production")}>
+            <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT")}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={translate("select_environment", "api_keys")} />
               </SelectTrigger>
@@ -213,6 +181,9 @@ export function AddApiKey({ onClose, onApiKeyAdded }: AddApiKeyProps) {
                 <SelectItem value="Development">{translate("development", "api_keys")}</SelectItem>
                 <SelectItem value="Staging">{translate("staging", "api_keys")}</SelectItem>
                 <SelectItem value="Production">{translate("production", "api_keys")}</SelectItem>
+                <SelectItem value="Testing">{translate("testing", "api_keys")}</SelectItem>
+                <SelectItem value="Local">{translate("local", "api_keys")}</SelectItem>
+                <SelectItem value="UAT">{translate("uat", "api_keys")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

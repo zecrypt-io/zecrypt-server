@@ -15,14 +15,16 @@ import { hashData } from "../libs/crypto";
 
 interface ApiKey {
   doc_id: string;
-  name: string;
-  data: string | { api_key: string };
-  description?: string; // Added optional description field to the interface
+  title: string;
+  lower_title: string;
+  data: string;
+  notes?: string | null;
+  env: "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT";
+  tags?: string[];
   created_at: string;
   updated_at: string | null;
-  env: "Development" | "Staging" | "Production";
-  tags: string[];
-  displayKey?: string;
+  created_by: string;
+  project_id: string;
 }
 
 interface EditApiKeyProps {
@@ -33,12 +35,12 @@ interface EditApiKeyProps {
 
 export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps) {
   const { translate } = useTranslator();
-  const [name, setName] = useState(apiKey.name);
-  const [apiKeyValue, setApiKeyValue] = useState(apiKey.displayKey || "");
-  const [description, setDescription] = useState(apiKey.description || ""); // Added description state
+  const [title, setTitle] = useState(apiKey.title);
+  const [data, setData] = useState(apiKey.data);
+  const [notes, setNotes] = useState(apiKey.notes || "");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [env, setEnv] = useState<"Development" | "Staging" | "Production">(apiKey.env);
-  const [tags, setTags] = useState<string[]>(apiKey.tags);
+  const [env, setEnv] = useState<"Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT">(apiKey.env);
+  const [tags, setTags] = useState<string[]>(apiKey.tags || []);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,8 +51,9 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
   const addTag = (tag: string) => {
-    if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+    const normalizedTag = tag.toLowerCase().trim();
+    if (normalizedTag && !tags.includes(normalizedTag)) {
+      setTags([...tags, normalizedTag]);
       setNewTag("");
     }
   };
@@ -60,7 +63,7 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
   };
 
   const handleSubmit = async () => {
-    if (!name) {
+    if (!title) {
       setError(translate("please_fill_all_required_fields", "api_keys"));
       return;
     }
@@ -79,18 +82,15 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
 
     try {
       const payload: any = {
-        name,
+        title,
         env,
         tags,
-        description: description || null, // Include description in payload
+        notes: notes || null,
       };
 
-      if (apiKeyValue) {
-        const dataToSend = JSON.stringify({ api_key: apiKeyValue });
-        // Hash the data for security verification
-        const hashedData = await hashData(dataToSend);
-        payload.data = dataToSend;
-        payload.hash = hashedData.hash;
+      if (data) {
+        const hashedData = await hashData(data);
+        payload.data = data;
       }
 
       const response = await axiosInstance.put(
@@ -110,20 +110,14 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
       }
     } catch (error: any) {
       console.error("Error updating API key:", error);
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.message === "API key already exists") {
-          setError(translate("api_key_already_exists", "api_keys"));
-        } else if (error.response.status === 422) {
-          setError(translate("invalid_input_data", "api_keys"));
-        } else if (error.response.status === 500) {
-          setError(translate("error_updating_api_key", "api_keys"));
-        } else {
-          setError(error.response.data?.message || translate("failed_to_update_api_key", "api_keys"));
-        }
-      } else if (error.request) {
-        setError(translate("network_error", "api_keys"));
+      if (error.response?.status === 400 && error.response.data?.message === "API key already exists") {
+        setError(translate("api_key_already_exists", "api_keys"));
+      } else if (error.response?.status === 422) {
+        setError(translate("invalid_input_data", "api_keys"));
+      } else if (error.response?.status === 404) {
+        setError(translate("api_key_not_found", "api_keys"));
       } else {
-        setError(`${translate("error_updating_api_key", "api_keys")}: ${error.message}`);
+        setError(error.response?.data?.message || translate("failed_to_update_api_key", "api_keys"));
       }
     } finally {
       setIsSubmitting(false);
@@ -151,26 +145,12 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
             <div className="relative">
               <Input
                 placeholder={translate("enter_api_key_name", "api_keys")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="pr-8"
                 required
               />
               <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("api_key_description", "api_keys")}
-            </label>
-            <div className="relative">
-              <Input
-                placeholder={translate("enter_description", "api_keys")}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="pr-8"
-              />
             </div>
           </div>
 
@@ -180,8 +160,8 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
               <Input
                 type={showApiKey ? "text" : "password"}
                 placeholder={translate("enter_api_key", "api_keys")}
-                value={apiKeyValue}
-                onChange={(e) => setApiKeyValue(e.target.value)}
+                value={data}
+                onChange={(e) => setData(e.target.value)}
                 className="pr-8"
               />
               <Button
@@ -197,10 +177,19 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium">{translate("notes", "api_keys")}</label>
+            <Input
+              placeholder={translate("enter_notes", "api_keys")}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium">
               {translate("environment", "api_keys")} <span className="text-red-500">*</span>
             </label>
-            <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production")}>
+            <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT")}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={translate("select_environment", "api_keys")} />
               </SelectTrigger>
@@ -208,6 +197,9 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
                 <SelectItem value="Development">{translate("development", "api_keys")}</SelectItem>
                 <SelectItem value="Staging">{translate("staging", "api_keys")}</SelectItem>
                 <SelectItem value="Production">{translate("production", "api_keys")}</SelectItem>
+                <SelectItem value="Testing">{translate("testing", "api_keys")}</SelectItem>
+                <SelectItem value="Local">{translate("local", "api_keys")}</SelectItem>
+                <SelectItem value="UAT">{translate("uat", "api_keys")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
