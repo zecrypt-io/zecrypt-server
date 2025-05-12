@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -25,80 +23,70 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCardManagement } from "@/hooks/use-card-management";
+import { AddCardDialog } from "@/components/add-card-dialog";
+import { EditCardDialog } from "@/components/edit-card-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface Card {
-  id: string;
+  doc_id: string;
+  title: string;
   card_holder_name: string;
-  brand: string;
   number: string;
   expiry_month: string;
   expiry_year: string;
   cvv: string;
-  tags: string[];
+  brand: string;
+  notes?: string | null;
+  tags?: string[];
   created_at: string;
 }
 
 export function CardsContent() {
   const { translate } = useTranslator();
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+
   const [showAddCard, setShowAddCard] = useState(false);
   const [showEditCard, setShowEditCard] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [copiedField, setCopiedField] = useState<{ id: string; field: string } | null>(null);
   const [viewSensitiveData, setViewSensitiveData] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("all");
-  const [cards, setCards] = useState<Card[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<string | null>(null);
+  const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
-  // Mock data
-  const mockCards: Card[] = [
-    {
-      id: "card-1",
-      card_holder_name: "John Doe",
-      brand: "Visa",
-      number: "4111 1111 1111 1111",
-      expiry_month: "12",
-      expiry_year: "2025",
-      cvv: "123",
-      tags: ["Personal"],
-      created_at: new Date().toISOString()
-    },
-    {
-      id: "card-2",
-      card_holder_name: "Jane Smith",
-      brand: "Mastercard",
-      number: "5555 5555 5555 4444",
-      expiry_month: "10",
-      expiry_year: "2024",
-      cvv: "321",
-      tags: ["Business"],
-      created_at: new Date().toISOString()
-    },
-    {
-      id: "card-3",
-      card_holder_name: "Sarah Connor",
-      brand: "American Express",
-      number: "3782 822463 10005",
-      expiry_month: "07",
-      expiry_year: "2026",
-      cvv: "1234",
-      tags: ["Personal", "Shopping"],
-      created_at: new Date().toISOString()
-    }
-  ];
-
-  useEffect(() => {
-    // Simulate data loading
-    setIsLoading(true);
-    setTimeout(() => {
-      setCards(mockCards);
-      setTotalCount(mockCards.length);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+  const {
+    cardsToDisplay,
+    isLoading,
+    totalCount,
+    currentPage,
+    totalPages,
+    getPaginationRange,
+    itemsPerPage,
+    setItemsPerPage,
+    searchQuery,
+    setSearchQuery,
+    selectedBrand,
+    setSelectedBrand,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
+    handleDeleteCard: handleDeleteCardFromHook,
+    fetchCards,
+    clearFilters,
+    nextPage,
+    prevPage,
+    goToPage
+  } = useCardManagement({
+    selectedWorkspaceId,
+    selectedProjectId,
+    initialItemsPerPage: 5
+  });
 
   const handleAddCard = () => {
     setShowAddCard(true);
@@ -109,13 +97,22 @@ export function CardsContent() {
     setShowEditCard(true);
   };
 
-  const handleDeleteCard = (id: string) => {
-    // Simulate deletion
-    setCards(prevCards => prevCards.filter(card => card.id !== id));
-    toast({
-      title: translate("card_deleted", "cards", { default: "Card deleted" }),
-      description: translate("card_deleted_description", "cards", { default: "The card has been deleted successfully" }),
-    });
+  const confirmDelete = (doc_id: string) => {
+    setCardToDelete(doc_id);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleDeleteCard = async () => {
+    if (!cardToDelete) return;
+    
+    setIsProcessingDelete(true);
+    try {
+      await handleDeleteCardFromHook(cardToDelete);
+      setShowDeleteConfirmation(false);
+      setCardToDelete(null);
+    } finally {
+      setIsProcessingDelete(false);
+    }
   };
 
   const copyToClipboard = async (id: string, field: string, value: string) => {
@@ -141,51 +138,6 @@ export function CardsContent() {
     setViewSensitiveData(prev => (prev === id ? null : id));
   };
 
-  const filterCards = useCallback(() => {
-    let filtered = [...mockCards];
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(card => 
-        card.card_holder_name.toLowerCase().includes(query) ||
-        card.brand.toLowerCase().includes(query) ||
-        card.number.includes(query)
-      );
-    }
-    
-    if (selectedBrand !== "all") {
-      filtered = filtered.filter(card => 
-        card.brand.toLowerCase() === selectedBrand.toLowerCase()
-      );
-    }
-    
-    return filtered;
-  }, [searchQuery, selectedBrand, mockCards]);
-
-  const handleSearch = () => {
-    const filtered = filterCards();
-    setCards(filtered);
-    setTotalCount(filtered.length);
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedBrand("all");
-    setCards(mockCards);
-    setTotalCount(mockCards.length);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const displayedCards = cards.slice(startIdx, endIdx);
-  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
-
   const formatCardNumber = (number: string) => {
     return number.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
   };
@@ -205,16 +157,26 @@ export function CardsContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={translate("search_cards", "cards", { default: "Search cards..." })}
+            placeholder={translate("search_across_all_fields", "cards", { default: "Search across all fields..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <Select value={selectedBrand} onValueChange={setSelectedBrand}>
           <SelectTrigger className="w-full">
@@ -226,18 +188,31 @@ export function CardsContent() {
             <SelectItem value="mastercard">Mastercard</SelectItem>
             <SelectItem value="american express">American Express</SelectItem>
             <SelectItem value="discover">Discover</SelectItem>
+            <SelectItem value="other">{translate("other", "cards", { default: "Other" })}</SelectItem>
           </SelectContent>
         </Select>
-        <div className="flex gap-2">
-          <Button variant="outline" className="w-full" onClick={handleSearch}>
-            {translate("search", "cards", { default: "Search" })}
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "cards", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "cards", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="cards"
+        />
+        {(searchQuery || selectedBrand !== 'all' || selectedTag !== 'all' || sortConfig) && (
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
+            <X className="h-3 w-3 mr-1" />
+            {translate("clear_filters", "cards", { default: "Clear Filters" })}
           </Button>
-          {(searchQuery || selectedBrand !== "all") && (
-            <Button variant="ghost" onClick={clearFilters}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Cards Table */}
@@ -247,7 +222,7 @@ export function CardsContent() {
             <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
             <p className="text-muted-foreground">{translate("loading_cards", "cards", { default: "Loading cards..." })}</p>
           </div>
-        ) : displayedCards.length === 0 ? (
+        ) : cardsToDisplay.length === 0 ? (
           <div className="p-10 text-center">
             <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">{translate("no_cards_found", "cards", { default: "No cards found" })}</p>
@@ -260,7 +235,8 @@ export function CardsContent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">{translate("card_holder", "cards", { default: "Card Holder" })}</TableHead>
+                  <TableHead className="w-[200px]">{translate("title", "cards", { default: "Title" })}</TableHead>
+                  <TableHead>{translate("card_holder", "cards", { default: "Card Holder" })}</TableHead>
                   <TableHead>{translate("brand", "cards", { default: "Brand" })}</TableHead>
                   <TableHead>{translate("card_number", "cards", { default: "Card Number" })}</TableHead>
                   <TableHead>{translate("expiry", "cards", { default: "Expiry" })}</TableHead>
@@ -270,9 +246,10 @@ export function CardsContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedCards.map((card) => (
-                  <TableRow key={card.id}>
-                    <TableCell className="font-medium">
+                {cardsToDisplay.map((card) => (
+                  <TableRow key={card.doc_id}>
+                    <TableCell className="font-medium">{card.title}</TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <span>{card.card_holder_name}</span>
@@ -282,53 +259,82 @@ export function CardsContent() {
                     <TableCell className="font-mono">
                       <div className="flex items-center gap-2">
                         <span>
-                          {viewSensitiveData === card.id
+                          {viewSensitiveData === card.doc_id
                             ? formatCardNumber(card.number)
                             : "•••• •••• •••• " + card.number.slice(-4)}
                         </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => toggleDataVisibility(card.id)}
+                                onClick={() => toggleDataVisibility(card.doc_id)}
                         >
-                          {viewSensitiveData === card.id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                {viewSensitiveData === card.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {viewSensitiveData === card.doc_id
+                                ? translate("hide_card_number", "cards", { default: "Hide card number" })
+                                : translate("show_card_number", "cards", { default: "Show card number" })}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => copyToClipboard(card.id, "number", card.number)}
+                                onClick={() => copyToClipboard(card.doc_id, "number", card.number)}
                         >
-                          {copiedField?.id === card.id && copiedField?.field === "number" ? (
+                                {copiedField?.id === card.doc_id && copiedField?.field === "number" ? (
                             <Check className="h-3 w-3" />
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}
                         </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </TableCell>
                     <TableCell>{formatExpiryDate(card.expiry_month, card.expiry_year)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span>{viewSensitiveData === card.id ? card.cvv : "•••"}</span>
+                        <span>{viewSensitiveData === card.doc_id ? card.cvv : "•••"}</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => copyToClipboard(card.id, "cvv", card.cvv)}
+                                onClick={() => copyToClipboard(card.doc_id, "cvv", card.cvv)}
                         >
-                          {copiedField?.id === card.id && copiedField?.field === "cvv" ? (
+                                {copiedField?.id === card.doc_id && copiedField?.field === "cvv" ? (
                             <Check className="h-3 w-3" />
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}
                         </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {card.tags.map((tag) => (
+                        {card.tags?.map((tag) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>
@@ -346,7 +352,7 @@ export function CardsContent() {
                           <DropdownMenuItem onClick={() => handleEditCard(card)}>
                             {translate("edit", "cards", { default: "Edit" })}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteCard(card.id)} className="text-red-500">
+                          <DropdownMenuItem onClick={() => confirmDelete(card.doc_id)} className="text-red-500">
                             {translate("delete", "cards", { default: "Delete" })}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -361,224 +367,85 @@ export function CardsContent() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
             {translate("showing_results", "cards", {
-              default: `Showing ${startIdx + 1}-${Math.min(endIdx, totalCount)} of ${totalCount} results`,
-              startIdx: startIdx + 1,
-              endIdx: Math.min(endIdx, totalCount),
+              default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
+              startIdx: (currentPage - 1) * itemsPerPage + 1,
+              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
               totalCount
             })}
           </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="mx-2 text-sm">
-              {translate("page_of", "cards", {
-                default: `Page ${currentPage} of ${totalPages}`,
-                currentPage,
-                totalPages
-              })}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious onClick={prevPage} disabled={currentPage === 1} />
+              </PaginationItem>
+              {getPaginationRange().map((page, index) => (
+                typeof page === 'number' ? (
+                  <PaginationItem key={index}>
+                    <PaginationLink
+                      onClick={() => goToPage(page)}
+                      isActive={page === currentPage}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={index}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )
+              ))}
+              <PaginationItem>
+                <PaginationNext onClick={nextPage} disabled={currentPage === totalPages} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
 
       {/* Add Card Dialog */}
-      <Dialog open={showAddCard} onOpenChange={setShowAddCard}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{translate("add_new_card", "cards", { default: "Add New Card" })}</DialogTitle>
-            <DialogDescription>
-              {translate("add_new_card_description", "cards", { default: "Enter your credit card details below" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="card_holder_name">{translate("card_holder_name", "cards", { default: "Card Holder Name" })}</Label>
-              <Input id="card_holder_name" placeholder="John Doe" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="brand">{translate("brand", "cards", { default: "Brand" })}</Label>
-              <Select defaultValue="visa">
-                <SelectTrigger>
-                  <SelectValue placeholder={translate("select_brand", "cards", { default: "Select brand" })} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="visa">Visa</SelectItem>
-                  <SelectItem value="mastercard">Mastercard</SelectItem>
-                  <SelectItem value="american express">American Express</SelectItem>
-                  <SelectItem value="discover">Discover</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="card_number">{translate("card_number", "cards", { default: "Card Number" })}</Label>
-              <Input id="card_number" placeholder="4111 1111 1111 1111" />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiry_month">{translate("expiry_month", "cards", { default: "Expiry Month" })}</Label>
-                <Select defaultValue="01">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const month = (i + 1).toString().padStart(2, '0');
-                      return <SelectItem key={month} value={month}>{month}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expiry_year">{translate("expiry_year", "cards", { default: "Expiry Year" })}</Label>
-                <Select defaultValue={(new Date().getFullYear()).toString()}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 10 }, (_, i) => {
-                      const year = (new Date().getFullYear() + i).toString();
-                      return <SelectItem key={year} value={year}>{year}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cvv">{translate("cvv", "cards", { default: "CVV" })}</Label>
-                <Input id="cvv" placeholder="123" />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowAddCard(false)}>
-              {translate("cancel", "cards", { default: "Cancel" })}
-            </Button>
-            <Button type="submit" onClick={() => setShowAddCard(false)}>
-              {translate("save", "cards", { default: "Save" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddCardDialog
+        open={showAddCard}
+        onOpenChange={setShowAddCard}
+        onCardAdded={fetchCards}
+        selectedWorkspaceId={selectedWorkspaceId}
+        selectedProjectId={selectedProjectId}
+      />
 
       {/* Edit Card Dialog */}
-      <Dialog open={showEditCard} onOpenChange={setShowEditCard}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{translate("edit_card", "cards", { default: "Edit Card" })}</DialogTitle>
-            <DialogDescription>
-              {translate("edit_card_description", "cards", { default: "Update your credit card details" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit_card_holder_name">{translate("card_holder_name", "cards", { default: "Card Holder Name" })}</Label>
-              <Input 
-                id="edit_card_holder_name" 
-                defaultValue={selectedCard?.card_holder_name} 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_brand">{translate("brand", "cards", { default: "Brand" })}</Label>
-              <Select defaultValue={selectedCard?.brand.toLowerCase()}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="visa">Visa</SelectItem>
-                  <SelectItem value="mastercard">Mastercard</SelectItem>
-                  <SelectItem value="american express">American Express</SelectItem>
-                  <SelectItem value="discover">Discover</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_card_number">{translate("card_number", "cards", { default: "Card Number" })}</Label>
-              <Input 
-                id="edit_card_number" 
-                defaultValue={selectedCard?.number} 
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit_expiry_month">{translate("expiry_month", "cards", { default: "Expiry Month" })}</Label>
-                <Select defaultValue={selectedCard?.expiry_month}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const month = (i + 1).toString().padStart(2, '0');
-                      return <SelectItem key={month} value={month}>{month}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_expiry_year">{translate("expiry_year", "cards", { default: "Expiry Year" })}</Label>
-                <Select defaultValue={selectedCard?.expiry_year}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 10 }, (_, i) => {
-                      const year = (new Date().getFullYear() + i).toString();
-                      return <SelectItem key={year} value={year}>{year}</SelectItem>;
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_cvv">{translate("cvv", "cards", { default: "CVV" })}</Label>
-                <Input 
-                  id="edit_cvv" 
-                  defaultValue={selectedCard?.cvv} 
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowEditCard(false)}>
+      <EditCardDialog
+        open={showEditCard}
+        onOpenChange={setShowEditCard}
+        onCardUpdated={fetchCards}
+        selectedWorkspaceId={selectedWorkspaceId}
+        selectedProjectId={selectedProjectId}
+        card={selectedCard}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{translate("confirm_delete", "cards", { default: "Confirm Deletion" })}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {translate("delete_card_confirmation", "cards", { default: "Are you sure you want to delete this card? This action cannot be undone." })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessingDelete}>
               {translate("cancel", "cards", { default: "Cancel" })}
-            </Button>
-            <Button type="submit" onClick={() => setShowEditCard(false)}>
-              {translate("update", "cards", { default: "Update" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCard} disabled={isProcessingDelete} className="bg-red-600 hover:bg-red-700">
+              {isProcessingDelete
+                ? translate("deleting", "cards", { default: "Deleting..." })
+                : translate("delete", "cards", { default: "Delete" })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

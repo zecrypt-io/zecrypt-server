@@ -27,6 +27,7 @@ import {
 import { useLicenseManagement } from "@/hooks/use-license-management";
 import { AddLicenseDialog } from "./add-license-dialog";
 import { EditLicenseDialog } from "./edit-license-dialog";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface License {
   doc_id: string;
@@ -69,6 +70,9 @@ export function LicensesContent() {
     setSearchQuery,
     selectedTag,
     setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteLicense: handleDeleteLicenseFromHook,
     fetchLicenses,
     clearFilters,
@@ -193,16 +197,26 @@ export function LicensesContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={translate("search_licenses", "licenses", { default: "Search licenses..." })}
+            placeholder={translate("search_across_all_fields", "licenses", { default: "Search across all fields..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <Select value={selectedTag} onValueChange={setSelectedTag}>
           <SelectTrigger className="w-full">
@@ -210,25 +224,22 @@ export function LicensesContent() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{translate("all_tags", "licenses", { default: "All Tags" })}</SelectItem>
-            <SelectItem value="design">Design</SelectItem>
-            <SelectItem value="creative">Creative</SelectItem>
-            <SelectItem value="productivity">Productivity</SelectItem>
-            <SelectItem value="office">Office</SelectItem>
-            <SelectItem value="development">Development</SelectItem>
-            <SelectItem value="game">Game</SelectItem>
-            <SelectItem value="subscription">Subscription</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <div className="flex gap-2">
-          <Button variant="outline" className="w-full" onClick={handleSearch}>
-            {translate("search", "licenses", { default: "Search" })}
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="licenses"
+        />
+        {(searchQuery || selectedTag !== 'all' || sortConfig) && (
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
+            <X className="h-3 w-3 mr-1" />
+            {translate("clear_filters", "licenses", { default: "Clear Filters" })}
           </Button>
-          {(searchQuery || selectedTag !== "all") && (
-            <Button variant="ghost" onClick={clearFilters}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Licenses Table */}
