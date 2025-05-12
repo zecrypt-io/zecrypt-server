@@ -5,7 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { filterItemsByTag, sortItems, SortConfig } from '@/libs/utils';
+import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 // Raw data structure from API GET /cards
 interface CardFromAPI {
@@ -146,24 +146,26 @@ export function useCardManagement({
     }
     setIsLoading(true);
     try {
-      // Update to fetch all cards and filter client-side
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim()); // API uses 'name' for search typically mapped to title
-      }
-      // Remove server-side tag filtering since we'll do it client-side
-      // if (tagsArray.length > 0) {
-      //   tagsArray.forEach(tag => queryParams.append('tags', tag));
-      // }
-
+      // Fetch all cards without filtering on server for multi-field search
       const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/cards${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+        `/${selectedWorkspaceId}/${selectedProjectId}/cards`
       );
 
       if (response.status === 200) {
         const { data: fetchedCards = [] }: { data: CardFromAPI[] } = response.data || {};
         setAllRawCards(fetchedCards);
-        const processed = await Promise.all(fetchedCards.map(processCardData));
+        let processed = await Promise.all(fetchedCards.map(processCardData));
+        
+        // Apply multi-field search if there's a search query
+        if (searchQuery.trim()) {
+          processed = searchItemsMultiField(processed, searchQuery, [
+            'title',         // card name
+            'card_holder_name',
+            'number',
+            'brand',
+            'tags'
+          ]);
+        }
         
         // Apply tag filtering using our utility function
         let filteredCards = filterItemsByTag(processed, selectedTag);
@@ -241,9 +243,15 @@ export function useCardManagement({
     setCurrentPage(1);
   }, [setCurrentPage]);
 
-  const setSearchQuery = useCallback((query: string) => {
-    setSearchQueryState(query);
-    setCurrentPage(1);
+  const setSearchQuery = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQueryState(value);
+        setCurrentPage(1);
+      }, 300); // 300ms debounce for search as user types
+    };
   }, [setCurrentPage]);
 
   const setSelectedBrand = useCallback((brand: string) => {
