@@ -55,6 +55,7 @@ AUDIT_LOG_ACTIONS = "/audit-log-actions"
 PROJECTS = "/{workspace_id}/projects"
 PROJECT_DETAILS = "/{workspace_id}/projects/{doc_id}"
 TAGS = "/{workspace_id}/{project_id}/tags"
+PROJECT_KEYS = "/{workspace_id}/project-keys"
 
 # User
 FAVORITE_TAGS = "/favorite-tags"

@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 from app.core.config import settings
 from app.managers import login_activity as login_activity_manager
 from app.utils.date_utils import create_timestamp
-from app.api.v1.web.auth.utils import get_public_key,get_private_key
+from app.api.v1.web.auth.utils import get_private_key
 
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 from app.managers import user as user_manager
@@ -113,7 +113,9 @@ def create_user(request, db, auth_data, back_ground_tasks):
         },
     }
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_initial_workspace_on_signup,db, request, user_id, workspace_id)
+    back_ground_tasks.add_task(
+        create_initial_workspace_on_signup, db, request, user_id, workspace_id
+    )
     data = {
         "user_id": user_id,
         "language": "en",
@@ -203,8 +205,11 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
 
 
 def get_keys(db, user_id):
-    user_key=get_private_key(db,user_id)
-    return response_helper(status_code=200, message="Keys fetched successfully", data={"key":user_key})
+    user_key = get_private_key(db, user_id)
+    return response_helper(
+        status_code=200, message="Keys fetched successfully", data={"key": user_key}
+    )
+
 
 def update_keys(db, user, payload):
     data = {
@@ -214,6 +219,6 @@ def update_keys(db, user, payload):
     }
     if user_keys_manager.find_one(db, {"user_id": user.get("user_id")}):
         return response_helper(status_code=400, message="Keys already exist")
-    
+
     user_keys_manager.insert_one(db, data)
     return response_helper(status_code=200, message="Keys updated successfully")

@@ -2,11 +2,23 @@ from fastapi import APIRouter, Request, BackgroundTasks, Response, Depends
 from app.api.v1.web.auth.schema import Login, UserDetails, TwoFactorAuth, UpdateKeys
 from app.api.v1.web.auth.services import validate_stack_auth_token
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.auth.services import create_user, user_login, verify_two_factor_auth, get_keys, update_keys
+from app.api.v1.web.auth.services import (
+    create_user,
+    user_login,
+    verify_two_factor_auth,
+    get_keys,
+    update_keys,
+)
 from app.framework.mongo_db.db import get_db
 from app.managers import user as user_manager
 from app.utils.utils import response_helper
-from app.api.v1.web.route_constants import LOGIN, LOGOUT, TWO_FACTOR_AUTH, GET_KEYS, UPDATE_KEYS
+from app.api.v1.web.route_constants import (
+    LOGIN,
+    LOGOUT,
+    TWO_FACTOR_AUTH,
+    GET_KEYS,
+    UPDATE_KEYS,
+)
 
 db = get_db()
 router = APIRouter()
@@ -60,13 +72,14 @@ async def two_factor_auth_api(
         request, db, payload.model_dump(), response, back_ground_tasks
     )
 
+
 @router.get(GET_KEYS)
 async def get_keys_api(user: UserDetails = Depends(get_current_user)):
     return get_keys(db, user.get("user_id"))
 
+
 @router.post(UPDATE_KEYS)
 async def update_keys_api(
-    request: Request,
-    payload: UpdateKeys,
-    user: UserDetails = Depends(get_current_user)):
+    request: Request, payload: UpdateKeys, user: UserDetails = Depends(get_current_user)
+):
     return update_keys(db, user.get("user_id"), payload.model_dump())

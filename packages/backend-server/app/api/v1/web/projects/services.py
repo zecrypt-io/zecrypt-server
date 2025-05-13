@@ -1,8 +1,12 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
-from app.managers import project as project_manager
-from app.managers import secrets as secrets_manager
+from app.managers import (
+    project as project_manager,
+    project_keys as project_keys_manager,
+    secrets as secrets_manager,
+)
 
+from app.framework.encryption.service import get_project_key
 
 
 def get_project_details(db, doc_id):
@@ -56,7 +60,7 @@ def add_project(request, user, payload, background_tasks):
         }
     )
     project_manager.insert_one(db, payload)
-
+    add_project_key(db, user_id, payload.get("doc_id"), workspace_id)
     return response_helper(
         status_code=201,
         message="Project added successfully",
@@ -135,4 +139,28 @@ def get_tags(db, project_id):
 
     return response_helper(
         status_code=200, message="Tags loaded successfully", data=unique_tags
+    )
+
+
+def add_project_key(db, user_id, project_id, workspace_id):
+    project_key = get_project_key(db, user_id)
+    project_keys_manager.insert_one(
+        db,
+        {
+            "doc_id": create_uuid(),
+            "project_id": project_id,
+            "user_id": user_id,
+            "project_key": project_key,
+            "workspace_id": workspace_id,
+        },
+    )
+
+
+def get_project_keys(request, db, user_id):
+    project_keys = project_keys_manager.find(
+        db,
+        {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
+    )
+    return response_helper(
+        status_code=200, message="Project keys loaded successfully", data=project_keys
     )

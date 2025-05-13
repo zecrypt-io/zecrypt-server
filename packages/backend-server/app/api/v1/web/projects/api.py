@@ -9,9 +9,10 @@ from app.api.v1.web.projects.services import (
     add_project,
     delete_project,
     get_tags,
+    get_project_keys,
 )
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import PROJECTS, PROJECT_DETAILS, TAGS
+from app.api.v1.web.route_constants import PROJECTS, PROJECT_DETAILS, TAGS, PROJECT_KEYS
 
 router = APIRouter()
 
@@ -80,3 +81,12 @@ async def get_project_tags_api(
     user: UserDetails = Depends(get_current_user),
 ):
     return get_tags(user.get("db"), project_id)
+
+
+@router.get(PROJECT_KEYS)
+async def get_project_keys_api(
+    request: Request,
+    workspace_id: str,
+    user: UserDetails = Depends(get_current_user),
+):
+    return get_project_keys(request, user.get("db"), user.get("user_id"))

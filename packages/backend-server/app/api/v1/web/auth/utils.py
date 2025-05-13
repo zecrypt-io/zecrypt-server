@@ -11,13 +11,15 @@ def get_password_hash(password: str):
 def check_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
 
-def get_public_key(db,user_id):
+
+def get_public_key(db, user_id):
     user_keys = user_keys_manager.find_one(db, {"user_id": user_id})
     if not user_keys:
         return None
     return user_keys.get("public_key")
 
-def get_private_key(db,user_id):
+
+def get_private_key(db, user_id):
     user_keys = user_keys_manager.find_one(db, {"user_id": user_id})
     if not user_keys:
         return None

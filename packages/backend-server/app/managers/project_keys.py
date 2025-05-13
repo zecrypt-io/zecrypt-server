@@ -1,8 +1,8 @@
 from app.framework.mongo_db import base_manager as db_manager
-from app.managers.collection_names import USER_KEYS
+from app.managers.collection_names import PROJECT_KEYS
 
 
-collection_name = USER_KEYS
+collection_name = PROJECT_KEYS
 
 
 def insert_one(db, data):
@@ -50,19 +50,3 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
 
 def count_documents(db, query):
     return db_manager.count_documents(db, collection_name, query)
-
-
-def get_private_key(db, user_id):
-    query = {"user_id": user_id}
-    user_keys = find_one(db, query)
-    if not user_keys:
-        return None
-    return user_keys.get("private_key")
-
-
-def get_public_key(db, user_id):
-    query = {"user_id": user_id}
-    user_keys = find_one(db, query)
-    if not user_keys:
-        return None
-    return user_keys.get("public_key")
