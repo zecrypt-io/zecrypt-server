@@ -82,4 +82,4 @@ async def get_keys_api(user: UserDetails = Depends(get_current_user)):
 async def update_keys_api(
     request: Request, payload: UpdateKeys, user: UserDetails = Depends(get_current_user)
 ):
-    return update_keys(db, user.get("user_id"), payload.model_dump())
+    return update_keys(db, user, payload.model_dump())
