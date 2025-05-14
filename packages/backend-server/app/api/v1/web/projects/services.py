@@ -39,6 +39,7 @@ def get_projects(db, query, sort=None, projection=None, page=1, limit=20):
 def add_project(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+
     workspace_id = request.path_params.get("workspace_id")
     project = project_manager.find_one(
         db,
@@ -60,7 +61,7 @@ def add_project(request, user, payload, background_tasks):
         }
     )
     project_manager.insert_one(db, payload)
-    add_project_key(db, user_id, payload.get("doc_id"), workspace_id)
+    add_project_key(db, user_id, payload.get("doc_id"), workspace_id, payload.get("key"))
     return response_helper(
         status_code=201,
         message="Project added successfully",
@@ -142,8 +143,10 @@ def get_tags(db, project_id):
     )
 
 
-def add_project_key(db, user_id, project_id, workspace_id):
-    project_key = get_project_key(db, user_id)
+def add_project_key(db, user_id, project_id, workspace_id, project_key=None):
+    if not project_key:
+        project_key = get_project_key(db, user_id)
+
     project_keys_manager.insert_one(
         db,
         {
