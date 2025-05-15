@@ -23,6 +23,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "@/components/ui/use-toast";
+import { getUserKeys } from "@/libs/api-client";
+import { EncryptionSetupModal } from "./encryption-setup-modal";
 
 export interface LoginPageProps {
   locale?: string;
@@ -38,10 +40,12 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [show2FAModal, setShow2FAModal] = useState(false);
+  const [showKeySetupModal, setShowKeySetupModal] = useState(false);
   const [provisioningUri, setProvisioningUri] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [verifying2FA, setVerifying2FA] = useState(false);
+  const [isCheckingKeys, setIsCheckingKeys] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState(200);
@@ -70,6 +74,67 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Function to check for encryption keys
+  const checkForEncryptionKeys = async () => {
+    setIsCheckingKeys(true);
+    try {
+      const keysResponse = await getUserKeys();
+      console.log("Keys response:", keysResponse);
+
+      if (keysResponse.status_code === 200) {
+        if (keysResponse.data.key === null) {
+          // No keys found, show setup modal
+          setShowKeySetupModal(true);
+        } else {
+          // Keys exist, proceed to dashboard
+          proceedToDashboard();
+        }
+      } else {
+        throw new Error(keysResponse.message || "Failed to check encryption keys");
+      }
+    } catch (err) {
+      console.error("Error checking encryption keys:", err);
+      // For security, DO NOT redirect to dashboard when key check fails
+      // Instead, show an error to the user
+      toast({
+        title: t("encryption_key_check_failed"),
+        description: t("encryption_key_check_failed_desc"),
+        variant: "destructive"
+      });
+      
+      // Set error state to display the error message to the user
+      setError(t("encryption_security_error"));
+      
+      // Logout the user by clearing auth state
+      // This is safer than bypassing encryption checks
+      dispatch(
+        setUserData({
+          user_id: null,
+          name: null,
+          profile_url: null,
+          email: null,
+          access_token: null,
+          refresh_token: null,
+          locale: locale || "en",
+          is_2fa_enabled: false,
+        })
+      );
+    } finally {
+      setIsCheckingKeys(false);
+    }
+  };
+
+  // Proceed to dashboard after all checks are complete
+  const proceedToDashboard = () => {
+    router.push(`/${locale}/dashboard`);
+  };
+
+  // Handle successful key setup
+  const handleKeySetupComplete = () => {
+    setShowKeySetupModal(false);
+    proceedToDashboard();
+  };
+
   useEffect(() => {
     const authenticateUser = async () => {
       if (isLoggingIn || !deviceId) return;
@@ -91,6 +156,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
           if (loginResponse?.status_code === 200) {
             if (loginResponse.data.token) {
+              // Store user data in Redux
               dispatch(
                 setUserData({
                   user_id: loginResponse.data.user_id || null,
@@ -103,11 +169,14 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
                   is_2fa_enabled: true,
                 })
               );
+              
               toast({
                 title: t("login_successful"),
-                description: t("redirecting_to_dashboard"),
+                description: t("checking_encryption_keys"),
               });
-              router.push(`/${locale}/dashboard`);
+              
+              // Check for encryption keys instead of redirecting immediately
+              await checkForEncryptionKeys();
               return;
             }
 
@@ -145,7 +214,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     } else {
       setIsAuthenticating(false);
     }
-  }, [user, dispatch, router, locale, deviceId, t]);
+  }, [user, dispatch, locale, deviceId, t]);
 
   const handle2FAVerification = async () => {
     if (!userId || verificationCode.length !== 6) {
@@ -164,11 +233,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       });
 
       if (response.status_code === 200) {
-        toast({
-          title: t("2fa_verified"),
-          description: t("redirecting_to_dashboard"),
-        });
-
+        // Store user data in Redux
         dispatch(
           setUserData({
             user_id: response.data.user_id || null,
@@ -177,12 +242,20 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             email: user?.primaryEmail || null,
             access_token: response.data.token || null,
             refresh_token: response.data.refresh_token || null,
-            locale: response.data.language || locale || "en", // Changed from language to locale
+            locale: response.data.language || locale || "en", 
             is_2fa_enabled: true,
           })
         );
+        
+        toast({
+          title: t("2fa_verified"),
+          description: t("checking_encryption_keys"),
+        });
+        
         setShow2FAModal(false);
-        router.push(`/${locale}/dashboard`);
+        
+        // Check for encryption keys instead of redirecting immediately
+        await checkForEncryptionKeys();
       } else {
         setError(t("2fa_verification_failed", { message: response.message || t("invalid_code") }));
       }
@@ -209,11 +282,13 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     }
   };
 
-  if (isAuthenticating) {
+  if (isAuthenticating || isCheckingKeys) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-        <p className="text-muted-foreground">{t("verifying_authentication")}</p>
+        <p className="text-muted-foreground">
+          {isCheckingKeys ? t("checking_encryption_keys") : t("verifying_authentication")}
+        </p>
       </div>
     );
   }
@@ -238,6 +313,17 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
           {t("try_again")}
         </Button>
       </div>
+    );
+  }
+
+  // Render the encryption setup modal
+  if (showKeySetupModal) {
+    return (
+      <EncryptionSetupModal
+        isOpen={showKeySetupModal}
+        onComplete={handleKeySetupComplete}
+        onCancel={proceedToDashboard} // Allow skipping in case of issues
+      />
     );
   }
 
