@@ -1,30 +1,33 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Lock, 
-  TrendingUp, 
-  Users, 
-  Shield, 
-  FileText 
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
 import { useTranslator } from "@/hooks/use-translations";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
-import { loadInitialData } from "@/libs/getWorkspace";
-import { Workspace } from "@/libs/Redux/workspaceSlice";
-import { useFormatter } from "next-intl"; // Add next-intl formatter
+import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
+import type { UseTranslatorReturnType } from "@/hooks/use-translations";
+import { useFormatter } from "next-intl";
+import { useUser } from "@stackframe/stack";
+import { loadInitialData, fetchProjects } from "@/libs/getWorkspace";
+import { ProjectDialog } from "./project-dialog";
 
 export function LocalizedOverviewContent() {
   const { translate } = useTranslator();
-  const format = useFormatter(); // Add formatter
+  const format = useFormatter(); // Use formatter from next-intl
+  const user = useUser();
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+
+  // State to control project dialog visibility
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [forceCreateProject, setForceCreateProject] = useState(false);
 
   // Get selected and default project for display
   const selectedProject = useSelector((state: RootState) =>
@@ -63,37 +66,41 @@ export function LocalizedOverviewContent() {
     const fetchData = async () => {
       if (!accessToken) {
         console.error("No access token available in Redux");
-        dispatch(
-          setWorkspaceData({
-            workspaces: [],
-            selectedWorkspaceId: null,
-            selectedProjectId: null,
-          })
-        );
+        dispatch(setWorkspaceData({ workspaces: [], selectedWorkspaceId: null, selectedProjectId: null }));
         return;
       }
 
       const initialData: Workspace[] | null = await loadInitialData(accessToken);
       if (initialData && Array.isArray(initialData) && initialData.length > 0) {
-        console.log("✅ Dispatching initial data to Redux:", initialData);
         const defaultWorkspace = initialData[0];
-        const defaultProject = defaultWorkspace.projects.find((p) => p.is_default);
-        dispatch(
-          setWorkspaceData({
-            workspaces: initialData,
+        const projectsData = await fetchProjects(defaultWorkspace.workspaceId, accessToken);
+
+        if (projectsData && projectsData.projects && projectsData.projects.length > 0) {
+          setForceCreateProject(false);
+          const updatedInitialData = initialData.map(ws => 
+            ws.workspaceId === defaultWorkspace.workspaceId ? { ...ws, projects: projectsData.projects } : ws
+          );
+          console.log("✅ Dispatching initial data to Redux with new projects (localized):", updatedInitialData);
+          const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
+          dispatch(setWorkspaceData({
+            workspaces: updatedInitialData,
             selectedWorkspaceId: defaultWorkspace.workspaceId,
-            selectedProjectId: selectedProjectId || defaultProject?.project_id || initialData[0].projects[0]?.project_id || null,
-          })
-        );
-      } else {
-        console.error("❌ Failed to load initial data or no workspaces available.");
-        dispatch(
-          setWorkspaceData({
-            workspaces: [],
-            selectedWorkspaceId: null,
+            selectedProjectId: selectedProjectId || defaultProj?.project_id || projectsData.projects[0]?.project_id || null,
+          }));
+        } else {
+          console.log("No projects found, showing project creation dialog (forced, localized)");
+          dispatch(setWorkspaceData({
+            workspaces: initialData.map(ws => ({ ...ws, projects: [] })),
+            selectedWorkspaceId: defaultWorkspace.workspaceId,
             selectedProjectId: null,
-          })
-        );
+          }));
+          setForceCreateProject(true);
+          setShowProjectDialog(true);
+        }
+      } else {
+        console.error("❌ Failed to load initial data or no workspaces available (localized).");
+        setForceCreateProject(false);
+        dispatch(setWorkspaceData({ workspaces: [], selectedWorkspaceId: null, selectedProjectId: null }));
       }
     };
 
@@ -278,6 +285,16 @@ export function LocalizedOverviewContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add project dialog at the end of the component */}
+      {showProjectDialog && (
+        <ProjectDialog 
+          onClose={() => {
+            setShowProjectDialog(false);
+          }} 
+          forceCreate={forceCreateProject} 
+        />
+      )}
     </div>
   );
 }

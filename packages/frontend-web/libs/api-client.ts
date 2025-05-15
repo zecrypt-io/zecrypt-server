@@ -49,6 +49,11 @@ export async function getUserKeys(): Promise<GetKeyResponse> {
 // API call to update/set user's encryption keys
 export async function updateUserKeys(payload: UpdateKeyPayload): Promise<UpdateKeyResponse> {
   try {
+    // Save the public key to local storage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userPublicKey', payload.public_key);
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
     // NEXT_PUBLIC_API_URL already contains /api/v1/web, so we only need to append the endpoint name
     const fullUrl = `${baseUrl.replace(/\/$/, '')}/update-key`;

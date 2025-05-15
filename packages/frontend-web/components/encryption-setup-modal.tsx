@@ -116,8 +116,23 @@ export function EncryptionSetupModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onCancel?.()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={onCancel ? () => onCancel?.() : undefined}
+      onEscapeKeyDown={(e) => {
+        // Prevent closing with Escape key if onCancel is not provided
+        if (!onCancel) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <DialogContent 
+        className="sm:max-w-md" 
+        onInteractOutside={(e) => {
+          // Prevent closing by clicking outside
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" />

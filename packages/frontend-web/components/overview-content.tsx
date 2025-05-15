@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
 import { useUser } from "@stackframe/stack";
-import { useEffect } from "react";
-import { loadInitialData } from "../libs/getWorkspace";
+import { useEffect, useState } from "react";
+import { loadInitialData, fetchProjects } from "../libs/getWorkspace";
 import { RootState, AppDispatch } from "../libs/Redux/store";
 import { useSelector, useDispatch } from "react-redux";
 import { setWorkspaceData } from "../libs/Redux/workspaceSlice";
-import { Workspace } from "../libs/Redux/workspaceSlice";
+import { Workspace, Project } from "../libs/Redux/workspaceSlice";
 import { log } from "node:console";
+import { ProjectDialog } from "./project-dialog";
 
 export function OverviewContent() {
   const user = useUser();
@@ -21,6 +22,10 @@ export function OverviewContent() {
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  
+  // State to control project dialog visibility
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [forceCreateProject, setForceCreateProject] = useState(false);
   
   // Get selected and default project for display
   const selectedProject = useSelector((state: RootState) =>
@@ -63,19 +68,47 @@ export function OverviewContent() {
 
       const initialData: Workspace[] | null = await loadInitialData(accessToken);
       if (initialData && Array.isArray(initialData) && initialData.length > 0) {
-        console.log("✅ Dispatching initial data to Redux:", initialData);
         const defaultWorkspace = initialData[0];
-        const defaultProject = defaultWorkspace.projects.find((p) => p.is_default);
-        dispatch(
-          setWorkspaceData({
-            workspaces: initialData,
-            selectedWorkspaceId: defaultWorkspace.workspaceId,
-            // Persist selectedProjectId if set, otherwise use default or first project
-            selectedProjectId: selectedProjectId || defaultProject?.project_id || initialData[0].projects[0]?.project_id || null,
-          })
-        );
+        const projectsData = await fetchProjects(defaultWorkspace.workspaceId, accessToken);
+        
+        if (projectsData && projectsData.projects && projectsData.projects.length > 0) {
+          setForceCreateProject(false); // Projects exist, no need to force creation
+          const updatedInitialData = initialData.map(workspace => {
+            if (workspace.workspaceId === defaultWorkspace.workspaceId) {
+              return { ...workspace, projects: projectsData.projects };
+            }
+            return workspace;
+          });
+          
+          console.log("✅ Dispatching initial data to Redux with new projects:", updatedInitialData);
+          const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
+          
+          dispatch(
+            setWorkspaceData({
+              workspaces: updatedInitialData,
+              selectedWorkspaceId: defaultWorkspace.workspaceId,
+              selectedProjectId: selectedProjectId || defaultProj?.project_id || projectsData.projects[0]?.project_id || null,
+            })
+          );
+        } else {
+          // No projects found
+          console.log("No projects found for the workspace, showing project creation dialog (forced)");
+          dispatch(
+            setWorkspaceData({
+              workspaces: initialData.map(workspace => ({
+                ...workspace,
+                projects: [], // Ensure projects array is empty
+              })),
+              selectedWorkspaceId: defaultWorkspace.workspaceId,
+              selectedProjectId: null,
+            })
+          );
+          setForceCreateProject(true);
+          setShowProjectDialog(true);
+        }
       } else {
         console.error("❌ Failed to load initial data or no workspaces available.");
+        setForceCreateProject(false); // Ensure force create is false if there's an error or no workspaces
         dispatch(
           setWorkspaceData({
             workspaces: [],
@@ -83,11 +116,12 @@ export function OverviewContent() {
             selectedProjectId: null,
           })
         );
+        // Consider if you need to show a generic "create workspace/project" dialog here if initialData itself is empty
       }
     };
 
     fetchData();
-  }, [accessToken, dispatch, selectedProjectId]);
+  }, [accessToken, dispatch, selectedProjectId, user]); // Added user to dependency array for fetchAuthDetails sync
 
   // Calculate totals from Redux state
   const totalProjects = workspaces?.reduce((sum, ws) => sum + ws.projects.length, 0) || 0;
@@ -480,6 +514,19 @@ export function OverviewContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add project dialog at the end of the component */}
+      {showProjectDialog && (
+        <ProjectDialog 
+          onClose={() => {
+            setShowProjectDialog(false);
+            // If projects are still zero and it was a forced create, user might have tried to escape.
+            // Re-fetching or checking project count here could re-trigger, but for now,
+            // the dialog's internal logic will prevent closing if forceCreate is true.
+          }} 
+          forceCreate={forceCreateProject} 
+        />
+      )}
     </div>
   );
 }

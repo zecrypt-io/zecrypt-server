@@ -322,7 +322,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       <EncryptionSetupModal
         isOpen={showKeySetupModal}
         onComplete={handleKeySetupComplete}
-        onCancel={proceedToDashboard} // Allow skipping in case of issues
       />
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,9 +31,12 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { addProject, updateProject, deleteProject, setSelectedProject } from "@/libs/Redux/workspaceSlice";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
+import { generateEncryptedProjectKey } from "@/libs/encryption";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProjectDialogProps {
   onClose: () => void;
+  forceCreate?: boolean;
 }
 
 const defaultFeatures = {
@@ -46,7 +49,7 @@ const defaultFeatures = {
   software_license: { enabled: false, is_client_side_encryption: false },
 };
 
-export function ProjectDialog({ onClose }: ProjectDialogProps) {
+export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogProps) {
   const [activeTab, setActiveTab] = useState("select");
   const [localSelectedProject, setLocalSelectedProject] = useState<string | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -75,6 +78,20 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
         })) || []
     : [];
 
+  useEffect(() => {
+    if (forceCreate && projects.length === 0) {
+      setActiveTab("select");
+      setShowCreateDialog(true);
+    }
+  }, [forceCreate, projects]);
+
+  const handleDialogClose = () => {
+    if (forceCreate && projects.length === 0) {
+      return;
+    }
+    onClose();
+  };
+
   const handleSelectProject = (projectId: string) => {
     dispatch(setSelectedProject({ projectId }));
     setLocalSelectedProject(projectId);
@@ -87,7 +104,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
   };
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Projects</DialogTitle>
@@ -95,10 +112,12 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="select">Select Project</TabsTrigger>
-            <TabsTrigger value="manage">Manage Projects</TabsTrigger>
-          </TabsList>
+          {!(forceCreate && projects.length === 0) && (
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="select">Select Project</TabsTrigger>
+              <TabsTrigger value="manage">Manage Projects</TabsTrigger>
+            </TabsList>
+          )}
 
           <TabsContent value="select" className="space-y-4 py-4">
             <Button
@@ -209,7 +228,10 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
       {showCreateDialog && (
         <CreateProjectDialog
           workspaceId={selectedWorkspaceId || ""}
-          onClose={() => setShowCreateDialog(false)}
+          onClose={() => {
+            setShowCreateDialog(false);
+          }}
+          forceCreate={forceCreate && projects.length === 0}
         />
       )}
     </Dialog>
@@ -443,7 +465,7 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
                     onCheckedChange={() => handleFeatureToggle(option.key)}
                   />
                   <Label htmlFor={`feature-${option.key}`} className="cursor-pointer">
-                    {translate(option.label.toLowerCase(), "dashboard")}
+                    {translate(option.label.toLowerCase().replace(/ /g, '_').replace(/-/g, '_'), "dashboard")}
                   </Label>
                 </div>
               ))}
@@ -479,20 +501,23 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 interface CreateProjectDialogProps {
   workspaceId: string;
   onClose: () => void;
+  forceCreate?: boolean;
 }
 
-function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps) {
+function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#10b981");
   const [isDefault, setIsDefault] = useState(false);
-  const [features, setFeatures] = useState(defaultFeatures);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [features, setFeatures] = useState({ ...defaultFeatures });
 
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  const { translate } = useTranslator();
+  const { toast } = useToast();
 
   const colors = [
     { name: "Indigo", value: "#4f46e5" },
@@ -512,8 +537,6 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     { key: "card", label: "Cards" },
     { key: "software_license", label: "Software Licenses" },
   ] as const;
-
-  const { translate } = useTranslator();
 
   type FeatureKey = typeof featureOptions[number]["key"];
 
@@ -544,16 +567,35 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     setIsLoading(true);
     setError(null);
 
-    const trimmedDescription = description.trim();
-    const payload = {
-      name: name.trim(),
-      description: trimmedDescription,
-      is_default: isDefault,
-      color,
-      features,
-    };
-
     try {
+      // Get the user's public key from localStorage instead of API
+      const userPublicKey = localStorage.getItem('userPublicKey');
+      
+      if (!userPublicKey) {
+        throw new Error("User's public key not available in localStorage");
+      }
+      
+      // Ensure the public key is in PEM format with proper headers and footers
+      const formattedPublicKey = userPublicKey.includes("-----BEGIN PUBLIC KEY-----") 
+        ? userPublicKey 
+        : `-----BEGIN PUBLIC KEY-----\n${userPublicKey}\n-----END PUBLIC KEY-----`;
+      
+      // Generate an AES key and encrypt it with the user's public key
+      const { aesKey, encryptedKey } = await generateEncryptedProjectKey(formattedPublicKey);
+      
+      // Store the plain AES key in session storage for current use
+      sessionStorage.setItem("projectKey", aesKey);
+      
+      const trimmedDescription = description.trim();
+      const payload = {
+        name: name.trim(),
+        key: encryptedKey, // Send the encrypted AES key
+        description: trimmedDescription,
+        is_default: isDefault,
+        color,
+        features,
+      };
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${workspaceId}/projects`, {
         method: "POST",
         headers: {
@@ -632,8 +674,20 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     }
   };
 
+  const handleDialogClose = () => {
+    if (forceCreate) {
+      toast({
+        title: translate("project_required_title", "dashboard"),
+        description: translate("project_required_description", "dashboard"),
+        variant: "default",
+      });
+      return;
+    }
+    onClose();
+  };
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
@@ -696,7 +750,7 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
                     onCheckedChange={() => handleFeatureToggle(option.key)}
                   />
                   <Label htmlFor={`feature-${option.key}`} className="cursor-pointer">
-                    {translate(option.label.toLowerCase(), "dashboard")}
+                    {translate(option.label.toLowerCase().replace(/ /g, '_').replace(/-/g, '_'), "dashboard")}
                   </Label>
                 </div>
               ))}
@@ -717,9 +771,11 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {translate("cancel", "dashboard")}
-          </Button>
+          { !forceCreate && (
+            <Button variant="outline" onClick={handleDialogClose} disabled={isLoading}>
+              {translate("cancel", "dashboard")}
+            </Button>
+          )}
           <Button onClick={handleCreate} disabled={isLoading || !name.trim()}>
             {isLoading ? translate("creating", "dashboard") : translate("create_project", "dashboard")}
           </Button>
