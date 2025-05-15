@@ -103,9 +103,47 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
     setShowEditDialog(true);
   };
 
+  const { translate } = useTranslator();
+  const { toast } = useToast();
+
   return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog 
+      open={true} 
+      onOpenChange={(open) => { 
+        if (!open && (forceCreate && projects.length === 0)) {
+          toast({
+            title: translate("project_required_title", "dashboard"),
+            description: translate("project_required_description", "dashboard"),
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!open) handleDialogClose(); 
+      }}
+    >
+      <DialogContent 
+        onPointerDownOutside={(e) => {
+          if (forceCreate && projects.length === 0) {
+            e.preventDefault();
+            toast({
+              title: translate("project_required_title", "dashboard"),
+              description: translate("project_required_description", "dashboard"),
+              variant: "destructive",
+            });
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (forceCreate && projects.length === 0) {
+            e.preventDefault();
+            toast({
+              title: translate("project_required_title", "dashboard"),
+              description: translate("project_required_description", "dashboard"),
+              variant: "destructive",
+            });
+          }
+        }}
+        className="sm:max-w-[600px]"
+      >
         <DialogHeader>
           <DialogTitle>Projects</DialogTitle>
           <DialogDescription>Select a project or create a new one</DialogDescription>
@@ -688,7 +726,28 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
-      <DialogContent>
+      <DialogContent
+        onPointerDownOutside={(e) => {
+          if (forceCreate) {
+            e.preventDefault();
+            toast({
+              title: translate("project_required_title", "dashboard"),
+              description: translate("project_required_description", "dashboard"),
+              variant: "destructive",
+            });
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (forceCreate) {
+            e.preventDefault();
+            toast({
+              title: translate("project_required_title", "dashboard"),
+              description: translate("project_required_description", "dashboard"),
+              variant: "destructive",
+            });
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
           <DialogDescription>{translate("add_new_project_description", "dashboard")}</DialogDescription>
