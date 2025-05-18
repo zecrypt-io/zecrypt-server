@@ -33,6 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
 import { generateEncryptedProjectKey } from "@/libs/encryption";
 import { useToast } from "@/hooks/use-toast";
+import { getUserPublicKey } from "@/libs/indexed-db-utils";
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -553,6 +554,7 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
 
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+  const userId = useSelector((state: RootState) => state.user.userData?.user_id);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const { translate } = useTranslator();
   const { toast } = useToast();
@@ -601,16 +603,20 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       setError("Project name is required.");
       return;
     }
+    if (!userId) {
+      setError("User ID not available");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Get the user's public key from localStorage instead of API
-      const userPublicKey = localStorage.getItem('userPublicKey');
+      // Get the user's public key from IndexedDB
+      const userPublicKey = await getUserPublicKey(userId);
       
       if (!userPublicKey) {
-        throw new Error("User's public key not available in localStorage");
+        throw new Error("User's public key not available in IndexedDB");
       }
       
       // Ensure the public key is in PEM format with proper headers and footers

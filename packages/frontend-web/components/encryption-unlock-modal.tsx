@@ -21,6 +21,9 @@ import {
   extractEncryptedComponents
 } from "@/libs/crypto-utils";
 import { toast } from "@/components/ui/use-toast";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/Redux/store";
+import { updateUserMasterPassword } from "@/libs/indexed-db-utils";
 
 interface EncryptionUnlockModalProps {
   isOpen: boolean;
@@ -44,9 +47,17 @@ export function EncryptionUnlockModal({
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Get user ID from Redux store
+  const userId = useSelector((state: RootState) => state.user.userData?.user_id);
+  
   const handleUnlock = async () => {
     if (!password) {
       setError(tAuth("enter_encryption_password"));
+      return;
+    }
+    
+    if (!userId) {
+      setError("User ID not available");
       return;
     }
     
@@ -77,6 +88,16 @@ export function EncryptionUnlockModal({
       // 5. Import the public and private keys
       const publicKeyObj = await importKeyFromString(publicKey, 'public', 'encrypt');
       const privateKeyObj = await importKeyFromString(privateKeyString, 'private', 'decrypt');
+      
+      // 6. Store master password in IndexedDB
+      try {
+        console.log('Storing master password for user:', userId);
+        const storeResult = await updateUserMasterPassword(userId, password);
+        console.log('Master password stored successfully:', storeResult);
+      } catch (storeError) {
+        console.error('Failed to store master password:', storeError);
+        // Continue execution - we don't want to block unlocking if this fails
+      }
       
       // Success - invoke the callback with both keys
       onUnlock(privateKeyObj, publicKeyObj);

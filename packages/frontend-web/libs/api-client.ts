@@ -3,6 +3,7 @@ import { store } from './Redux/store';
 import { UserState } from './Redux/userSlice';
 import { API_ROUTES } from '@/constants/routes';
 import axiosInstance from './Middleware/axiosInstace';
+import { storeUserEncryptionKeys, getUserEncryptionKeys } from './indexed-db-utils';
 
 // Define the response structure for get-key
 export interface KeyData {
@@ -47,12 +48,36 @@ export async function getUserKeys(): Promise<GetKeyResponse> {
 }
 
 // API call to update/set user's encryption keys
-export async function updateUserKeys(payload: UpdateKeyPayload): Promise<UpdateKeyResponse> {
+export async function updateUserKeys(payload: UpdateKeyPayload, masterPassword?: string): Promise<UpdateKeyResponse> {
   try {
-    // Save the public key to local storage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userPublicKey', payload.public_key);
+    // Get user ID from Redux store
+    const state = store.getState();
+    const userId = state.user.userData?.user_id;
+    
+    if (!userId) {
+      throw new Error('User ID not available in store');
     }
+    
+    // If no masterPassword is provided, check if there's one already in IndexedDB
+    if (!masterPassword) {
+      try {
+        const existingKeys = await getUserEncryptionKeys(userId);
+        masterPassword = existingKeys.masterPassword || undefined;
+        console.log('Retrieved existing master password:', masterPassword ? 'Found' : 'Not found');
+      } catch (err) {
+        console.log('No existing master password found');
+      }
+    } else {
+      console.log('Using provided master password for storage');
+    }
+    
+    // Store keys in IndexedDB
+    await storeUserEncryptionKeys(
+      userId,
+      payload.public_key,
+      payload.private_key,
+      masterPassword
+    );
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
     // NEXT_PUBLIC_API_URL already contains /api/v1/web, so we only need to append the endpoint name

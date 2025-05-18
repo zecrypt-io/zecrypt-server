@@ -24,6 +24,9 @@ import {
 } from "@/libs/crypto-utils";
 import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/Redux/store";
+import { storeUserEncryptionKeys, getUserEncryptionKeys } from "@/libs/indexed-db-utils";
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;
@@ -45,6 +48,9 @@ export function EncryptionSetupModal({
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   
+  // Get user ID from Redux store
+  const userId = useSelector((state: RootState) => state.user.userData?.user_id);
+  
   const handleSubmit = async () => {
     // Validate password
     if (password.length < 8) {
@@ -54,6 +60,11 @@ export function EncryptionSetupModal({
     
     if (password !== confirmPassword) {
       setError(tAuth("passwords_dont_match"));
+      return;
+    }
+    
+    if (!userId) {
+      setError("User ID not available");
       return;
     }
     
@@ -84,11 +95,32 @@ export function EncryptionSetupModal({
         encryptedPrivateKey
       );
       
-      // 5. Send to backend and check response
+      // 5. Store keys and master password in IndexedDB
+      console.log('Storing encryption keys and master password in IndexedDB for user:', userId);
+      const storeResult = await storeUserEncryptionKeys(
+        userId,
+        publicKeyString,
+        combinedEncryptedPrivateKey,
+        password
+      );
+      console.log('Storage result:', storeResult);
+      
+      // Verify the master password was stored
+      try {
+        const storedKeys = await getUserEncryptionKeys(userId);
+        console.log('Verification of stored master password:', {
+          passwordStored: !!storedKeys.masterPassword,
+          masterPasswordValue: storedKeys.masterPassword
+        });
+      } catch (verifyError) {
+        console.error('Failed to verify stored master password:', verifyError);
+      }
+      
+      // 6. Send to backend and check response
       const response = await updateUserKeys({
         public_key: publicKeyString,
         private_key: combinedEncryptedPrivateKey,
-      });
+      }, password);
 
       if (response && response.status_code === 200) {
         toast({
@@ -119,18 +151,18 @@ export function EncryptionSetupModal({
     <Dialog 
       open={isOpen} 
       onOpenChange={onCancel ? () => onCancel?.() : undefined}
-      onEscapeKeyDown={(e) => {
-        // Prevent closing with Escape key if onCancel is not provided
-        if (!onCancel) {
-          e.preventDefault();
-        }
-      }}
     >
       <DialogContent 
         className="sm:max-w-md" 
         onInteractOutside={(e) => {
           // Prevent closing by clicking outside
           e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing with Escape key if onCancel is not provided
+          if (!onCancel) {
+            e.preventDefault();
+          }
         }}
       >
         <DialogHeader>
@@ -144,13 +176,6 @@ export function EncryptionSetupModal({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {tAuth("encryption_password_warning")}
-            </AlertDescription>
-          </Alert>
-          
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
               {tAuth("encryption_password")}
@@ -161,7 +186,7 @@ export function EncryptionSetupModal({
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={tAuth("enter_strong_password")}
+                placeholder={tAuth("enter_encryption_password")}
                 className="pr-10"
               />
               <Button
@@ -174,6 +199,9 @@ export function EncryptionSetupModal({
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              {tAuth("password_minimum_chars")}
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -186,7 +214,7 @@ export function EncryptionSetupModal({
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={tAuth("confirm_password")}
+                placeholder={tAuth("confirm_encryption_password_placeholder")}
                 className="pr-10"
               />
               <Button
@@ -201,13 +229,16 @@ export function EncryptionSetupModal({
             </div>
           </div>
           
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="text-amber-800 text-sm">
+              {tAuth("encryption_password_warning")}
+            </AlertDescription>
+          </Alert>
+          
           {error && (
             <p className="text-sm font-medium text-destructive">{error}</p>
           )}
-          
-          <p className="text-sm text-muted-foreground">
-            {tAuth("encryption_password_requirements")}
-          </p>
         </div>
         
         <DialogFooter>
