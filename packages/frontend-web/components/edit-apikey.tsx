@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import axiosInstance from "../libs/Middleware/axiosInstace";
-import { hashData } from "../libs/crypto";
+import axiosInstance from "@/libs/Middleware/axiosInstace";
+import { hashData } from "@/libs/crypto";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ApiKey {
   doc_id: string;
@@ -29,11 +31,12 @@ interface ApiKey {
 
 interface EditApiKeyProps {
   apiKey: ApiKey;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onApiKeyUpdated: () => void;
 }
 
-export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps) {
+export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: EditApiKeyProps) {
   const { translate } = useTranslator();
   const [title, setTitle] = useState(apiKey.title);
   const [data, setData] = useState(apiKey.data);
@@ -46,9 +49,20 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
 
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
+
+  useEffect(() => {
+    if (apiKey) {
+      setTitle(apiKey.title);
+      setData(apiKey.data);
+      setNotes(apiKey.notes || "");
+      setEnv(apiKey.env);
+      setTags(apiKey.tags || []);
+      setError("");
+    }
+  }, [apiKey]);
 
   const addTag = (tag: string) => {
     const normalizedTag = tag.toLowerCase().trim();
@@ -64,7 +78,7 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
 
   const handleSubmit = async () => {
     if (!title) {
-      setError(translate("please_fill_all_required_fields", "api_keys"));
+      setError(translate("please_fill_all_required_fields", "api_keys", { default: "Please fill all required fields" }));
       return;
     }
 
@@ -73,7 +87,7 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
         selectedWorkspaceId,
         selectedProjectId,
       });
-      setError(translate("no_project_selected", "api_keys"));
+      setError(translate("no_project_selected", "api_keys", { default: "No project selected" }));
       return;
     }
 
@@ -100,24 +114,24 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
 
       if (response.status === 200 || (response.data && response.data.status_code === 200)) {
         onApiKeyUpdated();
-        onClose();
+        onOpenChange(false);
         toast({
-          title: translate("api_key_updated_successfully", "api_keys"),
-          description: translate("api_key_updated_description", "api_keys"),
+          title: translate("api_key_updated_successfully", "api_keys", { default: "API key updated successfully" }),
+          description: translate("api_key_updated_description", "api_keys", { default: "The API key has been updated." }),
         });
       } else {
-        throw new Error(response.data?.message || translate("failed_to_update_api_key", "api_keys"));
+        throw new Error(response.data?.message || translate("failed_to_update_api_key", "api_keys", { default: "Failed to update API key" }));
       }
     } catch (error: any) {
       console.error("Error updating API key:", error);
       if (error.response?.status === 400 && error.response.data?.message === "API key already exists") {
-        setError(translate("api_key_already_exists", "api_keys"));
+        setError(translate("api_key_already_exists", "api_keys", { default: "API key already exists" }));
       } else if (error.response?.status === 422) {
-        setError(translate("invalid_input_data", "api_keys"));
+        setError(translate("invalid_input_data", "api_keys", { default: "Invalid input data" }));
       } else if (error.response?.status === 404) {
-        setError(translate("api_key_not_found", "api_keys"));
+        setError(translate("api_key_not_found", "api_keys", { default: "API key not found" }));
       } else {
-        setError(error.response?.data?.message || translate("failed_to_update_api_key", "api_keys"));
+        setError(error.response?.data?.message || translate("failed_to_update_api_key", "api_keys", { default: "Failed to update API key" }));
       }
     } finally {
       setIsSubmitting(false);
@@ -125,44 +139,44 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
-        <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold">{translate("edit_api_key", "api_keys")}</h2>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{translate("edit_api_key", "api_keys", { default: "Edit API Key" })}</DialogTitle>
+          <DialogDescription>
+            {translate("edit_api_key_description", "api_keys", { default: "Update your API key details" })}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
           {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+            <div className="p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <p className="text-sm">{error}</p>
             </div>
           )}
-        </div>
-
-        <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("api_key_name", "api_keys")} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <Input
-                placeholder={translate("enter_api_key_name", "api_keys")}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="pr-8"
-                required
-              />
-              <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            </div>
+            <Label htmlFor="title">
+              {translate("api_key_name", "api_keys", { default: "API Key Name" })}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="title"
+              placeholder={translate("enter_api_key_name", "api_keys", { default: "Enter API key name" })}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={error && !title ? "border-red-500" : ""}
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("api_key", "api_keys")}</label>
+            <Label htmlFor="data">{translate("api_key", "api_keys", { default: "API Key" })}</Label>
             <div className="relative">
               <Input
+                id="data"
                 type={showApiKey ? "text" : "password"}
-                placeholder={translate("enter_api_key", "api_keys")}
+                placeholder={translate("enter_api_key", "api_keys", { default: "Enter API key" })}
                 value={data}
                 onChange={(e) => setData(e.target.value)}
-                className="pr-8"
               />
               <Button
                 variant="ghost"
@@ -177,59 +191,59 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("notes", "api_keys")}</label>
+            <Label htmlFor="notes">{translate("notes", "api_keys", { default: "Notes" })}</Label>
             <Input
-              placeholder={translate("enter_notes", "api_keys")}
+              id="notes"
+              placeholder={translate("enter_notes", "api_keys", { default: "Enter notes" })}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("environment", "api_keys")} <span className="text-red-500">*</span>
-            </label>
+            <Label htmlFor="env">
+              {translate("environment", "api_keys", { default: "Environment" })}
+              <span className="text-red-500">*</span>
+            </Label>
             <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT")}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={translate("select_environment", "api_keys")} />
+                <SelectValue placeholder={translate("select_environment", "api_keys", { default: "Select environment" })} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Development">{translate("development", "api_keys")}</SelectItem>
-                <SelectItem value="Staging">{translate("staging", "api_keys")}</SelectItem>
-                <SelectItem value="Production">{translate("production", "api_keys")}</SelectItem>
-                <SelectItem value="Testing">{translate("testing", "api_keys")}</SelectItem>
-                <SelectItem value="Local">{translate("local", "api_keys")}</SelectItem>
-                <SelectItem value="UAT">{translate("uat", "api_keys")}</SelectItem>
+                <SelectItem value="Development">{translate("development", "api_keys", { default: "Development" })}</SelectItem>
+                <SelectItem value="Staging">{translate("staging", "api_keys", { default: "Staging" })}</SelectItem>
+                <SelectItem value="Production">{translate("production", "api_keys", { default: "Production" })}</SelectItem>
+                <SelectItem value="Testing">{translate("testing", "api_keys", { default: "Testing" })}</SelectItem>
+                <SelectItem value="Local">{translate("local", "api_keys", { default: "Local" })}</SelectItem>
+                <SelectItem value="UAT">{translate("uat", "api_keys", { default: "UAT" })}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("tags", "api_keys")}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
-                </Badge>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
+            <Label htmlFor="tags">{translate("tags", "api_keys", { default: "Tags" })}</Label>
+            <div className="flex gap-2">
               <Input
-                placeholder={translate("add_a_tag", "api_keys")}
+                id="tags"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag(newTag);
-                  }
-                }}
+                placeholder={translate("add_a_tag", "api_keys", { default: "Add a tag" })}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag(newTag))}
               />
-              <Button type="button" variant="outline" size="icon" onClick={() => addTag(newTag)}>
-                <Plus className="h-4 w-4" />
+              <Button type="button" onClick={() => addTag(newTag)}>
+                {translate("add", "api_keys", { default: "Add" })}
               </Button>
             </div>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    {tag}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-1 mt-2">
               {predefinedTags.map((tag) => (
                 <Badge
@@ -243,22 +257,18 @@ export function EditApiKey({ apiKey, onClose, onApiKeyUpdated }: EditApiKeyProps
               ))}
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-2 pt-4">
-            <Button variant="outline" className="w-full" onClick={onClose} disabled={isSubmitting}>
-              {translate("cancel", "api_keys")}
-            </Button>
-            <Button
-              variant="default"
-              className="w-full bg-primary text-primary-foreground"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? `${translate("updating", "api_keys")}...` : translate("update_api_key", "api_keys")}
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            {translate("cancel", "api_keys", { default: "Cancel" })}
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting
+              ? translate("updating", "api_keys", { default: "Updating..." })
+              : translate("update", "api_keys", { default: "Update" })}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

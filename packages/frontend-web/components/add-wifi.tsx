@@ -5,20 +5,23 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { hashData } from "../libs/crypto";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface AddWifiProps {
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onWifiAdded: () => void;
 }
 
-export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
+export function AddWifi({ open, onOpenChange, onWifiAdded }: AddWifiProps) {
   const { translate } = useTranslator();
   const [title, setTitle] = useState("");
   const [data, setData] = useState("");
@@ -85,11 +88,20 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
 
       if (response.status === 201 || (response.data && response.data.status_code === 201)) {
         onWifiAdded();
-        onClose();
+        onOpenChange(false);
         toast({
           title: translate("wifi_added_successfully", "wifi"),
           description: translate("wifi_added_description", "wifi"),
         });
+
+        // Reset form
+        setTitle("");
+        setData("");
+        setNotes("");
+        setSecurityType("wpa2");
+        setTags([]);
+        setNewTag("");
+        setError("");
       } else {
         throw new Error(response.data?.message || translate("failed_to_add_wifi", "wifi"));
       }
@@ -108,47 +120,48 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg relative">
-        <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold">{translate("add_new_wifi", "wifi")}</h2>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{translate("add_new_wifi", "wifi")}</DialogTitle>
+          <DialogDescription>
+            {translate("add_new_wifi_description", "wifi", { default: "Enter your Wi-Fi network details below" })}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
           {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+            <div className="p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <p className="text-sm">{error}</p>
             </div>
           )}
-        </div>
-
-        <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("ssid", "wifi")} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <Input
-                placeholder={translate("enter_ssid", "wifi")}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="pr-8"
-                required
-              />
-              <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            </div>
+            <Label htmlFor="title">
+              {translate("ssid", "wifi")}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="title"
+              placeholder={translate("enter_ssid", "wifi")}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={error && !title ? "border-red-500" : ""}
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("password", "wifi")} <span className="text-red-500">*</span>
-            </label>
+            <Label htmlFor="data">
+              {translate("password", "wifi")}
+              <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
+                id="data"
                 type={showPassword ? "text" : "password"}
                 placeholder={translate("enter_password", "wifi")}
                 value={data}
                 onChange={(e) => setData(e.target.value)}
-                className="pr-8"
-                required
+                className={error && !data ? "border-red-500" : ""}
               />
               <Button
                 variant="ghost"
@@ -163,7 +176,7 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("security_type", "wifi")}</label>
+            <Label htmlFor="securityType">{translate("security_type", "wifi")}</Label>
             <Select value={securityType} onValueChange={setSecurityType}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={translate("select_security_type", "wifi")} />
@@ -178,8 +191,9 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("notes", "wifi")}</label>
+            <Label htmlFor="notes">{translate("notes", "wifi")}</Label>
             <Input
+              id="notes"
               placeholder={translate("enter_notes", "wifi")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -187,31 +201,29 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("tags", "wifi")}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
-                </Badge>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
+            <Label htmlFor="tags">{translate("tags", "wifi")}</Label>
+            <div className="flex gap-2">
               <Input
-                placeholder={translate("add_a_tag", "wifi")}
+                id="tags"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag(newTag);
-                  }
-                }}
+                placeholder={translate("add_a_tag", "wifi")}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag(newTag))}
               />
-              <Button type="button" variant="outline" size="icon" onClick={() => addTag(newTag)}>
-                <Plus className="h-4 w-4" />
+              <Button type="button" onClick={() => addTag(newTag)}>
+                {translate("add", "wifi", { default: "Add" })}
               </Button>
             </div>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    {tag}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-1 mt-2">
               {predefinedTags.map((tag) => (
                 <Badge
@@ -225,22 +237,16 @@ export function AddWifi({ onClose, onWifiAdded }: AddWifiProps) {
               ))}
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-2 pt-4">
-            <Button variant="outline" className="w-full" onClick={onClose} disabled={isSubmitting}>
-              {translate("cancel", "wifi")}
-            </Button>
-            <Button
-              variant="default"
-              className="w-full bg-primary text-primary-foreground"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? `${translate("adding", "wifi")}...` : translate("add_wifi", "wifi")}
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            {translate("cancel", "wifi")}
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? translate("adding", "wifi") : translate("add_wifi", "wifi")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, X, Plus, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import axiosInstance from "../libs/Middleware/axiosInstace";
-import { hashData } from "../libs/crypto";
+import axiosInstance from "@/libs/Middleware/axiosInstace";
+import { hashData } from "@/libs/crypto";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
   doc_id: string;
@@ -32,7 +34,8 @@ interface WalletPassphrase {
 
 interface EditPassphraseDialogProps {
   passphrase: WalletPassphrase;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onPassphraseUpdated: () => void;
   existingPassphrases: WalletPassphrase[];
 }
@@ -49,7 +52,13 @@ const walletTypes = [
   "Other",
 ];
 
-export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated, existingPassphrases }: EditPassphraseDialogProps) {
+export function EditPassphraseDialog({
+  passphrase,
+  open,
+  onOpenChange,
+  onPassphraseUpdated,
+  existingPassphrases,
+}: EditPassphraseDialogProps) {
   const { translate } = useTranslator();
   const [title, setTitle] = useState(passphrase.title);
   const [data, setData] = useState(passphrase.data);
@@ -68,6 +77,20 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
 
   const predefinedTags = ["main", "trading", "defi", "staking"];
 
+  useEffect(() => {
+    if (passphrase) {
+      setTitle(passphrase.title);
+      setData(passphrase.data);
+      setNotes(passphrase.notes || "");
+      setWalletType(passphrase.wallet_type || "Bitcoin");
+      setTags(passphrase.tags || []);
+      setError("");
+      setPassphraseError(null);
+      setPassphraseExistsError(null);
+      setNameExistsError(null);
+    }
+  }, [passphrase]);
+
   const addTag = (tag: string) => {
     const normalizedTag = tag.toLowerCase().trim();
     if (normalizedTag && !tags.includes(normalizedTag)) {
@@ -83,12 +106,14 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
   const validatePassphrase = (passphrase: string) => {
     if (!passphrase.trim()) {
       setPassphraseError(null);
-      return true; // Passphrase is optional
+      return true; // Passphrase is optional on edit
     }
     const words = passphrase.trim().split(/\s+/);
     if (words.length !== 12) {
       setPassphraseError(
-        translate("passphrase_must_be_exactly_12_words", "wallet_passphrases").replace("{count}", words.length.toString())
+        translate("passphrase_must_be_exactly_12_words", "wallet_passphrases", {
+          default: "Passphrase must be exactly 12 words, you entered {count} words",
+        }).replace("{count}", words.length.toString())
       );
       return false;
     } else {
@@ -99,7 +124,9 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
 
   const checkIfNameExists = (name: string) => {
     if (!name.trim()) {
-      setNameExistsError(translate("please_fill_all_required_fields", "wallet_passphrases"));
+      setNameExistsError(translate("please_fill_all_required_fields", "wallet_passphrases", {
+        default: "Please fill all required fields",
+      }));
       return true;
     }
 
@@ -110,7 +137,9 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
     );
 
     if (exists) {
-      setNameExistsError(translate("wallet_phrase_already_exists", "wallet_passphrases"));
+      setNameExistsError(translate("wallet_phrase_already_exists", "wallet_passphrases", {
+        default: "Wallet phrase name already exists",
+      }));
       return true;
     } else {
       setNameExistsError(null);
@@ -131,7 +160,9 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
     );
 
     if (exists) {
-      setPassphraseExistsError(translate("wallet_phrase_already_exists", "wallet_passphrases"));
+      setPassphraseExistsError(translate("wallet_phrase_already_exists", "wallet_passphrases", {
+        default: "Wallet phrase already exists",
+      }));
       return true;
     } else {
       setPassphraseExistsError(null);
@@ -141,7 +172,9 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
 
   const handleSubmit = async () => {
     if (!title) {
-      setError(translate("please_fill_all_required_fields", "wallet_passphrases"));
+      setError(translate("please_fill_all_required_fields", "wallet_passphrases", {
+        default: "Please fill all required fields",
+      }));
       return;
     }
 
@@ -158,7 +191,7 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
         selectedWorkspaceId,
         selectedProjectId,
       });
-      setError(translate("no_project_selected", "wallet_passphrases"));
+      setError(translate("no_project_selected", "wallet_passphrases", { default: "No project selected" }));
       return;
     }
 
@@ -185,24 +218,36 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
 
       if (response.status === 200 || (response.data && response.data.status_code === 200)) {
         onPassphraseUpdated();
-        onClose();
+        onOpenChange(false);
         toast({
-          title: translate("passphrase_updated_successfully", "wallet_passphrases"),
-          description: translate("passphrase_updated_description", "wallet_passphrases"),
+          title: translate("passphrase_updated_successfully", "wallet_passphrases", {
+            default: "Passphrase updated successfully",
+          }),
+          description: translate("passphrase_updated_description", "wallet_passphrases", {
+            default: "The wallet passphrase has been updated.",
+          }),
         });
       } else {
-        throw new Error(response.data?.message || translate("failed_to_update_passphrase", "wallet_passphrases"));
+        throw new Error(
+          response.data?.message ||
+            translate("failed_to_update_passphrase", "wallet_passphrases", { default: "Failed to update passphrase" })
+        );
       }
     } catch (error: any) {
       console.error("Error updating passphrase:", error);
       if (error.response?.status === 400 && error.response.data?.message === "Wallet phrase already exists") {
-        setError(translate("wallet_phrase_already_exists", "wallet_passphrases"));
+        setError(translate("wallet_phrase_already_exists", "wallet_passphrases", {
+          default: "Wallet phrase already exists",
+        }));
       } else if (error.response?.status === 422) {
-        setError(translate("invalid_input_data", "wallet_passphrases"));
+        setError(translate("invalid_input_data", "wallet_passphrases", { default: "Invalid input data" }));
       } else if (error.response?.status === 404) {
-        setError(translate("passphrase_not_found", "wallet_passphrases"));
+        setError(translate("passphrase_not_found", "wallet_passphrases", { default: "Passphrase not found" }));
       } else {
-        setError(error.response?.data?.message || translate("failed_to_update_passphrase", "wallet_passphrases"));
+        setError(
+          error.response?.data?.message ||
+            translate("failed_to_update_passphrase", "wallet_passphrases", { default: "Failed to update passphrase" })
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -210,90 +255,89 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 border border-border shadow-lg">
-        <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold">{translate("edit_passphrase", "wallet_passphrases")}</h2>
-          {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{translate("edit_passphrase", "wallet_passphrases", { default: "Edit Passphrase" })}</DialogTitle>
+          <DialogDescription>
+            {translate("edit_passphrase_description", "wallet_passphrases", {
+              default: "Update your wallet passphrase details",
+            })}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          {(error || nameExistsError || passphraseError || passphraseExistsError) && (
+            <div className="p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <p className="text-sm">{error}</p>
+              <p className="text-sm">
+                {error || nameExistsError || passphraseError || passphraseExistsError}
+              </p>
             </div>
           )}
-        </div>
-
-        <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("name", "wallet_passphrases")} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <Input
-                placeholder={translate("enter_passphrase_name", "wallet_passphrases")}
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  checkIfNameExists(e.target.value);
-                }}
-                className={`pr-8 ${nameExistsError ? "border-destructive" : ""}`}
-                required
-              />
-              <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              {nameExistsError && (
-                <div className="flex items-center mt-1 text-xs text-destructive">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  {nameExistsError}
-                </div>
-              )}
-            </div>
+            <Label htmlFor="title">
+              {translate("name", "wallet_passphrases", { default: "Passphrase Name" })}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="title"
+              placeholder={translate("enter_passphrase_name", "wallet_passphrases", {
+                default: "Enter passphrase name",
+              })}
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                checkIfNameExists(e.target.value);
+              }}
+              className={nameExistsError || (error && !title) ? "border-red-500" : ""}
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("passphrase", "wallet_passphrases")}</label>
+            <Label htmlFor="data">{translate("passphrase", "wallet_passphrases", { default: "Passphrase" })}</Label>
             <Textarea
-              placeholder={translate("enter_wallet_recovery_phrase", "wallet_passphrases")}
+              id="data"
+              placeholder={translate("enter_wallet_recovery_phrase", "wallet_passphrases", {
+                default: "Enter wallet recovery phrase",
+              })}
               value={data}
               onChange={(e) => {
                 setData(e.target.value);
                 validatePassphrase(e.target.value);
                 checkIfPassphraseExists(e.target.value);
               }}
-              className={`font-mono ${passphraseError || passphraseExistsError ? "border-destructive" : ""}`}
+              className={`font-mono ${passphraseError || passphraseExistsError ? "border-red-500" : ""}`}
               rows={3}
             />
-            {passphraseError ? (
-              <div className="flex items-center mt-1 text-xs text-destructive">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {passphraseError}
-              </div>
-            ) : passphraseExistsError ? (
-              <div className="flex items-center mt-1 text-xs text-destructive">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {passphraseExistsError}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground mt-1">
-                {translate("passphrase_encryption_note", "wallet_passphrases")}
+            {!passphraseError && !passphraseExistsError && (
+              <p className="text-xs text-muted-foreground">
+                {translate("passphrase_encryption_note", "wallet_passphrases", {
+                  default: "The passphrase will be encrypted and securely stored.",
+                })}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("notes", "wallet_passphrases")}</label>
+            <Label htmlFor="notes">{translate("notes", "wallet_passphrases", { default: "Notes" })}</Label>
             <Input
-              placeholder={translate("enter_notes", "wallet_passphrases")}
+              id="notes"
+              placeholder={translate("enter_notes", "wallet_passphrases", { default: "Enter notes" })}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {translate("wallet_type", "wallet_passphrases")} <span className="text-red-500">*</span>
-            </label>
+            <Label htmlFor="walletType">
+              {translate("wallet_type", "wallet_passphrases", { default: "Wallet Type" })}
+              <span className="text-red-500">*</span>
+            </Label>
             <Select value={walletType} onValueChange={setWalletType}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={translate("select_wallet_type", "wallet_passphrases")} />
+                <SelectValue placeholder={translate("select_wallet_type", "wallet_passphrases", {
+                  default: "Select wallet type",
+                })} />
               </SelectTrigger>
               <SelectContent>
                 {walletTypes.map((type) => (
@@ -306,31 +350,29 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{translate("tags", "wallet_passphrases")}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
-                </Badge>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
+            <Label htmlFor="tags">{translate("tags", "wallet_passphrases", { default: "Tags" })}</Label>
+            <div className="flex gap-2">
               <Input
-                placeholder={translate("add_a_tag", "wallet_passphrases")}
+                id="tags"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag(newTag);
-                  }
-                }}
+                placeholder={translate("add_a_tag", "wallet_passphrases", { default: "Add a tag" })}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag(newTag))}
               />
-              <Button type="button" variant="outline" size="icon" onClick={() => addTag(newTag)}>
-                <Plus className="h-4 w-4" />
+              <Button type="button" onClick={() => addTag(newTag)}>
+                {translate("add", "wallet_passphrases", { default: "Add" })}
               </Button>
             </div>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    {tag}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-1 mt-2">
               {predefinedTags.map((tag) => (
                 <Badge
@@ -344,28 +386,18 @@ export function EditPassphraseDialog({ passphrase, onClose, onPassphraseUpdated,
               ))}
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-2 pt-4">
-            <Button variant="outline" className="w-full" onClick={onClose} disabled={isSubmitting}>
-              {translate("cancel", "wallet_passphrases")}
-            </Button>
-            <Button
-              variant="default"
-              className="w-full bg-primary text-primary-foreground"
-              onClick={handleSubmit}
-              disabled={
-                !title ||
-                passphraseError !== null ||
-                passphraseExistsError !== null ||
-                nameExistsError !== null ||
-                isSubmitting
-              }
-            >
-              {isSubmitting ? `${translate("updating", "wallet_passphrases")}...` : translate("update_passphrase", "wallet_passphrases")}
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            {translate("cancel", "wallet_passphrases", { default: "Cancel" })}
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting
+              ? translate("updating", "wallet_passphrases", { default: "Updating..." })
+              : translate("update_passphrase", "wallet_passphrases", { default: "Update" })}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
