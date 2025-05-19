@@ -6,10 +6,6 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 
-def id_generator(size=10, chars=string.ascii_uppercase + string.digits + string.digits):
-    return "".join(random.choice(chars) for _ in range(size))
-
-
 def response_helper(
     status_code: int,
     message: any,

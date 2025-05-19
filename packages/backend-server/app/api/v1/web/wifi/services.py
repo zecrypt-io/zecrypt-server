@@ -7,13 +7,7 @@ data_type = SECRET_TYPE_WIFI
 
 
 def get_wifi_details(db, doc_id):
-    return response_helper(
-        status_code=200,
-        message="Wifi details loaded successfully",
-        data=secrets_manager.find_one(
-            db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
-        ),
-    )
+    return response_helper(200, "Wifi details loaded successfully", data=secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}))
 
 
 def get_wifis(db, request):
@@ -24,12 +18,7 @@ def get_wifis(db, request):
 
     wifis = secrets_manager.find(db, query)
 
-    return response_helper(
-        status_code=200,
-        message="Wifi's loaded successfully",
-        data=wifis,
-        count=len(wifis),
-    )
+    return response_helper(200, "Wifi's loaded successfully", data=wifis, count=len(wifis))
 
 
 def add_wifi(request, user, payload, background_tasks):
@@ -49,9 +38,7 @@ def add_wifi(request, user, payload, background_tasks):
         query,
     )
     if wifi:
-        return response_helper(
-            status_code=400, message="Wifi details with same title already exists"
-        )
+        return response_helper(400, "Wifi details with same title already exists")
 
     payload.update(
         {
@@ -64,11 +51,7 @@ def add_wifi(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201,
-        message="Wifi added successfully",
-        data=payload,
-    )
+    return response_helper(201, "Wifi added successfully", data=payload)
 
 
 def update_wifi(request, user, payload, background_tasks):
@@ -94,9 +77,7 @@ def update_wifi(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(
-                status_code=400, message="Wifi details with same title already exists"
-            )
+            return response_helper(400, "Wifi details with same title already exists")
 
     # Update account
     secrets_manager.update_one(
@@ -105,10 +86,7 @@ def update_wifi(request, user, payload, background_tasks):
         {"$set": payload},
     )
 
-    return response_helper(
-        status_code=200,
-        message="Wifi details updated successfully",
-    )
+    return response_helper(200, "Wifi details updated successfully")
 
 
 def delete_wifi(request, user, background_tasks):
@@ -116,15 +94,8 @@ def delete_wifi(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Wifi details not found",
-        )
+        return response_helper(404, "Wifi details not found")
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(
-        status_code=200,
-        message="Wifi details deleted successfully",
-        data={},
-    )
+    return response_helper(200, "Wifi details deleted successfully", data={})

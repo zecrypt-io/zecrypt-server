@@ -7,13 +7,7 @@ data_type = SECRET_TYPE_EMAIL
 
 
 def get_email_details(db, doc_id):
-    return response_helper(
-        status_code=200,
-        message="Email details loaded successfully",
-        data=secrets_manager.find_one(
-            db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
-        ),
-    )
+    return response_helper(200, "Email details loaded successfully", data=secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}))
 
 
 def get_emails(db, request):
@@ -24,12 +18,7 @@ def get_emails(db, request):
 
     emails = secrets_manager.find(db, query)
 
-    return response_helper(
-        status_code=200,
-        message="Emails loaded successfully",
-        data=emails,
-        count=len(emails),
-    )
+    return response_helper(200, "Emails loaded successfully", data=emails, count=len(emails))
 
 
 def add_email(request, user, payload, background_tasks):
@@ -49,7 +38,7 @@ def add_email(request, user, payload, background_tasks):
         query,
     )
     if email:
-        return response_helper(status_code=400, message="Email already exists")
+        return response_helper(400, "Email already exists")
 
     payload.update(
         {
@@ -62,11 +51,7 @@ def add_email(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201,
-        message="Email added successfully",
-        data=payload,
-    )
+    return response_helper(201, "Email added successfully", data=payload)
 
 
 def update_email(request, user, payload, background_tasks):
@@ -92,7 +77,7 @@ def update_email(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="Email already exists")
+            return response_helper(400, "Email already exists")
 
     # Update account
     secrets_manager.update_one(
@@ -101,10 +86,7 @@ def update_email(request, user, payload, background_tasks):
         {"$set": payload},
     )
 
-    return response_helper(
-        status_code=200,
-        message="Email updated successfully",
-    )
+    return response_helper(200, "Email updated successfully")
 
 
 def delete_email(request, user, background_tasks):
@@ -112,15 +94,8 @@ def delete_email(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Email details not found",
-        )
+        return response_helper(404, "Email details not found")
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(
-        status_code=200,
-        message="Email deleted successfully",
-        data={},
-    )
+    return response_helper(200, "Email deleted successfully", data={})

@@ -30,8 +30,8 @@ def get_audit_logs(db, payload, request):
     total = audit_log_manager.count_documents(db, query)
     data = audit_log_manager.find(db, query, sort=sort, skip=skip, limit=limit)
     return response_helper(
-        status_code=200,
-        message="Audit logs fetched successfully",
+        200,
+        "Audit logs fetched successfully",
         data=data,
         page=page,
         limit=limit,

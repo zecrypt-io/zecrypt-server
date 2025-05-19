@@ -8,8 +8,8 @@ data_type = SECRET_TYPE_LOGIN
 
 def get_account_details(db, doc_id):
     return response_helper(
-        status_code=200,
-        message="Account details loaded successfully",
+        200,
+        "Account details loaded successfully",
         data=secrets_manager.find_one(
             db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
         ),
@@ -22,12 +22,7 @@ def get_accounts(db, request):
         "secret_type": data_type,
     }
     accounts = secrets_manager.find(db, query)
-    return response_helper(
-        status_code=200,
-        message="Accounts loaded successfully",
-        data=accounts,
-        count=len(accounts),
-    )
+    return response_helper(200, "Accounts loaded successfully", data=accounts, count=len(accounts))
 
 
 def add_account(request, user, payload, background_tasks):
@@ -44,7 +39,7 @@ def add_account(request, user, payload, background_tasks):
         },
     )
     if existing_account:
-        return response_helper(status_code=400, message="Account already exists")
+        return response_helper(400, "Account already exists")
 
     payload.update(
         {
@@ -57,11 +52,7 @@ def add_account(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201,
-        message="Account added successfully",
-        data={},
-    )
+    return response_helper(201, "Account added successfully", data={})
 
 
 def update_account(request, user, payload, background_tasks):
@@ -86,7 +77,7 @@ def update_account(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="Account already exists")
+            return response_helper(400, "Account already exists")
 
     # Update account
     secrets_manager.update_one(
@@ -103,14 +94,7 @@ def delete_account(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Account details not found",
-        )
+        return response_helper(404, "Account details not found")
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(
-        status_code=200,
-        message="Account deleted successfully",
-        data={},
-    )
+    return response_helper(200, "Account deleted successfully", data={})

@@ -17,12 +17,7 @@ def create_initial_workspace_on_signup(db, request, user_id, workspace_id):
 
 
 def get_workspace(query, db):
-    return response_helper(
-        status_code=200,
-        message="Workspace details loaded successfully",
-        data=workspace_manager.find(db, query, {"_id": 0}),
-        count=workspace_manager.count_documents(db, query),
-    )
+    return response_helper(200, "Workspace details loaded successfully", data=workspace_manager.find(db, query, {"_id": 0}), count=workspace_manager.count_documents(db, query))
 
 
 def load_initial_data(request, user):
@@ -37,12 +32,7 @@ def load_initial_data(request, user):
         projects = project_manager.find(db, {"workspace_id": workspace.get("doc_id")})
         workspace["projects"] = projects
 
-    return response_helper(
-        status_code=200,
-        message="Initial data loaded successfully",
-        data=workspaces,
-        count=len(workspaces),
-    )
+    return response_helper(200, "Initial data loaded successfully", data=workspaces, count=len(workspaces))
 
 
 def get_tags(request, user):
@@ -61,8 +51,4 @@ def get_tags(request, user):
     ]
     unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, "", [], {})))
 
-    return response_helper(
-        status_code=200,
-        message="Tags loaded successfully",
-        data=unique_tags,
-    )
+    return response_helper(200, "Tags loaded successfully", data=unique_tags)

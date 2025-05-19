@@ -7,13 +7,7 @@ data_type = SECRET_TYPE_CARD
 
 
 def get_card_details(db, doc_id):
-    return response_helper(
-        status_code=200,
-        message="Card details loaded successfully",
-        data=secrets_manager.find_one(
-            db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
-        ),
-    )
+    return response_helper(200, "Card details loaded successfully", data=secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}))
 
 
 def get_cards(db, request):
@@ -24,12 +18,7 @@ def get_cards(db, request):
 
     cards = secrets_manager.find(db, query)
 
-    return response_helper(
-        status_code=200,
-        message="Cards loaded successfully",
-        data=cards,
-        count=len(cards),
-    )
+    return response_helper(200, "Cards loaded successfully", data=cards, count=len(cards))
 
 
 def add_card(request, user, payload, background_tasks):
@@ -49,9 +38,7 @@ def add_card(request, user, payload, background_tasks):
         query,
     )
     if card:
-        return response_helper(
-            status_code=400, message="Card details with same title already exists"
-        )
+        return response_helper(400, "Card details with same title already exists")
 
     payload.update(
         {
@@ -64,11 +51,7 @@ def add_card(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201,
-        message="Card added successfully",
-        data=payload,
-    )
+    return response_helper(201, "Card added successfully", data=payload)
 
 
 def update_card(request, user, payload, background_tasks):
@@ -94,9 +77,7 @@ def update_card(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(
-                status_code=400, message="Card details with same title already exists"
-            )
+            return response_helper(400, "Card details with same title already exists")
 
     # Update account
     secrets_manager.update_one(
@@ -105,10 +86,7 @@ def update_card(request, user, payload, background_tasks):
         {"$set": payload},
     )
 
-    return response_helper(
-        status_code=200,
-        message="Card details updated successfully",
-    )
+    return response_helper(200, "Card details updated successfully")
 
 
 def delete_card(request, user, background_tasks):
@@ -116,15 +94,8 @@ def delete_card(request, user, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="Card details not found",
-        )
+        return response_helper(404, "Card details not found")
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(
-        status_code=200,
-        message="Card details deleted successfully",
-        data={},
-    )
+    return response_helper(200, "Card details deleted successfully", data={})
