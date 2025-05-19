@@ -1,17 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ThemeToggle } from "./theme-toggle";
-import { SignIn, useUser } from "@stackframe/stack";
-import { stackAuthHandler } from "@/libs/stack-auth-handler";
-import { useDispatch } from "react-redux";
-import { setUserData } from "../libs/Redux/userSlice";
-import { AppDispatch } from "../libs/Redux/store";
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { useTranslations } from "next-intl";
+import { SignIn, useUser } from "@stackframe/stack";
+import { QRCodeSVG } from "qrcode.react";
+
+// UI Components
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./theme-toggle";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +21,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { QRCodeSVG } from "qrcode.react";
-import { toast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+// Icons
+import { Check, Shield, Lock, Dices, Bell, Globe } from "lucide-react";
+
+// Services & Utilities
+import { stackAuthHandler } from "@/libs/stack-auth-handler";
+import { setUserData } from "../libs/Redux/userSlice";
+import { AppDispatch } from "../libs/Redux/store";
+import { getUserKeys } from "@/libs/api-client";
+import { EncryptionSetupModal } from "./encryption-setup-modal";
 
 export interface LoginPageProps {
   locale?: string;
@@ -34,20 +50,25 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const t = useTranslations("auth");
   const features = useTranslations("features");
   const user = useUser();
+  
+  // State management
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [show2FAModal, setShow2FAModal] = useState(false);
+  const [showKeySetupModal, setShowKeySetupModal] = useState(false);
   const [provisioningUri, setProvisioningUri] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [verifying2FA, setVerifying2FA] = useState(false);
+  const [isCheckingKeys, setIsCheckingKeys] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState(200);
 
   // Generate or load device ID
   useEffect(() => {
+    // Get or create device ID
     const storedDeviceId = localStorage.getItem("zecrypt_device_id");
     if (storedDeviceId) {
       setDeviceId(storedDeviceId);
@@ -70,6 +91,57 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Function to check for encryption keys
+  const checkForEncryptionKeys = async () => {
+    setIsCheckingKeys(true);
+    try {
+      const keysResponse = await getUserKeys();
+      
+      if (keysResponse.status_code === 200) {
+        if (keysResponse.data.key === null) {
+          setShowKeySetupModal(true);
+        } else {
+          proceedToDashboard();
+        }
+      } else {
+        throw new Error(keysResponse.message || t("failed_encryption_keys"));
+      }
+    } catch (err) {
+      console.error("Error checking encryption keys:", err);
+      toast({
+        title: t("encryption_key_check_failed"),
+        description: t("encryption_key_check_failed_desc"),
+        variant: "destructive",
+      });
+      setError(t("encryption_security_error"));
+      dispatch(
+        setUserData({
+          user_id: null,
+          name: null,
+          profile_url: null,
+          email: null,
+          access_token: null,
+          refresh_token: null,
+          locale: locale || "en",
+          is_2fa_enabled: false,
+        })
+      );
+    } finally {
+      setIsCheckingKeys(false);
+    }
+  };
+
+  // Proceed to dashboard after all checks are complete
+  const proceedToDashboard = () => {
+    router.push(`/${locale}/dashboard`);
+  };
+
+  // Handle successful key setup
+  const handleKeySetupComplete = () => {
+    setShowKeySetupModal(false);
+    proceedToDashboard();
+  };
+
   useEffect(() => {
     const authenticateUser = async () => {
       if (isLoggingIn || !deviceId) return;
@@ -79,6 +151,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
         setError(null);
         const authDetails = await user?.getAuthJson();
         const accessToken = authDetails?.accessToken;
+        
         if (!accessToken) {
           setIsAuthenticating(false);
           setIsLoggingIn(false);
@@ -87,7 +160,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
         try {
           const loginResponse = await stackAuthHandler(accessToken, "login", { device_id: deviceId });
-          console.log("Login response:", loginResponse);
 
           if (loginResponse?.status_code === 200) {
             if (loginResponse.data.token) {
@@ -99,15 +171,15 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
                   email: user?.primaryEmail || null,
                   access_token: loginResponse.data.token || null,
                   refresh_token: loginResponse.data.refresh_token || null,
-                  locale: loginResponse.data.language || locale || "en", // Changed from language to locale
+                  locale: loginResponse.data.language || locale || "en",
                   is_2fa_enabled: true,
                 })
               );
               toast({
                 title: t("login_successful"),
-                description: t("redirecting_to_dashboard"),
+                description: t("checking_encryption_keys"),
               });
-              router.push(`/${locale}/dashboard`);
+              await checkForEncryptionKeys();
               return;
             }
 
@@ -115,8 +187,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             setIsNewUser(loginResponse.data.is_new_user || false);
             setProvisioningUri(loginResponse.data.provisioning_uri || null);
             setShow2FAModal(true);
-            setIsAuthenticating(false);
-            setIsLoggingIn(false);
+            
             if (loginResponse.data.is_new_user) {
               toast({
                 title: t("2fa_setup_required"),
@@ -145,7 +216,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     } else {
       setIsAuthenticating(false);
     }
-  }, [user, dispatch, router, locale, deviceId, t]);
+  }, [user, dispatch, locale, deviceId, t]);
 
   const handle2FAVerification = async () => {
     if (!userId || verificationCode.length !== 6) {
@@ -164,11 +235,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       });
 
       if (response.status_code === 200) {
-        toast({
-          title: t("2fa_verified"),
-          description: t("redirecting_to_dashboard"),
-        });
-
         dispatch(
           setUserData({
             user_id: response.data.user_id || null,
@@ -177,18 +243,25 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             email: user?.primaryEmail || null,
             access_token: response.data.token || null,
             refresh_token: response.data.refresh_token || null,
-            locale: response.data.language || locale || "en", // Changed from language to locale
+            locale: response.data.language || locale || "en",
             is_2fa_enabled: true,
           })
         );
+        toast({
+          title: t("2fa_verified"),
+          description: t("checking_encryption_keys"),
+        });
         setShow2FAModal(false);
-        router.push(`/${locale}/dashboard`);
+        await checkForEncryptionKeys();
       } else {
         setError(t("2fa_verification_failed", { message: response.message || t("invalid_code") }));
+        // Automatically clear the input field on error for better UX
+        setVerificationCode("");
       }
     } catch (err) {
       console.error("2FA verification error:", err);
       setError(t("2fa_verification_error"));
+      setVerificationCode("");
     } finally {
       setVerifying2FA(false);
     }
@@ -196,199 +269,239 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
   const copyToClipboard = () => {
     if (provisioningUri) {
-      navigator.clipboard.writeText(provisioningUri)
-        .then(() => {
-          toast({
-            title: t("copied_to_clipboard"),
-            description: t("paste_in_authenticator")
-          });
-        })
-        .catch(err => {
-          console.error("Failed to copy URI:", err);
+      navigator.clipboard.writeText(provisioningUri).then(() => {
+        toast({
+          title: t("copied_to_clipboard"),
+          description: t("paste_in_authenticator"),
         });
+      }).catch((err) => {
+        console.error("Failed to copy URI:", err);
+      });
     }
   };
 
-  if (isAuthenticating) {
+  // Loading state
+  if (isAuthenticating || isCheckingKeys) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-        <p className="text-muted-foreground">{t("verifying_authentication")}</p>
+        <p className="text-muted-foreground">
+          {isCheckingKeys ? t("checking_encryption_keys") : t("verifying_authentication")}
+        </p>
       </div>
     );
   }
 
+  // Error state
   if (error && !show2FAModal) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-        <div className="bg-destructive/10 text-destructive rounded-lg p-4 mb-6 max-w-md">
-          <p className="font-semibold mb-2">{t("authentication_error")}</p>
-          <p>{error}</p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setError(null);
-            setIsAuthenticating(true);
-            if (user) {
-              window.location.reload();
-            }
-          }}
-        >
-          {t("try_again")}
-        </Button>
+        <Card className="w-full max-w-md">
+          <CardHeader className="bg-destructive/10 text-destructive rounded-t-lg">
+            <CardTitle>{t("authentication_error")}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p>{error}</p>
+          </CardContent>
+          <CardFooter className="flex justify-end pt-4">
+            <Button
+              onClick={() => {
+                setError(null);
+                setIsAuthenticating(true);
+                if (user) {
+                  window.location.reload();
+                }
+              }}
+            >
+              {t("try_again")}
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
 
-  return (
-    <>
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
-        </div>
-        <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold">{features("trial_title")}</h1>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 rounded-full theme-accent-bg p-1">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{features("unlimited_devices")}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-1 rounded-full theme-accent-bg p-1">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{features("shared_vaults")}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-1 rounded-full theme-accent-bg p-1">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{features("advanced_security")}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-1 rounded-full theme-accent-bg p-1">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{features("security_alerts")}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-1 rounded-full theme-accent-bg p-1">
-                  <Check className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{features("multi_platform")}</p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">{features("looking_for_options")}</p>
-              <Link href="#" className="text-sm theme-accent-text hover:underline">
-                {features("see_options")}
-              </Link>
-            </div>
-          </div>
-          <div className="bg-card rounded-lg p-1 flex flex-col border border-border shadow-md">
-            <SignIn
-              fullPage={true}
-              automaticRedirect={false}
-              firstTab="password"
-              extraInfo={
-                <>
-                  {t("agreement")} <a href={`/${locale}/terms`}>{t("terms")}</a>
-                </>
-              }
-            />
-          </div>
-        </div>
-      </div>
+  // Encryption setup modal
+  if (showKeySetupModal) {
+    return (
+      <EncryptionSetupModal
+        isOpen={showKeySetupModal}
+        onComplete={handleKeySetupComplete}
+        onCancel={proceedToDashboard}
+      />
+    );
+  }
 
-      <Dialog open={show2FAModal} onOpenChange={(open) => {
-        if (!open && !isNewUser) {
-          setShow2FAModal(false);
-        }
-      }}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{isNewUser ? t("2fa_setup") : t("2fa_verify")}</DialogTitle>
-            <DialogDescription>
-              {isNewUser ? t("2fa_scan") : t("2fa_enter_code")}
-            </DialogDescription>
-          </DialogHeader>
-          {isNewUser && provisioningUri && (
-            <div className="flex flex-col items-center">
-              <div className="bg-white p-4 rounded-lg mb-4">
-                <QRCodeSVG 
-                  value={provisioningUri} 
-                  size={qrSize} 
-                  level="H" 
-                  includeMargin={true}
-                  className="mb-2" 
+  // 2FA modal
+  if (show2FAModal) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Dialog open={show2FAModal} onOpenChange={(open) => {
+          if (!open && !isNewUser) {
+            setShow2FAModal(false);
+          }
+        }}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{isNewUser ? t("2fa_setup") : t("2fa_verify")}</DialogTitle>
+              <DialogDescription>
+                {isNewUser ? t("2fa_scan") : t("2fa_enter_code")}
+              </DialogDescription>
+            </DialogHeader>
+            {isNewUser && provisioningUri && (
+              <div className="flex flex-col items-center">
+                <div className="bg-white p-4 rounded-lg mb-4">
+                  <QRCodeSVG
+                    value={provisioningUri}
+                    size={qrSize}
+                    level="H"
+                    includeMargin={true}
+                    className="mb-2"
+                  />
+                </div>
+                <div className="text-center space-y-2 w-full">
+                  <p className="text-sm text-muted-foreground">{t("2fa_scan_difficulty")}</p>
+                  <Button
+                    variant="outline"
+                    onClick={copyToClipboard}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {t("copy_setup_key")}
+                  </Button>
+                </div>
+              </div>
+            )}
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="verification-code" className="text-sm font-medium">
+                  {t("verification_code")}
+                </label>
+                <Input
+                  id="verification-code"
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6))}
+                  placeholder={t("2fa_placeholder")}
+                  maxLength={6}
+                  inputMode="numeric"
+                  autoFocus
+                  className="text-center text-xl tracking-widest"
                 />
               </div>
-              <div className="text-center space-y-2 w-full">
-                <p className="text-sm text-muted-foreground">{t("2fa_scan_difficulty")}</p>
-                <Button 
-                  variant="outline" 
-                  onClick={copyToClipboard} 
-                  className="w-full"
-                >
-                  {t("copy_setup_key")}
-                </Button>
-              </div>
+              {error && (
+                <div className="bg-destructive/10 text-destructive rounded p-2 text-sm">
+                  {error}
+                </div>
+              )}
             </div>
-          )}
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="verification-code" className="text-sm font-medium">
-                {t("verification_code")}
-              </label>
-              <Input
-                id="verification-code"
-                type="text"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6))}
-                placeholder={t("2fa_placeholder")}
-                maxLength={6}
-                inputMode="numeric"
-                autoFocus
-                className="text-center text-xl tracking-widest"
+            <DialogFooter>
+              {!isNewUser && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShow2FAModal(false)}
+                >
+                  {t("cancel")}
+                </Button>
+              )}
+              <Button
+                onClick={handle2FAVerification}
+                disabled={verificationCode.length !== 6 || verifying2FA}
+                className="w-full"
+              >
+                {verifying2FA ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    {t("verifying")}
+                  </>
+                ) : t("verify")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  // Main login page
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
+      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
+        {/* Left side - Feature highlights */}
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              {features("trial_title")}
+            </h1>
+            <p className="text-muted-foreground">
+              {features("secure_password_manager")}
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <FeatureItem icon={<Dices size={18} />} text={features("unlimited_devices")} />
+            <FeatureItem icon={<Lock size={18} />} text={features("shared_vaults")} />
+            <FeatureItem icon={<Shield size={18} />} text={features("advanced_security")} />
+            <FeatureItem icon={<Bell size={18} />} text={features("security_alerts")} />
+            <FeatureItem icon={<Globe size={18} />} text={features("multi_platform")} />
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">{features("looking_for_options")}</p>
+            <Link href="#" className="text-sm theme-accent-text hover:underline">
+              {features("see_options")}
+            </Link>
+          </div>
+        </div>
+        
+        {/* Right side - Login card */}
+        <Card className="shadow-lg border-primary/10">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-medium">{t("login_to_continue")}</CardTitle>
+            <CardDescription>
+              {t("sign_in_with_sso")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Custom SignIn wrapper to remove the email/password option */}
+            <div className="bg-card rounded-lg flex flex-col">
+              <SignIn
+                fullPage={true}
+                automaticRedirect={false}
+                firstTab="password"
+                extraInfo={
+                  <div className="text-center text-sm mt-4 text-muted-foreground">
+                    {t("agreement")} <Link href={`/${locale}/terms`} className="theme-accent-text hover:underline">{t("terms")}</Link>
+                  </div>
+                }
               />
             </div>
-            {error && <p className="text-destructive text-sm">{error}</p>}
-          </div>
-          <DialogFooter>
-            {!isNewUser && (
-              <Button
-                variant="outline"
-                onClick={() => setShow2FAModal(false)}
-              >
-                {t("cancel")}
-              </Button>
-            )}
-            <Button
-              onClick={handle2FAVerification}
-              disabled={verificationCode.length !== 6 || verifying2FA}
-              className="w-full"
-            >
-              {verifying2FA ? t("verifying") : t("verify")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Extracted feature item component for cleaner code
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  text: string;
+}
+
+function FeatureItem({ icon, text }: FeatureItemProps) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-1 rounded-full theme-accent-bg p-1.5">
+        {icon || <Check className="h-4 w-4 text-white" />}
+      </div>
+      <div>
+        <p className="text-sm text-muted-foreground">{text}</p>
+      </div>
+    </div>
   );
 }

@@ -11,32 +11,32 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { hashData } from "@/libs/crypto";
+import axiosInstance from "../libs/Middleware/axiosInstace";
+import { hashData } from "../libs/crypto";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-interface AddApiKeyProps {
+interface AddWifiProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApiKeyAdded: () => void;
+  onWifiAdded: () => void;
 }
 
-export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps) {
+export function AddWifi({ open, onOpenChange, onWifiAdded }: AddWifiProps) {
   const { translate } = useTranslator();
   const [title, setTitle] = useState("");
   const [data, setData] = useState("");
+  const [securityType, setSecurityType] = useState<string>("wpa2");
   const [notes, setNotes] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [env, setEnv] = useState<"Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT">("Development");
+  const [showPassword, setShowPassword] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
-  const predefinedTags = ["admin", "public", "read", "write", "delete"];
+  const predefinedTags = ["Personal", "Work", "Home", "Office", "Public", "Guest"];
 
   const addTag = (tag: string) => {
     const normalizedTag = tag.toLowerCase().trim();
@@ -52,16 +52,16 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
 
   const handleSubmit = async () => {
     if (!title || !data) {
-      setError(translate("please_fill_all_required_fields", "api_keys", { default: "Please fill all required fields" }));
+      setError(translate("please_fill_all_required_fields", "wifi"));
       return;
     }
 
     if (!selectedWorkspaceId || !selectedProjectId) {
-      console.error("Missing required data for adding API key:", {
+      console.error("Missing required data for adding Wi-Fi network:", {
         selectedWorkspaceId,
         selectedProjectId,
       });
-      setError(translate("no_project_selected", "api_keys", { default: "No project selected" }));
+      setError(translate("no_project_selected", "wifi"));
       return;
     }
 
@@ -69,48 +69,50 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
     setError("");
 
     try {
-      const hashedData = await hashData(data);
-
-      const payload = {
+      const payload: any = {
         title,
-        data,
+        security_type: securityType || null,
         notes: notes || null,
-        env,
         tags,
       };
 
+      if (data) {
+        const hashedData = await hashData(data);
+        payload.data = hashedData;
+      }
+
       const response = await axiosInstance.post(
-        `/${selectedWorkspaceId}/${selectedProjectId}/api-keys`,
+        `/${selectedWorkspaceId}/${selectedProjectId}/wifi`,
         payload
       );
 
       if (response.status === 201 || (response.data && response.data.status_code === 201)) {
-        onApiKeyAdded();
+        onWifiAdded();
         onOpenChange(false);
         toast({
-          title: translate("api_key_added_successfully", "api_keys", { default: "API key added successfully" }),
-          description: translate("api_key_added_description", "api_keys", { default: "The API key has been added." }),
+          title: translate("wifi_added_successfully", "wifi"),
+          description: translate("wifi_added_description", "wifi"),
         });
 
         // Reset form
         setTitle("");
         setData("");
         setNotes("");
-        setEnv("Development");
+        setSecurityType("wpa2");
         setTags([]);
         setNewTag("");
         setError("");
       } else {
-        throw new Error(response.data?.message || translate("failed_to_add_api_key", "api_keys", { default: "Failed to add API key" }));
+        throw new Error(response.data?.message || translate("failed_to_add_wifi", "wifi"));
       }
     } catch (error: any) {
-      console.error("Error adding API key:", error);
-      if (error.response?.status === 400 && error.response.data?.message === "API key already exists") {
-        setError(translate("api_key_already_exists", "api_keys", { default: "API key already exists" }));
+      console.error("Error adding Wi-Fi network:", error);
+      if (error.response?.status === 400 && error.response.data?.message === "Wifi details with same title already exists") {
+        setError(translate("wifi_already_exists", "wifi"));
       } else if (error.response?.status === 422) {
-        setError(translate("invalid_input_data", "api_keys", { default: "Invalid input data" }));
+        setError(translate("invalid_input_data", "wifi"));
       } else {
-        setError(error.response?.data?.message || translate("failed_to_add_api_key", "api_keys", { default: "Failed to add API key" }));
+        setError(error.response?.data?.message || translate("failed_to_add_wifi", "wifi"));
       }
     } finally {
       setIsSubmitting(false);
@@ -121,9 +123,9 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{translate("add_new_api_key", "api_keys", { default: "Add New API Key" })}</DialogTitle>
+          <DialogTitle>{translate("add_new_wifi", "wifi")}</DialogTitle>
           <DialogDescription>
-            {translate("add_new_api_key_description", "api_keys", { default: "Enter your API key details below" })}
+            {translate("add_new_wifi_description", "wifi", { default: "Enter your Wi-Fi network details below" })}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -135,12 +137,12 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
           )}
           <div className="space-y-2">
             <Label htmlFor="title">
-              {translate("api_key_name", "api_keys", { default: "API Key Name" })}
+              {translate("ssid", "wifi")}
               <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title"
-              placeholder={translate("enter_api_key_name", "api_keys", { default: "Enter API key name" })}
+              placeholder={translate("enter_ssid", "wifi")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className={error && !title ? "border-red-500" : ""}
@@ -149,14 +151,14 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
 
           <div className="space-y-2">
             <Label htmlFor="data">
-              {translate("api_key", "api_keys", { default: "API Key" })}
+              {translate("password", "wifi")}
               <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Input
                 id="data"
-                type={showApiKey ? "text" : "password"}
-                placeholder={translate("enter_api_key", "api_keys", { default: "Enter API key" })}
+                type={showPassword ? "text" : "password"}
+                placeholder={translate("enter_password", "wifi")}
                 value={data}
                 onChange={(e) => setData(e.target.value)}
                 className={error && !data ? "border-red-500" : ""}
@@ -165,56 +167,51 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
                 variant="ghost"
                 size="icon"
                 className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
-                onClick={() => setShowApiKey(!showApiKey)}
+                onClick={() => setShowPassword(!showPassword)}
                 type="button"
               >
-                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">{translate("notes", "api_keys", { default: "Notes" })}</Label>
+            <Label htmlFor="securityType">{translate("security_type", "wifi")}</Label>
+            <Select value={securityType} onValueChange={setSecurityType}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={translate("select_security_type", "wifi")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="wpa2">WPA2</SelectItem>
+                <SelectItem value="wpa3">WPA3</SelectItem>
+                <SelectItem value="wep">WEP</SelectItem>
+                <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">{translate("notes", "wifi")}</Label>
             <Input
               id="notes"
-              placeholder={translate("enter_notes", "api_keys", { default: "Enter notes" })}
+              placeholder={translate("enter_notes", "wifi")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="env">
-              {translate("environment", "api_keys", { default: "Environment" })}
-              <span className="text-red-500">*</span>
-            </Label>
-            <Select value={env} onValueChange={(value) => setEnv(value as "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT")}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={translate("select_environment", "api_keys", { default: "Select environment" })} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Development">{translate("development", "api_keys", { default: "Development" })}</SelectItem>
-                <SelectItem value="Staging">{translate("staging", "api_keys", { default: "Staging" })}</SelectItem>
-                <SelectItem value="Production">{translate("production", "api_keys", { default: "Production" })}</SelectItem>
-                <SelectItem value="Testing">{translate("testing", "api_keys", { default: "Testing" })}</SelectItem>
-                <SelectItem value="Local">{translate("local", "api_keys", { default: "Local" })}</SelectItem>
-                <SelectItem value="UAT">{translate("uat", "api_keys", { default: "UAT" })}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tags">{translate("tags", "api_keys", { default: "Tags" })}</Label>
+            <Label htmlFor="tags">{translate("tags", "wifi")}</Label>
             <div className="flex gap-2">
               <Input
                 id="tags"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                placeholder={translate("add_a_tag", "api_keys", { default: "Add a tag" })}
+                placeholder={translate("add_a_tag", "wifi")}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag(newTag))}
               />
               <Button type="button" onClick={() => addTag(newTag)}>
-                {translate("add", "api_keys", { default: "Add" })}
+                {translate("add", "wifi", { default: "Add" })}
               </Button>
             </div>
             {tags.length > 0 && (
@@ -243,12 +240,10 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
         </div>
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            {translate("cancel", "api_keys", { default: "Cancel" })}
+            {translate("cancel", "wifi")}
           </Button>
           <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting
-              ? translate("adding", "api_keys", { default: "Adding..." })
-              : translate("add_api_key", "api_keys", { default: "Add API Key" })}
+            {isSubmitting ? translate("adding", "wifi") : translate("add_wifi", "wifi")}
           </Button>
         </DialogFooter>
       </DialogContent>
