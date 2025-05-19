@@ -84,8 +84,6 @@ export async function storeUserEncryptionKeys(
   masterPassword?: string
 ): Promise<boolean> {
   try {
-    console.log(`Storing encryption keys for user ${userId}. Master password provided:`, masterPassword ? 'Yes' : 'No');
-    
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([ENCRYPTION_KEYS_STORE], 'readwrite');
@@ -99,14 +97,6 @@ export async function storeUserEncryptionKeys(
         updatedAt: new Date().toISOString()
       };
       
-      console.log('Data being stored in IndexedDB:', {
-        userId,
-        publicKeyLength: publicKey ? publicKey.length : 0,
-        privateKeyLength: privateKey ? privateKey.length : 0,
-        masterPasswordProvided: !!masterPassword,
-        masterPasswordValue: masterPassword 
-      });
-      
       const request = objectStore.put(dataToStore);
       
       request.onerror = (event) => {
@@ -115,7 +105,6 @@ export async function storeUserEncryptionKeys(
       };
       
       request.onsuccess = () => {
-        console.log('Successfully stored encryption keys in IndexedDB');
         resolve(true);
       };
       
@@ -147,16 +136,8 @@ export async function updateUserMasterPassword(
   masterPassword: string
 ): Promise<boolean> {
   try {
-    console.log(`Updating master password for user ${userId}. Password value:`, masterPassword);
-    
     // First get the existing keys
     const existingData = await getUserEncryptionKeys(userId);
-    
-    console.log('Existing data found:', {
-      publicKeyExists: !!existingData.publicKey,
-      privateKeyExists: !!existingData.privateKey,
-      existingMasterPassword: existingData.masterPassword
-    });
     
     if (!existingData.publicKey || !existingData.privateKey) {
       throw new Error('No existing encryption keys found for this user');
@@ -170,7 +151,6 @@ export async function updateUserMasterPassword(
       masterPassword
     );
     
-    console.log('Master password update result:', result);
     return result;
   } catch (error) {
     console.error('Error updating master password:', error);

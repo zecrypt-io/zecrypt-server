@@ -9,7 +9,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
-import type { UseTranslatorReturnType } from "@/hooks/use-translations";
 import { useFormatter } from "next-intl";
 import { useUser } from "@stackframe/stack";
 import { loadInitialData, fetchProjects } from "@/libs/getWorkspace";
@@ -80,7 +79,6 @@ export function LocalizedOverviewContent() {
           const updatedInitialData = initialData.map(ws => 
             ws.workspaceId === defaultWorkspace.workspaceId ? { ...ws, projects: projectsData.projects } : ws
           );
-          console.log("✅ Dispatching initial data to Redux with new projects (localized):", updatedInitialData);
           const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
           dispatch(setWorkspaceData({
             workspaces: updatedInitialData,
@@ -88,7 +86,6 @@ export function LocalizedOverviewContent() {
             selectedProjectId: selectedProjectId || defaultProj?.project_id || projectsData.projects[0]?.project_id || null,
           }));
         } else {
-          console.log("No projects found, showing project creation dialog (forced, localized)");
           dispatch(setWorkspaceData({
             workspaces: initialData.map(ws => ({ ...ws, projects: [] })),
             selectedWorkspaceId: defaultWorkspace.workspaceId,

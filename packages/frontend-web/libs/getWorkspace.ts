@@ -33,7 +33,6 @@ export const loadInitialData = async (accessToken: string) => {
       })),
     }));
     
-    console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
     return workspaces;
   } catch (err) {
     console.error("Error loading initial data:", err);
