@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Wifi, Plus, Search, Copy, Check, Eye, EyeOff, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle, QrCode
+  Wifi, Search, Copy, Check, Eye, EyeOff, MoreHorizontal,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle, QrCode, Plus
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,564 +15,637 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useFormatter } from "next-intl";
+import axiosInstance from "../libs/Middleware/axiosInstace";
+import { AddWifi } from "./add-wifi";
+import { EditWifi } from "./edit-wifi";
 
 interface WifiNetwork {
-  id: string;
-  ssid: string;
-  password: string;
+  doc_id: string;
+  title: string;
+  lower_title: string;
   security_type: string;
-  location: string;
-  tags: string[];
+  data: string;
+  notes?: string | null;
+  tags?: string[];
   created_at: string;
+  updated_at: string | null;
+  created_by: string;
+  project_id: string;
 }
 
 export function WifiContent() {
   const { translate } = useTranslator();
+  const format = useFormatter();
   const [showAddWifi, setShowAddWifi] = useState(false);
   const [showEditWifi, setShowEditWifi] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
   const [selectedWifi, setSelectedWifi] = useState<WifiNetwork | null>(null);
-  const [copiedField, setCopiedField] = useState<{ id: string; field: string } | null>(null);
+  const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSecurityType, setSelectedSecurityType] = useState("all");
-  const [wifiNetworks, setWifiNetworks] = useState<WifiNetwork[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [allWifiNetworks, setAllWifiNetworks] = useState<WifiNetwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data
-  const mockWifiNetworks: WifiNetwork[] = [
-    {
-      id: "wifi-1",
-      ssid: "Home_Network",
-      password: "SecurePassword123!",
-      security_type: "WPA2",
-      location: "Home",
-      tags: ["Personal", "Home"],
-      created_at: new Date().toISOString()
-    },
-    {
-      id: "wifi-2",
-      ssid: "Office_Guest",
-      password: "Welcome2023",
-      security_type: "WPA2",
-      location: "Office",
-      tags: ["Work", "Guest"],
-      created_at: new Date().toISOString()
-    },
-    {
-      id: "wifi-3",
-      ssid: "Coffee_Shop",
-      password: "FreeWifi2023",
-      security_type: "WPA3",
-      location: "Coffee Shop",
-      tags: ["Public", "Cafe"],
-      created_at: new Date().toISOString()
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+
+  const fetchWifiNetworks = useCallback(async () => {
+    if (!selectedWorkspaceId || !selectedProjectId) {
+      console.error("Missing required data for fetching Wi-Fi networks:", {
+        selectedWorkspaceId,
+        selectedProjectId,
+      });
+      setIsLoading(false);
+      toast({
+        title: translate("error_fetching_wifi_networks", "wifi"),
+        description: translate("no_project_selected", "wifi"),
+        variant: "destructive",
+      });
+      return;
     }
-  ];
+
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/${selectedWorkspaceId}/${selectedProjectId}/wifi`);
+
+      if (response.status === 200 && response.data?.data) {
+        setAllWifiNetworks(response.data.data);
+      } else {
+        console.error("Unexpected response format:", response);
+        toast({
+          title: translate("error_fetching_wifi_networks", "wifi"),
+          description: translate("failed_to_fetch_wifi_networks", "wifi"),
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error fetching Wi-Fi networks:", error);
+      toast({
+        title: translate("error_fetching_wifi_networks", "wifi"),
+        description: error.response?.data?.message || translate("failed_to_fetch_wifi_networks", "wifi"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedWorkspaceId, selectedProjectId]);
 
   useEffect(() => {
-    // Simulate data loading
-    setIsLoading(true);
-    setTimeout(() => {
-      setWifiNetworks(mockWifiNetworks);
-      setTotalCount(mockWifiNetworks.length);
-      setIsLoading(false);
-    }, 500);
+    fetchWifiNetworks();
+  }, [fetchWifiNetworks]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowAddWifi(true);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleAddWifi = () => {
-    setShowAddWifi(true);
-  };
+  const filteredWifiNetworks = useMemo(() => {
+    let result = allWifiNetworks;
 
-  const handleEditWifi = (wifi: WifiNetwork) => {
-    setSelectedWifi(wifi);
-    setShowEditWifi(true);
-  };
-  
-  const handleShowQrCode = (wifi: WifiNetwork) => {
-    setSelectedWifi(wifi);
-    setShowQrCode(true);
-  };
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(network =>
+        network.title.toLowerCase().includes(query) ||
+        network.notes?.toLowerCase().includes(query)
+      );
+    }
 
-  const handleDeleteWifi = (id: string) => {
-    // Simulate deletion
-    setWifiNetworks(prevNetworks => prevNetworks.filter(network => network.id !== id));
-    toast({
-      title: translate("wifi_deleted", "wifi", { default: "Wi-Fi network deleted" }),
-      description: translate("wifi_deleted_description", "wifi", { default: "The Wi-Fi network has been deleted successfully" }),
-    });
-  };
+    if (selectedSecurityType !== "all") {
+      result = result.filter(network => network.security_type.toLowerCase() === selectedSecurityType.toLowerCase());
+    }
 
-  const copyToClipboard = async (id: string, field: string, value: string) => {
+    return result;
+  }, [allWifiNetworks, searchQuery, selectedSecurityType]);
+
+  const totalCount = filteredWifiNetworks.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const paginatedWifiNetworks = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredWifiNetworks.slice(start, end);
+  }, [filteredWifiNetworks, currentPage, itemsPerPage]);
+
+  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      setCopiedField({ id, field });
+      setCopiedField({ doc_id, field });
       setTimeout(() => setCopiedField(null), 2000);
       toast({
-        title: translate("copied", "wifi", { default: "Copied" }),
-        description: translate("field_copied", "wifi", { default: "Field copied to clipboard" }),
+        title: translate("copied", "wifi"),
+        description: translate("field_copied", "wifi"),
       });
     } catch (err) {
       console.error("Failed to copy:", err);
       toast({
-        title: translate("copy_failed", "wifi", { default: "Copy failed" }),
-        description: translate("failed_to_copy_field", "wifi", { default: "Failed to copy field to clipboard" }),
+        title: translate("copy_failed", "wifi"),
+        description: translate("failed_to_copy_field", "wifi"),
         variant: "destructive",
       });
     }
-  };
+  }, [translate]);
 
-  const togglePasswordVisibility = (id: string) => {
-    setViewPassword(prev => (prev === id ? null : id));
-  };
+  const togglePasswordVisibility = useCallback((doc_id: string) => {
+    setViewPassword(prev => (prev === doc_id ? null : doc_id));
+  }, []);
 
-  const filterWifiNetworks = useCallback(() => {
-    let filtered = [...mockWifiNetworks];
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(network => 
-        network.ssid.toLowerCase().includes(query) ||
-        network.location.toLowerCase().includes(query)
-      );
-    }
-    
-    if (selectedSecurityType !== "all") {
-      filtered = filtered.filter(network => 
-        network.security_type.toLowerCase() === selectedSecurityType.toLowerCase()
-      );
-    }
-    
-    return filtered;
-  }, [searchQuery, selectedSecurityType, mockWifiNetworks]);
-
-  const handleSearch = () => {
-    const filtered = filterWifiNetworks();
-    setWifiNetworks(filtered);
-    setTotalCount(filtered.length);
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchQuery("");
     setSelectedSecurityType("all");
-    setWifiNetworks(mockWifiNetworks);
-    setTotalCount(mockWifiNetworks.length);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const displayedWifiNetworks = wifiNetworks.slice(startIdx, endIdx);
-  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const handleDeleteWifi = useCallback(
+    async (doc_id: string) => {
+      if (!selectedWorkspaceId || !selectedProjectId) {
+        console.error("Missing required data for deleting Wi-Fi network:", {
+          selectedWorkspaceId,
+          selectedProjectId,
+        });
+        toast({
+          title: translate("error_deleting_wifi", "wifi"),
+          description: translate("no_project_selected", "wifi"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!confirm(translate("confirm_delete_wifi", "wifi"))) {
+        return;
+      }
+
+      try {
+        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/wifi/${doc_id}`);
+        fetchWifiNetworks();
+        toast({
+          title: translate("wifi_deleted", "wifi"),
+          description: translate("wifi_deleted_description", "wifi"),
+        });
+      } catch (error: any) {
+        console.error("Error deleting Wi-Fi network:", error);
+        toast({
+          title: translate("error_deleting_wifi", "wifi"),
+          description: error.response?.data?.message || translate("failed_to_delete_wifi", "wifi"),
+          variant: "destructive",
+        });
+      }
+    },
+    [selectedWorkspaceId, selectedProjectId, translate, fetchWifiNetworks]
+  );
+
+  const handleWifiUpdated = useCallback(() => {
+    setShowEditWifi(false);
+    setSelectedWifi(null);
+    fetchWifiNetworks();
+    toast({
+      title: translate("wifi_updated_successfully", "wifi"),
+      description: translate("wifi_updated_description", "wifi"),
+    });
+  }, [fetchWifiNetworks, translate]);
+
+  const handleShowQrCode = useCallback((wifi: WifiNetwork) => {
+    setSelectedWifi(wifi);
+    setShowQrCode(true);
+  }, []);
+
+  const debouncedSearch = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+      }, 300);
+    };
+  }, []);
+
+  const getPaginationRange = useCallback(() => {
+    const maxPagesToShow = 5;
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const half = Math.floor(maxPagesToShow / 2);
+      let start = Math.max(1, currentPage - half);
+      let end = Math.min(totalPages, start + maxPagesToShow - 1);
+
+      if (end - start < maxPagesToShow - 1) {
+        start = end - maxPagesToShow + 1;
+      }
+
+      if (start > 1) {
+        pageNumbers.push(1);
+        if (start > 2) pageNumbers.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pageNumbers.push("...");
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  }, [currentPage, totalPages]);
 
   // Generate Wi-Fi QR code content
   const generateWifiQrContent = (wifi: WifiNetwork) => {
-    return `WIFI:S:${wifi.ssid};T:${wifi.security_type};P:${wifi.password};;`;
+    return `WIFI:S:${wifi.title};T:${wifi.security_type};P:${wifi.data};;`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6 text-center">
+        <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
+        <p className="text-muted-foreground">{translate("loading_wifi", "wifi")}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi", { default: "Wi-Fi Networks" })}</h1>
-        <Button onClick={handleAddWifi} className="flex items-center gap-2">
+    <div className="p-6">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+        <p className="text-muted-foreground">{translate("manage_your_wifi_networks", "wifi")}</p>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-1 gap-4 w-full md:w-auto">
+          <div className="relative w-full md:max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={translate("search_wifi", "wifi")}
+              className="pl-8 w-full"
+              onChange={(e) => debouncedSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Select
+              value={selectedSecurityType}
+              onValueChange={(value) => {
+                setSelectedSecurityType(value);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder={translate("filter_by_security", "wifi")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{translate("all_security_types", "wifi")}</SelectItem>
+                <SelectItem value="wpa2">WPA2</SelectItem>
+                <SelectItem value="wpa3">WPA3</SelectItem>
+                <SelectItem value="wep">WEP</SelectItem>
+                <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
+              </SelectContent>
+            </Select>
+            {(searchQuery || selectedSecurityType !== "all") && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
+                <X className="h-4 w-4 mr-2" />
+                {translate("clear", "wifi")}
+              </Button>
+            )}
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setShowAddWifi(true)}
+        >
           <Plus className="h-4 w-4" />
-          {translate("add_wifi", "wifi", { default: "Add Wi-Fi" })}
+          {translate("add_wifi", "wifi")}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_wifi", "wifi", { default: "Search Wi-Fi networks..." })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          />
-        </div>
-        <Select value={selectedSecurityType} onValueChange={setSelectedSecurityType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_security", "wifi", { default: "Filter by security type" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_security_types", "wifi", { default: "All Security Types" })}</SelectItem>
-            <SelectItem value="wpa2">WPA2</SelectItem>
-            <SelectItem value="wpa3">WPA3</SelectItem>
-            <SelectItem value="wep">WEP</SelectItem>
-            <SelectItem value="none">{translate("none", "wifi", { default: "None" })}</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex gap-2">
-          <Button variant="outline" className="w-full" onClick={handleSearch}>
-            {translate("search", "wifi", { default: "Search" })}
-          </Button>
-          {(searchQuery || selectedSecurityType !== "all") && (
-            <Button variant="ghost" onClick={clearFilters}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* WiFi Networks Table */}
-      <div className="border rounded-md">
-        {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{translate("loading_wifi", "wifi", { default: "Loading Wi-Fi networks..." })}</p>
-          </div>
-        ) : displayedWifiNetworks.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">{translate("no_wifi_found", "wifi", { default: "No Wi-Fi networks found" })}</p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "wifi", { default: "Clear filters" })}
-            </Button>
-          </div>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px]">{translate("ssid", "wifi", { default: "SSID" })}</TableHead>
-                  <TableHead>{translate("security", "wifi", { default: "Security" })}</TableHead>
-                  <TableHead>{translate("location", "wifi", { default: "Location" })}</TableHead>
-                  <TableHead>{translate("password", "wifi", { default: "Password" })}</TableHead>
-                  <TableHead>{translate("tags", "wifi", { default: "Tags" })}</TableHead>
-                  <TableHead className="text-right">{translate("actions", "wifi", { default: "Actions" })}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayedWifiNetworks.map((network) => (
-                  <TableRow key={network.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Wifi className="h-4 w-4 text-muted-foreground" />
-                        <span>{network.ssid}</span>
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="text-left p-3 font-medium text-sm">{translate("ssid", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("security", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("notes", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("password", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("tags", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "wifi")}</th>
+                <th className="text-left p-3 font-medium text-sm">{translate("actions", "wifi")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedWifiNetworks.length > 0 ? (
+                paginatedWifiNetworks.map((network) => (
+                  <tr key={network.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
+                          <Wifi className="h-5 w-5" />
+                        </div>
+                        <p className="font-medium">{network.title}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>{network.security_type}</TableCell>
-                    <TableCell>{network.location}</TableCell>
-                    <TableCell className="font-mono">
+                    </td>
+                    <td className="p-3">
+                      <Badge variant="secondary" className="text-xs">
+                        {network.security_type || "None"}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-sm">{network.notes || "-"}</td>
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <span>
-                          {viewPassword === network.id ? network.password : "••••••••••••"}
+                        <span className="text-sm font-mono">
+                          {viewPassword === network.doc_id ? network.data : "••••••••"}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => togglePasswordVisibility(network.id)}
-                        >
-                          {viewPassword === network.id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => copyToClipboard(network.id, "password", network.password)}
-                        >
-                          {copiedField?.id === network.id && copiedField?.field === "password" ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
+                        <div className="flex items-center">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => togglePasswordVisibility(network.doc_id)}
+                                >
+                                  {viewPassword === network.doc_id ? (
+                                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{viewPassword === network.doc_id ? translate("hide_password", "wifi") : translate("show_password", "wifi")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => copyToClipboard(network.doc_id, "password", network.data)}
+                                >
+                                  {copiedField?.doc_id === network.doc_id && copiedField?.field === "password" ? (
+                                    <Check className="h-3.5 w-3.5 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {copiedField?.doc_id === network.doc_id && copiedField?.field === "password" ? translate("copied", "wifi") : translate("copy_password", "wifi")}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="p-3">
                       <div className="flex flex-wrap gap-1">
-                        {network.tags.map((tag) => (
+                        {network.tags?.map((tag) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleShowQrCode(network)}
-                          title={translate("show_qr_code", "wifi", { default: "Show QR code" })}
-                        >
-                          <QrCode className="h-4 w-4" />
-                        </Button>
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">
+                      {network.updated_at
+                        ? format.dateTime(new Date(network.updated_at), {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleShowQrCode(network)}
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{translate("show_qr_code", "wifi")}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditWifi(network)}>
-                              {translate("edit", "wifi", { default: "Edit" })}
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedWifi({ ...network });
+                                setShowEditWifi(true);
+                              }}
+                            >
+                              {translate("edit", "wifi")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => copyToClipboard(network.id, "ssid", network.ssid)}>
-                              {copiedField?.id === network.id && copiedField?.field === "ssid" ? (
+                            <DropdownMenuItem
+                              onClick={() => copyToClipboard(network.doc_id, "ssid", network.title)}
+                            >
+                              {copiedField?.doc_id === network.doc_id && copiedField?.field === "ssid" ? (
                                 <Check className="h-4 w-4 mr-2" />
                               ) : (
                                 <Copy className="h-4 w-4 mr-2" />
                               )}
-                              {translate("copy_ssid", "wifi", { default: "Copy SSID" })}
+                              {translate("copy_ssid", "wifi")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteWifi(network.id)} className="text-red-500">
-                              {translate("delete", "wifi", { default: "Delete" })}
+                            <DropdownMenuItem
+                              className="text-red-500"
+                              onClick={() => handleDeleteWifi(network.doc_id)}
+                            >
+                              {translate("delete", "wifi")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center py-10 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2">
+                      <AlertTriangle className="h-10 w-10 text-muted-foreground/50" />
+                      <h3 className="font-medium">{translate("no_wifi_found", "wifi")}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedSecurityType !== "all"
+                          ? translate("no_wifi_for_security_type", "wifi").replace("{security_type}", selectedSecurityType)
+                          : searchQuery
+                          ? translate("no_wifi_match_search", "wifi").replace("{search}", searchQuery)
+                          : translate("adjust_search_filter", "wifi")}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                        {translate("clear_filters", "wifi")}
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalCount > 0 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              {translate("showing", "wifi")} {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "wifi")} {totalCount} {translate("wifi_networks", "wifi")}
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 mr-4">
+                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "wifi")}</span>
+                <Select
+                  value={itemsPerPage.toString()}
+                  onValueChange={(value) => {
+                    setItemsPerPage(Number(value));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue placeholder={itemsPerPage.toString()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {getPaginationRange().map((pageNum, index) => (
+                  <Button
+                    key={`${pageNum}-${index}`}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => typeof pageNum === "number" && handlePageChange(pageNum)}
+                    disabled={pageNum === "..." || currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </Button>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage >= totalPages}
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "wifi", {
-              default: `Showing ${startIdx + 1}-${Math.min(endIdx, totalCount)} of ${totalCount} results`,
-              startIdx: startIdx + 1,
-              endIdx: Math.min(endIdx, totalCount),
-              totalCount
-            })}
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="mx-2 text-sm">
-              {translate("page_of", "wifi", {
-                default: `Page ${currentPage} of ${totalPages}`,
-                currentPage,
-                totalPages
-              })}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
+      {showAddWifi && <AddWifi onClose={() => setShowAddWifi(false)} onWifiAdded={fetchWifiNetworks} />}
+      {showEditWifi && selectedWifi && (
+        <EditWifi
+          wifi={selectedWifi}
+          onClose={() => {
+            setShowEditWifi(false);
+            setSelectedWifi(null);
+          }}
+          onWifiUpdated={handleWifiUpdated}
+        />
+      )}
+
+      {/* QR Code Dialog */}
+      {showQrCode && selectedWifi && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-[400px] rounded-lg bg-card p-6 border border-border shadow-lg relative">
+            <div className="mb-6 text-center">
+              <h2 className="text-xl font-bold">{translate("wifi_qr_code", "wifi")}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{translate("wifi_qr_code_description", "wifi")}</p>
+            </div>
+            <div className="py-4">
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative w-64 h-64 border border-border flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-sm">{translate("qr_code_placeholder", "wifi")}</div>
+                    <div className="font-bold mt-2">{selectedWifi.title}</div>
+                    <QrCode className="h-32 w-32 mx-auto mt-4 text-primary" />
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-center">
+                  <p>{translate("wifi_credentials", "wifi")}</p>
+                  <p className="font-medium mt-1">
+                    SSID: {selectedWifi.title}<br />
+                    {translate("password", "wifi")}: {selectedWifi.data}<br />
+                    {translate("security_type", "wifi")}: {selectedWifi.security_type || "None"}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button onClick={() => setShowQrCode(false)}>
+                {translate("close", "wifi")}
+              </Button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Add WiFi Dialog */}
-      <Dialog open={showAddWifi} onOpenChange={setShowAddWifi}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{translate("add_new_wifi", "wifi", { default: "Add New Wi-Fi Network" })}</DialogTitle>
-            <DialogDescription>
-              {translate("add_new_wifi_description", "wifi", { default: "Enter your Wi-Fi network details below" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="ssid">{translate("ssid", "wifi", { default: "SSID (Network Name)" })}</Label>
-              <Input id="ssid" placeholder="Home_Network" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{translate("password", "wifi", { default: "Password" })}</Label>
-              <Input id="password" type="password" placeholder="••••••••••••" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="security_type">{translate("security_type", "wifi", { default: "Security Type" })}</Label>
-              <Select defaultValue="wpa2">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wpa2">WPA2</SelectItem>
-                  <SelectItem value="wpa3">WPA3</SelectItem>
-                  <SelectItem value="wep">WEP</SelectItem>
-                  <SelectItem value="none">{translate("none", "wifi", { default: "None" })}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">{translate("location", "wifi", { default: "Location" })}</Label>
-              <Input id="location" placeholder="Home, Office, etc." />
-            </div>
-            <div className="space-y-2">
-              <Label>{translate("tags", "wifi", { default: "Tags" })}</Label>
-              <div className="flex flex-wrap gap-2">
-                {["Personal", "Work", "Home", "Office", "Public", "Guest"].map((tag) => (
-                  <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowAddWifi(false)}>
-              {translate("cancel", "wifi", { default: "Cancel" })}
-            </Button>
-            <Button type="submit" onClick={() => setShowAddWifi(false)}>
-              {translate("save", "wifi", { default: "Save" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit WiFi Dialog */}
-      <Dialog open={showEditWifi} onOpenChange={setShowEditWifi}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{translate("edit_wifi", "wifi", { default: "Edit Wi-Fi Network" })}</DialogTitle>
-            <DialogDescription>
-              {translate("edit_wifi_description", "wifi", { default: "Update your Wi-Fi network details" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit_ssid">{translate("ssid", "wifi", { default: "SSID (Network Name)" })}</Label>
-              <Input 
-                id="edit_ssid" 
-                defaultValue={selectedWifi?.ssid} 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_password">{translate("password", "wifi", { default: "Password" })}</Label>
-              <Input 
-                id="edit_password" 
-                type="password"
-                defaultValue={selectedWifi?.password} 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_security_type">{translate("security_type", "wifi", { default: "Security Type" })}</Label>
-              <Select defaultValue={selectedWifi?.security_type.toLowerCase()}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wpa2">WPA2</SelectItem>
-                  <SelectItem value="wpa3">WPA3</SelectItem>
-                  <SelectItem value="wep">WEP</SelectItem>
-                  <SelectItem value="none">{translate("none", "wifi", { default: "None" })}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_location">{translate("location", "wifi", { default: "Location" })}</Label>
-              <Input 
-                id="edit_location" 
-                defaultValue={selectedWifi?.location} 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{translate("tags", "wifi", { default: "Tags" })}</Label>
-              <div className="flex flex-wrap gap-2">
-                {["Personal", "Work", "Home", "Office", "Public", "Guest"].map((tag) => (
-                  <Badge 
-                    key={tag} 
-                    variant={selectedWifi?.tags.includes(tag) ? "default" : "outline"} 
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => setShowEditWifi(false)}>
-              {translate("cancel", "wifi", { default: "Cancel" })}
-            </Button>
-            <Button type="submit" onClick={() => setShowEditWifi(false)}>
-              {translate("update", "wifi", { default: "Update" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* QR Code Dialog */}
-      <Dialog open={showQrCode} onOpenChange={setShowQrCode}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>{translate("wifi_qr_code", "wifi", { default: "Wi-Fi QR Code" })}</DialogTitle>
-            <DialogDescription>
-              {translate("wifi_qr_code_description", "wifi", { default: "Scan this QR code to connect to the Wi-Fi network" })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative w-64 h-64 border border-border flex items-center justify-center">
-                {/* Here you would integrate an actual QR Code library */}
-                <div className="text-center">
-                  <div className="text-sm">{translate("qr_code_placeholder", "wifi", { default: "QR Code for:" })}</div>
-                  <div className="font-bold mt-2">{selectedWifi?.ssid}</div>
-                  <QrCode className="h-32 w-32 mx-auto mt-4 text-primary" />
-                </div>
-              </div>
-              <div className="mt-4 text-sm text-center">
-                <p>{translate("wifi_credentials", "wifi", { default: "Wi-Fi Credentials:" })}</p>
-                <p className="font-medium mt-1">
-                  SSID: {selectedWifi?.ssid}<br />
-                  {translate("password", "wifi", { default: "Password" })}: {selectedWifi?.password}<br />
-                  {translate("security_type", "wifi", { default: "Security Type" })}: {selectedWifi?.security_type}
-                </p>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowQrCode(false)}>
-              {translate("close", "wifi", { default: "Close" })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
