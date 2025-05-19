@@ -17,7 +17,11 @@ def get_current_user(response: Response, access_token: str = Header(...)):
         raise HTTPException(status_code=401, detail="invalid_header")
     user_id = None
     try:
-        user_id = jwt.decode(token, jwt_secret, algorithms=[str(jwt_algo)],).get("user")
+        user_id = jwt.decode(
+            token,
+            jwt_secret,
+            algorithms=[str(jwt_algo)],
+        ).get("user")
     except ValidationError:
         response.delete_cookie("refresh_token")
         raise HTTPException(status_code=401, detail="invalid_token")

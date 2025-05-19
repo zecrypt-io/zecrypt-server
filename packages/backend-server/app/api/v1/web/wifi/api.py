@@ -6,7 +6,6 @@ from app.api.v1.web.wifi.services import (
     update_wifi,
     add_wifi,
     get_wifis,
-    get_wifi_details,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
@@ -22,9 +21,7 @@ async def get_wifi_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_wifis(user.get("db"), request)
-
 
 
 @router.post(WIFI)

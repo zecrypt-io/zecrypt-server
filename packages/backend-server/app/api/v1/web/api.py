@@ -12,6 +12,7 @@ from app.api.v1.web.identity import api as identity_router
 from app.api.v1.web.cards import api as cards_router
 from app.api.v1.web.wifi import api as wifi_router
 from app.api.v1.web.licenses import api as licenses_router
+from app.api.v1.web.ssh_keys import api as ssh_keys_router
 
 api_router = APIRouter()
 
@@ -24,6 +25,7 @@ api_router.include_router(cards_router.router, tags=["Cards"])
 api_router.include_router(emails_router.router, tags=["Emails"])
 api_router.include_router(identity_router.router, tags=["Identities"])
 api_router.include_router(licenses_router.router, tags=["Licenses"])
+api_router.include_router(ssh_keys_router.router, tags=["SSH Keys"])
 api_router.include_router(wallet_phrases_router.router, tags=["Wallet Phrases"])
 api_router.include_router(wifi_router.router, tags=["Wifi"])
 api_router.include_router(workspace_router.router, tags=["Workspace"])

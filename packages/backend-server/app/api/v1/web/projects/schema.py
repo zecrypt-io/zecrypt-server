@@ -5,6 +5,7 @@ from app.framework.mongo_db.base_model import BaseModel
 
 class AddProject(BaseModel):
     name: str
+    key: Optional[str] = None
     description: Optional[str]
     is_default: Optional[bool] = False
     color: Optional[str] = None

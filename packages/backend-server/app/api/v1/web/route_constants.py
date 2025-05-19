@@ -35,10 +35,17 @@ LICENSE_DETAILS = BASE_URL + "/licenses/{doc_id}"
 EMAILS = BASE_URL + "/emails"
 EMAIL_DETAILS = BASE_URL + "/emails/{doc_id}"
 
+# SSH Keys
+SSH_KEYS = BASE_URL + "/ssh-keys"
+SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
+
 # Login
 LOGIN = "/login"
 LOGOUT = "/logout"
 TWO_FACTOR_AUTH = "/2fa/verify"
+GET_KEYS = "/get-key"
+UPDATE_KEYS = "/update-key"
+
 
 # Audit Logs
 AUDIT_LOGS = "/{workspace_id}/audit-logs"
@@ -48,6 +55,7 @@ AUDIT_LOG_ACTIONS = "/audit-log-actions"
 PROJECTS = "/{workspace_id}/projects"
 PROJECT_DETAILS = "/{workspace_id}/projects/{doc_id}"
 TAGS = "/{workspace_id}/{project_id}/tags"
+PROJECT_KEYS = "/{workspace_id}/project-keys"
 
 # User
 FAVORITE_TAGS = "/favorite-tags"

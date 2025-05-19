@@ -2,6 +2,64 @@ import { getStoredUserData } from './local-storage-utils';
 import { store } from './Redux/store';
 import { UserState } from './Redux/userSlice';
 import { API_ROUTES } from '@/constants/routes';
+import axiosInstance from './Middleware/axiosInstace';
+
+// Define the response structure for get-key
+export interface KeyData {
+  key: {
+    public_key: string;
+    private_key: string;
+  } | null;
+}
+
+export interface GetKeyResponse {
+  status_code: number;
+  message: string;
+  data: KeyData;
+}
+
+// Define the request body for update-key
+export interface UpdateKeyPayload {
+  public_key: string;
+  private_key: string;
+}
+
+export interface UpdateKeyResponse {
+  status_code: number;
+  message: string;
+  data: any;
+}
+
+// API call to get user's encryption keys
+export async function getUserKeys(): Promise<GetKeyResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
+    // NEXT_PUBLIC_API_URL already contains /api/v1/web, so we only need to append the endpoint name
+    const fullUrl = `${baseUrl.replace(/\/$/, '')}/get-key`;
+    
+    // axiosInstance will automatically add the access-token from Redux
+    const response = await axiosInstance.get<GetKeyResponse>(fullUrl);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user keys:", error);
+    throw error;
+  }
+}
+
+// API call to update/set user's encryption keys
+export async function updateUserKeys(payload: UpdateKeyPayload): Promise<UpdateKeyResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
+    // NEXT_PUBLIC_API_URL already contains /api/v1/web, so we only need to append the endpoint name
+    const fullUrl = `${baseUrl.replace(/\/$/, '')}/update-key`;
+    
+    const response = await axiosInstance.post<UpdateKeyResponse>(fullUrl, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user keys:", error);
+    throw error;
+  }
+}
 
 export async function fetchLoginHistory() {
   try {

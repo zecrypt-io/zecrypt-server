@@ -1,32 +1,12 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
-from app.managers import project as project_manager
-from app.managers import secrets as secrets_manager
+from app.managers import (
+    project as project_manager,
+    project_keys as project_keys_manager,
+    secrets as secrets_manager,
+)
 
-from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
-
-
-def create_project_at_signup(request, db, user_id):
-    workspace_id = create_uuid()
-    create_initial_workspace_on_signup(db, request, user_id, workspace_id)
-    data = {
-        "created_by": user_id,
-        "name": "Primary Vault",
-        "lower_name": "primary vault",
-        "is_default": True,
-        "doc_id": create_uuid(),
-        "workspace_id": workspace_id,
-        "features": {
-            "login": {"enabled": True, "is_client_side_encryption": False},
-            "api_key": {"enabled": True, "is_client_side_encryption": False},
-            "wallet_address": {"enabled": True, "is_client_side_encryption": False},
-            "wifi": {"enabled": True, "is_client_side_encryption": False},
-            "identity": {"enabled": True, "is_client_side_encryption": False},
-            "card": {"enabled": True, "is_client_side_encryption": False},
-            "software_license": {"enabled": True, "is_client_side_encryption": False},
-        },
-    }
-    project_manager.insert_one(db, data)
+from app.framework.encryption.service import get_project_key
 
 
 def get_project_details(db, doc_id):
@@ -59,6 +39,7 @@ def get_projects(db, query, sort=None, projection=None, page=1, limit=20):
 def add_project(request, user, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
+
     workspace_id = request.path_params.get("workspace_id")
     project = project_manager.find_one(
         db,
@@ -80,9 +61,11 @@ def add_project(request, user, payload, background_tasks):
         }
     )
     project_manager.insert_one(db, payload)
-
+    add_project_key(db, user_id, payload.get("doc_id"), workspace_id, payload.get("key"))
     return response_helper(
-        status_code=201, message="Project added successfully", data=payload,
+        status_code=201,
+        message="Project added successfully",
+        data=payload,
     )
 
 
@@ -131,12 +114,17 @@ def delete_project(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(status_code=404, message="Project details not found",)
+        return response_helper(
+            status_code=404,
+            message="Project details not found",
+        )
 
     project_manager.delete_one(db, {"doc_id": doc_id})
 
     return response_helper(
-        status_code=200, message="Project deleted successfully", data={},
+        status_code=200,
+        message="Project deleted successfully",
+        data={},
     )
 
 
@@ -152,4 +140,30 @@ def get_tags(db, project_id):
 
     return response_helper(
         status_code=200, message="Tags loaded successfully", data=unique_tags
+    )
+
+
+def add_project_key(db, user_id, project_id, workspace_id, project_key=None):
+    if not project_key:
+        project_key = get_project_key(db, user_id)
+
+    project_keys_manager.insert_one(
+        db,
+        {
+            "doc_id": create_uuid(),
+            "project_id": project_id,
+            "user_id": user_id,
+            "project_key": project_key,
+            "workspace_id": workspace_id,
+        },
+    )
+
+
+def get_project_keys(request, db, user_id):
+    project_keys = project_keys_manager.find(
+        db,
+        {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
+    )
+    return response_helper(
+        status_code=200, message="Project keys loaded successfully", data=project_keys
     )

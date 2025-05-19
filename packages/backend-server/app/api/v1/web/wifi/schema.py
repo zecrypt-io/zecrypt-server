@@ -1,4 +1,4 @@
-from typing import Optional, Literal, List, Any
+from typing import Optional, List, Any
 from pydantic import Field
 
 
@@ -19,4 +19,3 @@ class UpdateWifi(BaseModel):
     data: Optional[Any] = None
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
-

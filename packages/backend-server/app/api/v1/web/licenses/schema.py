@@ -1,4 +1,4 @@
-from typing import Optional, Literal, List, Any
+from typing import Optional, List, Any
 from pydantic import Field
 
 
@@ -19,4 +19,3 @@ class UpdateLicense(BaseModel):
     notes: Optional[str] = None
     tags: Optional[List[str]] = None
     expires_at: Optional[str] = None
-

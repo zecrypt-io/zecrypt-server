@@ -6,10 +6,11 @@ from cryptography.fernet import Fernet
 from app.core.config import settings
 from app.managers import login_activity as login_activity_manager
 from app.utils.date_utils import create_timestamp
+from app.api.v1.web.auth.utils import get_private_key
 
-
-from app.api.v1.web.projects.services import create_project_at_signup
+from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 from app.managers import user as user_manager
+from app.managers import user_keys as user_keys_manager
 from app.utils.jwt_utils import create_jwt_token
 from app.utils.utils import (
     response_helper,
@@ -88,6 +89,7 @@ def record_login_event(request, db, user):
 def create_user(request, db, auth_data, back_ground_tasks):
     user_id = create_uuid()
     totp_secret = random_base32()
+    workspace_id = create_uuid()
     new_user_data = {
         "uid": auth_data.get("id"),
         "name": auth_data.get("display_name"),
@@ -97,6 +99,7 @@ def create_user(request, db, auth_data, back_ground_tasks):
         "user_id": user_id,
         "profile_url": auth_data.get("profile_image_url"),
         "language": "en",
+        "workspace_ids": [workspace_id],
         "auth": {
             "has_password": auth_data.get("has_password"),
             "otp_auth_enabled": auth_data.get("otp_auth_enabled"),
@@ -105,10 +108,14 @@ def create_user(request, db, auth_data, back_ground_tasks):
             "passkey_auth_enabled": auth_data.get("passkey_auth_enabled"),
             "oauth_providers": auth_data.get("oauth_providers"),
         },
-        "2fa": {"totp_secret": encrypt_totp_secret(totp_secret),},
+        "2fa": {
+            "totp_secret": encrypt_totp_secret(totp_secret),
+        },
     }
     user_manager.insert_one(db, new_user_data)
-    back_ground_tasks.add_task(create_project_at_signup, request, db, user_id)
+    back_ground_tasks.add_task(
+        create_initial_workspace_on_signup, db, request, user_id, workspace_id
+    )
     data = {
         "user_id": user_id,
         "language": "en",
@@ -195,3 +202,23 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
         message="Two factor authentication verified successfully",
         data=data,
     )
+
+
+def get_keys(db, user_id):
+    user_key = get_private_key(db, user_id)
+    return response_helper(
+        status_code=200, message="Keys fetched successfully", data={"key": user_key}
+    )
+
+
+def update_keys(db, user, payload):
+    data = {
+        "user_id": user.get("user_id"),
+        "public_key": payload.get("public_key"),
+        "private_key": payload.get("private_key"),
+    }
+    if user_keys_manager.find_one(db, {"user_id": user.get("user_id")}):
+        return response_helper(status_code=400, message="Keys already exist")
+
+    user_keys_manager.insert_one(db, data)
+    return response_helper(status_code=200, message="Keys updated successfully")

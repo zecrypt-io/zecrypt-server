@@ -9,7 +9,6 @@ from app.api.v1.web.identity.services import (
     update_identity,
     add_identity,
     get_identities,
-    get_identity_details,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
@@ -25,7 +24,6 @@ async def get_identity_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_identities(user.get("db"), request)
 
 

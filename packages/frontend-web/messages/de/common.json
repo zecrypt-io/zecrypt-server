@@ -136,7 +136,8 @@
     "identity": "Identität",
     "cards": "Karten",
     "software_licenses": "Software-Lizenzen",
-    "wifi": "WLAN"
+    "wifi": "WLAN",
+    "email":"E-Mail"
   },
   "activity": {
     "password_updated": "Passwort aktualisiert",

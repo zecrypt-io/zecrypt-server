@@ -3,7 +3,6 @@ from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
 from app.api.v1.web.accounts.service import (
     get_accounts,
-    get_account_details,
     add_account,
     update_account,
     delete_account,
@@ -23,6 +22,7 @@ async def get_accounts_api(
     user: UserDetails = Depends(get_current_user),
 ):
     return get_accounts(user.get("db"), request)
+
 
 @router.post(ACCOUNTS)
 async def create_account_api(

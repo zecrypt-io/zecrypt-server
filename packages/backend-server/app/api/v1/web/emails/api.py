@@ -6,7 +6,6 @@ from app.api.v1.web.emails.services import (
     update_email,
     add_email,
     get_emails,
-    get_email_details,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
@@ -22,9 +21,7 @@ async def get_email_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-
     return get_emails(user.get("db"), request)
-
 
 
 @router.post(EMAILS)

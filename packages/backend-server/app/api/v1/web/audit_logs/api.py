@@ -19,5 +19,7 @@ async def get_audit_logs_api(
 
 
 @router.get(AUDIT_LOG_ACTIONS)
-async def get_audit_log_actions_api(user: UserDetails = Depends(get_current_user),):
+async def get_audit_log_actions_api(
+    user: UserDetails = Depends(get_current_user),
+):
     return get_audit_log_actions()
