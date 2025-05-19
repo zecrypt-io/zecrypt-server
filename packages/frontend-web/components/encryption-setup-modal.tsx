@@ -129,7 +129,7 @@ export function EncryptionSetupModal({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
+          <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {tAuth("encryption_password_warning")}
