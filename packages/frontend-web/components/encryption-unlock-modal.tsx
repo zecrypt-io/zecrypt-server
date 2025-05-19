@@ -23,7 +23,8 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
-import { updateUserMasterPassword } from "@/libs/indexed-db-utils";
+import { storeUserEncryptionKeys } from "@/libs/indexed-db-utils";
+import { processAndStoreProjectKeys } from "@/libs/project-crypto-utils";
 
 interface EncryptionUnlockModalProps {
   isOpen: boolean;
@@ -47,8 +48,9 @@ export function EncryptionUnlockModal({
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Get user ID from Redux store
+  // Get user ID and workspace ID from Redux store
   const userId = useSelector((state: RootState) => state.user.userData?.user_id);
+  const workspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   
   const handleUnlock = async () => {
     if (!password) {
@@ -89,14 +91,17 @@ export function EncryptionUnlockModal({
       const publicKeyObj = await importKeyFromString(publicKey, 'public', 'encrypt');
       const privateKeyObj = await importKeyFromString(privateKeyString, 'private', 'decrypt');
       
-      // 6. Store master password in IndexedDB
-      try {
-        console.log('Storing master password for user:', userId);
-        const storeResult = await updateUserMasterPassword(userId, password);
-        console.log('Master password stored successfully:', storeResult);
-      } catch (storeError) {
-        console.error('Failed to store master password:', storeError);
-        // Continue execution - we don't want to block unlocking if this fails
+      // 6. Store the unencrypted keys in IndexedDB (they will be encrypted by the utils)
+      await storeUserEncryptionKeys(userId, publicKey, privateKeyString);
+      
+      // 7. If a workspace is selected, fetch and store project keys
+      if (workspaceId) {
+        try {
+          await processAndStoreProjectKeys(workspaceId, userId);
+        } catch (projectError) {
+          console.error("Error processing project keys:", projectError);
+          // Continue execution even if this fails
+        }
       }
       
       // Success - invoke the callback with both keys

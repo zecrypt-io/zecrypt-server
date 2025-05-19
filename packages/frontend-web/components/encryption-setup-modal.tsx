@@ -26,7 +26,7 @@ import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
-import { storeUserEncryptionKeys, getUserEncryptionKeys } from "@/libs/indexed-db-utils";
+import { storeUserEncryptionKeys } from "@/libs/indexed-db-utils";
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;
@@ -81,13 +81,13 @@ export function EncryptionSetupModal({
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       const derivedEncryptionKey = await deriveKeyFromPassword(password, salt);
       
-      // 3. Encrypt the private key with the derived key
+      // 3. Encrypt the private key with the derived key for backend storage
       const { encryptedData: encryptedPrivateKey, iv } = await encryptWithDerivedKey(
         privateKeyString,
         derivedEncryptionKey
       );
       
-      // 4. Prepare the combined string (salt.iv.encryptedPrivateKey)
+      // 4. Prepare the combined string (salt.iv.encryptedPrivateKey) for backend storage
       const saltString = btoa(String.fromCharCode(...salt));
       const combinedEncryptedPrivateKey = combineEncryptedComponents(
         saltString,
@@ -95,26 +95,12 @@ export function EncryptionSetupModal({
         encryptedPrivateKey
       );
       
-      // 5. Store keys and master password in IndexedDB
-      console.log('Storing encryption keys and master password in IndexedDB for user:', userId);
-      const storeResult = await storeUserEncryptionKeys(
+      // 5. Store the raw keys in IndexedDB (they will be encrypted by the indexed-db-utils)
+      await storeUserEncryptionKeys(
         userId,
         publicKeyString,
-        combinedEncryptedPrivateKey,
-        password
+        privateKeyString
       );
-      console.log('Storage result:', storeResult);
-      
-      // Verify the master password was stored
-      try {
-        const storedKeys = await getUserEncryptionKeys(userId);
-        console.log('Verification of stored master password:', {
-          passwordStored: !!storedKeys.masterPassword,
-          masterPasswordValue: storedKeys.masterPassword
-        });
-      } catch (verifyError) {
-        console.error('Failed to verify stored master password:', verifyError);
-      }
       
       // 6. Send to backend and check response
       const response = await updateUserKeys({
