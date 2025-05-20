@@ -18,7 +18,7 @@ export const loadInitialData = async (accessToken: string) => {
       created_by: workspace.created_by,
       created_at: workspace.created_at,
       updated_at: workspace.updated_at,
-      projects: workspace.projects.map((project: any) => ({
+      projects: Array.isArray(workspace.projects) ? workspace.projects.map((project: any) => ({
         project_id: project.doc_id,
         name: project.name,
         lower_name: project.lower_name,
@@ -30,7 +30,7 @@ export const loadInitialData = async (accessToken: string) => {
         is_default: project.is_default,
         workspace_id: project.workspace_id,
         features: project.features || {},
-      })),
+      })) : [],
     }));
     
     return workspaces;
