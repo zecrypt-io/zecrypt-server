@@ -28,10 +28,6 @@ def load_initial_data(request, user):
     }
     workspaces = workspace_manager.find(db, query)
 
-    for workspace in workspaces:
-        projects = project_manager.find(db, {"workspace_id": workspace.get("doc_id")})
-        workspace["projects"] = projects
-
     return response_helper(200, "Initial data loaded successfully", data=workspaces, count=len(workspaces))
 
 
