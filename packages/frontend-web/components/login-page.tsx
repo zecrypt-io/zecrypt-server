@@ -24,10 +24,7 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 
 // Icons
@@ -65,6 +62,9 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [isNewUser, setIsNewUser] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState(200);
+  const [showLoginForm, setShowLoginForm] = useState(true);
+  const [isAuthFlowComplete, setIsAuthFlowComplete] = useState(false);
+  const [isProcessingAuth, setIsProcessingAuth] = useState(false);
 
   // Generate or load device ID
   useEffect(() => {
@@ -142,81 +142,95 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     proceedToDashboard();
   };
 
+  // Handle Stack Auth login flow
+  const handleStackAuth = async (accessToken: string) => {
+    if (!accessToken || !deviceId) return;
+    
+    try {
+      setError(null);
+      const loginResponse = await stackAuthHandler(accessToken, "login", { device_id: deviceId });
+
+      if (loginResponse?.status_code === 200) {
+        if (loginResponse.data.token) {
+          dispatch(
+            setUserData({
+              user_id: loginResponse.data.user_id || null,
+              name: loginResponse.data.name || user?.displayName || null,
+              profile_url: loginResponse.data.profile_url || user?.profileImageUrl || null,
+              email: user?.primaryEmail || null,
+              access_token: loginResponse.data.token || null,
+              refresh_token: loginResponse.data.refresh_token || null,
+              locale: loginResponse.data.language || locale || "en",
+              is_2fa_enabled: true,
+            })
+          );
+          toast({
+            title: t("login_successful"),
+            description: t("checking_encryption_keys"),
+          });
+          await checkForEncryptionKeys();
+          return;
+        }
+
+        setUserId(loginResponse.data.user_id || null);
+        setIsNewUser(loginResponse.data.is_new_user || false);
+        setProvisioningUri(loginResponse.data.provisioning_uri || null);
+        setShow2FAModal(true);
+        
+        if (loginResponse.data.is_new_user) {
+          toast({
+            title: t("2fa_setup_required"),
+            description: t("scan_qr_with_authenticator"),
+          });
+        }
+        return;
+      }
+
+      setError(`${t("login_failed")}: ${loginResponse?.message || t("unknown_error")}`);
+    } catch (authErr) {
+      console.error("Auth request error:", authErr);
+      setError(t("auth_network_error"));
+    } finally {
+      setIsProcessingAuth(false);
+    }
+  };
+
   useEffect(() => {
     const authenticateUser = async () => {
       if (isLoggingIn || !deviceId) return;
       setIsLoggingIn(true);
 
       try {
-        setError(null);
-        const authDetails = await user?.getAuthJson();
-        const accessToken = authDetails?.accessToken;
-        
-        if (!accessToken) {
-          setIsAuthenticating(false);
-          setIsLoggingIn(false);
-          return;
-        }
-
-        try {
-          const loginResponse = await stackAuthHandler(accessToken, "login", { device_id: deviceId });
-
-          if (loginResponse?.status_code === 200) {
-            if (loginResponse.data.token) {
-              dispatch(
-                setUserData({
-                  user_id: loginResponse.data.user_id || null,
-                  name: loginResponse.data.name || user?.displayName || null,
-                  profile_url: loginResponse.data.profile_url || user?.profileImageUrl || null,
-                  email: user?.primaryEmail || null,
-                  access_token: loginResponse.data.token || null,
-                  refresh_token: loginResponse.data.refresh_token || null,
-                  locale: loginResponse.data.language || locale || "en",
-                  is_2fa_enabled: true,
-                })
-              );
-              toast({
-                title: t("login_successful"),
-                description: t("checking_encryption_keys"),
-              });
-              await checkForEncryptionKeys();
-              return;
-            }
-
-            setUserId(loginResponse.data.user_id || null);
-            setIsNewUser(loginResponse.data.is_new_user || false);
-            setProvisioningUri(loginResponse.data.provisioning_uri || null);
-            setShow2FAModal(true);
-            
-            if (loginResponse.data.is_new_user) {
-              toast({
-                title: t("2fa_setup_required"),
-                description: t("scan_qr_with_authenticator"),
-              });
-            }
-            return;
+        // Check if user is already authenticated
+        if (user) {
+          setShowLoginForm(false); // Hide the login form while processing
+          setIsProcessingAuth(true); // Set processing state to true immediately
+          
+          // Get the auth details and handle the auth flow
+          const authDetails = await user.getAuthJson();
+          const accessToken = authDetails?.accessToken;
+          
+          if (accessToken) {
+            await handleStackAuth(accessToken);
           }
-
-          setError(`${t("login_failed")}: ${loginResponse?.message || t("unknown_error")}`);
-        } catch (authErr) {
-          console.error("Auth request error:", authErr);
-          setError(t("auth_network_error"));
         }
       } catch (err) {
         console.error("Auth flow error:", err);
         setError(t("auth_process_failed"));
+        setShowLoginForm(true); // Show login form again on error
+        setIsProcessingAuth(false);
       } finally {
         setIsAuthenticating(false);
         setIsLoggingIn(false);
       }
     };
 
-    if (user && deviceId) {
+    if (deviceId) {
       authenticateUser();
     } else {
       setIsAuthenticating(false);
     }
-  }, [user, dispatch, locale, deviceId, t]);
+  }, [user, deviceId, t, dispatch, locale]);
 
   const handle2FAVerification = async () => {
     if (!userId || verificationCode.length !== 6) {
@@ -235,6 +249,8 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       });
 
       if (response.status_code === 200) {
+        // Set authentication as complete and update user data
+        setIsAuthFlowComplete(true);
         dispatch(
           setUserData({
             user_id: response.data.user_id || null,
@@ -252,6 +268,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
           description: t("checking_encryption_keys"),
         });
         setShow2FAModal(false);
+        // Proceed to check for encryption keys
         await checkForEncryptionKeys();
       } else {
         setError(t("2fa_verification_failed", { message: response.message || t("invalid_code") }));
@@ -281,11 +298,11 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   };
 
   // Loading state
-  if (isAuthenticating || isCheckingKeys) {
+  if (isAuthenticating || isCheckingKeys || isProcessingAuth || (user && !showLoginForm && !show2FAModal && !isAuthFlowComplete)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-        <p className="text-muted-foreground">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-3"></div>
+        <p className="text-sm text-muted-foreground">
           {isCheckingKeys ? t("checking_encryption_keys") : t("verifying_authentication")}
         </p>
       </div>
@@ -296,18 +313,19 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   if (error && !show2FAModal) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="bg-destructive/10 text-destructive rounded-t-lg">
-            <CardTitle>{t("authentication_error")}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
+        <div className="w-full max-w-md bg-card shadow-md rounded-xl overflow-hidden">
+          <div className="p-4 bg-destructive/10 text-destructive border-b border-destructive/20">
+            <h3 className="font-medium">{t("authentication_error")}</h3>
+          </div>
+          <div className="p-4">
             <p>{error}</p>
-          </CardContent>
-          <CardFooter className="flex justify-end pt-4">
+          </div>
+          <div className="p-4 flex justify-end border-t border-border/30">
             <Button
               onClick={() => {
                 setError(null);
                 setIsAuthenticating(true);
+                setShowLoginForm(true);
                 if (user) {
                   window.location.reload();
                 }
@@ -315,8 +333,8 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             >
               {t("try_again")}
             </Button>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -341,61 +359,62 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             setShow2FAModal(false);
           }
         }}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/30">
               <DialogTitle>{isNewUser ? t("2fa_setup") : t("2fa_verify")}</DialogTitle>
               <DialogDescription>
                 {isNewUser ? t("2fa_scan") : t("2fa_enter_code")}
               </DialogDescription>
             </DialogHeader>
-            {isNewUser && provisioningUri && (
-              <div className="flex flex-col items-center">
-                <div className="bg-white p-4 rounded-lg mb-4">
-                  <QRCodeSVG
-                    value={provisioningUri}
-                    size={qrSize}
-                    level="H"
-                    includeMargin={true}
-                    className="mb-2"
-                  />
-                </div>
-                <div className="text-center space-y-2 w-full">
-                  <p className="text-sm text-muted-foreground">{t("2fa_scan_difficulty")}</p>
-                  <Button
-                    variant="outline"
-                    onClick={copyToClipboard}
-                    className="w-full"
-                    size="sm"
-                  >
-                    {t("copy_setup_key")}
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <label htmlFor="verification-code" className="text-sm font-medium">
-                  {t("verification_code")}
-                </label>
-                <Input
-                  id="verification-code"
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6))}
-                  placeholder={t("2fa_placeholder")}
-                  maxLength={6}
-                  inputMode="numeric"
-                  autoFocus
-                  className="text-center text-xl tracking-widest"
-                />
-              </div>
-              {error && (
-                <div className="bg-destructive/10 text-destructive rounded p-2 text-sm">
-                  {error}
+            <div className="px-6 py-4">
+              {isNewUser && provisioningUri && (
+                <div className="flex flex-col items-center mb-4">
+                  <div className="bg-white p-4 rounded-lg mb-2">
+                    <QRCodeSVG
+                      value={provisioningUri}
+                      size={qrSize}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                  <div className="text-center space-y-2 w-full">
+                    <p className="text-sm text-muted-foreground">{t("2fa_scan_difficulty")}</p>
+                    <Button
+                      variant="outline"
+                      onClick={copyToClipboard}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {t("copy_setup_key")}
+                    </Button>
+                  </div>
                 </div>
               )}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="verification-code" className="text-sm font-medium">
+                    {t("verification_code")}
+                  </label>
+                  <Input
+                    id="verification-code"
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, "").substring(0, 6))}
+                    placeholder={t("2fa_placeholder")}
+                    maxLength={6}
+                    inputMode="numeric"
+                    autoFocus
+                    className="text-center text-xl tracking-widest"
+                  />
+                </div>
+                {error && (
+                  <div className="bg-destructive/10 text-destructive rounded p-2 text-sm">
+                    {error}
+                  </div>
+                )}
+              </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="px-6 py-4 border-t border-border/30 bg-muted/30">
               {!isNewUser && (
                 <Button
                   variant="outline"
@@ -407,7 +426,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
               <Button
                 onClick={handle2FAVerification}
                 disabled={verificationCode.length !== 6 || verifying2FA}
-                className="w-full"
+                className={!isNewUser ? "ml-2" : "w-full"}
               >
                 {verifying2FA ? (
                   <>
@@ -430,58 +449,58 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
         <ThemeToggle />
       </div>
       
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8">
-        {/* Left side - Feature highlights */}
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {features("trial_title")}
-            </h1>
-            <p className="text-muted-foreground">
-              {features("secure_password_manager")}
-            </p>
+      <div className="w-full max-w-4xl bg-card shadow-md rounded-xl overflow-hidden">
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Left side - Feature highlights */}
+          <div className="p-8 bg-gradient-to-br from-background to-background/95 flex flex-col justify-center">
+            <div className="space-y-3 mb-8">
+              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                {features("trial_title")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {features("secure_password_manager")}
+              </p>
+            </div>
+            
+            <div className="space-y-4 mb-8">
+              <FeatureItem icon={<Dices size={16} />} text={features("unlimited_devices")} />
+              <FeatureItem icon={<Lock size={16} />} text={features("shared_vaults")} />
+              <FeatureItem icon={<Shield size={16} />} text={features("advanced_security")} />
+              <FeatureItem icon={<Bell size={16} />} text={features("security_alerts")} />
+              <FeatureItem icon={<Globe size={16} />} text={features("multi_platform")} />
+            </div>
+            
+            <div className="mt-auto pt-4 border-t border-border/30">
+              <p className="text-xs text-muted-foreground">{features("looking_for_options")}</p>
+              <Link href="#" className="text-xs theme-accent-text hover:underline">
+                {features("see_options")}
+              </Link>
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <FeatureItem icon={<Dices size={18} />} text={features("unlimited_devices")} />
-            <FeatureItem icon={<Lock size={18} />} text={features("shared_vaults")} />
-            <FeatureItem icon={<Shield size={18} />} text={features("advanced_security")} />
-            <FeatureItem icon={<Bell size={18} />} text={features("security_alerts")} />
-            <FeatureItem icon={<Globe size={18} />} text={features("multi_platform")} />
-          </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">{features("looking_for_options")}</p>
-            <Link href="#" className="text-sm theme-accent-text hover:underline">
-              {features("see_options")}
-            </Link>
+          {/* Right side - Login component */}
+          <div className="p-6 flex items-center justify-end bg-card">
+            <div className="w-full max-w-sm">
+              {showLoginForm ? (
+                <SignIn
+                  fullPage={false}
+                  automaticRedirect={false}
+                  firstTab="password"
+                  extraInfo={
+                    <div className="text-center text-xs mt-3 text-muted-foreground">
+                      {t("agreement")} <Link href={`/${locale}/terms`} className="theme-accent-text hover:underline">{t("terms")}</Link>
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
+                  <p className="text-sm text-muted-foreground">{t("authenticating")}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        
-        {/* Right side - Login card */}
-        <Card className="shadow-lg border-primary/10">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-medium">{t("login_to_continue")}</CardTitle>
-            <CardDescription>
-              {t("sign_in_with_sso")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Custom SignIn wrapper to remove the email/password option */}
-            <div className="bg-card rounded-lg flex flex-col">
-              <SignIn
-                fullPage={true}
-                automaticRedirect={false}
-                firstTab="password"
-                extraInfo={
-                  <div className="text-center text-sm mt-4 text-muted-foreground">
-                    {t("agreement")} <Link href={`/${locale}/terms`} className="theme-accent-text hover:underline">{t("terms")}</Link>
-                  </div>
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
@@ -495,13 +514,11 @@ interface FeatureItemProps {
 
 function FeatureItem({ icon, text }: FeatureItemProps) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="mt-1 rounded-full theme-accent-bg p-1.5">
-        {icon || <Check className="h-4 w-4 text-white" />}
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 rounded-full theme-accent-bg p-1">
+        {icon || <Check className="h-3.5 w-3.5 text-white" />}
       </div>
-      <div>
-        <p className="text-sm text-muted-foreground">{text}</p>
-      </div>
+      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }
