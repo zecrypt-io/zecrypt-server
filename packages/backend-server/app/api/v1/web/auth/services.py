@@ -6,7 +6,6 @@ from cryptography.fernet import Fernet
 from app.core.config import settings
 from app.managers import login_activity as login_activity_manager
 from app.utils.date_utils import create_timestamp
-from app.api.v1.web.auth.utils import get_private_key
 
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 from app.managers import user as user_manager
@@ -197,8 +196,9 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
 
 
 def get_keys(db, user_id):
-    user_key = get_private_key(db, user_id)
-    return response_helper(200, "Keys fetched successfully", data={"key": user_key})
+    user_key = user_keys_manager.get_private_key(db, user_id)
+    user_public_key = user_keys_manager.get_public_key(db, user_id)
+    return response_helper(200, "Keys fetched successfully", data={"key": user_key, "public_key": user_public_key})
 
 
 def update_keys(db, user, payload):
