@@ -66,6 +66,11 @@ export function EncryptionSetupModal({
       const publicKeyString = await exportKeyToString(keyPair.publicKey, 'public');
       const privateKeyString = await exportKeyToString(keyPair.privateKey, 'private');
       
+      // Store raw keys in session storage
+      sessionStorage.setItem("publicKey", publicKeyString);
+      sessionStorage.setItem("privateKey", privateKeyString);
+      console.log("Public and private keys stored in session storage.");
+      
       // 2. Derive encryption key from password
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       const derivedEncryptionKey = await deriveKeyFromPassword(password, salt);
@@ -119,16 +124,10 @@ export function EncryptionSetupModal({
     <Dialog 
       open={isOpen} 
       onOpenChange={onCancel ? () => onCancel?.() : undefined}
-      onEscapeKeyDown={(e) => {
-        // Prevent closing with Escape key if onCancel is not provided
-        if (!onCancel) {
-          e.preventDefault();
-        }
-      }}
     >
       <DialogContent 
         className="sm:max-w-md" 
-        onInteractOutside={(e) => {
+        onInteractOutside={(e: Event) => {
           // Prevent closing by clicking outside
           e.preventDefault();
         }}
@@ -144,7 +143,7 @@ export function EncryptionSetupModal({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
+          <Alert className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {tAuth("encryption_password_warning")}

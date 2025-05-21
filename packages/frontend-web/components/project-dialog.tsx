@@ -326,6 +326,19 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
     };
 
     try {
+      // Check if the project name is being changed and if there's a stored project key for this project
+      const oldProjectKey = sessionStorage.getItem(`project_key_${project.name}`);
+      if (oldProjectKey && project.name !== name.trim()) {
+        // Store the key with the new project name and remove the old one
+        sessionStorage.setItem(`project_key_${name.trim()}`, oldProjectKey);
+        sessionStorage.removeItem(`project_key_${project.name}`);
+        console.log(`Project key renamed in session storage from ${project.name} to ${name.trim()}`);
+        // Update the common project key if it matches the one we're changing
+        if (sessionStorage.getItem("projectKey") === oldProjectKey) {
+          sessionStorage.setItem("projectKey", oldProjectKey);
+        }
+      }
+      
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/${workspaceId}/projects/${project.id}`,
         {
@@ -584,6 +597,11 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       const { aesKey, encryptedKey } = await generateEncryptedProjectKey(formattedPublicKey);
       
       // Store the plain AES key in session storage for current use
+      const projectStorageKey = `project_key_${name.trim()}`;
+      sessionStorage.setItem(projectStorageKey, aesKey);
+      console.log(`Project key stored in session storage with key: ${projectStorageKey}`);
+      
+      // Also store the latest project key under a common key for backward compatibility
       sessionStorage.setItem("projectKey", aesKey);
       
       const trimmedDescription = description.trim();
