@@ -142,4 +142,6 @@ def get_project_keys(request, db, user_id):
         db,
         {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
     )
+    for key in project_keys:
+        key["project_name"] = project_manager.get_project_name(db, key.get("project_id"))
     return response_helper(200, "Project keys loaded successfully", data=project_keys)
