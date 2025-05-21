@@ -232,7 +232,6 @@ export async function storeProjectKey(
   userId: string,
   projectKey: string
 ): Promise<boolean> {
-  console.log('[IndexedDB] storeProjectKey - projectId:', projectId, 'userId:', userId, 'projectKey (length):', projectKey?.length);
   try {
     const db = await openDatabase();
     
@@ -252,7 +251,6 @@ export async function storeProjectKey(
         iv,
         updatedAt: new Date().toISOString()
       };
-      console.log('[IndexedDB] storeProjectKey - dataToStore:', dataToStore);
       
       const request = objectStore.put(dataToStore);
       
@@ -262,7 +260,6 @@ export async function storeProjectKey(
       };
       
       request.onsuccess = () => {
-        console.log('[IndexedDB] storeProjectKey - Successfully stored project key for projectId:', projectId);
         resolve(true);
       };
       
@@ -278,7 +275,6 @@ export async function storeProjectKey(
 
 // Get project AES key from IndexedDB
 export async function getProjectKey(projectId: string): Promise<string | null> {
-  console.log('[IndexedDB] getProjectKey - projectId:', projectId);
   try {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
@@ -291,7 +287,6 @@ export async function getProjectKey(projectId: string): Promise<string | null> {
       };
       
       request.onsuccess = async () => {
-        console.log('[IndexedDB] getProjectKey - request.result for projectId:', projectId, 'is:', request.result);
         if (request.result) {
           try {
             // Decrypt the stored data
@@ -299,7 +294,6 @@ export async function getProjectKey(projectId: string): Promise<string | null> {
               request.result.encryptedData, 
               request.result.iv
             );
-            console.log('[IndexedDB] getProjectKey - decryptedData for projectId:', projectId, 'is:', decryptedData);
             resolve(decryptedData.projectKey);
           } catch (error) {
             console.error('Error decrypting project key:', error);
@@ -322,7 +316,6 @@ export async function getProjectKey(projectId: string): Promise<string | null> {
 
 // Get all project keys for a user
 export async function getAllProjectKeys(userId: string): Promise<Record<string, string>> {
-  console.log('[IndexedDB] getAllProjectKeys - userId:', userId);
   try {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
@@ -336,7 +329,6 @@ export async function getAllProjectKeys(userId: string): Promise<Record<string, 
       };
       
       request.onsuccess = async () => {
-        console.log('[IndexedDB] getAllProjectKeys - request.result for userId:', userId, 'is:', request.result);
         if (request.result && request.result.length > 0) {
           try {
             const projectKeys: Record<string, string> = {};
@@ -346,7 +338,6 @@ export async function getAllProjectKeys(userId: string): Promise<Record<string, 
               const decryptedData = await decryptData(record.encryptedData, record.iv);
               projectKeys[record.projectId] = decryptedData.projectKey;
             }
-            console.log('[IndexedDB] getAllProjectKeys - decrypted projectKeys for userId:', userId, 'are:', projectKeys);
             resolve(projectKeys);
           } catch (error) {
             console.error('Error decrypting project keys:', error);

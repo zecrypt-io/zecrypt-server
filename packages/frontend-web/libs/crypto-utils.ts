@@ -37,6 +37,31 @@ export async function exportKeyToString(key: CryptoKey, type: 'public' | 'privat
 }
 
 /**
+ * Checks if a string is valid base64.
+ * @param str The string to check
+ */
+export function isValidBase64(str: string): boolean {
+  if (!str) return true; // Empty string is valid base64 according to RFC 4648
+  
+  // Check if the string has valid base64 characters only
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(str)) {
+    return false;
+  }
+  
+  // Check for valid padding
+  if (str.indexOf('=') !== -1 && str.indexOf('=') !== str.length - 1 && str.indexOf('=') !== str.length - 2) {
+    return false;
+  }
+  
+  // Ensure length is valid (multiple of 4)
+  if (str.length % 4 !== 0) {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
  * Imports a CryptoKey from a Base64 encoded string.
  * @param keyString The Base64 encoded key string 
  * @param type Whether it's a 'public' (SPKI) or 'private' (PKCS8) key
@@ -47,26 +72,66 @@ export async function importKeyFromString(
   type: 'public' | 'private', 
   usage: 'encrypt' | 'decrypt'
 ): Promise<CryptoKey> {
+  console.log('[CryptoUtils] importKeyFromString - input keyString length:', keyString?.length);
   const format = type === 'public' ? 'spki' : 'pkcs8';
   const usages = [usage];
   
-  // Convert base64 string to ArrayBuffer
-  const binaryString = atob(keyString);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+  let processedKeyString = keyString;
+
+  try {
+    // Check if this appears to be an AES-encrypted key (formatted as salt.iv.encryptedData)
+    if (keyString.includes('.') && keyString.split('.').length === 3) {
+      console.error('[CryptoUtils] importKeyFromString - Got encrypted key format (salt.iv.data) instead of raw base64 key');
+      throw new Error('Private key is in encrypted format - you need to unlock with master password first');
+    }
+    
+    // Check if the key string is a full PEM certificate and extract the Base64 part
+    if (keyString.includes('-----BEGIN')) {
+      console.log('[CryptoUtils] importKeyFromString - Detected PEM format, extracting Base64 content');
+      processedKeyString = keyString
+        .replace(/-----BEGIN (PRIVATE|PUBLIC) KEY-----/g, '')
+        .replace(/-----END (PRIVATE|PUBLIC) KEY-----/g, '')
+        .replace(/[\r\n\s]+/g, ''); // Remove all whitespace and newlines
+    }
+    
+    // Validate the processed key string is valid base64
+    if (!isValidBase64(processedKeyString)) {
+      console.error('[CryptoUtils] importKeyFromString - Invalid base64 string after processing');
+      throw new Error('Invalid base64 key format');
+    }
+
+    // Convert base64 string to ArrayBuffer
+    const binaryString = atob(processedKeyString);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Try to import the key
+    return await window.crypto.subtle.importKey(
+      format,
+      bytes,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      true,
+      usages
+    );
+  } catch (error) {
+    console.error('[CryptoUtils] importKeyFromString - Error processing key:', error);
+    
+    if (error instanceof DOMException && error.name === 'InvalidCharacterError') {
+      console.error('[CryptoUtils] importKeyFromString - Invalid characters in Base64 string');
+      console.error('[CryptoUtils] Key string first 50 chars:', processedKeyString.substring(0, 50));
+    }
+    
+    if (error instanceof DOMException && error.name === 'DataError') {
+      console.error('[CryptoUtils] importKeyFromString - Data error importing key. Format may be incorrect.');
+    }
+    
+    throw new Error(`Failed to import ${type} key: ${error instanceof Error ? error.message : String(error)}`);
   }
-  
-  return window.crypto.subtle.importKey(
-    format,
-    bytes,
-    {
-      name: "RSA-OAEP",
-      hash: "SHA-256",
-    },
-    true,
-    usages
-  );
 }
 
 /**

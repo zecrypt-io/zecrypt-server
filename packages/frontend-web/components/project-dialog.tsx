@@ -34,6 +34,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { generateEncryptedProjectKey } from "@/libs/encryption";
 import { useToast } from "@/hooks/use-toast";
 import { getUserPublicKey } from "@/libs/indexed-db-utils";
+import { initializeProjectKeySystem } from "@/libs/project-crypto-utils";
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -618,6 +619,24 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       if (!userPublicKey) {
         throw new Error("User's public key not available in IndexedDB");
       }
+
+      // Check if the private key is properly decrypted
+      try {
+        // This will throw an error if the private key is in encrypted format
+        await initializeProjectKeySystem(userId, [workspaceId]);
+      } catch (keyError: any) {
+        if (keyError.message?.includes('encrypted format')) {
+          // Special case: key is encrypted and needs master password
+          toast({
+            title: translate("encryption_locked", "dashboard"),
+            description: translate("please_unlock_encryption", "dashboard"),
+            variant: "destructive",
+          });
+          setError("Your encryption key is locked. Please log out and log back in to unlock your encryption key with your master password.");
+          setIsLoading(false);
+          return;
+        }
+      }
       
       // Ensure the public key is in PEM format with proper headers and footers
       const formattedPublicKey = userPublicKey.includes("-----BEGIN PUBLIC KEY-----") 
@@ -709,6 +728,23 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       }
 
       dispatch(setSelectedProject({ projectId: newProject.project_id }));
+
+      // Call initializeProjectKeySystem to process and store the project key in IndexedDB
+      // We use the projectKey from sessionStorage which was set during creation
+      const projectKey = sessionStorage.getItem("projectKey");
+      if (projectKey) {
+        console.log("[ProjectDialog] Found project key in session storage, length:", projectKey.length);
+        try {
+          await initializeProjectKeySystem(userId, [workspaceId]);
+          console.log("[ProjectDialog] Successfully initialized project key system");
+        } catch (initError) {
+          console.error("[ProjectDialog] Error initializing project key system:", initError);
+          // Continue anyway since we've already created the project
+        }
+      } else {
+        console.warn("[ProjectDialog] No project key found in session storage");
+      }
+      
       onClose();
     } catch (err: any) {
       console.error("CreateProject error:", err);
