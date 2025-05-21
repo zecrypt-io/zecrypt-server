@@ -24,8 +24,8 @@ import { toast } from "@/components/ui/use-toast";
 
 interface EncryptionUnlockModalProps {
   isOpen: boolean;
-  encryptedPrivateKey: string;
-  publicKey: string;
+  encryptedPrivateKey: string; // This is the combined salt.iv.encryptedKey string
+  publicKey: string; // This is the raw Base64 public key string
   onUnlock: (privateKey: CryptoKey, publicKey: CryptoKey) => void;
   onCancel?: () => void;
 }
@@ -45,8 +45,13 @@ export function EncryptionUnlockModal({
   const [error, setError] = useState<string | null>(null);
   
   const handleUnlock = async () => {
+    console.log("[UnlockModal] Attempting to unlock...");
+    console.log("[UnlockModal] Received encryptedPrivateKey (combined):", encryptedPrivateKey);
+    console.log("[UnlockModal] Received publicKey (raw Base64):", publicKey);
+
     if (!password) {
       setError(tAuth("enter_encryption_password"));
+      console.warn("[UnlockModal] No password entered.");
       return;
     }
     
@@ -54,31 +59,57 @@ export function EncryptionUnlockModal({
     setIsUnlocking(true);
     
     try {
-      // 1. Extract components from the combined encrypted private key
+      console.log("[UnlockModal] Step 1: Extracting components from encryptedPrivateKey...");
       const { salt, iv, encryptedData } = extractEncryptedComponents(encryptedPrivateKey);
+      console.log("[UnlockModal] Extracted salt (Base64):", salt);
+      console.log("[UnlockModal] Extracted iv (Base64):", iv);
+      console.log("[UnlockModal] Extracted encryptedData (Base64):", encryptedData);
       
-      // 2. Convert salt from base64 to Uint8Array
+      console.log("[UnlockModal] Step 2: Converting salt from Base64 to Uint8Array...");
       const saltBinaryString = atob(salt);
       const saltBytes = new Uint8Array(saltBinaryString.length);
       for (let i = 0; i < saltBinaryString.length; i++) {
         saltBytes[i] = saltBinaryString.charCodeAt(i);
       }
+      console.log("[UnlockModal] Salt converted to Uint8Array (length):", saltBytes.length);
       
-      // 3. Derive key from password using the extracted salt
+      console.log("[UnlockModal] Step 3: Deriving key from password with extracted salt...");
       const derivedKey = await deriveKeyFromPassword(password, saltBytes);
+      console.log("[UnlockModal] Derived key from password successfully (CryptoKey object).", derivedKey);
       
-      // 4. Decrypt the private key string
+      console.log("[UnlockModal] Step 4: Decrypting private key string...");
       const privateKeyString = await decryptWithDerivedKey(
         encryptedData,
         iv,
         derivedKey
       );
+      console.log("[UnlockModal] Decrypted privateKeyString (should be Base64 PKCS8):", privateKeyString);
       
-      // 5. Import the public and private keys
-      const publicKeyObj = await importKeyFromString(publicKey, 'public', 'encrypt');
-      const privateKeyObj = await importKeyFromString(privateKeyString, 'private', 'decrypt');
+      console.log("[UnlockModal] Step 5: Importing public and private keys...");
       
-      // Success - invoke the callback with both keys
+      let publicKeyObj: CryptoKey;
+      try {
+        console.log("[UnlockModal] Importing publicKey (raw Base64):", publicKey);
+        publicKeyObj = await importKeyFromString(publicKey, 'public', 'encrypt');
+        console.log("[UnlockModal] Imported publicKey successfully (CryptoKey object).", publicKeyObj);
+      } catch (pubKeyImportError: any) {
+        console.error("[UnlockModal] Error importing public key:", pubKeyImportError);
+        console.error("[UnlockModal] Public key string that failed import:", publicKey);
+        throw new Error(`Public key import failed: ${pubKeyImportError.message}`);
+      }
+      
+      let privateKeyObj: CryptoKey;
+      try {
+        console.log("[UnlockModal] Importing privateKeyString (Base64 PKCS8):", privateKeyString);
+        privateKeyObj = await importKeyFromString(privateKeyString, 'private', 'decrypt');
+        console.log("[UnlockModal] Imported privateKey successfully (CryptoKey object).", privateKeyObj);
+      } catch (privKeyImportError: any) {
+        console.error("[UnlockModal] Error importing private key:", privKeyImportError);
+        console.error("[UnlockModal] Private key string that failed import:", privateKeyString);
+        throw new Error(`Private key import failed: ${privKeyImportError.message}`);
+      }
+      
+      console.log("[UnlockModal] Unlock successful, invoking onUnlock callback.");
       onUnlock(privateKeyObj, publicKeyObj);
       
       toast({
@@ -86,10 +117,11 @@ export function EncryptionUnlockModal({
         description: tAuth("encryption_key_decrypted"),
       });
     } catch (err: any) {
-      console.error("Error unlocking encryption key:", err);
-      setError(tAuth("incorrect_encryption_password"));
+      console.error("[UnlockModal] Error during unlock process:", err);
+      setError(tAuth("incorrect_encryption_password")); // Generic error for user
     } finally {
       setIsUnlocking(false);
+      console.log("[UnlockModal] Unlock process finished.");
     }
   };
   

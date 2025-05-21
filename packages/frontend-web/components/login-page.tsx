@@ -25,6 +25,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { toast } from "@/components/ui/use-toast";
 import { getUserKeys } from "@/libs/api-client";
 import { EncryptionSetupModal } from "./encryption-setup-modal";
+import { EncryptionUnlockModal } from "./encryption-unlock-modal";
+import { exportKeyToString } from "@/libs/crypto-utils";
 
 export interface LoginPageProps {
   locale?: string;
@@ -41,6 +43,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [showKeySetupModal, setShowKeySetupModal] = useState(false);
+  const [showKeyUnlockModal, setShowKeyUnlockModal] = useState(false);
   const [provisioningUri, setProvisioningUri] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
@@ -49,6 +52,8 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [isNewUser, setIsNewUser] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState(200);
+  const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<string>("");
+  const [publicKeyString, setPublicKeyString] = useState<string>("");
 
   // Generate or load device ID
   useEffect(() => {
@@ -78,16 +83,44 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const checkForEncryptionKeys = async () => {
     setIsCheckingKeys(true);
     try {
+      // Check if keys already exist in session storage
+      const privateKeyInSession = sessionStorage.getItem("privateKey");
+      const publicKeyInSession = sessionStorage.getItem("publicKey");
+      
+      // If both keys already exist in session storage, proceed to dashboard
+      if (privateKeyInSession && publicKeyInSession) {
+        console.log("Encryption keys found in session storage, proceeding to dashboard");
+        proceedToDashboard();
+        return;
+      }
+      
+      // If keys aren't in session storage, check the API
       const keysResponse = await getUserKeys();
       console.log("Keys response:", keysResponse);
 
       if (keysResponse.status_code === 200) {
-        if (keysResponse.data.key === null) {
-          // No keys found, show setup modal
+        if (keysResponse.data === null) {
+          // No keys found on server, show setup modal
           setShowKeySetupModal(true);
         } else {
-          // Keys exist, proceed to dashboard
-          proceedToDashboard();
+          // Keys exist on server
+          const encryptedKey = keysResponse.data.key; // This is the encrypted private key
+          const publicKey = keysResponse.data.public_key;
+          
+          // Store public key in localStorage for future use
+          if (publicKey) {
+            localStorage.setItem("userPublicKey", publicKey);
+          }
+          
+          if (encryptedKey && publicKey) {
+            // Need to decrypt the private key - show unlock modal
+            setEncryptedPrivateKey(encryptedKey);
+            setPublicKeyString(publicKey);
+            setShowKeyUnlockModal(true);
+          } else {
+            // Something is wrong with the keys
+            throw new Error("Invalid key data received from server");
+          }
         }
       } else {
         throw new Error(keysResponse.message || "Failed to check encryption keys");
@@ -133,6 +166,30 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const handleKeySetupComplete = () => {
     setShowKeySetupModal(false);
     proceedToDashboard();
+  };
+
+  // Handle successful key unlock
+  const handleKeyUnlock = async (privateKeyObj: CryptoKey, publicKeyObj: CryptoKey) => {
+    try {
+      // Export keys to string format for storage
+      const privateKeyString = await exportKeyToString(privateKeyObj, 'private');
+      const publicKeyString = await exportKeyToString(publicKeyObj, 'public');
+      
+      // Store in session storage
+      sessionStorage.setItem("privateKey", privateKeyString);
+      sessionStorage.setItem("publicKey", publicKeyString);
+      console.log("Encryption keys stored in session storage");
+      
+      setShowKeyUnlockModal(false);
+      proceedToDashboard();
+    } catch (error) {
+      console.error("Error exporting keys:", error);
+      toast({
+        title: t("error"),
+        description: t("encryption_security_error"),
+        variant: "destructive"
+      });
+    }
   };
 
   useEffect(() => {
@@ -322,6 +379,26 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       <EncryptionSetupModal
         isOpen={showKeySetupModal}
         onComplete={handleKeySetupComplete}
+        onCancel={() => {
+          // Only allow canceling if not force required
+          setShowKeySetupModal(false);
+          setError(t("encryption_security_error"));
+        }}
+      />
+    );
+  }
+
+  if (showKeyUnlockModal) {
+    return (
+      <EncryptionUnlockModal
+        isOpen={showKeyUnlockModal}
+        encryptedPrivateKey={encryptedPrivateKey}
+        publicKey={publicKeyString}
+        onUnlock={handleKeyUnlock}
+        onCancel={() => {
+          setShowKeyUnlockModal(false);
+          setError(t("encryption_security_error"));
+        }}
       />
     );
   }

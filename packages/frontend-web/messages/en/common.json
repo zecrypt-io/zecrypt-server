@@ -157,7 +157,17 @@
     "2fa_setup": "Two-Factor Authentication Setup",
     "2fa_scan": "Scan the QR code with your authenticator app",
     "2fa_scan_difficulty": "Having trouble scanning? You can copy the setup key below:",
-    "copy_setup_key": "Copy Setup Key"
+    "copy_setup_key": "Copy Setup Key",
+    "unlock_encryption": "Unlock Encryption",
+    "enter_encryption_password": "Enter your master password",
+    "enter_encryption_password_desc": "Enter your master password to decrypt your private key.",
+    "unlocking": "Unlocking...",
+    "unlock": "Unlock",
+    "encryption_unlocked": "Encryption Unlocked",
+    "encryption_key_decrypted": "Your encryption key has been successfully decrypted",
+    "incorrect_encryption_password": "Incorrect master password. Please try again.",
+    "multi_device_login": "Login from New Device",
+    "multi_device_desc": "You're logging in from a new device. Please enter your master password to access your encrypted data."
   },
   "features": {
     "trial_title": "Your all-in-one password manager",

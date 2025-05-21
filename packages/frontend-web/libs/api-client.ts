@@ -6,16 +6,14 @@ import axiosInstance from './Middleware/axiosInstace';
 
 // Define the response structure for get-key
 export interface KeyData {
-  key: {
-    public_key: string;
-    private_key: string;
-  } | null;
+  key: string; // This is the encrypted private key
+  public_key: string;
 }
 
 export interface GetKeyResponse {
   status_code: number;
   message: string;
-  data: KeyData;
+  data: KeyData | null;
 }
 
 // Define the request body for update-key
