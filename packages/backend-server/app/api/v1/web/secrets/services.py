@@ -1,27 +1,30 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
-from app.utils.constants import SECRET_TYPE_IDENTITY
+from app.api.v1.web.secrets.messages import messages
 
-data_type = SECRET_TYPE_IDENTITY
+async def get_secret_details(db, data_type, doc_id):
+    secret = secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False})
+    
+    if not secret:
+        return response_helper(404, messages[data_type]["not_found"])
+    
+    return response_helper(200, messages[data_type]["details"], data=secret)
 
 
-def get_identity_details(db, doc_id):
-    return response_helper(200, "Identity details loaded successfully", data=secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}))
-
-
-def get_identities(db, request):
+async def get_secrets(request, user, data_type):
+    db = user.get("db")
     query = {
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
     }
 
-    identities = secrets_manager.find(db, query)
+    cards = secrets_manager.find(db, query)
 
-    return response_helper(200, "Identities loaded successfully", data=identities, count=len(identities))
+    return response_helper(200, messages[data_type]["list"], data=cards, count=len(cards))
 
 
-def add_identity(request, user, payload, background_tasks):
+async def add_secret(request, user, data_type, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -32,12 +35,13 @@ def add_identity(request, user, payload, background_tasks):
         "project_id": project_id,
         "secret_type": data_type,
     }
-    identity = secrets_manager.find_one(
+
+    card = secrets_manager.find_one(
         db,
         query,
     )
-    if identity:
-        return response_helper(400, "Identity details with same title already exists")
+    if card:
+        return response_helper(400, messages[data_type]["already_exists"])
 
     payload.update(
         {
@@ -50,10 +54,10 @@ def add_identity(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(201, "Identity details added successfully", data=payload)
+    return response_helper(201, messages[data_type]["add"], data=payload)
 
 
-def update_identity(request, user, payload, background_tasks):
+async def update_secret(request, user, data_type, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -61,6 +65,7 @@ def update_identity(request, user, payload, background_tasks):
     payload = filter_payload(payload)
     payload.update({"updated_at": create_timestamp(), "updated_by": user_id})
 
+    # Process name if it exists in the payload
     if payload.get("title"):
         lower_title = payload["title"].strip().lower()
         payload["lower_title"] = lower_title
@@ -75,24 +80,26 @@ def update_identity(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(400, "Identity details with same title already exists")
+            return response_helper(400, messages[data_type]["already_exists"])
 
+    # Update account
     secrets_manager.update_one(
         db,
         {"doc_id": doc_id},
         {"$set": payload},
     )
 
-    return response_helper(200, "Identity details updated successfully")
+    return response_helper(200, messages[data_type]["update"], data=payload)
 
 
-def delete_identity(request, user, background_tasks):
+async def delete_secret(request, user, data_type, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(404, "Identity details not found")
+        return response_helper(404, messages[data_type]["not_found"])
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(200, "Identity details deleted successfully", data={})
+    return response_helper(200, messages[data_type]["delete"], data={})
+

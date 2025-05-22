@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
 from app.api.v1.web.emails.schema import UpdateEmail, AddEmail
-from app.api.v1.web.emails.services import (
-    delete_email,
-    update_email,
-    add_email,
-    get_emails,
+from app.api.v1.web.secrets.services import (
+    delete_secret,
+    update_secret,
+    add_secret,
+    get_secrets,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.route_constants import EMAIL_DETAILS, EMAILS
+from app.utils.constants import SECRET_TYPE_EMAIL as data_type
 
 router = APIRouter()
 
@@ -21,7 +22,7 @@ async def get_email_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return get_emails(user.get("db"), request)
+    return await get_secrets(request, user, data_type)
 
 
 @router.post(EMAILS)
@@ -33,7 +34,7 @@ async def create_emails_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_email(request, user, payload.model_dump(), background_tasks)
+    return await add_secret(request, user, data_type, payload.model_dump(), background_tasks)
 
 
 @router.put(EMAIL_DETAILS)
@@ -46,7 +47,7 @@ async def update_email_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_email(request, user, payload.model_dump(), background_tasks)
+    return await update_secret(request, user, data_type, payload.model_dump(), background_tasks)
 
 
 @router.delete(EMAIL_DETAILS)
@@ -58,4 +59,4 @@ async def delete_email_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_email(request, user, background_tasks)
+    return await delete_secret(request, user, data_type, background_tasks)

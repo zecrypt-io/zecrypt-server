@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
 from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey
-from app.api.v1.web.api_keys.services import (
-    delete_api_key,
-    update_api_key,
-    add_api_key,
-    get_api_keys,
+from app.api.v1.web.secrets.services import (
+    delete_secret,
+    update_secret,
+    add_secret,
+    get_secrets,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.route_constants import API_KEY_DETAILS, API_KEYS
-
+from app.utils.constants import SECRET_TYPE_API_KEY as data_type
 router = APIRouter()
 
 
@@ -21,7 +21,7 @@ async def get_api_key_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return get_api_keys(user.get("db"), request)
+    return await get_secrets(request, user, data_type)
 
 
 @router.post(API_KEYS)
@@ -33,7 +33,7 @@ async def create_api_keys_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_api_key(request, user, payload.model_dump(), background_tasks)
+    return await add_secret(request, user, data_type, payload.model_dump(), background_tasks)
 
 
 @router.put(API_KEY_DETAILS)
@@ -46,7 +46,7 @@ async def update_api_key_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_api_key(request, user, payload.model_dump(), background_tasks)
+    return await update_secret(request, user, data_type, payload.model_dump(), background_tasks)
 
 
 @router.delete(API_KEY_DETAILS)
@@ -58,4 +58,4 @@ async def delete_api_keys_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_api_key(request, user, background_tasks)
+    return await delete_secret(request, user, data_type, background_tasks)
