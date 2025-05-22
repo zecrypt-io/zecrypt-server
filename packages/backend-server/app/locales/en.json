@@ -1,0 +1,134 @@
+{
+    "card": {
+        "add": "Card added successfully",
+        "update": "Card details updated successfully",
+        "delete": "Card details deleted successfully",
+        "details": "Card details loaded successfully",
+        "not_found": "Card details not found",
+        "already_exists": "Card details with same name already exists",
+        "list": "Cards loaded successfully"
+    },
+    "api_key": {
+        "add": "API Key added successfully",
+        "update": "API Key details updated successfully",
+        "delete": "API Key details deleted successfully",
+        "details": "API Key details loaded successfully",
+        "not_found": "API Key details not found",
+        "already_exists": "API Key details with same name already exists",
+        "list": "API Keys loaded successfully"
+    },
+    "wallet_phrase": {
+        "add": "Wallet Phrase added successfully",
+        "update": "Wallet Phrase details updated successfully",
+        "delete": "Wallet Phrase details deleted successfully",
+        "details": "Wallet Phrase details loaded successfully",
+        "not_found": "Wallet Phrase details not found",
+        "already_exists": "Wallet Phrase details with same name already exists",
+        "list": "Wallet Phrases loaded successfully"
+    },
+    "wifi": {
+        "add": "WiFi added successfully",
+        "update": "WiFi details updated successfully",
+        "delete": "WiFi details deleted successfully",
+        "details": "WiFi details loaded successfully",
+        "not_found": "WiFi details not found",
+        "already_exists": "WiFi details with same name already exists",
+        "list": "WiFi details loaded successfully"
+    },
+    "license": {
+        "add": "License added successfully",
+        "update": "License details updated successfully",
+        "delete": "License details deleted successfully",
+        "details": "License details loaded successfully",
+        "not_found": "License details not found",
+        "already_exists": "License details with same name already exists",
+        "list": "Licenses loaded successfully"
+    },
+    "login": {
+        "add": "Account added successfully",
+        "update": "Account details updated successfully",
+        "delete": "Account details deleted successfully",
+        "details": "Account details loaded successfully",
+        "not_found": "Account details not found",
+        "already_exists": "Account details with same name already exists",
+        "list": "Accounts loaded successfully"
+    },
+    "identity": {
+        "add": "Identity added successfully",
+        "update": "Identity details updated successfully",
+        "delete": "Identity details deleted successfully",
+        "details": "Identity details loaded successfully",
+        "not_found": "Identity details not found",
+        "already_exists": "Identity details with same name already exists",
+        "list": "Identities loaded successfully"
+    },
+    "email": {
+        "add": "Email added successfully",
+        "update": "Email details updated successfully",
+        "delete": "Email details deleted successfully",
+        "details": "Email details loaded successfully",
+        "not_found": "Email details not found",
+        "already_exists": "Email details with same name already exists",
+        "list": "Emails loaded successfully"
+    },
+    "ssh_key": {
+        "add": "SSH Key added successfully",
+        "update": "SSH Key details updated successfully",
+        "delete": "SSH Key details deleted successfully",
+        "details": "SSH Key details loaded successfully",
+        "not_found": "SSH Key details not found",
+        "already_exists": "SSH Key details with same name already exists",
+        "list": "SSH Keys loaded successfully"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Workspace details loaded successfully",
+        "tags": "Tags loaded successfully",
+        "initial_data": "Initial data loaded successfully"
+    },
+    "project":{
+        "details": "Project details loaded successfully",
+        "list": "Projects loaded successfully",
+        "already_exists": "Project already exists",
+        "added": "Project added successfully",
+        "updated": "Project updated successfully",
+        "keys": "Project keys loaded successfully",
+        "deleted": "Project deleted successfully",
+        "not_found": "Project details not found",
+        "tags": "Tags loaded successfully"
+    },
+    "user": {
+        "favorite_tags_list": "Favorite tags fetched successfully",
+        "favorite_tags_updated": "Favorite tags updated successfully",
+        "profile_details": "Profile details loaded successfully",
+        "login_history": "Login history loaded successfully",
+        "profile_updated": "Profile updated successfully",
+        "no_changes_to_update": "No changes to update",
+        "user_details_not_found": "User details not found"
+    },
+    "auth":{
+        "user_signed_up": "User signed up successfully",
+        "user_logged_in": "User logged in successfully",
+        "invalid_code": "Invalid code, Pease try again",
+        "two_factor_auth_verified": "Two factor authentication verified successfully",
+        "keys_fetched": "Keys fetched successfully",
+        "keys_already_exist": "Keys already exist",
+        "keys_updated": "Keys updated successfully",
+        "user_details_not_found": "User details not found",
+        "user_logged_out": "User logged out successfully",
+        "authentication_failed": "Authentication failed, Please try again"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Audit logs loaded successfully",
+        "audit_log_actions": "Audit log actions loaded successfully"
+    }
+}
+
+
+
+
+
+
+

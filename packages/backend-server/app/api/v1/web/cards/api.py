@@ -34,7 +34,9 @@ async def create_cards_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await add_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await add_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.put(CARD_DETAILS)
@@ -47,7 +49,9 @@ async def update_card_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await update_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await update_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.delete(CARD_DETAILS)

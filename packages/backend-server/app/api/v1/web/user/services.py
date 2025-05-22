@@ -2,7 +2,7 @@ from app.utils.utils import response_helper
 from app.managers import favorite_tags as favorite_tags_manager
 from app.managers import login_activity as login_activity_manager
 from app.managers import user as user_manager
-
+from app.utils.i8ns import translate
 from app.utils.utils import filter_payload
 
 
@@ -11,7 +11,7 @@ def get_favorite_tags(request, user):
         user.get("db"), {"created_by": user.get("user_id")}
     )
 
-    return response_helper(200, "Favorite tags fetched successfully", data=tags)
+    return response_helper(200, translate("user.favorite_tags_list"), data=tags)
 
 
 def update_favorite_tags(request, user, payload):
@@ -29,7 +29,7 @@ def update_favorite_tags(request, user, payload):
     favorite_tags_manager.update_one(
         db, query, {**update_ops, "$setOnInsert": {"created_by": user_id}}, upsert=True
     )
-    return response_helper(200, "Favorite tags updated successfully")
+    return response_helper(200, translate("user.favorite_tags_updated"))
 
 
 def get_profile(request, user):
@@ -40,7 +40,7 @@ def get_profile(request, user):
         "profile_url": user.get("profile_url"),
         "language": user.get("language", "en"),
     }
-    return response_helper(200, "Profile fetched successfully", data=data)
+    return response_helper(200, translate("user.profile_details"), data=data)
 
 
 def get_login_history(request, user):
@@ -51,7 +51,7 @@ def get_login_history(request, user):
         skip=0,
         limit=10,
     )
-    return response_helper(200, "Login history fetched successfully", data=login_history)
+    return response_helper(200, translate("user.login_history"), data=login_history)
 
 
 def update_profile(request, user, payload):
@@ -60,6 +60,6 @@ def update_profile(request, user, payload):
     if payload:
         query = {"user_id": user.get("user_id")}
         user_manager.update_one(user.get("db"), query, {"$set": payload})
-        return response_helper(200, "Profile updated successfully")
+        return response_helper(200, translate("user.profile_updated"))
     else:
-        return response_helper(200, "No changes to update")
+        return response_helper(200, translate("user.no_changes_to_update"))

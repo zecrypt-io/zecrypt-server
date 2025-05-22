@@ -39,7 +39,9 @@ async def create_wallet_phrase_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await add_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await add_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.put(WALLET_PHRASE_DETAILS)
@@ -52,7 +54,9 @@ async def update_wallet_phrase_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await update_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await update_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.delete(WALLET_PHRASE_DETAILS)

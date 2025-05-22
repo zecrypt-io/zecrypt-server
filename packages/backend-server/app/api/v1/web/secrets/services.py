@@ -1,15 +1,18 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
-from app.api.v1.web.secrets.messages import messages
+from app.utils.i8ns import translate
+
 
 async def get_secret_details(db, data_type, doc_id):
-    secret = secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False})
-    
+    secret = secrets_manager.find_one(
+        db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
+    )
+
     if not secret:
-        return response_helper(404, messages[data_type]["not_found"])
-    
-    return response_helper(200, messages[data_type]["details"], data=secret)
+        return response_helper(404, translate(f"{data_type}.not_found"))
+
+    return response_helper(200, translate(f"{data_type}.details"), data=secret)
 
 
 async def get_secrets(request, user, data_type):
@@ -21,7 +24,9 @@ async def get_secrets(request, user, data_type):
 
     cards = secrets_manager.find(db, query)
 
-    return response_helper(200, messages[data_type]["list"], data=cards, count=len(cards))
+    return response_helper(
+        200, translate(f"{data_type}.list"), data=cards, count=len(cards)
+    )
 
 
 async def add_secret(request, user, data_type, payload, background_tasks):
@@ -41,7 +46,7 @@ async def add_secret(request, user, data_type, payload, background_tasks):
         query,
     )
     if card:
-        return response_helper(400, messages[data_type]["already_exists"])
+        return response_helper(400, translate(f"{data_type}.already_exists"))
 
     payload.update(
         {
@@ -54,7 +59,7 @@ async def add_secret(request, user, data_type, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(201, messages[data_type]["add"], data=payload)
+    return response_helper(201, translate(f"{data_type}.add"), data=payload)
 
 
 async def update_secret(request, user, data_type, payload, background_tasks):
@@ -80,7 +85,7 @@ async def update_secret(request, user, data_type, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(400, messages[data_type]["already_exists"])
+            return response_helper(400, translate(f"{data_type}.already_exists"))
 
     # Update account
     secrets_manager.update_one(
@@ -89,7 +94,7 @@ async def update_secret(request, user, data_type, payload, background_tasks):
         {"$set": payload},
     )
 
-    return response_helper(200, messages[data_type]["update"], data=payload)
+    return response_helper(200, translate(f"{data_type}.update"), data=payload)
 
 
 async def delete_secret(request, user, data_type, background_tasks):
@@ -97,9 +102,8 @@ async def delete_secret(request, user, data_type, background_tasks):
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(404, messages[data_type]["not_found"])
+        return response_helper(404, translate(f"{data_type}.not_found"))
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(200, messages[data_type]["delete"], data={})
-
+    return response_helper(200, translate(f"{data_type}.delete"), data={})

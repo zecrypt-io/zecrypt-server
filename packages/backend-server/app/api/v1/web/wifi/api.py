@@ -11,6 +11,7 @@ from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.route_constants import WIFI_DETAILS, WIFI
 from app.utils.constants import SECRET_TYPE_WIFI as data_type
+
 router = APIRouter()
 
 
@@ -33,7 +34,9 @@ async def create_wifi_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await add_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await add_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.put(WIFI_DETAILS)
@@ -46,7 +49,9 @@ async def update_wifi_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return await update_secret(request, user, data_type, payload.model_dump(), background_tasks)
+    return await update_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.delete(WIFI_DETAILS)

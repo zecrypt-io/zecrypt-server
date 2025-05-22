@@ -4,6 +4,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from app.api.v1.api import api_router
+from app.middlewares.lang_middleware import LanguageMiddleware
+from app.utils.i8ns import load_translations, translate
+
+load_translations()
 
 app = FastAPI(
     title="Zecrypt API Documentation",
@@ -22,6 +26,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LanguageMiddleware)
 
 # Templates (HTML)
 templates = Jinja2Templates(directory="templates")
@@ -36,6 +41,7 @@ app.mount("/static", static_files)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": translate("health.status")}

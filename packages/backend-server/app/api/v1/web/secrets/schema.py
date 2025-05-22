@@ -2,12 +2,23 @@ from enum import Enum
 from typing import Optional, List, Literal, Union, Annotated
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.utils.constants import SECRET_TYPE_ACCOUNT, SECRET_TYPE_API_KEY, SECRET_TYPE_CARD, SECRET_TYPE_EMAIL, SECRET_TYPE_IDENTITY, SECRET_TYPE_LICENSE, SECRET_TYPE_SSH_KEY, SECRET_TYPE_WALLET_PHRASE, SECRET_TYPE_WIFI
+from app.utils.constants import (
+    SECRET_TYPE_ACCOUNT,
+    SECRET_TYPE_API_KEY,
+    SECRET_TYPE_CARD,
+    SECRET_TYPE_EMAIL,
+    SECRET_TYPE_IDENTITY,
+    SECRET_TYPE_LICENSE,
+    SECRET_TYPE_SSH_KEY,
+    SECRET_TYPE_WALLET_PHRASE,
+    SECRET_TYPE_WIFI,
+)
 
 
 # -------------------------
 # Enum
 # -------------------------
+
 
 class SecretType(str, Enum):
     ACCOUNT = SECRET_TYPE_ACCOUNT
@@ -25,6 +36,7 @@ class SecretType(str, Enum):
 # Base Models
 # -------------------------
 
+
 class BaseSecretSchema(BaseModel):
     title: str
     type: SecretType
@@ -38,6 +50,7 @@ class BaseSecretSchema(BaseModel):
 # -------------------------
 # Create Models
 # -------------------------
+
 
 class AccountSecret(BaseSecretSchema):
     type: Literal[SecretType.ACCOUNT] = SecretType.ACCOUNT
@@ -103,6 +116,7 @@ SecretCreateSchema = Annotated[
 # -------------------------
 # Update Models
 # -------------------------
+
 
 class BaseSecretUpdateSchema(BaseModel):
     title: Optional[str] = None
