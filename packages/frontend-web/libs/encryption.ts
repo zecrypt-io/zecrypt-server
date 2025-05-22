@@ -104,6 +104,39 @@ export async function importRSAPublicKey(publicKeyPem: string) {
   }
 }
 
+// Import RSA private key for decryption
+export async function importRSAPrivateKey(privateKeyPem: string) {
+  try {
+    // Remove header, footer, and newlines from PEM
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = privateKeyPem.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "");
+    
+    // Decode base64
+    const binaryDer = window.atob(pemContents);
+    const buffer = new ArrayBuffer(binaryDer.length);
+    const bufView = new Uint8Array(buffer);
+    for (let i = 0; i < binaryDer.length; i++) {
+      bufView[i] = binaryDer.charCodeAt(i);
+    }
+    
+    // Import key
+    return await window.crypto.subtle.importKey(
+      "pkcs8",
+      buffer,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256"
+      },
+      false,
+      ["decrypt"]
+    );
+  } catch (error) {
+    console.error("Error importing RSA private key:", error);
+    throw new Error("Failed to import RSA private key");
+  }
+}
+
 // Encrypt AES key with RSA public key
 export async function encryptAESKeyWithRSA(aesKeyHex: string, rsaPublicKey: CryptoKey) {
   try {
@@ -127,6 +160,36 @@ export async function encryptAESKeyWithRSA(aesKeyHex: string, rsaPublicKey: Cryp
   } catch (error) {
     console.error("Error encrypting AES key with RSA:", error);
     throw new Error("Failed to encrypt AES key");
+  }
+}
+
+// Decrypt AES key with RSA private key
+export async function decryptAESKeyWithRSA(encryptedKeyBase64: string, rsaPrivateKey: CryptoKey) {
+  try {
+    // Convert base64 back to ArrayBuffer
+    const binaryString = atob(encryptedKeyBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Decrypt the AES key with RSA-OAEP
+    const decryptedKey = await window.crypto.subtle.decrypt(
+      {
+        name: "RSA-OAEP"
+      },
+      rsaPrivateKey,
+      bytes
+    );
+    
+    // Convert to hex string
+    const decryptedKeyArray = Array.from(new Uint8Array(decryptedKey));
+    const hexKey = decryptedKeyArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    console.log("decryptAESKeyWithRSA: hexKey", hexKey);
+    return hexKey;
+  } catch (error) {
+    console.error("Error decrypting AES key with RSA:", error);
+    throw new Error("Failed to decrypt AES key");
   }
 }
 

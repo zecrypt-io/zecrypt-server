@@ -20,7 +20,7 @@ export const loadInitialData = async (accessToken: string) => {
       projects: [], // Initialize with empty array since projects are no longer included
     }));
     
-    console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
+    // console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
     return workspaces;
   } catch (err) {
     console.error("Error loading initial data:", err);
@@ -109,6 +109,42 @@ export const fetchProjectDetails = async (workspaceId: string, projectId: string
     }
   } catch (err) {
     console.error("Error fetching project details:", err);
+    return null;
+  }
+};
+
+// New function to fetch project keys for a workspace
+export const fetchProjectKeys = async (workspaceId: string, accessToken: string) => {
+  if (!accessToken) {
+    console.error("No access token provided for fetchProjectKeys");
+    return null;
+  }
+  
+  if (!workspaceId) {
+    console.error("No workspace ID provided for fetchProjectKeys");
+    return null;
+  }
+  
+  try {
+    const response = await axiosInstance.get(`/${workspaceId}/project-keys`);
+    const data = response.data;
+    
+    if (data.status_code === 200) {
+      return data.data.map((projectKey: any) => ({
+        doc_id: projectKey.doc_id,
+        project_id: projectKey.project_id,
+        user_id: projectKey.user_id,
+        project_key: projectKey.project_key,
+        workspace_id: projectKey.workspace_id,
+        created_at: projectKey.created_at,
+        updated_at: projectKey.updated_at,
+        project_name: projectKey.project_name || ""
+      }));
+    } else {
+      throw new Error(data.message || "Failed to fetch project keys");
+    }
+  } catch (err) {
+    console.error("Error fetching project keys:", err);
     return null;
   }
 };

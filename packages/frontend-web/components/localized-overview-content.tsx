@@ -9,10 +9,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
-import type { UseTranslatorReturnType } from "@/hooks/use-translations";
 import { useFormatter } from "next-intl";
 import { useUser } from "@stackframe/stack";
-import { loadInitialData, fetchProjects } from "@/libs/getWorkspace";
+import { loadInitialData, fetchProjects, fetchProjectKeys } from "@/libs/getWorkspace";
+import { importRSAPrivateKey, decryptAESKeyWithRSA } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
 
 export function LocalizedOverviewContent() {
@@ -64,30 +64,47 @@ export function LocalizedOverviewContent() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("fetchData: Starting...");
       if (!accessToken) {
-        console.error("No access token available in Redux");
+        console.error("fetchData: No access token available in Redux");
         dispatch(setWorkspaceData({ workspaces: [], selectedWorkspaceId: null, selectedProjectId: null }));
         return;
       }
+      console.log("fetchData: Access token available.");
 
       const initialData: Workspace[] | null = await loadInitialData(accessToken);
+      console.log("fetchData: initialData fetched", initialData);
+
       if (initialData && Array.isArray(initialData) && initialData.length > 0) {
+        console.log("fetchData: initialData is valid and has workspaces.");
         const defaultWorkspace = initialData[0];
+        // console.log("fetchData: defaultWorkspace", defaultWorkspace);
+
         const projectsData = await fetchProjects(defaultWorkspace.workspaceId, accessToken);
+        console.log("fetchData: projectsData fetched", projectsData);
 
         if (projectsData && projectsData.projects && projectsData.projects.length > 0) {
+          console.log("fetchData: projectsData is valid and has projects. Preparing to call syncProjectKeys.");
           setForceCreateProject(false);
           const updatedInitialData = initialData.map(ws => 
             ws.workspaceId === defaultWorkspace.workspaceId ? { ...ws, projects: projectsData.projects } : ws
           );
+          
           console.log("✅ Dispatching initial data to Redux with new projects (localized):", updatedInitialData);
           const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
+          
           dispatch(setWorkspaceData({
             workspaces: updatedInitialData,
             selectedWorkspaceId: defaultWorkspace.workspaceId,
             selectedProjectId: selectedProjectId || defaultProj?.project_id || projectsData.projects[0]?.project_id || null,
           }));
+          
+          // After projects are loaded, check and synchronize project keys
+          console.log(`fetchData: About to call syncProjectKeys with workspaceId: ${defaultWorkspace.workspaceId} and projects:`, projectsData.projects);
+          await syncProjectKeys(defaultWorkspace.workspaceId, projectsData.projects);
+          console.log("fetchData: syncProjectKeys has been called.");
         } else {
+          console.log("fetchData: No projects found in projectsData, or projectsData is invalid. Skipping syncProjectKeys.", projectsData);
           console.log("No projects found, showing project creation dialog (forced, localized)");
           dispatch(setWorkspaceData({
             workspaces: initialData.map(ws => ({ ...ws, projects: [] })),
@@ -106,6 +123,80 @@ export function LocalizedOverviewContent() {
 
     fetchData();
   }, [accessToken, dispatch, selectedProjectId]);
+
+  // Function to synchronize project keys
+  const syncProjectKeys = async (workspaceId: string, projects: Project[]) => {
+    console.log("syncProjectKeys: Function has been entered. Args:", { workspaceId, projects });
+    if (!workspaceId || !projects.length) {
+      console.log("syncProjectKeys: Returning early because workspaceId is missing or projects array is empty.", { workspaceId, projectsLength: projects?.length });
+      return;
+    }
+    
+    try {
+      console.log("syncProjectKeys: Starting try block.");
+      // Get all project keys from session storage
+      const storedKeys: Record<string, string> = {};
+      projects.forEach(project => {
+        const storedKey = sessionStorage.getItem(`projectKey_${project.project_id}`);
+        console.log("syncProjectKeys: storedKey", storedKey);
+        if (storedKey) {
+          storedKeys[project.project_id] = storedKey;
+        }
+      });
+
+      // Check if any keys are missing
+      const missingKeyProjects = projects.filter(project => !storedKeys[project.project_id]);
+      
+      if (missingKeyProjects.length === 0) {
+        console.log("All project keys are present in session storage");
+        return; // All keys are already in session storage
+      }
+      
+      console.log("Missing project keys for projects:", missingKeyProjects.map(p => p.name));
+
+      // Fetch project keys from API
+      if (!accessToken) {
+        console.log("syncProjectKeys: Missing accessToken, returning early.");
+        return;
+      }
+      const projectKeys = await fetchProjectKeys(workspaceId, accessToken);
+      
+      if (!projectKeys) {
+        console.error("Failed to fetch project keys from API");
+        return;
+      }
+
+      // Get user's private key from session storage to decrypt project keys
+      const privateKeyPEM = sessionStorage.getItem('privateKey');
+      console.log("syncProjectKeys: privateKeyPEM", privateKeyPEM);
+      if (!privateKeyPEM) {
+        console.error("Private key not found in session storage");
+        return;
+      }
+
+      // Import the private key
+      const privateKey = await importRSAPrivateKey(privateKeyPEM);
+      console.log("syncProjectKeys: privateKey", privateKey);
+      // Process each project key that needs to be added to session storage
+      for (const projectKey of projectKeys) {
+        if (missingKeyProjects.some(p => p.project_id === projectKey.project_id)) {
+          try {
+            console.log("decryption started")
+            // Decrypt the project key using the user's private key
+            const decryptedKey = await decryptAESKeyWithRSA(projectKey.project_key, privateKey);
+            console.log("syncProjectKeys: decryptedKey", decryptedKey);
+            // Store the decrypted key in session storage
+            sessionStorage.setItem(`projectKey_${projectKey.project_name}`, decryptedKey);
+            console.log(`✅ Project key synchronized for project: ${projectKey.project_name || projectKey.project_id}`);
+          } catch (error) {
+            console.error(`Error processing key for project ID ${projectKey.project_id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error synchronizing project keys:", error);
+    }
+  };
 
   // Mock recent activities with dynamic time formatting
   const recentActivities = [
