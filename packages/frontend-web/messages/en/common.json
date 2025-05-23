@@ -630,7 +630,8 @@
     "copied": "Copied",
     "passphrase_copied": "Passphrase copied to clipboard",
     "copy_failed": "Copy failed",
-    "failed_to_copy_passphrase": "Failed to copy passphrase to clipboard"
+    "failed_to_copy_passphrase": "Failed to copy passphrase to clipboard",
+    "cancel": "Cancel"
   },
   "identity": {
     "title": "Identity",

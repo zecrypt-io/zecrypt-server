@@ -441,7 +441,8 @@
     "please_wait_while_we_fetch_your_secure_passphrases": "Bitte warten Sie, während wir Ihre sicheren Passphrasen abrufen...",
     "search_passphrases": "Passphrasen suchen...",
     "wallet_passphrases": "Wallet Passphrasen",
-    "securely_store_and_manage_your_wallet_recovery_phrases": "Sichern Sie und verwalten Sie Ihre Wallet Passphrasen"
+    "securely_store_and_manage_your_wallet_recovery_phrases": "Sichern Sie und verwalten Sie Ihre Wallet Passphrasen",
+    "cancel": "Abbrechen"
   },
   "identity": {
     "identities": "Identitäten",
