@@ -1,8 +1,10 @@
+// components/localized-overview-content.tsx
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
+// import { Lock, TrendingUp, Users, Shield, FileText } from "lucide-react";
 import { useTranslator } from "@/hooks/use-translations";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,6 +17,7 @@ import { loadInitialData, fetchProjects, fetchProjectKeys } from "@/libs/getWork
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
 import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { WelcomeModal } from "./welcom-modal";
 
 export function LocalizedOverviewContent() {
   const { translate } = useTranslator();
@@ -25,9 +28,11 @@ export function LocalizedOverviewContent() {
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
 
   // State to control project dialog visibility
-  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  // const [showProjectDialog, setShowProjectDialog] = useState(false);
   const [forceCreateProject, setForceCreateProject] = useState(false);
 
   // Get selected and default project for display
@@ -53,14 +58,14 @@ export function LocalizedOverviewContent() {
 
   // Placeholder for dynamic stats (to be fetched from backend)
   const stats = {
-    totalPasswords: 124, // Replace with API call
-    totalAccounts: 34,   // Replace with API call
-    totalFolders: 8,     // Replace with API call
-    teamMembers: 4,      // Replace with API call
-    passwordsTrend: "+12%", // Replace with API calculation
-    accountsTrend: "+5%",   // Replace with API calculation
-    foldersTrend: "+2%",    // Replace with API calculation
-    workspacesTrend: "+10%", // Replace with API calculation
+    totalPasswords: 124,
+    totalAccounts: 34,
+    totalFolders: 8,
+    teamMembers: 4,
+    passwordsTrend: "+12%",
+    accountsTrend: "+5%",
+    foldersTrend: "+2%",
+    workspacesTrend: "+10%",
   };
 
   useEffect(() => {
@@ -201,19 +206,19 @@ export function LocalizedOverviewContent() {
 
   // Mock recent activities with dynamic time formatting
   const recentActivities = [
-    { type: "password_updated", timestamp: new Date(Date.now() - 5 * 60 * 1000) }, // 5 minutes ago
-    { type: "note_created", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) }, // 2 hours ago
-    { type: "password_updated", timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // 1 day ago
-    { type: "note_created", timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }, // 3 days ago
+    { type: "password_updated", timestamp: new Date(Date.now() - 5 * 60 * 1000) },
+    { type: "note_created", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+    { type: "password_updated", timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+    { type: "note_created", timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   ];
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{translate('dashboard', 'navigation')}</h1>
+          <h1 className="text-2xl font-bold">{translate("dashboard", "navigation")}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <p className="text-muted-foreground">{translate('current_project', 'dashboard')}:</p>
+            <p className="text-muted-foreground">{translate("current_project", "dashboard")}:</p>
             {displayProject ? (
               <div className="flex items-center gap-2">
                 <div
@@ -222,20 +227,20 @@ export function LocalizedOverviewContent() {
                 ></div>
                 <span className="text-sm font-medium">{displayProject.name}</span>
                 {displayProject.is_default && (
-                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{translate('default', 'dashboard')}</span>
+                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{translate("default", "dashboard")}</span>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">{translate('no_project_selected', 'dashboard')}</p>
+              <p className="text-sm text-muted-foreground">{translate("no_project_selected", "dashboard")}</p>
             )}
           </div>
         </div>
         <div>
           <select className="rounded-md border border-border bg-background px-3 py-2 text-sm">
-            <option>{translate('today', 'time')}</option>
-            <option>{translate('last_7_days', 'time')}</option>
-            <option>{translate('last_30_days', 'time')}</option>
-            <option>{translate('all_time', 'time')}</option>
+            <option>{translate("today", "time")}</option>
+            <option>{translate("last_7_days", "time")}</option>
+            <option>{translate("last_30_days", "time")}</option>
+            <option>{translate("all_time", "time")}</option>
           </select>
         </div>
       </div>
@@ -245,7 +250,7 @@ export function LocalizedOverviewContent() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {translate('total_passwords', 'dashboard')}
+                {translate("total_passwords", "dashboard")}
               </CardTitle>
               <Lock className="h-4 w-4 text-primary" />
             </div>
@@ -254,16 +259,18 @@ export function LocalizedOverviewContent() {
             <div className="text-3xl font-bold">{stats.totalPasswords}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">{stats.passwordsTrend}</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.passwordsTrend}</span>{" "}
+              {translate("from_last_month", "dashboard")}
             </div>
           </CardContent>
         </Card>
 
+        {/* Other Card components remain unchanged */}
         <Card className="bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-blue-500/20">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {translate('total_accounts', 'dashboard')}
+                {translate("total_accounts", "dashboard")}
               </CardTitle>
               <Users className="h-4 w-4 text-blue-500" />
             </div>
@@ -272,7 +279,8 @@ export function LocalizedOverviewContent() {
             <div className="text-3xl font-bold">{stats.totalAccounts}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">{stats.accountsTrend}</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.accountsTrend}</span>{" "}
+              {translate("from_last_month", "dashboard")}
             </div>
           </CardContent>
         </Card>
@@ -281,7 +289,7 @@ export function LocalizedOverviewContent() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {translate('total_folders', 'dashboard')}
+                {translate("total_folders", "dashboard")}
               </CardTitle>
               <Shield className="h-4 w-4 text-purple-500" />
             </div>
@@ -290,7 +298,8 @@ export function LocalizedOverviewContent() {
             <div className="text-3xl font-bold">{stats.totalFolders}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">{stats.foldersTrend}</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.foldersTrend}</span>{" "}
+              {translate("from_last_month", "dashboard")}
             </div>
           </CardContent>
         </Card>
@@ -299,7 +308,7 @@ export function LocalizedOverviewContent() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {translate('total_workspaces', 'dashboard')}
+                {translate("total_workspaces", "dashboard")}
               </CardTitle>
               <Users className="h-4 w-4 text-green-500" />
             </div>
@@ -308,7 +317,8 @@ export function LocalizedOverviewContent() {
             <div className="text-3xl font-bold">{totalWorkspaces}</div>
             <div className="text-xs text-muted-foreground mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              <span className="text-green-500 font-medium">{stats.workspacesTrend}</span> {translate('from_last_month', 'dashboard')}
+              <span className="text-green-500 font-medium">{stats.workspacesTrend}</span>{" "}
+              {translate("from_last_month", "dashboard")}
             </div>
           </CardContent>
         </Card>
@@ -317,7 +327,7 @@ export function LocalizedOverviewContent() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>{translate('recent_activity', 'dashboard')}</CardTitle>
+            <CardTitle>{translate("recent_activity", "dashboard")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -332,9 +342,7 @@ export function LocalizedOverviewContent() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-medium truncate">
-                        {translate(activity.type, 'activity')}
-                      </p>
+                      <p className="font-medium truncate">{translate(activity.type, "activity")}</p>
                       <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                         {format.relativeTime(activity.timestamp, new Date())}
                       </span>
@@ -348,28 +356,28 @@ export function LocalizedOverviewContent() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{translate('quick_stats', 'dashboard')}</CardTitle>
+            <CardTitle>{translate("quick_stats", "dashboard")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{translate('workspaces', 'dashboard')}</span>
+                  <span className="text-sm">{translate("workspaces", "dashboard")}</span>
                 </div>
                 <span className="text-sm font-medium">{totalWorkspaces}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{translate('projects', 'dashboard')}</span>
+                  <span className="text-sm">{translate("projects", "dashboard")}</span>
                 </div>
                 <span className="text-sm font-medium">{totalProjects}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{translate('team_members', 'dashboard')}</span>
+                  <span className="text-sm">{translate("team_members", "dashboard")}</span>
                 </div>
                 <span className="text-sm font-medium">{stats.teamMembers}</span>
               </div>

@@ -7,17 +7,22 @@ from app.managers.collection_names import (
     WORKSPACE,
 )
 from app.utils.utils import create_uuid, response_helper
+from app.utils.i8ns import translate
 
 
 def get_audit_log_actions():
     """Return all possible audit log actions for each collection."""
     actions = ["created", "updated", "deleted"]
     collection_names = [PROJECT, ACCOUNT, API_KEY, WALLET_PHRASE, WORKSPACE]
-    return [
-        f"{collection}.{action}"
-        for collection in collection_names
-        for action in actions
-    ]
+    return response_helper(
+        200,
+        translate("audit_logs.audit_log_actions"),
+        data=[
+            f"{collection}.{action}"
+            for collection in collection_names
+            for action in actions
+        ],
+    )
 
 
 def get_audit_logs(db, payload, request):
@@ -30,8 +35,8 @@ def get_audit_logs(db, payload, request):
     total = audit_log_manager.count_documents(db, query)
     data = audit_log_manager.find(db, query, sort=sort, skip=skip, limit=limit)
     return response_helper(
-        status_code=200,
-        message="Audit logs fetched successfully",
+        200,
+        translate("audit_logs.audit_logs_fetched"),
         data=data,
         page=page,
         limit=limit,

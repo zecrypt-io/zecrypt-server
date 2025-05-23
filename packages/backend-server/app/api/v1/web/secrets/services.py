@@ -1,38 +1,35 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
-from app.utils.constants import SECRET_TYPE_API_KEY
-
-data_type = SECRET_TYPE_API_KEY
+from app.utils.i8ns import translate
 
 
-def get_api_key_details(db, doc_id):
-    return response_helper(
-        status_code=200,
-        message="API Key details loaded successfully",
-        data=secrets_manager.find_one(
-            db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
-        ),
+async def get_secret_details(db, data_type, doc_id):
+    secret = secrets_manager.find_one(
+        db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
     )
 
+    if not secret:
+        return response_helper(404, translate(f"{data_type}.not_found"))
 
-def get_api_keys(db, request):
+    return response_helper(200, translate(f"{data_type}.details"), data=secret)
+
+
+async def get_secrets(request, user, data_type):
+    db = user.get("db")
     query = {
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
     }
 
-    api_keys = secrets_manager.find(db, query)
+    cards = secrets_manager.find(db, query)
 
     return response_helper(
-        status_code=200,
-        message="API Keys loaded successfully",
-        data=api_keys,
-        count=len(api_keys),
+        200, translate(f"{data_type}.list"), data=cards, count=len(cards)
     )
 
 
-def add_api_key(request, user, payload, background_tasks):
+async def add_secret(request, user, data_type, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -44,12 +41,12 @@ def add_api_key(request, user, payload, background_tasks):
         "secret_type": data_type,
     }
 
-    api_key = secrets_manager.find_one(
+    card = secrets_manager.find_one(
         db,
         query,
     )
-    if api_key:
-        return response_helper(status_code=400, message="API Key already exists")
+    if card:
+        return response_helper(400, translate(f"{data_type}.already_exists"))
 
     payload.update(
         {
@@ -62,14 +59,10 @@ def add_api_key(request, user, payload, background_tasks):
     )
     secrets_manager.insert_one(db, payload)
 
-    return response_helper(
-        status_code=201,
-        message="API Key added successfully",
-        data=payload,
-    )
+    return response_helper(201, translate(f"{data_type}.add"), data=payload)
 
 
-def update_api_key(request, user, payload, background_tasks):
+async def update_secret(request, user, data_type, payload, background_tasks):
     db = user.get("db")
     user_id = user.get("user_id")
     project_id = request.path_params.get("project_id")
@@ -92,7 +85,7 @@ def update_api_key(request, user, payload, background_tasks):
             },
         )
         if existing_account:
-            return response_helper(status_code=400, message="API Key already exists")
+            return response_helper(400, translate(f"{data_type}.already_exists"))
 
     # Update account
     secrets_manager.update_one(
@@ -101,25 +94,16 @@ def update_api_key(request, user, payload, background_tasks):
         {"$set": payload},
     )
 
-    return response_helper(
-        status_code=200,
-        message="API Key updated successfully",
-    )
+    return response_helper(200, translate(f"{data_type}.update"), data=payload)
 
 
-def delete_api_key(request, user, background_tasks):
+async def delete_secret(request, user, data_type, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
 
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
-        return response_helper(
-            status_code=404,
-            message="API Key details not found",
-        )
+        return response_helper(404, translate(f"{data_type}.not_found"))
+
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
 
-    return response_helper(
-        status_code=200,
-        message="API Key deleted successfully",
-        data={},
-    )
+    return response_helper(200, translate(f"{data_type}.delete"), data={})

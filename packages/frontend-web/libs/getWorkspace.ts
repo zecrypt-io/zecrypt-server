@@ -1,8 +1,10 @@
+// libs/getWorkspace.ts
 import axiosInstance from '../libs/Middleware/axiosInstace';
+import { Workspace } from '@/libs/Redux/workspaceSlice';
 
-export const loadInitialData = async (accessToken: string) => {
+export const loadInitialData = async (accessToken: string): Promise<Workspace[] | null> => {
   if (!accessToken) {
-    console.error("No access token provided for loadInitialData");
+    console.error('No access token provided for loadInitialData');
     return null;
   }
   
@@ -23,7 +25,7 @@ export const loadInitialData = async (accessToken: string) => {
     // console.log("Transformed workspaces:", JSON.stringify(workspaces, null, 2));
     return workspaces;
   } catch (err) {
-    console.error("Error loading initial data:", err);
+    console.error('Error loading initial data:', err);
     return null;
   }
 };

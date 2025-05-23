@@ -51,5 +51,11 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
     return cursor
 
 
+def get_project_name(db, project_id):
+    query = {"doc_id": project_id}
+    project = db_manager.find_one(db, collection_name, query, {"name": 1})
+    return project.get("name")
+
+
 def count_documents(db, query):
     return db_manager.count_documents(db, collection_name, query)

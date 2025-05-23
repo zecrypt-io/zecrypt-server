@@ -1,13 +1,7 @@
-import string
 from uuid_extensions import uuid7
-import random
 
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
-
-
-def id_generator(size=10, chars=string.ascii_uppercase + string.digits + string.digits):
-    return "".join(random.choice(chars) for _ in range(size))
 
 
 def response_helper(

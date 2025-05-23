@@ -7,12 +7,13 @@ from app.managers import (
 )
 
 from app.framework.encryption.service import get_project_key
+from app.utils.i8ns import translate
 
 
 def get_project_details(db, doc_id):
     return response_helper(
-        status_code=200,
-        message="Project details loaded successfully",
+        200,
+        translate("project.details"),
         data=project_manager.find_one(db, {"doc_id": doc_id}, {"_id": False}),
     )
 
@@ -27,8 +28,8 @@ def get_projects(db, query, sort=None, projection=None, page=1, limit=20):
     )
 
     return response_helper(
-        status_code=200,
-        message="Projects loaded successfully",
+        200,
+        translate("project.list"),
         data=projects,
         page=page,
         limit=limit,
@@ -50,7 +51,7 @@ def add_project(request, user, payload, background_tasks):
         },
     )
     if project:
-        return response_helper(status_code=400, message="Project already exists")
+        return response_helper(400, translate("project.already_exists"))
 
     payload.update(
         {
@@ -60,13 +61,13 @@ def add_project(request, user, payload, background_tasks):
             "workspace_id": workspace_id,
         }
     )
+    key = payload.get("key")
+    payload.pop("key")
     project_manager.insert_one(db, payload)
-    add_project_key(db, user_id, payload.get("doc_id"), workspace_id, payload.get("key"))
-    return response_helper(
-        status_code=201,
-        message="Project added successfully",
-        data=payload,
-    )
+    if key:
+        add_project_key(db, user_id, payload.get("doc_id"), workspace_id, key)
+
+    return response_helper(201, translate("project.added"), data=payload)
 
 
 def update_project(request, user, payload, background_tasks):
@@ -91,7 +92,7 @@ def update_project(request, user, payload, background_tasks):
             },
         )
         if existing_project:
-            return response_helper(status_code=400, message="project already exists")
+            return response_helper(400, translate("project.already_exists"))
 
     # Update project
     project_details = project_manager.find_one_and_update(
@@ -105,27 +106,18 @@ def update_project(request, user, payload, background_tasks):
             {"$set": {"is_default": False}},
         )
 
-    return response_helper(
-        status_code=200, message="Project updated successfully", data=project_details
-    )
+    return response_helper(200, translate("project.updated"), data=project_details)
 
 
 def delete_project(request, user, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
     if not project_manager.find_one(db, {"doc_id": doc_id}):
-        return response_helper(
-            status_code=404,
-            message="Project details not found",
-        )
+        return response_helper(404, translate("project.not_found"))
 
     project_manager.delete_one(db, {"doc_id": doc_id})
 
-    return response_helper(
-        status_code=200,
-        message="Project deleted successfully",
-        data={},
-    )
+    return response_helper(200, translate("project.deleted"), data={})
 
 
 def get_tags(db, project_id):
@@ -138,9 +130,7 @@ def get_tags(db, project_id):
     ]
     unique_tags = sorted(set(tag for tag in flat_tags if tag not in (None, "", [], {})))
 
-    return response_helper(
-        status_code=200, message="Tags loaded successfully", data=unique_tags
-    )
+    return response_helper(200, translate("project.tags"), data=unique_tags)
 
 
 def add_project_key(db, user_id, project_id, workspace_id, project_key=None):
@@ -164,6 +154,8 @@ def get_project_keys(request, db, user_id):
         db,
         {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
     )
-    return response_helper(
-        status_code=200, message="Project keys loaded successfully", data=project_keys
-    )
+    for key in project_keys:
+        key["project_name"] = project_manager.get_project_name(
+            db, key.get("project_id")
+        )
+    return response_helper(200, translate("project.keys"), data=project_keys)

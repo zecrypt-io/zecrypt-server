@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, BackgroundTasks, Response, Depends
 from app.api.v1.web.auth.schema import Login, UserDetails, TwoFactorAuth, UpdateKeys
 from app.api.v1.web.auth.services import validate_stack_auth_token
 from app.framework.permission_services.service import get_current_user
+from app.utils.i8ns import translate
 from app.api.v1.web.auth.services import (
     create_user,
     user_login,
@@ -34,10 +35,7 @@ async def login_api(
     payload = payload.model_dump()
     auth_data = validate_stack_auth_token(payload.get("uid"))
     if not auth_data:
-        return response_helper(
-            status_code=400,
-            message="Authentication failed, Please try again",
-        )
+        return response_helper(400, translate("auth.authentication_failed"))
     user = user_manager.find_one(
         db, {"uid": auth_data.get("id"), "access": {"$ne": False}}, {"_id": False}
     )
@@ -57,7 +55,7 @@ async def logout_api(
     )
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
-    return response_helper(status_code=200, message="User logged out successfully")
+    return response_helper(200, translate("auth.user_logged_out"))
 
 
 # @router.post(TWO_FACTOR_AUTH, dependencies=[Depends(RateLimiter(times=5, seconds=60))])

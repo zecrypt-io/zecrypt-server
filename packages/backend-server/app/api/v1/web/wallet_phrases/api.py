@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, Request
-from app.api.v1.web.wallet_phrases.services import (
-    get_wallet_phrases,
-    add_wallet_phrase,
-    update_wallet_phrase,
-    delete_wallet_phrase,
+from app.api.v1.web.secrets.services import (
+    get_secrets,
+    add_secret,
+    update_secret,
+    delete_secret,
 )
 from app.api.v1.web.wallet_phrases.schema import (
     WalletPhrase,
@@ -15,6 +15,7 @@ from app.api.v1.web.route_constants import (
     WALLET_PHRASES,
     WALLET_PHRASE_DETAILS,
 )
+from app.utils.constants import SECRET_TYPE_WALLET_PHRASE as data_type
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ async def get_wallet_phrases_api(
     project_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return get_wallet_phrases(user.get("db"), request)
+    return await get_secrets(request, user, data_type)
 
 
 @router.post(WALLET_PHRASES)
@@ -38,7 +39,9 @@ async def create_wallet_phrase_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return add_wallet_phrase(request, user, payload.model_dump(), background_tasks)
+    return await add_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.put(WALLET_PHRASE_DETAILS)
@@ -51,7 +54,9 @@ async def update_wallet_phrase_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return update_wallet_phrase(request, user, payload.model_dump(), background_tasks)
+    return await update_secret(
+        request, user, data_type, payload.model_dump(), background_tasks
+    )
 
 
 @router.delete(WALLET_PHRASE_DETAILS)
@@ -63,4 +68,4 @@ async def delete_wallet_phrase_api(
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
-    return delete_wallet_phrase(request, user, background_tasks)
+    return await delete_secret(request, user, data_type, background_tasks)

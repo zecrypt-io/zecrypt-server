@@ -1,3 +1,4 @@
+// components/dashboard-layout.tsx
 "use client";
 
 import type React from "react";
@@ -82,7 +83,6 @@ const defaultFeatures = {
   software_license: { enabled: false, is_client_side_encryption: false },
 };
 
-// Map features to sidebar menu items
 const featureMenuItems: {
   key: keyof typeof defaultFeatures;
   labelKey: string;
@@ -92,7 +92,7 @@ const featureMenuItems: {
   {
     key: "login",
     labelKey: "accounts",
-    path: "/dashboard/accounts", // Maps to existing accounts UI
+    path: "/dashboard/accounts",
     icon: <User className="h-4 w-4" />,
   },
   {
@@ -231,18 +231,15 @@ const featureMenuItems: {
   },
 ];
 
-export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProps) {
+export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProps) {
   const pathname = usePathname();
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
 
-  const [currentLocale, setCurrentLocale] = useState(locale);
-  
   const languageLabels: Record<string, string> = {
     af: "Afrikaans",
     ar: "Arabic (عربى)",
@@ -265,7 +262,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     no: "Norwegian (Norsk)",
     pl: "Polish (Polskie)",
     pt: "Portuguese (Português)",
-    'pt-BR': "Brazilian Portuguese (Português Brasileiro)",
+    "pt-BR": "Brazilian Portuguese (Português Brasileiro)",
     ro: "Romanian (Română)",
     ru: "Russian (Pусский)",
     sr: "Serbian (Српски)",
@@ -273,8 +270,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     tr: "Turkish (Türkçe)",
     uk: "Ukrainian (Українська)",
     vi: "Vietnamese (Tiếng Việt)",
-    'zh-CN': "Chinese Simplified (简体中文)",
-    'zh-Hant': "Chinese Traditional (繁體中文)",
+    "zh-CN": "Chinese Simplified (简体中文)",
+    "zh-Hant": "Chinese Traditional (繁體中文)",
   };
 
   const router = useRouter();
@@ -299,14 +296,13 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
   );
   const displayProject = selectedProject || defaultProject;
 
-  // Normalize features for displayProject
   const normalizedFeatures = displayProject
     ? { ...defaultFeatures, ...(displayProject.features || {}) }
     : defaultFeatures;
 
-  const selectedWorkspace = useSelector((state: RootState) => 
-    Array.isArray(state.workspace.workspaces) 
-      ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId) 
+  const selectedWorkspace = useSelector((state: RootState) =>
+    Array.isArray(state.workspace.workspaces)
+      ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId)
       : null
   );
   const workspaceName = selectedWorkspace?.name || "Personal Workspace";
@@ -328,18 +324,20 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
     } catch (error) {
       console.error("Error during logout:", error);
     }
-  }, [user, dispatch, router, currentLocale]);
+  }, [user, dispatch, router, locale]);
 
   const switchLanguage = (newLocale: string) => {
-    if (newLocale === currentLocale) return;
-    
-    const segments = pathname?.split('/') || [];
+    if (newLocale === locale) return;
+
+    const segments = pathname?.split("/") || [];
     segments[1] = newLocale;
-    const newPath = segments.join('/');
-    
+    const newPath = segments.join("/");
+
     router.push(newPath);
     setCurrentLocale(newLocale);
   };
+
+  const [currentLocale, setCurrentLocale] = useState(locale);
 
   useEffect(() => {
     if (locale) {
@@ -426,7 +424,6 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
 
   const { translate } = useTranslator();
 
-  // Filter menu items based on enabled features
   const enabledMenuItems = displayProject
     ? featureMenuItems.filter((item) => normalizedFeatures[item.key]?.enabled)
     : [];
@@ -457,13 +454,18 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
           <div className="px-3 py-2">
             <div className="mb-4">
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
-              <Button variant="outline" className="w-full justify-between" onClick={() => setShowProjectDialog(true)}>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => setShowProjectDialog(true)}
+                disabled={!selectedWorkspaceId} // Disable if no workspace is selected
+              >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
                     className="h-4 w-4 rounded-full"
                     style={{ backgroundColor: displayProject?.color || "#4f46e5" }}
                   ></div>
-                  <span className="truncate">{displayProject?.name || "No project selected"}</span>
+                  <span className="truncate">{displayProject?.name || translate("no_project_selected", "dashboard")}</span>
                 </div>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </Button>
@@ -476,7 +478,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                   "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
                   pathname === `/${currentLocale}/dashboard`
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <Home className="h-4 w-4" />
@@ -490,7 +492,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                     "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
                     pathname === `/${currentLocale}${item.path}`
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   {item.icon}
@@ -524,7 +526,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                     "flex items-center gap-2 rounded-md px-2 py-1 text-sm flex-1",
                     pathname === `/${currentLocale}/dashboard/favourites` && searchParams?.get("tag") === tag
                       ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground",
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Star className="h-3 w-3 text-current" />
@@ -552,7 +554,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                 "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
                 pathname === `/${currentLocale}/dashboard/notifications`
                   ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <Bell className="h-4 w-4" />
@@ -570,8 +572,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
                     <AvatarFallback>
-                      {user?.displayName 
-                        ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+                      {user?.displayName
+                        ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
                         : "U"}
                     </AvatarFallback>
                   </Avatar>
@@ -659,8 +661,8 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               <DropdownMenuLabel>Language</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {sortedLocales.map((loc) => (
-                <DropdownMenuItem 
-                  key={loc} 
+                <DropdownMenuItem
+                  key={loc}
                   onClick={() => switchLanguage(loc)}
                   className={loc === currentLocale ? "font-bold bg-accent/50" : ""}
                 >
@@ -669,7 +671,7 @@ export function DashboardLayout({ children, locale = 'en' }: DashboardLayoutProp
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

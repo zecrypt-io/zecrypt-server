@@ -6,7 +6,6 @@ from cryptography.fernet import Fernet
 from app.core.config import settings
 from app.managers import login_activity as login_activity_manager
 from app.utils.date_utils import create_timestamp
-from app.api.v1.web.auth.utils import get_private_key
 
 from app.api.v1.web.workspace.services import create_initial_workspace_on_signup
 from app.managers import user as user_manager
@@ -17,6 +16,7 @@ from app.utils.utils import (
     create_uuid,
 )
 from app.utils.jwt_utils import encode_token
+from app.utils.i8ns import translate
 
 
 def encrypt_totp_secret(totp_secret):
@@ -56,8 +56,7 @@ def validate_stack_auth_token(token):
         if res.status_code >= 400:
             return None
         return res.json()
-    except Exception as e:
-        print(f"Token validation failed: {e}")
+    except Exception:
         return None
 
 
@@ -125,9 +124,7 @@ def create_user(request, db, auth_data, back_ground_tasks):
         ),
     }
 
-    return response_helper(
-        status_code=200, message="User signed up successfully", data=data
-    )
+    return response_helper(200, translate("auth.user_signed_up"), data=data)
 
 
 def user_login(db, user):
@@ -145,20 +142,18 @@ def user_login(db, user):
             {"user_id": user.get("user_id")},
             {"$set": {"2fa": {"totp_secret": encrypt_totp_secret(totp_secret)}}},
         )
-    return response_helper(
-        status_code=200, message="User logged in successfully", data=data
-    )
+    return response_helper(200, translate("auth.user_logged_in"), data=data)
 
 
 def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
     user = user_manager.find_one(db, {"user_id": payload.get("user_id")})
 
     if not user:
-        return response_helper(status_code=400, message="User details not found")
+        return response_helper(400, "User details not found")
 
     totp = pyotp.TOTP(decrypt_totp_secret(user.get("2fa", {}).get("totp_secret")))
     if not totp.verify(payload.get("code")):
-        return response_helper(status_code=400, message="Invalid code, Pease try again")
+        return response_helper(400, translate("auth.invalid_code"))
 
     token = create_jwt_token({"user": user.get("user_id")})
     refresh_token = encode_token(user.get("user_id"))
@@ -197,17 +192,16 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
         "token": token,
         "refresh_token": refresh_token,
     }
-    return response_helper(
-        status_code=200,
-        message="Two factor authentication verified successfully",
-        data=data,
-    )
+    return response_helper(200, translate("auth.two_factor_auth_verified"), data=data)
 
 
 def get_keys(db, user_id):
-    user_key = get_private_key(db, user_id)
+    user_key = user_keys_manager.get_private_key(db, user_id)
+    user_public_key = user_keys_manager.get_public_key(db, user_id)
     return response_helper(
-        status_code=200, message="Keys fetched successfully", data={"key": user_key}
+        200,
+        translate("auth.keys_fetched"),
+        data={"key": user_key, "public_key": user_public_key},
     )
 
 
@@ -218,7 +212,6 @@ def update_keys(db, user, payload):
         "private_key": payload.get("private_key"),
     }
     if user_keys_manager.find_one(db, {"user_id": user.get("user_id")}):
-        return response_helper(status_code=400, message="Keys already exist")
-
+        return response_helper(400, translate("auth.keys_already_exist"))
     user_keys_manager.insert_one(db, data)
-    return response_helper(status_code=200, message="Keys updated successfully")
+    return response_helper(200, translate("auth.keys_updated"))
