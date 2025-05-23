@@ -96,7 +96,8 @@ export function AddPassphraseDialog({
       setPassphraseError(
         translate("passphrase_must_be_exactly_12_words", "wallet_passphrases", {
           default: "Passphrase must be exactly 12 words, you entered {count} words",
-        }).replace("{count}", words.length.toString())
+          count: words.length
+        })
       );
       return false;
     } else {
