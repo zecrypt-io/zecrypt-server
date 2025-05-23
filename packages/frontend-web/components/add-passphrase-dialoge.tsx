@@ -250,11 +250,11 @@ export function AddPassphraseDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {(error || nameExistsError || passphraseError || passphraseExistsError) && (
+          {(error || nameExistsError || passphraseExistsError) && (
             <div className="p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <p className="text-sm">
-                {error || nameExistsError || passphraseError || passphraseExistsError}
+                {error || nameExistsError || passphraseExistsError}
               </p>
             </div>
           )}
@@ -296,7 +296,17 @@ export function AddPassphraseDialog({
               className={`font-mono ${passphraseError || passphraseExistsError || (error && !data) ? "border-red-500" : ""}`}
               rows={3}
             />
-            {!passphraseError && !passphraseExistsError && (
+            {passphraseError ? (
+              <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                {passphraseError}
+              </p>
+            ) : passphraseExistsError ? (
+              <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                {passphraseExistsError}
+              </p>
+            ) : (
               <p className="text-xs text-muted-foreground">
                 {translate("passphrase_encryption_note", "wallet_passphrases", {
                   default: "The passphrase will be encrypted and securely stored.",
