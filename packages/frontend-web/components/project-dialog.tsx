@@ -327,22 +327,6 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
     };
 
     try {
-      // If we're renaming the project, update the project key in session storage too
-      if (name.trim() !== project.name) {
-        // Get the old project key
-        const oldProjectKey = await secureGetItem(`project_key_${project.name}`);
-        if (oldProjectKey) {
-          // Store it with the new project name
-          await secureSetItem(`project_key_${name.trim()}`, oldProjectKey);
-          
-          // Update default project key if needed
-          const currentDefaultKey = await secureGetItem("projectKey");
-          if (currentDefaultKey === oldProjectKey) {
-            await secureSetItem("projectKey", oldProjectKey);
-          }
-        }
-      }
-      
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/${workspaceId}/projects/${project.id}`,
         {
@@ -603,9 +587,6 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       // Store project key in session storage for current use
       const projectStorageKey = `projectKey_${name.trim()}`;
       await secureSetItem(projectStorageKey, aesKey);
-      
-      // Also store as the current project key
-      await secureSetItem("projectKey", aesKey);
       
       const trimmedDescription = description.trim();
       const payload = {
