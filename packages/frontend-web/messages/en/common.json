@@ -169,7 +169,8 @@
     "encryption_key_decrypted": "Your encryption key has been successfully decrypted",
     "incorrect_encryption_password": "Incorrect master password. Please try again.",
     "multi_device_login": "Login from New Device",
-    "multi_device_desc": "You're logging in from a new device. Please enter your master password to access your encrypted data."
+    "multi_device_desc": "You're logging in from a new device. Please enter your master password to access your encrypted data.",
+    "authenticating": "Authenticating..."
   },
   "features": {
     "trial_title": "Your all-in-one password manager",
@@ -183,7 +184,8 @@
     "organization": "Organization",
     "organization_desc": "Organize credentials into projects for better management and quick access.",
     "secure_storage": "Secure Storage",
-    "secure_storage_desc": "Store all your passwords and sensitive data with military-grade encryption."
+    "secure_storage_desc": "Store all your passwords and sensitive data with military-grade encryption.",
+    "secure_password_manager": "Secure Password Manager"
   },
   "actions": {
     "save": "Save",
