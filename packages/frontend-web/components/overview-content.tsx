@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
 import { useUser } from "@stackframe/stack";
-import { useEffect } from "react";
-import { loadInitialData } from "../libs/getWorkspace";
+import { useEffect, useState } from "react";
+import { loadInitialData, fetchProjects, fetchProjectKeys } from "../libs/getWorkspace";
 import { RootState, AppDispatch } from "../libs/Redux/store";
 import { useSelector, useDispatch } from "react-redux";
 import { setWorkspaceData } from "../libs/Redux/workspaceSlice";
-import { Workspace } from "../libs/Redux/workspaceSlice";
+import { Workspace, Project } from "../libs/Redux/workspaceSlice";
 import { log } from "node:console";
+import { ProjectDialog } from "./project-dialog";
+import { importRSAPrivateKey, decryptAESKeyWithRSA } from "../libs/encryption";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 export function OverviewContent() {
   const user = useUser();
@@ -21,6 +24,10 @@ export function OverviewContent() {
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  
+  // State to control project dialog visibility
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [forceCreateProject, setForceCreateProject] = useState(false);
   
   // Get selected and default project for display
   const selectedProject = useSelector((state: RootState) =>
@@ -49,8 +56,9 @@ export function OverviewContent() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("fetchData: Starting...");
       if (!accessToken) {
-        console.error("No access token available in Redux");
+        console.error("fetchData: No access token available in Redux, returning.");
         dispatch(
           setWorkspaceData({
             workspaces: [],
@@ -60,22 +68,64 @@ export function OverviewContent() {
         );
         return;
       }
+      console.log("fetchData: Access token available.");
 
       const initialData: Workspace[] | null = await loadInitialData(accessToken);
+      console.log("fetchData: initialData fetched", initialData);
+
       if (initialData && Array.isArray(initialData) && initialData.length > 0) {
-        console.log("✅ Dispatching initial data to Redux:", initialData);
+        console.log("fetchData: initialData is valid and has workspaces.");
         const defaultWorkspace = initialData[0];
-        const defaultProject = defaultWorkspace.projects.find((p) => p.is_default);
-        dispatch(
-          setWorkspaceData({
-            workspaces: initialData,
-            selectedWorkspaceId: defaultWorkspace.workspaceId,
-            // Persist selectedProjectId if set, otherwise use default or first project
-            selectedProjectId: selectedProjectId || defaultProject?.project_id || initialData[0].projects[0]?.project_id || null,
-          })
-        );
+        console.log("fetchData: defaultWorkspace", defaultWorkspace);
+
+        const projectsData = await fetchProjects(defaultWorkspace.workspaceId, accessToken);
+        console.log("fetchData: projectsData fetched", projectsData);
+        
+        if (projectsData && projectsData.projects && projectsData.projects.length > 0) {
+          console.log("fetchData: projectsData is valid and has projects. Preparing to call syncProjectKeys.");
+          setForceCreateProject(false); // Projects exist, no need to force creation
+          const updatedInitialData = initialData.map(workspace => {
+            if (workspace.workspaceId === defaultWorkspace.workspaceId) {
+              return { ...workspace, projects: projectsData.projects };
+            }
+            return workspace;
+          });
+          
+          console.log("✅ Dispatching initial data to Redux with new projects:", updatedInitialData);
+          const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
+          
+          dispatch(
+            setWorkspaceData({
+              workspaces: updatedInitialData,
+              selectedWorkspaceId: defaultWorkspace.workspaceId,
+              selectedProjectId: selectedProjectId || defaultProj?.project_id || projectsData.projects[0]?.project_id || null,
+            })
+          );
+
+          // After projects are loaded, check and synchronize project keys
+          console.log(`fetchData: About to call syncProjectKeys with workspaceId: ${defaultWorkspace.workspaceId} and projects:`, projectsData.projects);
+          await syncProjectKeys(defaultWorkspace.workspaceId, projectsData.projects);
+          console.log("fetchData: syncProjectKeys has been called.");
+        } else {
+          console.log("fetchData: No projects found in projectsData, or projectsData is invalid. Skipping syncProjectKeys.", projectsData);
+          // No projects found
+          console.log("No projects found for the workspace, showing project creation dialog (forced)");
+          dispatch(
+            setWorkspaceData({
+              workspaces: initialData.map(workspace => ({
+                ...workspace,
+                projects: [], // Ensure projects array is empty
+              })),
+              selectedWorkspaceId: defaultWorkspace.workspaceId,
+              selectedProjectId: null,
+            })
+          );
+          setForceCreateProject(true);
+          setShowProjectDialog(true);
+        }
       } else {
         console.error("❌ Failed to load initial data or no workspaces available.");
+        setForceCreateProject(false); // Ensure force create is false if there's an error or no workspaces
         dispatch(
           setWorkspaceData({
             workspaces: [],
@@ -83,11 +133,83 @@ export function OverviewContent() {
             selectedProjectId: null,
           })
         );
+        // Consider if you need to show a generic "create workspace/project" dialog here if initialData itself is empty
       }
     };
 
     fetchData();
-  }, [accessToken, dispatch, selectedProjectId]);
+  }, [accessToken, dispatch, selectedProjectId, user]); // Added user to dependency array for fetchAuthDetails sync
+
+  // Function to synchronize project keys
+  const syncProjectKeys = async (workspaceId: string, projects: Project[]) => {
+    console.log("syncProjectKeys: Function has been entered. Args:", { workspaceId, projects });
+    if (!workspaceId || !projects.length) {
+      console.log("syncProjectKeys: Returning early because workspaceId is missing or projects array is empty.", { workspaceId, projectsLength: projects?.length });
+      return;
+    }
+    
+    try {
+      console.log("syncProjectKeys: Starting try block.");
+      // Get all project keys from session storage
+      const storedKeys: Record<string, string> = {};
+      for (const project of projects) {
+        const storedKey = await secureGetItem(`projectKey_${project.project_id}`);
+        if (storedKey) {
+          storedKeys[project.project_id] = storedKey;
+        }
+      }
+
+      // Check if any keys are missing
+      const missingKeyProjects = projects.filter(project => !storedKeys[project.project_id]);
+      
+      if (missingKeyProjects.length === 0) {
+        console.log("All project keys are present in session storage");
+        return; // All keys are already in session storage
+      }
+      
+      console.log("Missing project keys for projects:", missingKeyProjects.map(p => p.name));
+
+      // Fetch project keys from API
+      if (!accessToken) {
+        console.log("syncProjectKeys: Missing accessToken, returning early.");
+        return;
+      }
+      const projectKeys = await fetchProjectKeys(workspaceId, accessToken);
+      
+      if (!projectKeys) {
+        console.error("Failed to fetch project keys from API");
+        return;
+      }
+
+      // Get user's private key from session storage to decrypt project keys
+      const privateKeyPEM = await secureGetItem('privateKey');
+      if (!privateKeyPEM) {
+        console.error("Private key not found in session storage");
+        return;
+      }
+
+      // Import the private key
+      const privateKey = await importRSAPrivateKey(privateKeyPEM);
+      
+      // Process each project key that needs to be added to session storage
+      for (const projectKey of projectKeys) {
+        if (missingKeyProjects.some(p => p.project_id === projectKey.project_id)) {
+          try {
+            // Decrypt the project key using the user's private key
+            const decryptedKey = await decryptAESKeyWithRSA(projectKey.project_key, privateKey);
+            
+            // Store the decrypted key in session storage
+            await secureSetItem(`projectKey_${projectKey.project_id}`, decryptedKey);
+            console.log(`✅ Project key synchronized for project: ${projectKey.project_name || projectKey.project_id}`);
+          } catch (error) {
+            console.error(`Error processing key for project ID ${projectKey.project_id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error synchronizing project keys:", error);
+    }
+  };
 
   // Calculate totals from Redux state
   const totalProjects = workspaces?.reduce((sum, ws) => sum + ws.projects.length, 0) || 0;
@@ -480,6 +602,19 @@ export function OverviewContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add project dialog at the end of the component */}
+      {showProjectDialog && (
+        <ProjectDialog 
+          onClose={() => {
+            setShowProjectDialog(false);
+            // If projects are still zero and it was a forced create, user might have tried to escape.
+            // Re-fetching or checking project count here could re-trigger, but for now,
+            // the dialog's internal logic will prevent closing if forceCreate is true.
+          }} 
+          forceCreate={forceCreateProject} 
+        />
+      )}
     </div>
   );
 }

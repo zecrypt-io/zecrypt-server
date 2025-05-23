@@ -31,10 +31,14 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { addProject, updateProject, deleteProject, setSelectedProject } from "@/libs/Redux/workspaceSlice";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
+import { generateEncryptedProjectKey } from "@/libs/encryption";
+import { useToast } from "@/hooks/use-toast";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 import axiosInstance from "../libs/Middleware/axiosInstace";
 
 interface ProjectDialogProps {
   onClose: () => void;
+  forceCreate?: boolean;
 }
 
 const defaultFeatures = {
@@ -196,7 +200,7 @@ const featureMenuItems: {
   },
 ];
 
-export function ProjectDialog({ onClose }: ProjectDialogProps) {
+export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogProps) {
   const dispatch = useDispatch<AppDispatch>();
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
@@ -226,6 +230,20 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
         })) || []
     : [];
 
+  useEffect(() => {
+    if (forceCreate && projects.length === 0) {
+      setActiveTab("select");
+      setShowCreateDialog(true);
+    }
+  }, [forceCreate, projects]);
+
+  const handleDialogClose = () => {
+    if (forceCreate && projects.length === 0) {
+      return;
+    }
+    onClose();
+  };
+
   const handleSelectProject = (projectId: string) => {
     dispatch(setSelectedProject({ projectId }));
     setLocalSelectedProject(projectId);
@@ -248,7 +266,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
   }, [selectedWorkspaceId, translate]);
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{translate("projects", "dashboard")}</DialogTitle>
@@ -258,10 +276,12 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
           <p className="text-sm text-red-500 mb-4">{error}</p>
         )}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="select">{translate("select_project", "dashboard")}</TabsTrigger>
-            <TabsTrigger value="manage">{translate("manage_projects", "dashboard")}</TabsTrigger>
-          </TabsList>
+          {!(forceCreate && projects.length === 0) && (
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="select">Select Project</TabsTrigger>
+              <TabsTrigger value="manage">Manage Projects</TabsTrigger>
+            </TabsList>
+          )}
 
           <TabsContent value="select" className="space-y-4 py-4">
             <Button
@@ -378,8 +398,8 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
           workspaceId={selectedWorkspaceId || ""}
           onClose={() => {
             setShowCreateDialog(false);
-            onClose();
           }}
+          forceCreate={forceCreate && projects.length === 0}
         />
       )}
     </Dialog>
@@ -613,9 +633,10 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 interface CreateProjectDialogProps {
   workspaceId: string;
   onClose: () => void;
+  forceCreate?: boolean;
 }
 
-function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps) {
+function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#10b981");
@@ -623,10 +644,14 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
   const [features, setFeatures] = useState(defaultFeatures);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+  // const [features, setFeatures] = useState({ ...defaultFeatures });
 
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  const { translate } = useTranslator();
+  const { toast } = useToast();
 
   const colors = [
     { name: "Indigo", value: "#4f46e5" },
@@ -637,9 +662,18 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     { name: "Violet", value: "#8b5cf6" },
   ];
 
-  const { translate } = useTranslator();
+  const featureOptions = [
+    { key: "login", label: "Accounts" },
+    { key: "api_key", label: "API Keys" },
+    { key: "wallet_address", label: "Wallet Passphrases" },
+    { key: "wifi", label: "Wi-Fi" },
+    { key: "identity", label: "Identity" },
+    { key: "card", label: "Cards" },
+    { key: "software_license", label: "Software Licenses" },
+  ] as const;
 
-  type FeatureKey = keyof typeof defaultFeatures;
+  type FeatureKey = typeof featureOptions[number]["key"];
+  // const { translate } = useTranslator();
 
   const handleFeatureToggle = (featureKey: FeatureKey) => {
     setFeatures((prev) => ({
@@ -668,18 +702,54 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     setIsLoading(true);
     setError(null);
 
-    const trimmedDescription = description.trim();
-    const payload = {
-      name: name.trim(),
-      description: trimmedDescription,
-      is_default: isDefault,
-      color,
-      features,
-    };
-
     try {
-      const response = await axiosInstance.post(`/${workspaceId}/projects`, payload);
-      const result = response.data;
+      // Get the user's public key from localStorage instead of API
+      const userPublicKey = localStorage.getItem('userPublicKey');
+      
+      if (!userPublicKey) {
+        throw new Error("User's public key not available in localStorage");
+      }
+      
+      // Ensure the public key is in PEM format with proper headers and footers
+      const formattedPublicKey = userPublicKey.includes("-----BEGIN PUBLIC KEY-----") 
+        ? userPublicKey 
+        : `-----BEGIN PUBLIC KEY-----\n${userPublicKey}\n-----END PUBLIC KEY-----`;
+      
+      // Generate an AES key and encrypt it with the user's public key
+      const { aesKey, encryptedKey } = await generateEncryptedProjectKey(formattedPublicKey);
+      
+      // Store project key in session storage for current use
+      const projectStorageKey = `projectKey_${name.trim()}`;
+      await secureSetItem(projectStorageKey, aesKey);
+      
+      const trimmedDescription = description.trim();
+      const payload = {
+        name: name.trim(),
+        key: encryptedKey, // Send the encrypted AES key
+        description: trimmedDescription,
+        is_default: isDefault,
+        color,
+        features,
+      };
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${workspaceId}/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "access-token": accessToken,
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      console.log("CreateProject API response:", result);
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create project");
+      }
+      // const response = await axiosInstance.post(`/${workspaceId}/projects`, payload);
+      // const result = response.data;
 
       const newProject = {
         project_id: result.data.doc_id,
@@ -730,8 +800,20 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
     }
   };
 
+  const handleDialogClose = () => {
+    if (forceCreate) {
+      toast({
+        title: translate("project_required_title", "dashboard"),
+        description: translate("project_required_description", "dashboard"),
+        variant: "default",
+      });
+      return;
+    }
+    onClose();
+  };
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader className="relative">
           <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
@@ -813,9 +895,11 @@ function CreateProjectDialog({ workspaceId, onClose }: CreateProjectDialogProps)
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {translate("cancel", "dashboard")}
-          </Button>
+          { !forceCreate && (
+            <Button variant="outline" onClick={handleDialogClose} disabled={isLoading}>
+              {translate("cancel", "dashboard")}
+            </Button>
+          )}
           <Button onClick={handleCreate} disabled={isLoading || !name.trim()}>
             {isLoading ? translate("creating", "dashboard") : translate("create_project", "dashboard")}
           </Button>

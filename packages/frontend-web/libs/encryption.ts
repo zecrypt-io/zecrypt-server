@@ -61,13 +61,142 @@ export function generateEncryptionKey() {
   return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
 
-// Helper function to get the current encryption key from session storage
-export function getCurrentEncryptionKey() {
-  return sessionStorage.getItem("encryptionKey") || ""
+// Import RSA public key for encryption
+export async function importRSAPublicKey(publicKeyPem: string) {
+  try {
+    // Remove header, footer, and newlines from PEM
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemContents = publicKeyPem.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "");
+    
+    // Decode base64
+    const binaryDer = window.atob(pemContents);
+    const buffer = new ArrayBuffer(binaryDer.length);
+    const bufView = new Uint8Array(buffer);
+    for (let i = 0; i < binaryDer.length; i++) {
+      bufView[i] = binaryDer.charCodeAt(i);
+    }
+    
+    // Import key
+    return await window.crypto.subtle.importKey(
+      "spki",
+      buffer,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256"
+      },
+      false,
+      ["encrypt"]
+    );
+  } catch (error) {
+    console.error("Error importing RSA public key:", error);
+    throw new Error("Failed to import RSA public key");
+  }
 }
 
-// Check if an encryption key exists in the current session
-export function hasEncryptionKey() {
-  return !!getCurrentEncryptionKey()
+// Import RSA private key for decryption
+export async function importRSAPrivateKey(privateKeyPem: string) {
+  try {
+    // Remove header, footer, and newlines from PEM
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = privateKeyPem.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "");
+    
+    // Decode base64
+    const binaryDer = window.atob(pemContents);
+    const buffer = new ArrayBuffer(binaryDer.length);
+    const bufView = new Uint8Array(buffer);
+    for (let i = 0; i < binaryDer.length; i++) {
+      bufView[i] = binaryDer.charCodeAt(i);
+    }
+    
+    // Import key
+    return await window.crypto.subtle.importKey(
+      "pkcs8",
+      buffer,
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256"
+      },
+      false,
+      ["decrypt"]
+    );
+  } catch (error) {
+    console.error("Error importing RSA private key:", error);
+    throw new Error("Failed to import RSA private key");
+  }
+}
+
+// Encrypt AES key with RSA public key
+export async function encryptAESKeyWithRSA(aesKeyHex: string, rsaPublicKey: CryptoKey) {
+  try {
+    // Convert hex AES key to ArrayBuffer
+    const aesKeyArray = new Uint8Array(aesKeyHex.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)));
+    
+    // Encrypt the AES key with RSA-OAEP
+    const encryptedKey = await window.crypto.subtle.encrypt(
+      {
+        name: "RSA-OAEP"
+      },
+      rsaPublicKey,
+      aesKeyArray
+    );
+    
+    // Convert to base64 string for API transmission
+    const encryptedKeyArray = Array.from(new Uint8Array(encryptedKey));
+    const base64Key = btoa(String.fromCharCode.apply(null, encryptedKeyArray));
+    
+    return base64Key;
+  } catch (error) {
+    console.error("Error encrypting AES key with RSA:", error);
+    throw new Error("Failed to encrypt AES key");
+  }
+}
+
+// Decrypt AES key with RSA private key
+export async function decryptAESKeyWithRSA(encryptedKeyBase64: string, rsaPrivateKey: CryptoKey) {
+  try {
+    // Convert base64 back to ArrayBuffer
+    const binaryString = atob(encryptedKeyBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Decrypt the AES key with RSA-OAEP
+    const decryptedKey = await window.crypto.subtle.decrypt(
+      {
+        name: "RSA-OAEP"
+      },
+      rsaPrivateKey,
+      bytes
+    );
+    
+    // Convert to hex string
+    const decryptedKeyArray = Array.from(new Uint8Array(decryptedKey));
+    const hexKey = decryptedKeyArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    console.log("decryptAESKeyWithRSA: hexKey", hexKey);
+    return hexKey;
+  } catch (error) {
+    console.error("Error decrypting AES key with RSA:", error);
+    throw new Error("Failed to decrypt AES key");
+  }
+}
+
+// Generate and encrypt a new AES key for project creation
+export async function generateEncryptedProjectKey(publicKeyPem: string) {
+  // Generate a new AES key
+  const aesKey = generateEncryptionKey();
+  
+  // Import the RSA public key
+  const rsaPublicKey = await importRSAPublicKey(publicKeyPem);
+  
+  // Encrypt the AES key with the RSA public key
+  const encryptedKey = await encryptAESKeyWithRSA(aesKey, rsaPublicKey);
+  
+  return {
+    aesKey, // plain AES key to store in session storage for current use
+    encryptedKey // encrypted key to send to the server
+  };
 }
 

@@ -41,7 +41,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ProjectDialog } from "@/components/project-dialog";
 import { CommandPalette } from "@/components/command-palette";
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
-import { EncryptionKeyModal } from "@/components/encryption-key-modal";
 import { useRouter } from "next/navigation";
 import { locales } from "@/middleware";
 import { useSelector, useDispatch } from "react-redux";
@@ -278,8 +277,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const user = useUser();
-  const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
@@ -321,8 +318,9 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       }
       dispatch(resetWorkspaceState());
       dispatch(clearUserData());
-      localStorage.clear();
-      router.push(`/${locale}`);
+      localStorage.clear(); 
+      sessionStorage.clear(); 
+      router.push(`/${currentLocale}`);
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -417,28 +415,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [router, currentLocale, handleLogout]);
-
-  useEffect(() => {
-    const shouldShowModal = sessionStorage.getItem("showEncryptionKeyModal") === "true";
-    const newUserFlag = sessionStorage.getItem("isNewUser") === "true";
-
-    if (shouldShowModal) {
-      setShowEncryptionKeyModal(true);
-      setIsNewUser(newUserFlag);
-      sessionStorage.removeItem("showEncryptionKeyModal");
-    }
-  }, []);
-
-  const handleEncryptionKeySubmit = (key: string) => {
-    sessionStorage.setItem("encryptionKey", key);
-    setShowEncryptionKeyModal(false);
-    console.log("Encryption key received and stored for this session");
-  };
-
-  const handleEncryptionKeyCancel = () => {
-    setShowEncryptionKeyModal(false);
-    router.push(`/${currentLocale}/login`);
-  };
 
   const sortedLocales = [...locales].sort((a, b) => {
     const nameA = languageLabels[a] || a;
@@ -714,13 +690,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
       <KeyboardShortcutsHelp />
-      {showEncryptionKeyModal && (
-        <EncryptionKeyModal
-          isNewUser={isNewUser}
-          onClose={handleEncryptionKeySubmit}
-          onCancel={handleEncryptionKeyCancel}
-        />
-      )}
     </div>
   );
 }

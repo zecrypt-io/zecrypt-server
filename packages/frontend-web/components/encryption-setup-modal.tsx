@@ -24,6 +24,7 @@ import {
 } from "@/libs/crypto-utils";
 import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
+import { secureSetItem } from '@/libs/session-storage-utils';
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;
@@ -65,6 +66,11 @@ export function EncryptionSetupModal({
       const keyPair = await generateRsaKeyPair();
       const publicKeyString = await exportKeyToString(keyPair.publicKey, 'public');
       const privateKeyString = await exportKeyToString(keyPair.privateKey, 'private');
+      
+      // Store raw keys in session storage
+      await secureSetItem("publicKey", publicKeyString);
+      await secureSetItem("privateKey", privateKeyString);
+      console.log("Public and private keys stored in session storage (encrypted).");
       
       // 2. Derive encryption key from password
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
@@ -116,8 +122,17 @@ export function EncryptionSetupModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onCancel?.()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={onCancel ? () => onCancel?.() : undefined}
+    >
+      <DialogContent 
+        className="sm:max-w-md" 
+        onInteractOutside={(e: Event) => {
+          // Prevent closing by clicking outside
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" />
@@ -129,7 +144,7 @@ export function EncryptionSetupModal({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
+          <Alert className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900 dark:text-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {tAuth("encryption_password_warning")}

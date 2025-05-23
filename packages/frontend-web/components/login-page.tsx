@@ -36,6 +36,9 @@ import { setUserData } from "../libs/Redux/userSlice";
 import { AppDispatch } from "../libs/Redux/store";
 import { getUserKeys } from "@/libs/api-client";
 import { EncryptionSetupModal } from "./encryption-setup-modal";
+import { EncryptionUnlockModal } from "./encryption-unlock-modal";
+import { exportKeyToString } from "@/libs/crypto-utils";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 export interface LoginPageProps {
   locale?: string;
@@ -54,6 +57,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [showKeySetupModal, setShowKeySetupModal] = useState(false);
+  const [showKeyUnlockModal, setShowKeyUnlockModal] = useState(false);
   const [provisioningUri, setProvisioningUri] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
@@ -62,6 +66,9 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [isNewUser, setIsNewUser] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState(200);
+  const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<string>("");
+  const [publicKeyString, setPublicKeyString] = useState<string>("");
+  const [hasExistingKeys, setHasExistingKeys] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(true);
   const [isAuthFlowComplete, setIsAuthFlowComplete] = useState(false);
   const [isProcessingAuth, setIsProcessingAuth] = useState(false);
@@ -91,17 +98,71 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Check for existing keys in session storage
+  useEffect(() => {
+    const checkExistingKeys = async () => {
+      try {
+        const privateKeyInSession = await secureGetItem("privateKey");
+        const publicKeyInSession = await secureGetItem("publicKey");
+        
+        if (privateKeyInSession && publicKeyInSession) {
+          console.log("Found existing encryption keys in session storage");
+          setHasExistingKeys(true);
+        } else {
+          setHasExistingKeys(false);
+        }
+      } catch (error) {
+        console.error("Error checking existing keys:", error);
+        setHasExistingKeys(false);
+      }
+    };
+    
+    checkExistingKeys();
+  }, []);
+
   // Function to check for encryption keys
   const checkForEncryptionKeys = async () => {
     setIsCheckingKeys(true);
     try {
+      // Check if keys already exist in session storage
+      const privateKeyInSession = await secureGetItem("privateKey");
+      const publicKeyInSession = await secureGetItem("publicKey");
+      
+      // If both keys already exist in session storage, proceed to dashboard
+      if (privateKeyInSession && publicKeyInSession) {
+        console.log("Encryption keys found in session storage, proceeding to dashboard");
+        proceedToDashboard();
+        return;
+      }
+      
+      // If keys aren't in session storage, check the API
       const keysResponse = await getUserKeys();
       
       if (keysResponse.status_code === 200) {
-        if (keysResponse.data.key === null) {
+        if (!keysResponse.data || (!keysResponse.data.key && !keysResponse.data.public_key)) {
+          // No keys found on server, show setup modal
+          console.log("No encryption keys found on server, showing setup modal");
           setShowKeySetupModal(true);
         } else {
-          proceedToDashboard();
+          // Keys exist on server
+          const encryptedKey = keysResponse.data.key; // This is the encrypted private key
+          const publicKey = keysResponse.data.public_key;
+          
+          // Store public key in localStorage for future use
+          if (publicKey) {
+            localStorage.setItem("userPublicKey", publicKey);
+          }
+          
+          if (encryptedKey && publicKey) {
+            // Need to decrypt the private key - show unlock modal
+            setEncryptedPrivateKey(encryptedKey);
+            setPublicKeyString(publicKey);
+            setShowKeyUnlockModal(true);
+          } else {
+            // One or both keys are missing
+            console.log("Incomplete key data received from server, showing setup modal");
+            setShowKeySetupModal(true);
+          }
         }
       } else {
         throw new Error(keysResponse.message || t("failed_encryption_keys"));
@@ -142,56 +203,74 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     proceedToDashboard();
   };
 
-  // Handle Stack Auth login flow
-  const handleStackAuth = async (accessToken: string) => {
-    if (!accessToken || !deviceId) return;
-    
+  // Handle successful key unlock
+  const handleKeyUnlock = async (privateKeyObj: CryptoKey, publicKeyObj: CryptoKey) => {
     try {
-      setError(null);
-      const loginResponse = await stackAuthHandler(accessToken, "login", { device_id: deviceId });
+      // Export keys to string format for storage
+      const privateKeyString = await exportKeyToString(privateKeyObj, 'private');
+      const publicKeyString = await exportKeyToString(publicKeyObj, 'public');
+      
+      // Store keys in session storage for use in this session
+      await secureSetItem("privateKey", privateKeyString);
+      await secureSetItem("publicKey", publicKeyString);
+      
+      setShowKeyUnlockModal(false);
+      proceedToDashboard();
+    } catch (error) {
+      console.error("Error exporting keys:", error);
+      toast({
+        title: t("error"),
+        description: t("encryption_security_error"),
+        variant: "destructive"
+      });
+    }
+  };
 
-      if (loginResponse?.status_code === 200) {
-        if (loginResponse.data.token) {
-          dispatch(
-            setUserData({
-              user_id: loginResponse.data.user_id || null,
-              name: loginResponse.data.name || user?.displayName || null,
-              profile_url: loginResponse.data.profile_url || user?.profileImageUrl || null,
-              email: user?.primaryEmail || null,
-              access_token: loginResponse.data.token || null,
-              refresh_token: loginResponse.data.refresh_token || null,
-              locale: loginResponse.data.language || locale || "en",
-              is_2fa_enabled: true,
-            })
-          );
+  const handleStackAuth = async (token: string) => {
+    try {
+      const response = await stackAuthHandler(token, "login", { device_id: deviceId ?? undefined });
+      if (response.status_code === 200) {
+        dispatch(
+          setUserData({
+            user_id: response.data.user_id || null,
+            name: response.data.name || user?.displayName || null,
+            profile_url: response.data.profile_url || user?.profileImageUrl || null,
+            email: response.data.email || user?.primaryEmail || null,
+            access_token: response.data.token || null,
+            refresh_token: response.data.refresh_token || null,
+            locale: response.data.language || locale || "en",
+            is_2fa_enabled: response.data.is_new_user === false, // Assuming is_new_user false means 2FA might be setup
+          })
+        );
+
+        if (response.data.is_new_user) {
+          setUserId(response.data.user_id);
+          setProvisioningUri(response.data.provisioning_uri || null);
+          setShow2FAModal(true);
+          setIsNewUser(true);
+        } else if (response.data.user_id && !response.data.token) {
+          // This case implies 2FA is enabled and needs verification
+          setUserId(response.data.user_id);
+          setShow2FAModal(true);
+          setIsNewUser(false); // Existing user, needs 2FA
+        } else {
+          setIsAuthFlowComplete(true);
           toast({
             title: t("login_successful"),
             description: t("checking_encryption_keys"),
           });
           await checkForEncryptionKeys();
-          return;
         }
-
-        setUserId(loginResponse.data.user_id || null);
-        setIsNewUser(loginResponse.data.is_new_user || false);
-        setProvisioningUri(loginResponse.data.provisioning_uri || null);
-        setShow2FAModal(true);
-        
-        if (loginResponse.data.is_new_user) {
-          toast({
-            title: t("2fa_setup_required"),
-            description: t("scan_qr_with_authenticator"),
-          });
-        }
-        return;
+      } else {
+        setError(response.message || t("login_failed"));
+        setShowLoginForm(true);
       }
-
-      setError(`${t("login_failed")}: ${loginResponse?.message || t("unknown_error")}`);
-    } catch (authErr) {
-      console.error("Auth request error:", authErr);
-      setError(t("auth_network_error"));
+    } catch (err: any) {
+      console.error("Stack auth error:", err);
+      setError(err.response?.data?.message || err.message || t("login_failed_unexpected"));
+      setShowLoginForm(true);
     } finally {
-      setIsProcessingAuth(false);
+      setIsProcessingAuth(false); // Ensure this is set regardless of outcome
     }
   };
 
@@ -212,7 +291,17 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
           
           if (accessToken) {
             await handleStackAuth(accessToken);
+          } else {
+            // If there's no access token even if user object exists,
+            // it might mean the user is not fully logged in with Stack.
+            // Show login form to allow them to initiate Stack login.
+            setShowLoginForm(true);
+            setIsProcessingAuth(false); // Not processing anymore
           }
+        } else {
+           // No user object from useUser(), so show the login form.
+          setShowLoginForm(true);
+          setIsProcessingAuth(false); // Ensure this is reset
         }
       } catch (err) {
         console.error("Auth flow error:", err);
@@ -345,7 +434,26 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       <EncryptionSetupModal
         isOpen={showKeySetupModal}
         onComplete={handleKeySetupComplete}
-        onCancel={proceedToDashboard}
+        onCancel={() => {
+          // Only allow canceling if not force required
+          setShowKeySetupModal(false);
+          setError(t("encryption_security_error"));
+        }}
+      />
+    );
+  }
+
+  if (showKeyUnlockModal) {
+    return (
+      <EncryptionUnlockModal
+        isOpen={showKeyUnlockModal}
+        encryptedPrivateKey={encryptedPrivateKey}
+        publicKey={publicKeyString}
+        onUnlock={handleKeyUnlock}
+        onCancel={() => {
+          setShowKeyUnlockModal(false);
+          setError(t("encryption_security_error"));
+        }}
       />
     );
   }
