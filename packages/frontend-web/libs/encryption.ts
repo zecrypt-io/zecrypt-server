@@ -200,3 +200,43 @@ export async function generateEncryptedProjectKey(publicKeyPem: string) {
   };
 }
 
+/**
+ * Encrypt account data using the project's AES key
+ * @param data The data to encrypt (typically a JSON string)
+ * @param projectAesKey The project's AES key in hex format
+ * @returns A string in the format "iv.encryptedData" where both are base64 encoded
+ */
+export async function encryptAccountData(data: string, projectAesKey: string): Promise<string> {
+  try {
+    const { encryptedData, iv } = await encryptData(data, projectAesKey);
+    
+    // Return a combined string with IV and encrypted data for easier storage
+    return `${iv}.${encryptedData}`;
+  } catch (error) {
+    console.error("Error encrypting account data:", error);
+    throw new Error("Failed to encrypt account data");
+  }
+}
+
+/**
+ * Decrypt account data using the project's AES key
+ * @param encryptedString The encrypted string in the format "iv.encryptedData"
+ * @param projectAesKey The project's AES key in hex format
+ * @returns The decrypted data string
+ */
+export async function decryptAccountData(encryptedString: string, projectAesKey: string): Promise<string> {
+  try {
+    // Split the IV and encrypted data
+    const [ivHex, encryptedHex] = encryptedString.split('.');
+    
+    if (!ivHex || !encryptedHex) {
+      throw new Error("Invalid encrypted data format");
+    }
+    
+    return await decryptData(encryptedHex, ivHex, projectAesKey);
+  } catch (error) {
+    console.error("Error decrypting account data:", error);
+    throw new Error("Failed to decrypt account data");
+  }
+}
+

@@ -9,6 +9,8 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { encryptAccountData } from "@/libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 
 interface AddAccountDialogProps {
   onClose: () => void;
@@ -30,6 +32,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment", "Favorite"];
 
@@ -63,19 +66,33 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
     setError("");
 
     try {
-      // Create credentials object with username and password
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error(translate("project_not_found", "accounts"));
+      }
+
       const credentials = {
         username: username || "",
         password: password
       };
 
-      // Convert credentials object to JSON string for the data field
       const credentialsString = JSON.stringify(credentials);
 
-      // Prepare payload - use the stringified credentials as data
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        throw new Error(translate("encryption_key_not_found", "accounts"));
+      }
+
+      const encryptedDataString = await encryptAccountData(credentialsString, projectAesKey);
+
       const payload = {
         title: name,
-        data: credentialsString,
+        data: encryptedDataString,
         url: website || null,
         tags,
         notes: notes || null
