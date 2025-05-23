@@ -24,6 +24,7 @@ import {
 } from "@/libs/crypto-utils";
 import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
+import { secureSetItem } from '@/libs/session-storage-utils';
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;
@@ -67,9 +68,9 @@ export function EncryptionSetupModal({
       const privateKeyString = await exportKeyToString(keyPair.privateKey, 'private');
       
       // Store raw keys in session storage
-      sessionStorage.setItem("publicKey", publicKeyString);
-      sessionStorage.setItem("privateKey", privateKeyString);
-      console.log("Public and private keys stored in session storage.");
+      await secureSetItem("publicKey", publicKeyString);
+      await secureSetItem("privateKey", privateKeyString);
+      console.log("Public and private keys stored in session storage (encrypted).");
       
       // 2. Derive encryption key from password
       const salt = window.crypto.getRandomValues(new Uint8Array(16));

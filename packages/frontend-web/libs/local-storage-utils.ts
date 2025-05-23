@@ -59,4 +59,7 @@ export const clearUserData = () => {
   localStorage.removeItem('zecrypt_user_name');
   localStorage.removeItem('zecrypt_profile_url');
   localStorage.removeItem('zecrypt_language');
-}; 
+};
+
+// Export secure session storage functions for easy access
+export { secureSetItem, secureGetItem } from './session-storage-utils'; 

@@ -61,16 +61,6 @@ export function generateEncryptionKey() {
   return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
 
-// Helper function to get the current encryption key from session storage
-export function getCurrentEncryptionKey() {
-  return sessionStorage.getItem("encryptionKey") || ""
-}
-
-// Check if an encryption key exists in the current session
-export function hasEncryptionKey() {
-  return !!getCurrentEncryptionKey()
-}
-
 // Import RSA public key for encryption
 export async function importRSAPublicKey(publicKeyPem: string) {
   try {

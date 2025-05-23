@@ -13,6 +13,7 @@ import { Workspace, Project } from "../libs/Redux/workspaceSlice";
 import { log } from "node:console";
 import { ProjectDialog } from "./project-dialog";
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "../libs/encryption";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 export function OverviewContent() {
   const user = useUser();
@@ -151,12 +152,12 @@ export function OverviewContent() {
       console.log("syncProjectKeys: Starting try block.");
       // Get all project keys from session storage
       const storedKeys: Record<string, string> = {};
-      projects.forEach(project => {
-        const storedKey = sessionStorage.getItem(`projectKey_${project.project_id}`);
+      for (const project of projects) {
+        const storedKey = await secureGetItem(`projectKey_${project.project_id}`);
         if (storedKey) {
           storedKeys[project.project_id] = storedKey;
         }
-      });
+      }
 
       // Check if any keys are missing
       const missingKeyProjects = projects.filter(project => !storedKeys[project.project_id]);
@@ -181,7 +182,7 @@ export function OverviewContent() {
       }
 
       // Get user's private key from session storage to decrypt project keys
-      const privateKeyPEM = sessionStorage.getItem('privateKey');
+      const privateKeyPEM = await secureGetItem('privateKey');
       if (!privateKeyPEM) {
         console.error("Private key not found in session storage");
         return;
@@ -198,7 +199,7 @@ export function OverviewContent() {
             const decryptedKey = await decryptAESKeyWithRSA(projectKey.project_key, privateKey);
             
             // Store the decrypted key in session storage
-            sessionStorage.setItem(`projectKey_${projectKey.project_id}`, decryptedKey);
+            await secureSetItem(`projectKey_${projectKey.project_id}`, decryptedKey);
             console.log(`✅ Project key synchronized for project: ${projectKey.project_name || projectKey.project_id}`);
           } catch (error) {
             console.error(`Error processing key for project ID ${projectKey.project_id}:`, error);

@@ -14,6 +14,7 @@ import { useUser } from "@stackframe/stack";
 import { loadInitialData, fetchProjects, fetchProjectKeys } from "@/libs/getWorkspace";
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 export function LocalizedOverviewContent() {
   const { translate } = useTranslator();
@@ -136,13 +137,13 @@ export function LocalizedOverviewContent() {
       console.log("syncProjectKeys: Starting try block.");
       // Get all project keys from session storage
       const storedKeys: Record<string, string> = {};
-      projects.forEach(project => {
-        const storedKey = sessionStorage.getItem(`projectKey_${project.project_id}`);
+      for (const project of projects) {
+        const storedKey = await secureGetItem(`projectKey_${project.project_id}`);
         console.log("syncProjectKeys: storedKey", storedKey);
         if (storedKey) {
           storedKeys[project.project_id] = storedKey;
         }
-      });
+      }
 
       // Check if any keys are missing
       const missingKeyProjects = projects.filter(project => !storedKeys[project.project_id]);
@@ -167,7 +168,7 @@ export function LocalizedOverviewContent() {
       }
 
       // Get user's private key from session storage to decrypt project keys
-      const privateKeyPEM = sessionStorage.getItem('privateKey');
+      const privateKeyPEM = await secureGetItem('privateKey');
       console.log("syncProjectKeys: privateKeyPEM", privateKeyPEM);
       if (!privateKeyPEM) {
         console.error("Private key not found in session storage");
@@ -186,7 +187,7 @@ export function LocalizedOverviewContent() {
             const decryptedKey = await decryptAESKeyWithRSA(projectKey.project_key, privateKey);
             console.log("syncProjectKeys: decryptedKey", decryptedKey);
             // Store the decrypted key in session storage
-            sessionStorage.setItem(`projectKey_${projectKey.project_name}`, decryptedKey);
+            await secureSetItem(`projectKey_${projectKey.project_name}`, decryptedKey);
             console.log(`✅ Project key synchronized for project: ${projectKey.project_name || projectKey.project_id}`);
           } catch (error) {
             console.error(`Error processing key for project ID ${projectKey.project_id}:`, error);

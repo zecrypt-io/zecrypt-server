@@ -27,6 +27,7 @@ import { getUserKeys } from "@/libs/api-client";
 import { EncryptionSetupModal } from "./encryption-setup-modal";
 import { EncryptionUnlockModal } from "./encryption-unlock-modal";
 import { exportKeyToString } from "@/libs/crypto-utils";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 export interface LoginPageProps {
   locale?: string;
@@ -54,6 +55,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   const [qrSize, setQrSize] = useState(200);
   const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<string>("");
   const [publicKeyString, setPublicKeyString] = useState<string>("");
+  const [hasExistingKeys, setHasExistingKeys] = useState(false);
 
   // Generate or load device ID
   useEffect(() => {
@@ -79,13 +81,35 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Check for existing keys in session storage
+  useEffect(() => {
+    const checkExistingKeys = async () => {
+      try {
+        const privateKeyInSession = await secureGetItem("privateKey");
+        const publicKeyInSession = await secureGetItem("publicKey");
+        
+        if (privateKeyInSession && publicKeyInSession) {
+          console.log("Found existing encryption keys in session storage");
+          setHasExistingKeys(true);
+        } else {
+          setHasExistingKeys(false);
+        }
+      } catch (error) {
+        console.error("Error checking existing keys:", error);
+        setHasExistingKeys(false);
+      }
+    };
+    
+    checkExistingKeys();
+  }, []);
+
   // Function to check for encryption keys
   const checkForEncryptionKeys = async () => {
     setIsCheckingKeys(true);
     try {
       // Check if keys already exist in session storage
-      const privateKeyInSession = sessionStorage.getItem("privateKey");
-      const publicKeyInSession = sessionStorage.getItem("publicKey");
+      const privateKeyInSession = await secureGetItem("privateKey");
+      const publicKeyInSession = await secureGetItem("publicKey");
       
       // If both keys already exist in session storage, proceed to dashboard
       if (privateKeyInSession && publicKeyInSession) {
@@ -99,8 +123,9 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       console.log("Keys response:", keysResponse);
 
       if (keysResponse.status_code === 200) {
-        if (keysResponse.data === null) {
+        if (!keysResponse.data || (!keysResponse.data.key && !keysResponse.data.public_key)) {
           // No keys found on server, show setup modal
+          console.log("No encryption keys found on server, showing setup modal");
           setShowKeySetupModal(true);
         } else {
           // Keys exist on server
@@ -118,8 +143,9 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             setPublicKeyString(publicKey);
             setShowKeyUnlockModal(true);
           } else {
-            // Something is wrong with the keys
-            throw new Error("Invalid key data received from server");
+            // One or both keys are missing
+            console.log("Incomplete key data received from server, showing setup modal");
+            setShowKeySetupModal(true);
           }
         }
       } else {
@@ -175,10 +201,9 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       const privateKeyString = await exportKeyToString(privateKeyObj, 'private');
       const publicKeyString = await exportKeyToString(publicKeyObj, 'public');
       
-      // Store in session storage
-      sessionStorage.setItem("privateKey", privateKeyString);
-      sessionStorage.setItem("publicKey", publicKeyString);
-      console.log("Encryption keys stored in session storage");
+      // Store keys in session storage for use in this session
+      await secureSetItem("privateKey", privateKeyString);
+      await secureSetItem("publicKey", publicKeyString);
       
       setShowKeyUnlockModal(false);
       proceedToDashboard();

@@ -33,6 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
 import { generateEncryptedProjectKey } from "@/libs/encryption";
 import { useToast } from "@/hooks/use-toast";
+import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -326,16 +327,19 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
     };
 
     try {
-      // Check if the project name is being changed and if there's a stored project key for this project
-      const oldProjectKey = sessionStorage.getItem(`project_key_${project.name}`);
-      if (oldProjectKey && project.name !== name.trim()) {
-        // Store the key with the new project name and remove the old one
-        sessionStorage.setItem(`project_key_${name.trim()}`, oldProjectKey);
-        sessionStorage.removeItem(`project_key_${project.name}`);
-        console.log(`Project key renamed in session storage from ${project.name} to ${name.trim()}`);
-        // Update the common project key if it matches the one we're changing
-        if (sessionStorage.getItem("projectKey") === oldProjectKey) {
-          sessionStorage.setItem("projectKey", oldProjectKey);
+      // If we're renaming the project, update the project key in session storage too
+      if (name.trim() !== project.name) {
+        // Get the old project key
+        const oldProjectKey = await secureGetItem(`project_key_${project.name}`);
+        if (oldProjectKey) {
+          // Store it with the new project name
+          await secureSetItem(`project_key_${name.trim()}`, oldProjectKey);
+          
+          // Update default project key if needed
+          const currentDefaultKey = await secureGetItem("projectKey");
+          if (currentDefaultKey === oldProjectKey) {
+            await secureSetItem("projectKey", oldProjectKey);
+          }
         }
       }
       
@@ -596,13 +600,12 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       // Generate an AES key and encrypt it with the user's public key
       const { aesKey, encryptedKey } = await generateEncryptedProjectKey(formattedPublicKey);
       
-      // Store the plain AES key in session storage for current use
-      const projectStorageKey = `project_key_${name.trim()}`;
-      sessionStorage.setItem(projectStorageKey, aesKey);
-      console.log(`Project key stored in session storage with key: ${projectStorageKey}`);
+      // Store project key in session storage for current use
+      const projectStorageKey = `projectKey_${name.trim()}`;
+      await secureSetItem(projectStorageKey, aesKey);
       
-      // Also store the latest project key under a common key for backward compatibility
-      sessionStorage.setItem("projectKey", aesKey);
+      // Also store as the current project key
+      await secureSetItem("projectKey", aesKey);
       
       const trimmedDescription = description.trim();
       const payload = {
