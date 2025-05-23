@@ -226,6 +226,54 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     }
   };
 
+  const handleStackAuth = async (token: string) => {
+    try {
+      const response = await stackAuthHandler(token, "login", { device_id: deviceId ?? undefined });
+      if (response.status_code === 200) {
+        dispatch(
+          setUserData({
+            user_id: response.data.user_id || null,
+            name: response.data.name || user?.displayName || null,
+            profile_url: response.data.profile_url || user?.profileImageUrl || null,
+            email: response.data.email || user?.primaryEmail || null,
+            access_token: response.data.token || null,
+            refresh_token: response.data.refresh_token || null,
+            locale: response.data.language || locale || "en",
+            is_2fa_enabled: response.data.is_new_user === false, // Assuming is_new_user false means 2FA might be setup
+          })
+        );
+
+        if (response.data.is_new_user) {
+          setUserId(response.data.user_id);
+          setProvisioningUri(response.data.provisioning_uri || null);
+          setShow2FAModal(true);
+          setIsNewUser(true);
+        } else if (response.data.user_id && !response.data.token) {
+          // This case implies 2FA is enabled and needs verification
+          setUserId(response.data.user_id);
+          setShow2FAModal(true);
+          setIsNewUser(false); // Existing user, needs 2FA
+        } else {
+          setIsAuthFlowComplete(true);
+          toast({
+            title: t("login_successful"),
+            description: t("checking_encryption_keys"),
+          });
+          await checkForEncryptionKeys();
+        }
+      } else {
+        setError(response.message || t("login_failed"));
+        setShowLoginForm(true);
+      }
+    } catch (err: any) {
+      console.error("Stack auth error:", err);
+      setError(err.response?.data?.message || err.message || t("login_failed_unexpected"));
+      setShowLoginForm(true);
+    } finally {
+      setIsProcessingAuth(false); // Ensure this is set regardless of outcome
+    }
+  };
+
   useEffect(() => {
     const authenticateUser = async () => {
       if (isLoggingIn || !deviceId) return;
@@ -241,9 +289,19 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
           const authDetails = await user.getAuthJson();
           const accessToken = authDetails?.accessToken;
           
-          // if (accessToken) {
-          //   await handleStackAuth(accessToken);
-          // }
+          if (accessToken) {
+            await handleStackAuth(accessToken);
+          } else {
+            // If there's no access token even if user object exists,
+            // it might mean the user is not fully logged in with Stack.
+            // Show login form to allow them to initiate Stack login.
+            setShowLoginForm(true);
+            setIsProcessingAuth(false); // Not processing anymore
+          }
+        } else {
+           // No user object from useUser(), so show the login form.
+          setShowLoginForm(true);
+          setIsProcessingAuth(false); // Ensure this is reset
         }
       } catch (err) {
         console.error("Auth flow error:", err);

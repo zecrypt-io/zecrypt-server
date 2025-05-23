@@ -51,11 +51,6 @@ const defaultFeatures = {
   software_license: { enabled: false, is_client_side_encryption: false },
 };
 
-export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogProps) {
-  const [activeTab, setActiveTab] = useState("select");
-  const [localSelectedProject, setLocalSelectedProject] = useState<string | null>(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
 // Define featureMenuItems to include icons for each module
 const featureMenuItems: {
   key: keyof typeof defaultFeatures;
@@ -205,7 +200,7 @@ const featureMenuItems: {
   },
 ];
 
-export function ProjectDialog({ onClose }: ProjectDialogProps) {
+export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogProps) {
   const dispatch = useDispatch<AppDispatch>();
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
