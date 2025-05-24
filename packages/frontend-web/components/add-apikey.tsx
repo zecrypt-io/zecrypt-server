@@ -34,7 +34,7 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
