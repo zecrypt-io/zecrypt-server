@@ -8,12 +8,15 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
+import { decryptDataField } from "@/libs/encryption";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
 
 interface ApiKeyFromAPI {
   doc_id: string;
   title: string;
   lower_title: string;
   data: string;
+  raw_data?: string; // To store original encrypted data
   notes?: string | null;
   env: "Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT";
   tags?: string[];
@@ -68,6 +71,40 @@ export function useApiKeyManagement({
   const [selectedEnv, setSelectedEnvState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
+  const [projectKey, setProjectKey] = useState<string | null>(null);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
+  
+  // Load the project key once when component mounts or project changes
+  useEffect(() => {
+    const loadProjectKey = async () => {
+      if (selectedProjectName) {
+        try {
+          console.log("Loading project key for project:", selectedProjectName);
+          // Use project name to get encryption key
+          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+          console.log("Project key loaded:", key ? "Found" : "Not found");
+          setProjectKey(key);
+        } catch (error) {
+          console.error("Error loading project key:", error);
+          setProjectKey(null);
+        }
+      } else {
+        setProjectKey(null);
+      }
+    };
+    
+    loadProjectKey();
+  }, [selectedProjectName]);
 
   const fetchApiKeys = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -88,9 +125,39 @@ export function useApiKeyManagement({
 
       if (response.status === 200 && response.data?.data) {
         const fetchedApiKeys: ApiKeyFromAPI[] = response.data.data;
-        setAllApiKeys(fetchedApiKeys);
+        
+        // Try to get or verify project key if not already available
+        let effectiveProjectKey = projectKey;
+        if (!effectiveProjectKey && selectedProjectName) {
+          try {
+            const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+            if (rawProjectKey) {
+              effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            }
+          } catch (error) {
+            console.error("Failed to get project key directly:", error);
+          }
+        }
+        
+        // Process API keys for metadata
+        let processedApiKeys = fetchedApiKeys;
+        
+        if (effectiveProjectKey) {
+          // We're just preserving metadata here - actual decryption happens in the UI components
+          processedApiKeys = fetchedApiKeys.map(apiKey => {
+            if (apiKey.data && apiKey.data.includes('.')) {
+              return {
+                ...apiKey,
+                raw_data: apiKey.data, // Store original encrypted data
+              };
+            }
+            return apiKey;
+          });
+        }
+        
+        setAllApiKeys(processedApiKeys);
 
-        let processed = [...fetchedApiKeys];
+        let processed = [...processedApiKeys];
 
         // Apply search if there's a query
         if (searchQuery.trim()) {
@@ -129,11 +196,12 @@ export function useApiKeyManagement({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedEnv, sortConfig]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedEnv, sortConfig, translate, projectKey, selectedProjectName]);
 
+  // Only run fetchApiKeys when these dependencies change
   useEffect(() => {
     fetchApiKeys();
-  }, [fetchApiKeys]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedEnv, sortConfig]);
 
   const {
     paginatedData: apiKeysToDisplay,

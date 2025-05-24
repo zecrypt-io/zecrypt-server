@@ -146,4 +146,27 @@ export async function secureGetItem(key: string): Promise<string | null> {
     console.error(`Error in secureGetItem for key ${key}:`, error);
     return null;
   }
+}
+
+/**
+ * Gets the raw project AES key directly from session storage
+ * This function explicitly logs the presence/absence of the key
+ * to help diagnose encryption issues
+ */
+export function getProjectKey(projectId: string): string | null {
+  if (!projectId) {
+    console.warn("getProjectKey called with empty projectId");
+    return null;
+  }
+  
+  // NOTE: The key format is projectKey_[projectId] not project_[projectId]_key
+  const key = sessionStorage.getItem(`projectKey_${projectId}`);
+  
+  if (key) {
+    console.log(`Found project key for project ${projectId}`);
+    return key;
+  } else {
+    console.warn(`No project key found for project ${projectId}`);
+    return null;
+  }
 } 
