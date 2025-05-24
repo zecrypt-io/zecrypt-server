@@ -1029,7 +1029,8 @@
     "invalid_input_data": "Invalid input data",
     "adding": "Adding...",
     "updating": "Updating...",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "cancel": "Cancel"
   },
   "key_shortcuts": {
     "title": "Key Shortcuts"
