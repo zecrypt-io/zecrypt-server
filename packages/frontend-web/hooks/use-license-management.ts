@@ -6,6 +6,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
+import { decryptDataField } from '@/libs/encryption';
+import { secureGetItem } from '@/libs/session-storage-utils';
 
 // Raw data structure from API GET /licenses
 interface LicenseFromAPI {
@@ -84,18 +86,57 @@ export function useLicenseManagement({
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const processLicenseData = useCallback(async (licenseRaw: LicenseFromAPI): Promise<License> => {
     let extractedLicenseKey = '';
     try {
       if (licenseRaw.data) {
-        const parsedData = JSON.parse(licenseRaw.data);
-        if (parsedData && typeof parsedData.license_key === 'string') {
-          extractedLicenseKey = parsedData.license_key;
+        // Find the current project for encryption key lookup
+        const currentProject = workspaces
+          .find(ws => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find(p => p.project_id === selectedProjectId);
+        
+        if (!currentProject) {
+          console.error("Project not found for license data decryption");
+          throw new Error("Project not found");
+        }
+
+        // Get the project's AES key from session storage
+        const projectKeyName = `projectKey_${currentProject.name}`;
+        const projectAesKey = await secureGetItem(projectKeyName);
+        
+        if (!projectAesKey) {
+          console.error("Project encryption key not found for license data decryption");
+          throw new Error("Project encryption key not found");
+        }
+
+        try {
+          // Try to decrypt the data using the project's AES key
+          const decryptedData = await decryptDataField(licenseRaw.data, projectAesKey);
+          const parsedData = JSON.parse(decryptedData);
+          
+          if (parsedData && typeof parsedData.license_key === 'string') {
+            extractedLicenseKey = parsedData.license_key;
+          }
+        } catch (decryptError) {
+          // Fallback for legacy unencrypted data
+          console.error("Decryption failed for license data, trying legacy JSON parse:", decryptError);
+          
+          try {
+            const parsedData = JSON.parse(licenseRaw.data);
+            if (parsedData && typeof parsedData.license_key === 'string') {
+              extractedLicenseKey = parsedData.license_key;
+            }
+          } catch (parseError) {
+            console.error("Error parsing license data:", parseError);
+          }
         }
       }
     } catch (error) {
-      console.error("Failed to parse license data field in hook:", {
+      console.error("Failed to process license data field in hook:", {
         error: error instanceof Error ? error.message : String(error),
         license_id: licenseRaw.doc_id,
         rawData: licenseRaw.data,
@@ -120,7 +161,7 @@ export function useLicenseManagement({
       license_key: extractedLicenseKey,
       expires_at: licenseRaw.expires_at,
     };
-  }, []);
+  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
   const fetchLicenses = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -161,13 +202,21 @@ export function useLicenseManagement({
         console.error("Error in licenses response (hook):", response);
         setAllRawLicenses([]);
         setProcessedLicenses([]);
-        toast({ title: translate("error", "actions"), description: translate("error_fetching_licenses", "licenses", { default: "Error fetching licenses" }), variant: "destructive" });
+        toast({ 
+          title: translate("common.error"), 
+          description: translate("licenses.error_fetching_licenses"), 
+          variant: "destructive" 
+        });
       }
     } catch (error) {
       console.error("Error fetching licenses (hook):", error);
       setAllRawLicenses([]);
       setProcessedLicenses([]);
-      toast({ title: translate("error", "actions"), description: translate("error_fetching_licenses", "licenses", { default: "Error fetching licenses" }), variant: "destructive" });
+      toast({ 
+        title: translate("common.error"), 
+        description: translate("licenses.error_fetching_licenses"), 
+        variant: "destructive" 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -199,14 +248,21 @@ export function useLicenseManagement({
     }
     try {
       await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/licenses/${doc_id}`);
-      toast({ title: translate("success", "actions"), description: translate("license_deleted_successfully", "licenses", { default: "License deleted successfully" }) });
+      toast({ 
+        title: translate("common.success"), 
+        description: translate("licenses.license_deleted_successfully") 
+      });
       fetchLicenses(); // Re-fetch to update the list
     } catch (error: any) {
       let errorMessage = translate("error_deleting_license", "licenses", { default: "Error deleting license" });
       if (error.response?.data?.message) {
         errorMessage = `${errorMessage}: ${error.response.data.message}`;
       }
-      toast({ title: translate("error", "actions"), description: errorMessage, variant: "destructive" });
+      toast({ 
+        title: translate("common.error"), 
+        description: errorMessage, 
+        variant: "destructive" 
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWorkspaceId, selectedProjectId, fetchLicenses]);
