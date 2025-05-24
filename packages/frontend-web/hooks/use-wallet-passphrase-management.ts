@@ -8,6 +8,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
+import { decryptDataField } from "@/libs/encryption";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
 
 interface WalletPassphrase {
   doc_id: string;
@@ -70,93 +72,13 @@ export function useWalletPassphraseManagement({
   const [selectedWalletType, setSelectedWalletTypeState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
-
-  const fetchWalletPassphrases = useCallback(async () => {
-    if (!selectedWorkspaceId || !selectedProjectId) {
-      setAllWalletPassphrases([]);
-      setFilteredWalletPassphrases([]);
-      setIsLoading(false);
-      toast({
-        title: translate("error", "actions"),
-        description: translate("no_project_selected", "wallet_passphrases", { default: "No project selected" }),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.get(`/${selectedWorkspaceId}/${selectedProjectId}/wallet-phrases`);
-
-      if (response.status === 200 && response.data?.data) {
-        const fetchedWalletPassphrases: WalletPassphrase[] = response.data.data.map((item: any) => ({
-          doc_id: item.doc_id || "",
-          title: item.title || "",
-          name: item.title || "",
-          lower_title: item.lower_title || item.title?.toLowerCase() || "",
-          wallet_type: item.wallet_type || "Other",
-          data: item.data || "",
-          passphrase: item.data || "",
-          notes: item.notes || null,
-          tags: item.tags || [],
-          created_at: item.created_at || "",
-          updated_at: item.updated_at || null,
-          created_by: item.created_by || "",
-          project_id: item.project_id || "",
-        }));
-        setAllWalletPassphrases(fetchedWalletPassphrases);
-
-        let processed = [...fetchedWalletPassphrases];
-
-        // Apply search if there's a query
-        if (searchQuery.trim()) {
-          processed = searchItemsMultiField(processed, searchQuery, ["title", "notes", "wallet_type", "tags"]);
-        }
-
-        // Apply wallet type filtering
-        if (selectedWalletType !== "all") {
-          processed = processed.filter(
-            (passphrase) => passphrase.wallet_type.toLowerCase() === selectedWalletType.toLowerCase()
-          );
-        }
-
-        // Apply sorting if a sort config is set
-        const sortedWalletPassphrases = sortItems(processed, sortConfig);
-        setFilteredWalletPassphrases(sortedWalletPassphrases);
-      } else {
-        console.error("Error in wallet passphrases response (hook):", response);
-        setAllWalletPassphrases([]);
-        setFilteredWalletPassphrases([]);
-        toast({
-          title: translate("error", "actions"),
-          description: translate("error_fetching_passphrases", "wallet_passphrases", {
-            default: "Error fetching wallet passphrases",
-          }),
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error("Error fetching wallet passphrases (hook):", error);
-      setAllWalletPassphrases([]);
-      setFilteredWalletPassphrases([]);
-      toast({
-        title: translate("error", "actions"),
-        description:
-          error.response?.data?.message ||
-          translate("error_fetching_passphrases", "wallet_passphrases", {
-            default: "Error fetching wallet passphrases",
-          }),
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedWalletType, sortConfig]);
-
-  useEffect(() => {
-    fetchWalletPassphrases();
-  }, [fetchWalletPassphrases]);
-
+  const [projectKey, setProjectKey] = useState<string | null>(null);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  
+  // Get pagination data FIRST before referencing in other functions
   const {
     paginatedData: walletPassphrasesToDisplay,
     totalPages,
@@ -170,7 +92,198 @@ export function useWalletPassphraseManagement({
     data: filteredWalletPassphrases,
     itemsPerPage,
   });
+  
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
+  
+  // Load the project key once when project changes
+  useEffect(() => {
+    let isMounted = true;
+    
+    const loadProjectKey = async () => {
+      if (!selectedProjectName) {
+        if (isMounted) setProjectKey(null);
+        return;
+      }
+      
+      try {
+        console.log("Loading project key for wallet passphrases:", selectedProjectName);
+        const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+        console.log("Project key loaded:", key ? "Found" : "Not found");
+        
+        if (isMounted) {
+          setProjectKey(key);
+          // Trigger a refetch by incrementing the counter
+          setFetchTrigger(prev => prev + 1);
+        }
+      } catch (error) {
+        console.error("Error loading project key:", error);
+        if (isMounted) setProjectKey(null);
+      }
+    };
+    
+    loadProjectKey();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedProjectName]);
 
+  const processWalletPassphrases = useCallback(async (
+    rawPassphrases: any[], 
+    key: string | null
+  ) => {
+    const processed: WalletPassphrase[] = [];
+    
+    for (const item of rawPassphrases) {
+      let decryptedData = '';
+      
+      // Check if data exists
+      if (item.data) {
+        // Check if data is encrypted (has the format iv.encrypted)
+        if (key && typeof item.data === 'string' && item.data.includes('.')) {
+          try {
+            console.log("Attempting to decrypt data:", item.data.substring(0, 20) + "...");
+            const decrypted = await decryptDataField(item.data, key);
+            try {
+              // Try to parse as JSON
+              const passphraseObj = JSON.parse(decrypted);
+              // Use the passphrase field from the JSON object
+              if (passphraseObj && passphraseObj.passphrase) {
+                decryptedData = passphraseObj.passphrase;
+                console.log("Successfully decrypted JSON passphrase");
+              } else {
+                // If for some reason the JSON doesn't have passphrase field
+                decryptedData = decrypted;
+                console.log("Decrypted but found no passphrase field in JSON");
+              }
+            } catch (parseError) {
+              // If not valid JSON, use the decrypted string directly
+              console.log("Decrypted but not valid JSON, using as plain text");
+              decryptedData = decrypted;
+            }
+          } catch (decryptError) {
+            console.error("Failed to decrypt:", decryptError);
+            // If decryption fails, fall back to using raw data
+            decryptedData = item.data;
+          }
+        } else {
+          // Not encrypted or no key available, use as is
+          console.log("Using unencrypted data");
+          decryptedData = item.data;
+        }
+      }
+      
+      processed.push({
+        doc_id: item.doc_id || "",
+        title: item.title || "",
+        name: item.title || "",
+        lower_title: item.lower_title || item.title?.toLowerCase() || "",
+        wallet_type: item.wallet_type || "Other",
+        data: item.data || "", 
+        passphrase: decryptedData,
+        notes: item.notes || null,
+        tags: item.tags || [],
+        created_at: item.created_at || "",
+        updated_at: item.updated_at || null,
+        created_by: item.created_by || "",
+        project_id: item.project_id || "",
+      });
+    }
+    
+    return processed;
+  }, []);
+  
+  // Apply filters to the wallet passphrases
+  const filterWalletPassphrases = useCallback((passphrases: WalletPassphrase[]) => {
+    let filtered = [...passphrases];
+    
+    if (searchQuery.trim()) {
+      filtered = searchItemsMultiField(filtered, searchQuery, [
+        "title", "notes", "wallet_type", "tags"
+      ]);
+    }
+    
+    if (selectedWalletType !== "all") {
+      filtered = filtered.filter(
+        (item) => item.wallet_type.toLowerCase() === selectedWalletType.toLowerCase()
+      );
+    }
+    
+    return sortItems(filtered, sortConfig);
+  }, [searchQuery, selectedWalletType, sortConfig]);
+  
+  // Handle fetch wallet passphrases
+  const fetchWalletPassphrases = useCallback(async () => {
+    console.log("Fetching wallet passphrases");
+    
+    if (!selectedWorkspaceId || !selectedProjectId) {
+      setAllWalletPassphrases([]);
+      setFilteredWalletPassphrases([]);
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await axiosInstance.get(
+        `/${selectedWorkspaceId}/${selectedProjectId}/wallet-phrases`
+      );
+      
+      if (response.status === 200 && response.data?.data) {
+        // Capture current value of projectKey to use in this execution
+        const currentKey = projectKey;
+        console.log("Processing data with project key:", currentKey ? "Available" : "Not available");
+        
+        const processed = await processWalletPassphrases(response.data.data, currentKey);
+        setAllWalletPassphrases(processed);
+        
+        const filtered = filterWalletPassphrases(processed);
+        setFilteredWalletPassphrases(filtered);
+      } else {
+        console.error("Error in response:", response);
+        setAllWalletPassphrases([]);
+        setFilteredWalletPassphrases([]);
+      }
+    } catch (error) {
+      console.error("Error fetching wallet passphrases:", error);
+      setAllWalletPassphrases([]);
+      setFilteredWalletPassphrases([]);
+      toast({
+        title: translate("error", "actions"),
+        description: translate("error_fetching_passphrases", "wallet_passphrases", {
+          default: "Error fetching wallet passphrases"
+        }),
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedWorkspaceId, selectedProjectId, projectKey, processWalletPassphrases, filterWalletPassphrases, translate]);
+
+  // Re-filter when filter-related data changes
+  useEffect(() => {
+    if (allWalletPassphrases.length > 0) {
+      const filtered = filterWalletPassphrases(allWalletPassphrases);
+      setFilteredWalletPassphrases(filtered);
+    }
+  }, [searchQuery, selectedWalletType, sortConfig, allWalletPassphrases, filterWalletPassphrases]);
+  
+  // Fetch data initially and when key dependencies change
+  useEffect(() => {
+    fetchWalletPassphrases();
+  // We use fetchTrigger as a proxy for "refetch when needed"
+  // instead of watching all dependencies directly
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchTrigger, selectedWorkspaceId, selectedProjectId]);
+  
   const handleDeleteWalletPassphrase = useCallback(
     async (doc_id: string) => {
       if (!selectedWorkspaceId || !selectedProjectId) {
@@ -190,9 +303,10 @@ export function useWalletPassphraseManagement({
             default: "Wallet passphrase deleted successfully",
           }),
         });
-        fetchWalletPassphrases();
+        // Trigger a refetch by incrementing the counter
+        setFetchTrigger(prev => prev + 1);
       } catch (error: any) {
-        console.error("Error deleting wallet passphrase (hook):", error);
+        console.error("Error deleting wallet passphrase:", error);
         let errorMessage = translate("error_deleting_passphrase", "wallet_passphrases", {
           default: "Error deleting wallet passphrase",
         });
@@ -206,7 +320,7 @@ export function useWalletPassphraseManagement({
         });
       }
     },
-    [selectedWorkspaceId, selectedProjectId, fetchWalletPassphrases, translate]
+    [selectedWorkspaceId, selectedProjectId, translate]
   );
 
   const clearFilters = useCallback(() => {
@@ -261,6 +375,11 @@ export function useWalletPassphraseManagement({
     return Array.from(tagSet).sort();
   }, [filteredWalletPassphrases]);
 
+  // Wrapper function to allow external components to trigger fetch
+  const manualFetchWalletPassphrases = useCallback(() => {
+    setFetchTrigger(prev => prev + 1);
+  }, []);
+
   return {
     walletPassphrasesToDisplay,
     allWalletPassphrases,
@@ -280,7 +399,7 @@ export function useWalletPassphraseManagement({
     sortConfig,
     setSortConfig,
     handleDeleteWalletPassphrase,
-    fetchWalletPassphrases,
+    fetchWalletPassphrases: manualFetchWalletPassphrases,
     clearFilters,
     nextPage,
     prevPage,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
+import { encryptDataField, decryptDataField } from "@/libs/encryption";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -61,7 +63,8 @@ export function EditPassphraseDialog({
 }: EditPassphraseDialogProps) {
   const { translate } = useTranslator();
   const [title, setTitle] = useState(passphrase.title);
-  const [data, setData] = useState(passphrase.data);
+  const [data, setData] = useState(passphrase.passphrase);
+  const [originalData, setOriginalData] = useState(passphrase.passphrase);
   const [notes, setNotes] = useState(passphrase.notes || "");
   const [walletType, setWalletType] = useState<string>(passphrase.wallet_type || "Bitcoin");
   const [tags, setTags] = useState<string[]>(passphrase.tags || []);
@@ -71,16 +74,45 @@ export function EditPassphraseDialog({
   const [passphraseExistsError, setPassphraseExistsError] = useState<string | null>(null);
   const [nameExistsError, setNameExistsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [projectKey, setProjectKey] = useState<string | null>(null);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
   const predefinedTags = ["main", "trading", "defi", "staking"];
 
   useEffect(() => {
+    const loadProjectKey = async () => {
+      if (open && selectedProjectName) {
+        try {
+          console.log("Loading project key for wallet passphrase edit:", selectedProjectName);
+          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+          console.log("Project key loaded:", key ? "Found" : "Not found");
+          setProjectKey(key);
+        } catch (error) {
+          console.error("Error loading project key:", error);
+          setProjectKey(null);
+        }
+      }
+    };
+    
+    loadProjectKey();
+  }, [open, selectedProjectName]);
+
+  useEffect(() => {
     if (passphrase) {
       setTitle(passphrase.title);
-      setData(passphrase.data);
+      setData(passphrase.passphrase);
+      setOriginalData(passphrase.passphrase);
       setNotes(passphrase.notes || "");
       setWalletType(passphrase.wallet_type || "Bitcoin");
       setTags(passphrase.tags || []);
@@ -199,6 +231,22 @@ export function EditPassphraseDialog({
     setError("");
 
     try {
+      let effectiveProjectKey = projectKey;
+      if (!effectiveProjectKey && selectedProjectName) {
+        try {
+          console.log("Project key not found in state, trying to load directly");
+          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          
+          if (rawProjectKey) {
+            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
+          }
+        } catch (error) {
+          console.error("Failed to get project key directly:", error);
+        }
+      }
+      
       const payload: any = {
         title,
         wallet_type: walletType,
@@ -206,9 +254,23 @@ export function EditPassphraseDialog({
         tags,
       };
 
-      if (data) {
-        const hashedData = await hashData(data);
-        payload.data = data;
+      if (data !== originalData) {
+        if (effectiveProjectKey) {
+          try {
+            const passphraseObject = { passphrase: data };
+            const passphraseJson = JSON.stringify(passphraseObject);
+            console.log("Passphrase JSON prepared:", passphraseJson);
+            
+            payload.data = await encryptDataField(passphraseJson, effectiveProjectKey);
+            console.log("Data encrypted successfully");
+          } catch (encryptError) {
+            console.error("Encryption failed:", encryptError);
+            payload.data = data;
+          }
+        } else {
+          console.warn("No encryption key found for project, storing passphrase unencrypted");
+          payload.data = data;
+        }
       }
 
       const response = await axiosInstance.put(

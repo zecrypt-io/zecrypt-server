@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
+import { encryptDataField } from "@/libs/encryption";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -69,9 +71,38 @@ export function AddPassphraseDialog({
   const [passphraseExistsError, setPassphraseExistsError] = useState<string | null>(null);
   const [nameExistsError, setNameExistsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [projectKey, setProjectKey] = useState<string | null>(null);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
+
+  // Load the project key once when the dialog opens or project changes
+  useEffect(() => {
+    const loadProjectKey = async () => {
+      if (open && selectedProjectName) {
+        try {
+          console.log("Loading project key for wallet passphrase:", selectedProjectName);
+          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+          console.log("Project key loaded:", key ? "Found" : "Not found");
+          setProjectKey(key);
+        } catch (error) {
+          console.error("Error loading project key:", error);
+          setProjectKey(null);
+        }
+      }
+    };
+    
+    loadProjectKey();
+  }, [open, selectedProjectName]);
 
   const predefinedTags = ["main", "trading", "defi", "staking"];
 
@@ -175,12 +206,48 @@ export function AddPassphraseDialog({
     setError("");
 
     try {
-      const hashedData = await hashData(data);
+      // Try to get a project key if we don't have one
+      let effectiveProjectKey = projectKey;
+      if (!effectiveProjectKey && selectedProjectName) {
+        try {
+          console.log("Project key not found in state, trying to load directly");
+          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          
+          // Try to decrypt it if found
+          if (rawProjectKey) {
+            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
+          }
+        } catch (error) {
+          console.error("Failed to get project key directly:", error);
+        }
+      }
+      
+      // Process the data - encrypt if we have a project key
+      let processedData = data;
+      if (effectiveProjectKey) {
+        try {
+          // Create a simple JSON object with only the passphrase
+          const passphraseObject = { passphrase: data };
+          const passphraseJson = JSON.stringify(passphraseObject);
+          console.log("Passphrase JSON prepared:", passphraseJson);
+          
+          processedData = await encryptDataField(passphraseJson, effectiveProjectKey);
+          console.log("Data encrypted successfully");
+        } catch (encryptError) {
+          console.error("Encryption failed:", encryptError);
+          // Fallback to plaintext if encryption fails
+          processedData = data;
+        }
+      } else {
+        console.warn("No encryption key found for project, storing passphrase unencrypted");
+      }
 
       const payload = {
         title,
         wallet_type: walletType,
-        data,
+        data: processedData,
         notes: notes || null,
         tags,
       };
