@@ -49,6 +49,7 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
 import { useTranslator } from "@/hooks/use-translations";
+import Cookies from 'js-cookie';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -316,17 +317,26 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
   const handleLogout = useCallback(async () => {
     try {
-      if (user) {
-        await user.signOut();
-      }
+      // First clear all auth data
+      Cookies.remove('access_token', { path: '/' });
       dispatch(resetWorkspaceState());
       dispatch(clearUserData());
       localStorage.clear();
-      router.push(`/${locale}`);
+      sessionStorage.clear();
+
+      // Then sign out from Stack
+      if (user) {
+        await user.signOut();
+      }
+
+      // Force a hard redirect to login page
+      window.location.href = `/${locale}/login`;
     } catch (error) {
       console.error("Error during logout:", error);
+      // Even if there's an error, still try to redirect to login
+      window.location.href = `/${locale}/login`;
     }
-  }, [user, dispatch, router, locale]);
+  }, [user, dispatch, locale]);
 
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
