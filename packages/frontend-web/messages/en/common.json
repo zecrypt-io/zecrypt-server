@@ -269,7 +269,8 @@
     "email":"E-Mail",
     "project_required_title": "Project Required",
     "project_required_description": "Please create your first project to continue.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "no_projects_available": "No projects available"
   },
   "activity": {
     "password_updated": "Password updated",
@@ -1030,7 +1031,11 @@
     "adding": "Adding...",
     "updating": "Updating...",
     "deleting": "Deleting...",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "encryption_key_not_found": "Project encryption key not found. Cannot save Wi-Fi network.",
+    "project_not_found": "Project not found. Please select a valid project.",
+    "encryption_failed": "Failed to encrypt Wi-Fi data. Please try again.",
+    "decryption_failed": "Failed to decrypt Wi-Fi data. This could be due to a missing or invalid encryption key."
   },
   "key_shortcuts": {
     "title": "Key Shortcuts"

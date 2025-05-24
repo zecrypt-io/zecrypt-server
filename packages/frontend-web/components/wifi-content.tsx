@@ -89,7 +89,7 @@ export function WifiContent() {
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
-    fetchWifiNetworks,
+    refreshWifiNetworks,
     handleDeleteWifi: handleDeleteWifiFromHook,
     nextPage,
     prevPage,
@@ -415,7 +415,7 @@ export function WifiContent() {
 
       {/* Add Wi-Fi Dialog */}
       <AddWifi
-        onWifiAdded={fetchWifiNetworks}
+        onWifiAdded={refreshWifiNetworks}
         open={showAddWifi}
         onOpenChange={setShowAddWifi}
       />
@@ -424,7 +424,7 @@ export function WifiContent() {
       {showEditWifi && selectedWifi && (
         <EditWifi
           wifi={selectedWifi}
-          onWifiUpdated={fetchWifiNetworks}
+          onWifiUpdated={refreshWifiNetworks}
           open={showEditWifi}
           onOpenChange={(open) => {
             setShowEditWifi(open);
