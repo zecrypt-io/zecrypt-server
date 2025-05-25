@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
+import { encryptDataField } from "@/libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 
 interface AddIdentityDialogProps {
   open: boolean;
@@ -43,6 +45,9 @@ export function AddIdentityDialog({
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -108,9 +113,53 @@ export function AddIdentityDialog({
         national_id: nationalId
       };
 
+      // Find the current project to get its name
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        toast({
+          title: translate("error", "actions"),
+          description: translate("project_not_found", "identity", { default: "Project not found" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Get the project's AES key from session storage
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        toast({
+          title: translate("error", "actions"),
+          description: translate("encryption_key_not_found", "identity", { default: "Encryption key not found" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Encrypt the data
+      let encryptedData;
+      try {
+        encryptedData = await encryptDataField(JSON.stringify(dataToEncrypt), projectAesKey);
+      } catch (encryptError) {
+        console.error("Failed to encrypt identity data:", encryptError);
+        toast({
+          title: translate("error", "actions"),
+          description: translate("encryption_failed", "identity", { default: "Failed to encrypt identity data" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload = {
         title,
-        data: JSON.stringify(dataToEncrypt),
+        data: encryptedData,
         notes: notes || null,
         tags: tags.length > 0 ? tags : undefined,
       };

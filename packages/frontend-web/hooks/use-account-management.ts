@@ -5,6 +5,8 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
+import { decryptAccountData } from '@/libs/encryption';
+import { secureGetItem } from '@/libs/session-storage-utils';
 
 interface Account {
   doc_id: string;
@@ -66,6 +68,9 @@ export function useAccountManagement({
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedCategory, setSelectedCategoryState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const processAccountData = useCallback(async (account: Account): Promise<Account> => {
     // This logic is similar to what was in AccountsContent
@@ -82,15 +87,53 @@ export function useAccountManagement({
 
       if (account.data && typeof account.data === 'string') {
         try {
-          const parsedData = JSON.parse(account.data);
-          if (parsedData && typeof parsedData === 'object') {
-            finalUsername = parsedData.username || finalUsername;
-            finalPassword = parsedData.password || finalPassword;
+          // Find the current project using workspaces from the component scope
+          const currentProject = workspaces
+            .find(ws => ws.workspaceId === selectedWorkspaceId)
+            ?.projects.find(p => p.project_id === selectedProjectId);
+          
+          if (!currentProject) {
+            throw new Error("Project not found");
+          }
+
+          // Get the project's AES key from session storage
+          const projectKeyName = `projectKey_${currentProject.name}`;
+          const projectAesKey = await secureGetItem(projectKeyName);
+          
+          if (!projectAesKey) {
+            throw new Error("Project encryption key not found");
+          }
+
+          // Try to decrypt the data field using the project's AES key
+          try {
+            const decryptedData = await decryptAccountData(account.data, projectAesKey);
+            // If decryption succeeds, parse the JSON
+            const parsedData = JSON.parse(decryptedData);
+            if (parsedData && typeof parsedData === 'object') {
+              finalUsername = parsedData.username || finalUsername;
+              finalPassword = parsedData.password || finalPassword;
+            }
+          } catch (decryptError) {
+            console.error("Decryption failed, trying legacy JSON parse:", decryptError);
+            
+            // Legacy fallback: Try to parse as unencrypted JSON
+            try {
+              const parsedData = JSON.parse(account.data);
+              if (parsedData && typeof parsedData === 'object') {
+                finalUsername = parsedData.username || finalUsername;
+                finalPassword = parsedData.password || finalPassword;
+              }
+            } catch (parseError) {
+              // If not JSON, it might be an old format (just password) or a new hash (masked)
+              // For simplicity, if JSON parsing fails and no password field exists, mask it.
+              if (!finalPassword) finalPassword = "••••••••";
+              console.log("Error parsing data:", parseError);
+            }
           }
         } catch (e) {
-            // If not JSON, it might be an old format (just password) or a new hash (masked)
-            // For simplicity, if JSON parsing fails and no password field exists, mask it.
-            if (!finalPassword) finalPassword = "••••••••";
+          // If any error occurs in the project key retrieval or overall process
+          console.error("Error processing account data:", e);
+          if (!finalPassword) finalPassword = "••••••••";
         }
       } else if (account.data && typeof account.data === 'object') {
         finalUsername = account.data.username || finalUsername;
@@ -122,7 +165,7 @@ export function useAccountManagement({
         password: "Error processing data",
       };
     }
-  }, []);
+  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
   const getCategoryTag = useCallback((category: string): string => {
     switch (category.toLowerCase()) {

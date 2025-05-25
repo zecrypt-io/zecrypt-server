@@ -137,20 +137,6 @@ export function LicensesContent() {
     fetchLicenses();
   };
 
-  const handleLicenseAdded = useCallback(() => {
-    fetchLicenses();
-    toast({
-      title: translate("success", "common", { default: "Success" }),
-      description: translate("license_added_successfully", "licenses", { default: "License added successfully" }),
-    });
-  }, [fetchLicenses, translate]);
-
-  const handleLicenseUpdated = useCallback(() => {
-    fetchLicenses();
-    setShowEditLicense(false);
-    setSelectedLicense(null);
-  }, [fetchLicenses]);
-
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -422,21 +408,31 @@ export function LicensesContent() {
 
       {/* Add License Dialog */}
       <AddLicenseDialog
-        open={showAddLicense}
+        isOpen={showAddLicense}
         onClose={() => setShowAddLicense(false)}
-        onLicenseAdded={handleLicenseAdded}
+        projectId={selectedProjectId || ""}
+        refetchLicenses={fetchLicenses}
       />
 
       {/* Edit License Dialog */}
       {showEditLicense && selectedLicense && (
         <EditLicenseDialog
-          license={selectedLicense}
-          open={showEditLicense}
+          license={{
+            doc_id: selectedLicense.doc_id,
+            title: selectedLicense.title,
+            data: "", // We need to add this required field - it will be populated with encrypted data
+            license_key: selectedLicense.license_key,
+            notes: selectedLicense.notes || "",
+            expires_at: selectedLicense.expires_at || undefined,
+            tags: selectedLicense.tags || [],
+            project_id: selectedLicense.project_id || selectedProjectId || ""
+          }}
+          isOpen={showEditLicense}
           onClose={() => {
             setShowEditLicense(false);
             setSelectedLicense(null);
           }}
-          onLicenseUpdated={handleLicenseUpdated}
+          refetchLicenses={fetchLicenses}
         />
       )}
 

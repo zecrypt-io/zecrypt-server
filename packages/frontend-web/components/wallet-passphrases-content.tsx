@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ export function WalletPassphrasesContent() {
   const format = useFormatter();
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const [showAddPassphrase, setShowAddPassphrase] = useState(false);
   const [showEditPassphrase, setShowEditPassphrase] = useState(false);
@@ -289,7 +290,7 @@ export function WalletPassphrasesContent() {
                     <TableCell className="font-mono">
                       <div className="flex items-center gap-2">
                         <span className="max-w-[200px] truncate">
-                          {viewPassphrase === passphrase.doc_id ? passphrase.data : "••••••••"}
+                          {viewPassphrase === passphrase.doc_id ? passphrase.passphrase : "••••••••"}
                         </span>
                         <TooltipProvider>
                           <Tooltip>
@@ -321,7 +322,7 @@ export function WalletPassphrasesContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6"
-                                onClick={() => copyToClipboard(passphrase.doc_id, "passphrase", passphrase.data)}
+                                onClick={() => copyToClipboard(passphrase.doc_id, "passphrase", passphrase.passphrase)}
                               >
                                 {copiedField?.doc_id === passphrase.doc_id && copiedField?.field === "passphrase" ? (
                                   <Check className="h-3 w-3" />

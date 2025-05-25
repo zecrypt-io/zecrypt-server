@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { hashData } from "../libs/crypto";
+import { encryptDataField } from "../libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface AddWifiProps {
@@ -35,6 +36,7 @@ export function AddWifi({ open, onOpenChange, onWifiAdded }: AddWifiProps) {
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const predefinedTags = ["Personal", "Work", "Home", "Office", "Public", "Guest"];
 
@@ -69,17 +71,34 @@ export function AddWifi({ open, onOpenChange, onWifiAdded }: AddWifiProps) {
     setError("");
 
     try {
+      // Get current project to retrieve its encryption key
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error(translate("project_not_found", "accounts"));
+      }
+      
+      // Get the project's AES key from session storage
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        throw new Error(translate("encryption_key_not_found", "accounts"));
+      }
+
+      // Create a JSON object with the wifi password and encrypt it
+      const wifiData = JSON.stringify({ "wifi-password": data });
+      const encryptedData = await encryptDataField(wifiData, projectAesKey);
+
       const payload: any = {
         title,
         security_type: securityType || null,
         notes: notes || null,
         tags,
+        data: encryptedData
       };
-
-      if (data) {
-        const hashedData = await hashData(data);
-        payload.data = hashedData;
-      }
 
       const response = await axiosInstance.post(
         `/${selectedWorkspaceId}/${selectedProjectId}/wifi`,

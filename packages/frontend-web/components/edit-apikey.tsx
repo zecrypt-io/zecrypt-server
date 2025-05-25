@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
+import { encryptDataField, decryptDataField } from "@/libs/encryption";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ApiKey {
@@ -40,6 +42,7 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
   const { translate } = useTranslator();
   const [title, setTitle] = useState(apiKey.title);
   const [data, setData] = useState(apiKey.data);
+  const [originalData, setOriginalData] = useState(apiKey.data);
   const [notes, setNotes] = useState(apiKey.notes || "");
   const [showApiKey, setShowApiKey] = useState(false);
   const [env, setEnv] = useState<"Development" | "Staging" | "Production" | "Testing" | "Local" | "UAT">(apiKey.env);
@@ -47,22 +50,76 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [projectKey, setProjectKey] = useState<string | null>(null);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
+  // Load project key once
   useEffect(() => {
-    if (apiKey) {
-      setTitle(apiKey.title);
-      setData(apiKey.data);
-      setNotes(apiKey.notes || "");
-      setEnv(apiKey.env);
-      setTags(apiKey.tags || []);
-      setError("");
-    }
-  }, [apiKey]);
+    const loadProjectKey = async () => {
+      if (open && selectedProjectName) {
+        try {
+          console.log("Loading project key for project:", selectedProjectName);
+          // Use project name to get encryption key
+          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+          console.log("Project key loaded:", key ? "Found" : "Not found");
+          setProjectKey(key);
+        } catch (error) {
+          console.error("Error loading project key:", error);
+          setProjectKey(null);
+        }
+      }
+    };
+    
+    loadProjectKey();
+  }, [open, selectedProjectName]);
+
+  // Handle decryption when apiKey changes or projectKey is loaded
+  useEffect(() => {
+    const decryptApiKey = async () => {
+      if (apiKey) {
+        setTitle(apiKey.title);
+        setNotes(apiKey.notes || "");
+        setEnv(apiKey.env);
+        setTags(apiKey.tags || []);
+        setError("");
+        setOriginalData(apiKey.data);
+
+        // Try to decrypt the API key if it appears to be encrypted
+        if (apiKey.data && apiKey.data.includes('.') && projectKey) {
+          try {
+            const decrypted = await decryptDataField(apiKey.data, projectKey);
+            try {
+              // Try to parse as JSON
+              const apiKeyObject = JSON.parse(decrypted);
+              setData(apiKeyObject.key);
+            } catch (e) {
+              // If not valid JSON, use raw decrypted value
+              setData(decrypted);
+            }
+          } catch (error) {
+            console.error("Failed to decrypt API key:", error);
+            setData(apiKey.data);
+          }
+        } else {
+          setData(apiKey.data);
+        }
+      }
+    };
+    
+    decryptApiKey();
+  }, [apiKey, projectKey]);
 
   const addTag = (tag: string) => {
     const normalizedTag = tag.toLowerCase().trim();
@@ -102,9 +159,35 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
         notes: notes || null,
       };
 
-      if (data) {
-        const hashedData = await hashData(data);
-        payload.data = data;
+      // Only process data if it has been changed
+      if (data !== originalData) {
+        // Create a JSON object for the API key
+        const apiKeyObject = { key: data };
+        const apiKeyJson = JSON.stringify(apiKeyObject);
+        
+        // Try direct access if project key not in state
+        let effectiveProjectKey = projectKey;
+        if (!effectiveProjectKey && selectedProjectName) {
+          console.log("Project key not found in state, trying to load directly");
+          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          
+          // Try to decrypt it if found
+          if (rawProjectKey) {
+            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
+          }
+        }
+        
+        if (effectiveProjectKey) {
+          console.log("Encrypting API key data with project key");
+          // Encrypt the API key data
+          payload.data = await encryptDataField(apiKeyJson, effectiveProjectKey);
+          console.log("Data encrypted successfully:", payload.data);
+        } else {
+          console.warn("No encryption key found for project, storing API key unencrypted");
+          payload.data = data;
+        }
       }
 
       const response = await axiosInstance.put(

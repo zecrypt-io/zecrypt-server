@@ -6,6 +6,9 @@ import { RootState } from "@/libs/Redux/store";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { decryptDataField } from "../libs/encryption";
+import { secureGetItem } from "../libs/session-storage-utils";
+import React from "react";
 
 interface WifiNetwork {
   doc_id: string;
@@ -47,7 +50,7 @@ interface UseWifiReturn {
   copyToClipboard: (doc_id: string, field: string, value: string) => Promise<void>;
   togglePasswordVisibility: (doc_id: string) => void;
   clearFilters: () => void;
-  fetchWifiNetworks: () => Promise<void>;
+  refreshWifiNetworks: () => void;
   handleDeleteWifi: (doc_id: string) => Promise<void>;
   getPaginationRange: () => (number | string)[];
   nextPage: () => void;
@@ -69,6 +72,72 @@ export function useWifi({
   const [isLoading, setIsLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+
+  // Process Wi-Fi network data - decrypt passwords where needed
+  const processWifiData = useCallback(async (network: WifiNetwork): Promise<WifiNetwork> => {
+    try {
+      // If the data field doesn't exist or isn't a string, return the network as is
+      if (!network.data || typeof network.data !== 'string') {
+        return network;
+      }
+
+      // Try to determine if this is an encrypted password (has the format iv.encryptedData)
+      const isEncrypted = network.data.includes('.') && network.data.split('.').length === 2;
+
+      if (isEncrypted) {
+        try {
+          // Find the current project
+          const currentProject = workspaces
+            .find(ws => ws.workspaceId === selectedWorkspaceId)
+            ?.projects.find(p => p.project_id === selectedProjectId);
+          
+          if (!currentProject) {
+            throw new Error("Project not found");
+          }
+          
+          // Get the project's AES key from session storage
+          const projectKeyName = `projectKey_${currentProject.name}`;
+          const projectAesKey = await secureGetItem(projectKeyName);
+          
+          if (!projectAesKey) {
+            throw new Error("Project encryption key not found");
+          }
+          
+          // Decrypt the data field
+          const decryptedData = await decryptDataField(network.data, projectAesKey);
+          
+          // Parse the JSON to get the WiFi password
+          try {
+            const parsedData = JSON.parse(decryptedData);
+            if (parsedData && typeof parsedData === 'object' && parsedData["wifi-password"]) {
+              return {
+                ...network,
+                data: parsedData["wifi-password"]
+              };
+            }
+          } catch (parseError) {
+            console.error("Error parsing decrypted Wi-Fi data:", parseError);
+          }
+        } catch (decryptError) {
+          console.error("Error decrypting Wi-Fi data:", decryptError);
+          // If decryption fails, return the network as is - the data might be in the old format
+        }
+      }
+      
+      // If we reached here, either it wasn't encrypted or decryption failed
+      // In both cases, return the original network
+      return network;
+    } catch (error) {
+      console.error("Error processing Wi-Fi data:", error);
+      return network;
+    }
+  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
+
+  // Using a ref to track if the initial fetch was performed
+  const initialFetchPerformed = React.useRef(false);
 
   const fetchWifiNetworks = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -90,7 +159,11 @@ export function useWifi({
       const response = await axiosInstance.get(`/${selectedWorkspaceId}/${selectedProjectId}/wifi`);
 
       if (response.status === 200 && response.data?.data) {
-        setAllWifiNetworks(response.data.data);
+        // Process each network to decrypt passwords
+        const processedNetworks = await Promise.all(
+          response.data.data.map(processWifiData)
+        );
+        setAllWifiNetworks(processedNetworks);
       } else {
         console.error("Unexpected response format:", response);
         toast({
@@ -109,11 +182,22 @@ export function useWifi({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId]);
+  }, [selectedWorkspaceId, selectedProjectId, translate]);
 
   useEffect(() => {
-    fetchWifiNetworks();
-  }, [fetchWifiNetworks]);
+    // Make sure we don't trigger multiple fetches when our dependencies change
+    if (selectedWorkspaceId && selectedProjectId && !initialFetchPerformed.current) {
+      initialFetchPerformed.current = true;
+      fetchWifiNetworks();
+    }
+  }, [fetchWifiNetworks, selectedWorkspaceId, selectedProjectId]);
+
+  // Handle manual refresh - separate from the initial fetch
+  const refreshWifiNetworks = useCallback(() => {
+    if (selectedWorkspaceId && selectedProjectId) {
+      fetchWifiNetworks();
+    }
+  }, [fetchWifiNetworks, selectedWorkspaceId, selectedProjectId]);
 
   const filteredWifiNetworks = useMemo(() => {
     let result = allWifiNetworks;
@@ -194,7 +278,7 @@ export function useWifi({
 
       try {
         await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/wifi/${doc_id}`);
-        fetchWifiNetworks();
+        refreshWifiNetworks();
         toast({
           title: translate("wifi_deleted", "wifi"),
           description: translate("wifi_deleted_description", "wifi"),
@@ -208,7 +292,7 @@ export function useWifi({
         });
       }
     },
-    [selectedWorkspaceId, selectedProjectId, fetchWifiNetworks, translate]
+    [selectedWorkspaceId, selectedProjectId, refreshWifiNetworks, translate]
   );
 
   const getPaginationRange = useCallback(() => {
@@ -315,7 +399,7 @@ export function useWifi({
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
-    fetchWifiNetworks,
+    refreshWifiNetworks,
     handleDeleteWifi,
     getPaginationRange,
     nextPage,

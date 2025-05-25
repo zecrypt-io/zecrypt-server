@@ -130,6 +130,7 @@ export const fetchProjectKeys = async (workspaceId: string, accessToken: string)
   try {
     const response = await axiosInstance.get(`/${workspaceId}/project-keys`);
     const data = response.data;
+    console.log("fetchProjectKeys: data", data);
     
     if (data.status_code === 200) {
       return data.data.map((projectKey: any) => ({
