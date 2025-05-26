@@ -502,7 +502,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-2 mt-6 mb-2">
+          {/* <div className="flex items-center justify-between px-2 mt-6 mb-2">
             <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Star className="h-3 w-3" />
               {translate("favourites", "dashboard")}
@@ -516,8 +516,8 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
               <Plus className="h-3 w-3" />
               <span className="sr-only">Add Favorite Tag</span>
             </Button>
-          </div>
-          <div className="space-y-1">
+          </div> */}
+          {/* <div className="space-y-1">
             {favoriteTags.map((tag) => (
               <div key={tag} className="flex items-center justify-between px-2 py-1 group">
                 <Link
@@ -544,9 +544,9 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
-        <div className="mt-auto border-t border-border">
+        {/* <div className="mt-auto border-t border-border">
           <div className="px-3 py-2">
             <Link
               href={`/${currentLocale}/dashboard/notifications`}
@@ -563,7 +563,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
                 4
               </span>
             </Link>
-          </div>
+          </div> */}
 
           <div className="p-3 border-t border-border">
             <DropdownMenu>
