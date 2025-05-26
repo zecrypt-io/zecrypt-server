@@ -21,6 +21,7 @@ async def get_secrets(request, user, data_type):
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
     }
+    secrets = secrets_manager.find(db, query)
 
     return response_helper(200, translate(f"{data_type}.list"), data=secrets, count=len(secrets))
 
