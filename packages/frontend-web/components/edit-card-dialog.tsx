@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
+import { encryptDataField } from "@/libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 
 interface Card {
   doc_id: string;
@@ -58,6 +60,9 @@ export function EditCardDialog({
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   // Initialize form with card data when it changes
   useEffect(() => {
@@ -147,9 +152,53 @@ export function EditCardDialog({
         cvv: cvv
       };
 
+      // Find the current project to get its name
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        toast({
+          title: translate("error", "actions"),
+          description: translate("project_not_found", "cards", { default: "Project not found" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Get the project's AES key from session storage
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        toast({
+          title: translate("error", "actions"),
+          description: translate("encryption_key_not_found", "cards", { default: "Encryption key not found" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Encrypt the data
+      let encryptedData;
+      try {
+        encryptedData = await encryptDataField(JSON.stringify(dataToEncrypt), projectAesKey);
+      } catch (encryptError) {
+        console.error("Failed to encrypt card data:", encryptError);
+        toast({
+          title: translate("error", "actions"),
+          description: translate("encryption_failed", "cards", { default: "Failed to encrypt card data" }),
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload = {
         title,
-        data: JSON.stringify(dataToEncrypt),
+        data: encryptedData,
         brand,
         notes: notes || null,
         tags: tags.length > 0 ? tags : undefined,

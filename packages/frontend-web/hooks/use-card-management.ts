@@ -6,6 +6,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
+import { decryptDataField } from '@/libs/encryption';
+import { secureGetItem } from '@/libs/session-storage-utils';
 
 // Raw data structure from API GET /cards
 interface CardFromAPI {
@@ -89,6 +91,9 @@ export function useCardManagement({
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const processCardData = useCallback(async (cardRaw: CardFromAPI): Promise<Card> => {
     let cardHolderName = '';
@@ -99,17 +104,57 @@ export function useCardManagement({
     
     try {
       if (cardRaw.data) {
-        const parsedData = JSON.parse(cardRaw.data);
-        if (parsedData) {
-          cardHolderName = parsedData.card_holder_name || '';
-          cardNumber = parsedData.number || '';
-          expiryMonth = parsedData.expiry_month || '';
-          expiryYear = parsedData.expiry_year || '';
-          cvv = parsedData.cvv || '';
+        // Find the current project for encryption key lookup
+        const currentProject = workspaces
+          .find(ws => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find(p => p.project_id === selectedProjectId);
+        
+        if (!currentProject) {
+          console.error("Project not found for card data decryption");
+          throw new Error("Project not found");
+        }
+
+        // Get the project's AES key from session storage
+        const projectKeyName = `projectKey_${currentProject.name}`;
+        const projectAesKey = await secureGetItem(projectKeyName);
+        
+        if (!projectAesKey) {
+          console.error("Project encryption key not found for card data decryption");
+          throw new Error("Project encryption key not found");
+        }
+
+        try {
+          // Try to decrypt the data using the project's AES key
+          const decryptedData = await decryptDataField(cardRaw.data, projectAesKey);
+          const parsedData = JSON.parse(decryptedData);
+          
+          if (parsedData) {
+            cardHolderName = parsedData.card_holder_name || '';
+            cardNumber = parsedData.number || '';
+            expiryMonth = parsedData.expiry_month || '';
+            expiryYear = parsedData.expiry_year || '';
+            cvv = parsedData.cvv || '';
+          }
+        } catch (decryptError) {
+          // Fallback for legacy unencrypted data
+          console.error("Decryption failed for card data, trying legacy JSON parse:", decryptError);
+          
+          try {
+            const parsedData = JSON.parse(cardRaw.data);
+            if (parsedData) {
+              cardHolderName = parsedData.card_holder_name || '';
+              cardNumber = parsedData.number || '';
+              expiryMonth = parsedData.expiry_month || '';
+              expiryYear = parsedData.expiry_year || '';
+              cvv = parsedData.cvv || '';
+            }
+          } catch (parseError) {
+            console.error("Error parsing card data:", parseError);
+          }
         }
       }
     } catch (error) {
-      console.error("Failed to parse card data field in hook:", {
+      console.error("Failed to process card data field in hook:", {
         error: error instanceof Error ? error.message : String(error),
         card_id: cardRaw.doc_id,
         rawData: cardRaw.data,
@@ -135,7 +180,7 @@ export function useCardManagement({
       expiry_year: expiryYear,
       cvv: cvv,
     };
-  }, []);
+  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
   const fetchCards = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {

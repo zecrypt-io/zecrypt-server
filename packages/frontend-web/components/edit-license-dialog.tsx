@@ -20,6 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { encryptDataField, decryptDataField } from "@/libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 
 interface License {
   doc_id: string;
@@ -36,293 +38,229 @@ interface License {
 }
 
 interface EditLicenseDialogProps {
-  license: License;
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
-  onLicenseUpdated: () => void;
+  license: {
+    doc_id: string;
+    title: string;
+    data: string;
+    license_key: string;
+    notes?: string;
+    expires_at?: string;
+    tags?: string[];
+    project_id: string;
+  };
+  refetchLicenses: () => Promise<void>;
 }
 
-export function EditLicenseDialog({ license, open, onClose, onLicenseUpdated }: EditLicenseDialogProps) {
+export function EditLicenseDialog({ isOpen, onClose, license, refetchLicenses }: EditLicenseDialogProps) {
   const { translate } = useTranslator();
-
-  // Parse the license_key and expiry_date from license.data if it's a JSON string
-  const parseLicenseData = () => {
-    try {
-      if (license.data && typeof license.data === 'string') {
-        try {
-          const parsedData = JSON.parse(license.data);
-          if (parsedData && typeof parsedData === 'object') {
-            return parsedData;
-          }
-        } catch (e) {
-          // If not parseable as JSON, just use as-is
-        }
-      } else if (license.data && typeof license.data === 'object') {
-        return license.data;
-      }
-      return { 
-        license_key: license.license_key || '', 
-        expiry_date: license.expiry_date || '' 
-      };
-    } catch (e) {
-      return { 
-        license_key: license.license_key || '', 
-        expiry_date: license.expiry_date || '' 
-      };
-    }
-  };
-
-  const licenseData = parseLicenseData();
-
-  const [name, setName] = useState(license.title || license.name || "");
-  const [software, setSoftware] = useState(license.software || "");
-  const [licenseKey, setLicenseKey] = useState(licenseData.license_key || "");
-  const [expiryDate, setExpiryDate] = useState(licenseData.expiry_date || "");
-  const [notes, setNotes] = useState(license.notes || "");
-  const [tags, setTags] = useState<string[]>(license.tags || []);
-  const [newTag, setNewTag] = useState("");
-  const [showLicenseKey, setShowLicenseKey] = useState(false);
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [title, setTitle] = useState(license?.title || "");
+  const [licenseKey, setLicenseKey] = useState(license?.license_key || "");
+  const [expiryDate, setExpiryDate] = useState(license?.expires_at || "");
+  const [notes, setNotes] = useState(license?.notes || "");
+  const [tag, setTag] = useState("");
+  const [tags, setTags] = useState<string[]>(license?.tags || []);
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Get project info for encryption
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
-  const predefinedTags = ["Design", "Creative", "Productivity", "Office", "Development", "Game", "Subscription"];
-
-  // Format the expiry date to YYYY-MM-DD for input[type="date"]
   useEffect(() => {
-    if (expiryDate) {
-      try {
-        const date = new Date(expiryDate);
-        if (!isNaN(date.getTime())) {
-          setExpiryDate(date.toISOString().split('T')[0]);
-        }
-      } catch (e) {
-        // Keep the original value if parsing fails
-      }
+    if (license) {
+      setTitle(license.title || "");
+      setLicenseKey(license.license_key || "");
+      setExpiryDate(license.expires_at || "");
+      setNotes(license.notes || "");
+      setTags(license.tags || []);
     }
-  }, []);
+  }, [license]);
 
-  const addTag = (tag: string) => {
-    if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag]);
-      setNewTag("");
+  const addTag = () => {
+    if (tag.trim() && !tags.includes(tag.trim())) {
+      setTags([...tags, tag.trim()]);
+      setTag("");
     }
   };
 
-  const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
   };
 
-  const handleSubmit = async () => {
-    if (!name || !licenseKey) {
-      setError(translate("please_fill_all_required_fields", "licenses", { default: "Please fill all required fields" }));
-      return;
-    }
-
-    if (!selectedWorkspaceId || !selectedProjectId) {
-      setError(translate("no_project_selected", "licenses", { default: "No project selected" }));
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError("");
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
 
     try {
-      // Prepare the license data for the 'data' field
-      const licenseDataForDataField = {
-        license_key: licenseKey
-      };
-
-      // Prepare payload according to API specification
-      const payload = {
-        title: name,
-        data: JSON.stringify(licenseDataForDataField),
-        software: software || null,
-        notes: notes || null,
-        tags,
-        expires_at: expiryDate || null
-      };
-
-      const response = await axiosInstance.put(
-        `/${selectedWorkspaceId}/${selectedProjectId}/licenses/${license.doc_id}`,
-        payload
-      );
-
-      if (response.status === 200) {
-        toast({
-          title: translate("success", "common", { default: "Success" }),
-          description: translate("license_updated_successfully", "licenses", { default: "License updated successfully" }),
-        });
-        onLicenseUpdated();
-        onClose();
-      } else {
-        throw new Error(response.data?.message || translate("failed_to_update_license", "licenses", { default: "Failed to update license" }));
-      }
-    } catch (error: any) {
-      console.error("Error updating license:", error);
+      // Find current project for encryption
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === license.project_id);
       
-      if (error.response) {
-        if (error.response.status === 400) {
-          setError(error.response.data?.message || translate("invalid_input", "licenses", { default: "Invalid input" }));
-        } else if (error.response.status === 422) {
-          const errorMessages = error.response.data?.detail?.map((err: any) => err.msg).join(", ");
-          setError(errorMessages || translate("validation_error", "licenses", { default: "Validation error" }));
-        } else if (error.response.status === 404) {
-          setError(translate("license_not_found", "licenses", { default: "License not found" }));
-        } else {
-          setError(error.response.data?.message || translate("failed_to_update_license", "licenses", { default: "Failed to update license" }));
-        }
-      } else if (error.request) {
-        setError(translate("network_error", "licenses", { default: "Network error" }));
-      } else {
-        setError(`${translate("error_updating_license", "licenses", { default: "Error updating license" })}: ${error.message}`);
+      if (!currentProject) {
+        toast({
+          title: translate("common.error"),
+          description: translate("licenses.project_not_found"),
+          variant: "destructive"
+        });
+        setSubmitting(false);
+        return;
       }
+
+      // Get project encryption key
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        toast({
+          title: translate("common.error"),
+          description: translate("licenses.encryption_key_not_found"),
+          variant: "destructive"
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // Prepare data field with sensitive information and encrypt it
+      const licenseData = JSON.stringify({ license_key: licenseKey });
+      const encryptedData = await encryptDataField(licenseData, projectAesKey);
+
+      // Create license payload with encrypted data
+      const payload = {
+        title,
+        data: encryptedData,
+        notes: notes.trim() || null,
+        tags: tags.length ? tags : null,
+        expires_at: expiryDate || null,
+      };
+
+      await axiosInstance.put(`/${selectedWorkspaceId}/${license.project_id}/licenses/${license.doc_id}`, payload);
+      
+      toast({
+        title: translate("common.success"),
+        description: translate("licenses.license_updated_successfully")
+      });
+      
+      onClose();
+      refetchLicenses();
+    } catch (error) {
+      console.error("Error updating license:", error);
+      toast({
+        title: translate("common.error"),
+        description: translate("licenses.encryption_failed"),
+        variant: "destructive"
+      });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{translate("edit_license", "licenses", { default: "Edit License" })}</DialogTitle>
+          <DialogTitle>{translate("licenses.edit_license")}</DialogTitle>
           <DialogDescription>
-            {translate("edit_license_description", "licenses", { default: "Update your software license details" })}
+            {translate("licenses.edit_license_description")}
           </DialogDescription>
         </DialogHeader>
 
-        {error && (
-          <div className="p-2 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-        
-        <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
-          <div className="space-y-2">
-            <Label htmlFor="edit_name">
-              {translate("software_name", "licenses", { default: "Software Name" })} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="edit_name"
-              placeholder={translate("enter_software_name", "licenses", { default: "Enter software name" })}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit_license_key">
-              {translate("license_key", "licenses", { default: "License Key" })} <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                {translate("licenses.software_name")}
+              </Label>
               <Input
-                id="edit_license_key"
-                type={showLicenseKey ? "text" : "password"}
-                placeholder={translate("enter_license_key", "licenses", { default: "Enter license key" })}
-                value={licenseKey}
-                onChange={(e) => setLicenseKey(e.target.value)}
-                className="pr-8"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
                 required
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
-                onClick={() => setShowLicenseKey(!showLicenseKey)}
-                type="button"
-              >
-                {showLicenseKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit_expiry_date">
-              {translate("expiry_date", "licenses", { default: "Expiry Date" })}
-            </Label>
-            <Input
-              id="edit_expiry_date"
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit_notes">
-              {translate("notes", "licenses", { default: "Notes" })}
-            </Label>
-            <Textarea
-              id="edit_notes"
-              placeholder={translate("enter_notes", "licenses", { default: "Enter notes" })}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>
-              {translate("tags", "licenses", { default: "Tags" })}
-            </Label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
-                </Badge>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="license-key" className="text-right">
+                {translate("licenses.license_key")}
+              </Label>
               <Input
-                placeholder={translate("add_a_tag", "licenses", { default: "Add a tag" })}
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag(newTag);
-                  }
-                }}
+                id="license-key"
+                value={licenseKey}
+                onChange={(e) => setLicenseKey(e.target.value)}
+                className="col-span-3"
+                required
               />
-              <Button type="button" variant="outline" size="icon" onClick={() => addTag(newTag)}>
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {predefinedTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className={`cursor-pointer ${tags.includes(tag) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-                  onClick={() => !tags.includes(tag) && addTag(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="expiry-date" className="text-right">
+                {translate("licenses.expiry_date")}
+              </Label>
+              <Input
+                id="expiry-date"
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                {translate("licenses.notes")}
+              </Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="col-span-3"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="tag" className="text-right">
+                {translate("licenses.tags")}
+              </Label>
+              <div className="col-span-3 flex flex-wrap gap-2">
+                {tags.map((t) => (
+                  <Badge key={t} variant="secondary" className="flex items-center gap-1">
+                    {t}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(t)}
+                      className="rounded-full h-4 w-4 inline-flex items-center justify-center text-xs hover:bg-primary/20"
+                    >
+                      <X size={12} />
+                    </button>
+                  </Badge>
+                ))}
+                <div className="flex gap-2 items-center w-full">
+                  <Input
+                    id="tag"
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value)}
+                    placeholder={translate("licenses.add_a_tag")}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={addTag}>
+                    {translate("common.add")}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-            {translate("cancel", "licenses", { default: "Cancel" })}
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-          >
-            {isSubmitting 
-              ? translate("updating", "licenses", { default: "Updating..." }) 
-              : translate("update", "licenses", { default: "Update" })
-            }
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={onClose}>
+              {translate("common.cancel")}
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? translate("common.saving") : translate("common.save")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

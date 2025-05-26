@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { encryptAccountData, decryptAccountData } from "@/libs/encryption";
+import { secureGetItem } from "@/libs/session-storage-utils";
 
 interface Account {
   doc_id: string;
@@ -41,32 +43,86 @@ interface EditAccountDialogProps {
 export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAccountDialogProps) {
   const { translate } = useTranslator();
   
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  
   // Parse the username and password from account.data if it's a JSON string
-  const parseAccountData = () => {
+  const parseAccountData = async () => {
     try {
       if (account.data && typeof account.data === 'string') {
+        // Use workspaces from component scope
+        const currentProject = workspaces
+          .find(ws => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find(p => p.project_id === selectedProjectId);
+        
+        if (!currentProject) {
+          throw new Error("Project not found");
+        }
+
+        // Get the project's AES key from session storage
+        const projectKeyName = `projectKey_${currentProject.name}`;
+        const projectAesKey = await secureGetItem(projectKeyName);
+        
+        if (!projectAesKey) {
+          throw new Error("Project encryption key not found");
+        }
+
+        // Try to decrypt the data field using the project's AES key
         try {
-          const parsedData = JSON.parse(account.data);
+          const decryptedData = await decryptAccountData(account.data, projectAesKey);
+          // If decryption succeeds, parse the JSON
+          const parsedData = JSON.parse(decryptedData);
           if (parsedData && typeof parsedData === 'object' && 'username' in parsedData && 'password' in parsedData) {
             return parsedData;
           }
-        } catch (e) {
-          // If not parseable as JSON, just use as-is
+        } catch (decryptError) {
+          console.error("Decryption failed, trying legacy JSON parse:", decryptError);
+          
+          // Legacy fallback: Try to parse as unencrypted JSON
+          try {
+            const parsedData = JSON.parse(account.data);
+            if (parsedData && typeof parsedData === 'object' && 'username' in parsedData && 'password' in parsedData) {
+              return parsedData;
+            }
+          } catch (parseError) {
+            // If not JSON, it might be an old format or a new hash (masked)
+            console.log("Error parsing data:", parseError);
+          }
         }
       } else if (account.data && typeof account.data === 'object' && 'username' in account.data && 'password' in account.data) {
         return account.data;
       }
       return { username: account.username || account.user_name || '', password: account.password || '' };
     } catch (e) {
+      console.error("Error in parseAccountData:", e);
       return { username: account.username || account.user_name || '', password: account.password || '' };
     }
   };
 
-  const accountData = parseAccountData();
+  const [accountData, setAccountData] = useState({ username: '', password: '' });
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load account data on component mount
+  useEffect(() => {
+    const loadAccountData = async () => {
+      try {
+        const data = await parseAccountData();
+        setAccountData(data);
+      } catch (error) {
+        console.error("Error loading account data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadAccountData();
+  }, [account]);
   
   const [name, setName] = useState(account.title || account.name || "");
-  const [username, setUsername] = useState(accountData.username || "");
-  const [password, setPassword] = useState(accountData.password || "");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [website, setWebsite] = useState(account.url || account.website || "");
   const [notes, setNotes] = useState(account.notes || "");
   const [tags, setTags] = useState<string[]>(account.tags || []);
@@ -74,9 +130,6 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
   const predefinedTags = ["Personal", "Work", "Finance", "Social", "Shopping", "Entertainment", "Favorite"];
 
@@ -112,19 +165,39 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
     setError("");
 
     try {
+      // Get the current project from workspaces in component scope
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error(translate("project_not_found", "accounts"));
+      }
+
       // Create credentials object with username and password
       const credentials = {
         username: username || "",
         password: password
       };
 
-      // Convert credentials object to JSON string for the data field
+      // Convert credentials object to JSON string
       const credentialsString = JSON.stringify(credentials);
 
-      // Create payload according to API specification
+      // Get the project's AES key from session storage
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        throw new Error(translate("encryption_key_not_found", "accounts"));
+      }
+
+      // Encrypt the credentials string using the project's AES key
+      const encryptedDataString = await encryptAccountData(credentialsString, projectAesKey);
+
+      // Create payload with encrypted data
       const payload = {
         title: name,
-        data: credentialsString,
+        data: encryptedDataString,
         url: website || null,
         tags: tags,
         notes: notes || null
@@ -172,6 +245,14 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
       setIsSubmitting(false);
     }
   };
+
+  // Update form fields when accountData is loaded
+  useEffect(() => {
+    if (!isLoading) {
+      setUsername(accountData.username || "");
+      setPassword(accountData.password || "");
+    }
+  }, [accountData, isLoading]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-6">

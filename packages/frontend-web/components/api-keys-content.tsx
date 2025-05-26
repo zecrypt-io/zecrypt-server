@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ import { useApiKeyManagement } from "@/hooks/use-apikey-management";
 import { AddApiKey } from "./add-apikey";
 import { EditApiKey } from "./edit-apikey";
 import { SortButton } from "@/components/ui/sort-button";
+import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { decryptDataField } from "@/libs/encryption";
 
 interface ApiKey {
   doc_id: string;
@@ -58,12 +60,23 @@ export function ApiKeysContent() {
   const format = useFormatter();
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  const [projectKey, setProjectKey] = useState<string | null>(null);
+  
+  const selectedProjectName = useMemo(() => {
+    if (!workspaces || !selectedWorkspaceId || !selectedProjectId) return null;
+    const workspace = workspaces.find(w => w.workspaceId === selectedWorkspaceId);
+    if (!workspace) return null;
+    const project = workspace.projects.find(p => p.project_id === selectedProjectId);
+    return project?.name || null;
+  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
   const [showAddApiKey, setShowAddApiKey] = useState(false);
   const [showEditApiKey, setShowEditApiKey] = useState(false);
   const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | null>(null);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewKey, setViewKey] = useState<string | null>(null);
+  const [decryptedKeys, setDecryptedKeys] = useState<Record<string, string>>({});
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [apiKeyToDelete, setApiKeyToDelete] = useState<string | null>(null);
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
@@ -96,6 +109,28 @@ export function ApiKeysContent() {
     initialItemsPerPage: 5,
   });
 
+  // Load the project key once when selectedProjectName changes
+  useEffect(() => {
+    const loadProjectKey = async () => {
+      if (selectedProjectName) {
+        try {
+          console.log("Loading project key for project:", selectedProjectName);
+          // Use project name to get encryption key
+          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
+          console.log("Project key loaded:", key ? "Found" : "Not found");
+          setProjectKey(key);
+        } catch (error) {
+          console.error("Error loading project key:", error);
+          setProjectKey(null);
+        }
+      } else {
+        setProjectKey(null);
+      }
+    };
+    
+    loadProjectKey();
+  }, [selectedProjectName]);
+
   const handleAddApiKey = () => {
     setShowAddApiKey(true);
   };
@@ -123,10 +158,98 @@ export function ApiKeysContent() {
     }
   };
 
+  const toggleKeyVisibility = useCallback(async (doc_id: string) => {
+    if (viewKey === doc_id) {
+      setViewKey(null);
+      return;
+    }
+    
+    const apiKey = apiKeysToDisplay.find(key => key.doc_id === doc_id);
+    if (!apiKey) return;
+    
+    if (decryptedKeys[doc_id]) {
+      setViewKey(doc_id);
+      return;
+    }
+    
+    let effectiveProjectKey = projectKey;
+    if (!effectiveProjectKey && selectedProjectName) {
+      try {
+        const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+        if (rawProjectKey) {
+          effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+        }
+      } catch (error) {
+        console.error("Failed to get project key directly:", error);
+      }
+    }
+    
+    if (apiKey.data && apiKey.data.includes('.') && effectiveProjectKey) {
+      try {
+        const decrypted = await decryptDataField(apiKey.data, effectiveProjectKey);
+        try {
+          const apiKeyObject = JSON.parse(decrypted);
+          setDecryptedKeys(prev => ({ ...prev, [doc_id]: apiKeyObject.key }));
+        } catch (e) {
+          setDecryptedKeys(prev => ({ ...prev, [doc_id]: decrypted }));
+        }
+      } catch (error) {
+        console.error("Failed to decrypt API key:", error);
+        toast({
+          title: translate("error", "actions"),
+          description: translate("failed_to_decrypt", "api_keys", { default: "Failed to decrypt API key" }),
+          variant: "destructive",
+        });
+        setDecryptedKeys(prev => ({ ...prev, [doc_id]: apiKey.data }));
+      }
+    } else {
+      setDecryptedKeys(prev => ({ ...prev, [doc_id]: apiKey.data }));
+    }
+    
+    setViewKey(doc_id);
+  }, [apiKeysToDisplay, viewKey, projectKey, selectedProjectName, translate, decryptedKeys]);
+
   const copyToClipboard = useCallback(
     async (doc_id: string, field: string, value: string) => {
+      let textToCopy = value;
+      
+      if (field === "key") {
+        if (decryptedKeys[doc_id]) {
+          textToCopy = decryptedKeys[doc_id];
+        } else if (value.includes('.')) {
+          let effectiveProjectKey = projectKey;
+          if (!effectiveProjectKey && selectedProjectName) {
+            try {
+              const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+              if (rawProjectKey) {
+                effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+              }
+            } catch (error) {
+              console.error("Failed to get project key directly:", error);
+            }
+          }
+          
+          if (effectiveProjectKey) {
+            try {
+              const decrypted = await decryptDataField(value, effectiveProjectKey);
+              try {
+                const apiKeyObject = JSON.parse(decrypted);
+                textToCopy = apiKeyObject.key;
+                setDecryptedKeys(prev => ({ ...prev, [doc_id]: apiKeyObject.key }));
+              } catch (e) {
+                textToCopy = decrypted;
+                setDecryptedKeys(prev => ({ ...prev, [doc_id]: decrypted }));
+              }
+            } catch (error) {
+              console.error("Failed to decrypt API key for copying:", error);
+              textToCopy = value;
+            }
+          }
+        }
+      }
+      
       try {
-        await navigator.clipboard.writeText(value);
+        await navigator.clipboard.writeText(textToCopy);
         setCopiedField({ doc_id, field });
         setTimeout(() => setCopiedField(null), 2000);
         toast({
@@ -144,12 +267,8 @@ export function ApiKeysContent() {
         });
       }
     },
-    [translate]
+    [translate, decryptedKeys, projectKey, selectedProjectName]
   );
-
-  const toggleKeyVisibility = useCallback((doc_id: string) => {
-    setViewKey((prev) => (prev === doc_id ? null : doc_id));
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -261,7 +380,9 @@ export function ApiKeysContent() {
                     <TableCell className="font-medium">{apiKey.title}</TableCell>
                     <TableCell className="font-mono">
                       <div className="flex items-center gap-2">
-                        <span>{viewKey === apiKey.doc_id ? apiKey.data : "••••••••"}</span>
+                        <span>
+                          {viewKey === apiKey.doc_id ? (decryptedKeys[apiKey.doc_id] || "••••••••") : "••••••••"}
+                        </span>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>

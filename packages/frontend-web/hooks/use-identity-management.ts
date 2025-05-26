@@ -6,6 +6,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
+import { decryptDataField } from '@/libs/encryption';
+import { secureGetItem } from '@/libs/session-storage-utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -86,6 +88,9 @@ export function useIdentityManagement({
   const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
+  
+  // Get workspaces from Redux store for project name lookup
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   const processIdentityData = useCallback(async (identityRaw: IdentityFromAPI): Promise<Identity> => {
     let firstName = '';
@@ -98,19 +103,61 @@ export function useIdentityManagement({
     
     try {
       if (identityRaw.data) {
-        const parsedData = JSON.parse(identityRaw.data);
-        if (parsedData) {
-          firstName = parsedData.first_name || '';
-          lastName = parsedData.last_name || '';
-          email = parsedData.email || '';
-          phone = parsedData.phone || '';
-          address = parsedData.address || '';
-          dateOfBirth = parsedData.date_of_birth || '';
-          nationalId = parsedData.national_id || '';
+        // Find the current project for encryption key lookup
+        const currentProject = workspaces
+          .find(ws => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find(p => p.project_id === selectedProjectId);
+        
+        if (!currentProject) {
+          console.error("Project not found for identity data decryption");
+          throw new Error("Project not found");
+        }
+
+        // Get the project's AES key from session storage
+        const projectKeyName = `projectKey_${currentProject.name}`;
+        const projectAesKey = await secureGetItem(projectKeyName);
+        
+        if (!projectAesKey) {
+          console.error("Project encryption key not found for identity data decryption");
+          throw new Error("Project encryption key not found");
+        }
+
+        try {
+          // Try to decrypt the data using the project's AES key
+          const decryptedData = await decryptDataField(identityRaw.data, projectAesKey);
+          const parsedData = JSON.parse(decryptedData);
+          
+          if (parsedData) {
+            firstName = parsedData.first_name || '';
+            lastName = parsedData.last_name || '';
+            email = parsedData.email || '';
+            phone = parsedData.phone || '';
+            address = parsedData.address || '';
+            dateOfBirth = parsedData.date_of_birth || '';
+            nationalId = parsedData.national_id || '';
+          }
+        } catch (decryptError) {
+          // Fallback for legacy unencrypted data
+          console.error("Decryption failed for identity data, trying legacy JSON parse:", decryptError);
+          
+          try {
+            const parsedData = JSON.parse(identityRaw.data);
+            if (parsedData) {
+              firstName = parsedData.first_name || '';
+              lastName = parsedData.last_name || '';
+              email = parsedData.email || '';
+              phone = parsedData.phone || '';
+              address = parsedData.address || '';
+              dateOfBirth = parsedData.date_of_birth || '';
+              nationalId = parsedData.national_id || '';
+            }
+          } catch (parseError) {
+            console.error("Error parsing identity data:", parseError);
+          }
         }
       }
     } catch (error) {
-      console.error("Failed to parse identity data field in hook:", {
+      console.error("Failed to process identity data field in hook:", {
         error: error instanceof Error ? error.message : String(error),
         identity_id: identityRaw.doc_id,
         rawData: identityRaw.data,
@@ -136,7 +183,7 @@ export function useIdentityManagement({
       date_of_birth: dateOfBirth,
       national_id: nationalId
     };
-  }, []);
+  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
   const fetchIdentities = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
