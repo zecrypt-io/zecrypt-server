@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.ssh_keys.schema import UpdateSshKey, AddSshKey
+from app.api.v1.web.secrets.cards.schema import UpdateCard, AddCard
 from app.api.v1.web.secrets.services import (
     delete_secret,
     update_secret,
@@ -9,14 +9,14 @@ from app.api.v1.web.secrets.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import SSH_KEY_DETAILS, SSH_KEYS
-from app.utils.constants import SECRET_TYPE_SSH_KEY as data_type
+from app.api.v1.web.route_constants import CARD_DETAILS, CARDS
+from app.utils.constants import SECRET_TYPE_CARD as data_type
 
 router = APIRouter()
 
 
-@router.get(SSH_KEYS)
-async def get_ssh_key_api(
+@router.get(CARDS)
+async def get_card_api(
     request: Request,
     workspace_id: str,
     project_id: str,
@@ -25,12 +25,12 @@ async def get_ssh_key_api(
     return await get_secrets(request, user, data_type)
 
 
-@router.post(SSH_KEYS)
-async def create_ssh_key_api(
+@router.post(CARDS)
+async def create_cards_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: AddSshKey,
+    payload: AddCard,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -39,13 +39,13 @@ async def create_ssh_key_api(
     )
 
 
-@router.put(SSH_KEY_DETAILS)
-async def update_ssh_key_api(
+@router.put(CARD_DETAILS)
+async def update_card_api(
     request: Request,
     workspace_id: str,
     project_id: str,
     doc_id: str,
-    payload: UpdateSshKey,
+    payload: UpdateCard,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -54,8 +54,8 @@ async def update_ssh_key_api(
     )
 
 
-@router.delete(SSH_KEY_DETAILS)
-async def delete_ssh_key_api(
+@router.delete(CARD_DETAILS)
+async def delete_card_api(
     request: Request,
     workspace_id: str,
     project_id: str,

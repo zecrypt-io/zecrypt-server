@@ -39,6 +39,10 @@ EMAIL_DETAILS = BASE_URL + "/emails/{doc_id}"
 SSH_KEYS = BASE_URL + "/ssh-keys"
 SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
 
+# Notes
+NOTES = BASE_URL + "/notes"
+NOTE_DETAILS = BASE_URL + "/notes/{doc_id}"
+
 # Login
 LOGIN = "/login"
 LOGOUT = "/logout"
