@@ -82,6 +82,8 @@ const defaultFeatures = {
   identity: { enabled: false, is_client_side_encryption: false },
   card: { enabled: false, is_client_side_encryption: false },
   software_license: { enabled: false, is_client_side_encryption: false },
+  email: { enabled: false, is_client_side_encryption: false },
+  ssh_key: { enabled: false, is_client_side_encryption: false }
 };
 
 const featureMenuItems: {
@@ -227,6 +229,52 @@ const featureMenuItems: {
         <path d="M15 3h6v6" />
         <path d="M10 14 21 3" />
         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      </svg>
+    ),
+  },
+  {
+    key: "email",
+    labelKey: "email",
+    path: "/dashboard/emails",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <rect width="20" height="16" x="2" y="4" rx="2" />
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      </svg>
+    ),
+  },
+  {
+    key: "ssh_key",
+    labelKey: "ssh_keys",
+    path: "/dashboard/ssh-keys",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <circle cx="8" cy="8" r="4" />
+        <path d="M10.5 8h9.5" />
+        <path d="M15 12V8" />
+        <path d="M17 12V8" />
       </svg>
     ),
   },
@@ -459,7 +507,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto py-2">
+        <div className="flex-1 overflow-auto py-2 flex flex-col">
           <div className="px-3 py-2">
             <div className="mb-4">
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
@@ -511,7 +559,70 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </div>
           </div>
 
-          <div className="p-3 border-t border-border">
+          {/* <div className="flex items-center justify-between px-2 mt-6 mb-2">
+            <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Star className="h-3 w-3" />
+              {translate("favourites", "dashboard")}
+            </h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5"
+              onClick={() => setShowFavoritesDialog(true)}
+            >
+              <Plus className="h-3 w-3" />
+              <span className="sr-only">Add Favorite Tag</span>
+            </Button>
+          </div> */}
+          {/* <div className="space-y-1">
+            {favoriteTags.map((tag) => (
+              <div key={tag} className="flex items-center justify-between px-2 py-1 group">
+                <Link
+                  href={`/${currentLocale}/dashboard/favourites?tag=${encodeURIComponent(tag)}`}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1 text-sm flex-1",
+                    pathname === `/${currentLocale}/dashboard/favourites` && searchParams?.get("tag") === tag
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Star className="h-3 w-3 text-current" />
+                  {tag}
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeTag(tag)}
+                >
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Remove {tag}</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* <div className="mt-auto border-t border-border">
+          <div className="px-3 py-2">
+            <Link
+              href={`/${currentLocale}/dashboard/notifications`}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                pathname === `/${currentLocale}/dashboard/notifications`
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <Bell className="h-4 w-4" />
+              {translate("notifications", "dashboard")}
+              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                4
+              </span>
+            </Link>
+          </div> */}
+
+          <div className="p-3 border-t border-border mt-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
@@ -635,7 +746,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
-      <KeyboardShortcutsHelp />
     </div>
   );
 }
