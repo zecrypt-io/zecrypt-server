@@ -137,6 +137,10 @@
     "audit_logs":{
         "audit_logs_fetched": "Audit logs loaded successfully",
         "audit_log_actions": "Audit log actions loaded successfully"
+    },
+    "password_history":{
+        "list": "Password history loaded successfully",
+        "add": "Password history added successfully"
     }
 }
 
