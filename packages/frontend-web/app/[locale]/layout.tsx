@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import ReduxProvider from "../../libs/Redux/ReduxProvider";
-import { AuthErrorListener } from '@/components/auth-error-listener';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,9 +57,7 @@ export default async function LocaleLayout({
           <StackTheme>
             <main className={inter.className}>
               <ReduxProvider>
-                <AuthErrorListener locale={locale}>
-                  {children}
-                </AuthErrorListener>
+                {children}
               </ReduxProvider>
             </main>
           </StackTheme>

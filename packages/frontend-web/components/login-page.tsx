@@ -194,7 +194,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
   // Proceed to dashboard after all checks are complete
   const proceedToDashboard = () => {
-    router.replace(`/${locale}/dashboard`);
+    router.push(`/${locale}/dashboard`);
   };
 
   // Handle successful key setup
@@ -230,9 +230,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     try {
       const response = await stackAuthHandler(token, "login", { device_id: deviceId ?? undefined });
       if (response.status_code === 200) {
-        // Store access token in cookie
-        document.cookie = `access_token=${response.data.token}; path=/; secure; samesite=strict`;
-        
         dispatch(
           setUserData({
             user_id: response.data.user_id || null,
@@ -242,7 +239,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             access_token: response.data.token || null,
             refresh_token: response.data.refresh_token || null,
             locale: response.data.language || locale || "en",
-            is_2fa_enabled: response.data.is_new_user === false,
+            is_2fa_enabled: response.data.is_new_user === false, // Assuming is_new_user false means 2FA might be setup
           })
         );
 
@@ -273,7 +270,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       setError(err.response?.data?.message || err.message || t("login_failed_unexpected"));
       setShowLoginForm(true);
     } finally {
-      setIsProcessingAuth(false);
+      setIsProcessingAuth(false); // Ensure this is set regardless of outcome
     }
   };
 
@@ -364,6 +361,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
         await checkForEncryptionKeys();
       } else {
         setError(t("2fa_verification_failed", { message: response.message || t("invalid_code") }));
+        // Automatically clear the input field on error for better UX
         setVerificationCode("");
       }
     } catch (err) {
@@ -386,33 +384,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
         console.error("Failed to copy URI:", err);
       });
     }
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    // Clear access token cookie
-    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
-    
-    // Clear user data from Redux
-    dispatch(
-      setUserData({
-        user_id: null,
-        name: null,
-        profile_url: null,
-        email: null,
-        access_token: null,
-        refresh_token: null,
-        locale: locale || "en",
-        is_2fa_enabled: false,
-      })
-    );
-    
-    // Clear session storage
-    secureSetItem("privateKey", "");
-    secureSetItem("publicKey", "");
-    
-    // Redirect to login
-    router.push(`/${locale}/login`);
   };
 
   // Loading state
@@ -579,73 +550,53 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     );
   }
 
-  // Main login page UI
+  // Main login page
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 md:p-8">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-
-      {/* Increased max-w for a wider card, added shadow-lg for more depth and rounded corners */}
-      <div className="w-full max-w-6xl bg-card shadow-lg rounded-xl overflow-hidden">
-        {/* Used gap-10 for more horizontal spacing between columns, items-stretch for equal column height */}
-        <div className="grid md:grid-cols-2 gap-10 items-stretch">
-          {/* Left side - Feature highlights and footer links */}
-          {/* Increased padding, used flex-col and justify-between to push footer to bottom */}
-          <div className="p-8 md:p-12 lg:p-16 bg-gradient-to-br from-background to-background/95 flex flex-col justify-between">
-            {/* Adjusted spacing within the feature section */}
-            <div className="space-y-5 mb-8 md:mb-12">
-              {/* Adjusted heading and text size for better visual hierarchy */}
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      
+      <div className="w-full max-w-4xl bg-card shadow-md rounded-xl overflow-hidden">
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+          {/* Left side - Feature highlights */}
+          <div className="p-8 bg-gradient-to-br from-background to-background/95 flex flex-col justify-center">
+            <div className="space-y-3 mb-8">
+              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {features("trial_title")}
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {features("secure_password_manager")}
               </p>
             </div>
-
-            {/* Adjusted icon size and spacing for feature items - using FeatureItem component */}
-            <div className="space-y-6 mb-8 md:mb-12">
-              <FeatureItem icon={<Dices size={24} />} text={features("unlimited_devices")} />
-              <FeatureItem icon={<Lock size={24} />} text={features("shared_vaults")} />
-              <FeatureItem icon={<Shield size={24} />} text={features("advanced_security")} />
-              <FeatureItem icon={<Bell size={24} />} text={features("security_alerts")} />
-              <FeatureItem icon={<Globe size={24} />} text={features("multi_platform")} />
+            
+            <div className="space-y-4 mb-8">
+              <FeatureItem icon={<Dices size={16} />} text={features("unlimited_devices")} />
+              <FeatureItem icon={<Lock size={16} />} text={features("shared_vaults")} />
+              <FeatureItem icon={<Shield size={16} />} text={features("advanced_security")} />
+              <FeatureItem icon={<Bell size={16} />} text={features("security_alerts")} />
+              <FeatureItem icon={<Globe size={16} />} text={features("multi_platform")} />
             </div>
-
-            {/* Moved footer links to left column, adjusted layout for responsiveness and spacing */}
-            <div className="mt-auto pt-6 md:pt-8 border-t border-border/30 flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-2 sm:space-y-0 sm:space-x-4">
-              <Link href={`/${locale}/privacy-policy`} className="hover:underline">
-                {t("privacy_policy")}
+            
+            {/* <div className="mt-auto pt-4 border-t border-border/30">
+              <p className="text-xs text-muted-foreground">{features("looking_for_options")}</p>
+              <Link href="#" className="text-xs theme-accent-text hover:underline">
+                {features("see_options")}
               </Link>
-              <Link href={`/${locale}/terms`} className="hover:underline">
-                {t("terms_and_conditions")}
-              </Link>
-              {/* Service status dot as seen in the image */}
-              <span className="flex items-center">
-                <span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-                {t("service_status")}
-              </span>
-            </div>
+            </div> */}
           </div>
-
-          {/* Right side - Login form area */}
-          {/* Increased padding and centered content within the column */}
-          <div className="p-8 md:p-12 lg:p-16 flex items-center justify-center bg-card">
+          
+          {/* Right side - Login component */}
+          <div className="p-6 flex items-center justify-end bg-card">
             <div className="w-full max-w-sm">
-              {/* Removed Welcome heading as requested */}
-              {/* <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10">
-                {t("welcome_to")}
-              </h2> */}
               {showLoginForm ? (
                 <SignIn
                   fullPage={false}
                   automaticRedirect={false}
                   firstTab="password"
                   extraInfo={
-                    // Kept agreement text; terms link is now in the left footer
-                    <div className="text-center text-xs mt-4 text-muted-foreground">
-                      {t("agreement")}
+                    <div className="text-center text-xs mt-3 text-muted-foreground">
+                      {t("agreement")} <Link href={`/${locale}/terms`} className="theme-accent-text hover:underline">{t("terms")}</Link>
                     </div>
                   }
                 />
@@ -655,13 +606,6 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
                   <p className="text-sm text-muted-foreground">{t("authenticating")}</p>
                 </div>
               )}
-              {/* Added Sign Up link back below the form as in the image */}
-              <div className="text-center text-sm mt-6 md:mt-8">
-                {t("dont_have_account")}{' '}
-                <Link href={`/${locale}/sign-up`} className="theme-accent-text hover:underline">
-                  {t("sign_up")}
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -670,7 +614,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   );
 }
 
-// Extracted feature item component definition
+// Extracted feature item component for cleaner code
 interface FeatureItemProps {
   icon: React.ReactNode;
   text: string;
@@ -679,9 +623,8 @@ interface FeatureItemProps {
 function FeatureItem({ icon, text }: FeatureItemProps) {
   return (
     <div className="flex items-start gap-2">
-      {/* Adjusted padding and icon size within the feature item */}
-      <div className="mt-0.5 rounded-full theme-accent-bg p-1.5">
-        {icon || <Check className="h-4 w-4 text-white" />} {/* Increased default icon size */}
+      <div className="mt-0.5 rounded-full theme-accent-bg p-1">
+        {icon || <Check className="h-3.5 w-3.5 text-white" />}
       </div>
       <p className="text-sm text-muted-foreground">{text}</p>
     </div>
