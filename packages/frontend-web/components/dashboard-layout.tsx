@@ -450,7 +450,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto py-2">
+        <div className="flex-1 overflow-auto py-2 flex flex-col">
           <div className="px-3 py-2">
             <div className="mb-4">
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
@@ -565,7 +565,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </Link>
           </div> */}
 
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t border-border mt-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
