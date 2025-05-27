@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureVault - End-to-End Encrypted Data Storage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gray-900': '#111111',
+            'gray-800': '#1f1f1f',
+            'gray-700': '#2e2e2e',
+            'gray-500': '#6b7280',
+            'gray-400': '#9ca3af'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      background-color: black;
+      color: white;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black text-white">
+  <!-- Navigation -->
+  <nav class="container mx-auto px-4 py-6">
+    <div class="flex flex-col md:flex-row items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2 mb-4 md:mb-0">
+        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+          <span class="text-black font-bold text-xl">S</span>
+        </div>
+        <span class="font-bold text-xl">SecureVault</span>
+      </div>
+      
+      <!-- Center Nav Items -->
+      <div class="flex items-center space-x-8 mb-4 md:mb-0">
+        <a href="#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+        <a href="#security" class="text-gray-300 hover:text-white transition-colors">Security</a>
+        <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+      </div>
+      
+      <!-- Right Side - GitHub & CTA -->
+      <div class="flex items-center space-x-4">
+        <a href="https://github.com/yourusername/securevault" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <button class="border border-white text-white hover:bg-white hover:text-black transition-colors px-4 py-2 rounded-md">
+          Get Started
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="container mx-auto px-4 py-24 flex flex-col items-center text-center">
+    <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+      Your data, <span class="text-gray-400">secured</span>
+    </h1>
+    <p class="text-xl text-gray-400 max-w-2xl mb-10">
+      End-to-end encrypted storage for your passwords, emails, and confidential data. Simple, secure, and open source.
+    </p>
+    <div class="flex space-x-4">
+      <button class="bg-white text-black hover:bg-gray-200 px-8 py-6 rounded-md">Start Securing Your Data</button>
+      <button class="border border-white text-white hover:bg-white hover:text-black px-8 py-6 rounded-md">
+        View on GitHub
+      </button>
+    </div>
+    <div class="mt-16 relative w-full max-w-4xl">
+      <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
+      <img
+        src="https://placehold.co/1200x675/111111/FFFFFF/png?text=SecureVault+Dashboard"
+        alt="SecureVault Dashboard Preview"
+        class="w-full h-auto rounded-lg border border-gray-800 shadow-2xl"
+      />
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="bg-gray-900 py-24">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-16 text-center">Key Features</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <!-- Feature Card 1 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 7h-3a2 2 0 0 1-2-2V2"></path>
+              <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path>
+              <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Project Organization</h3>
+          <p class="text-gray-400">Create multiple projects to organize different types of credentials. Keep work, personal, and family passwords separate.</p>
+        </div>
+        
+        <!-- Feature Card 2 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">All Credential Types</h3>
+          <p class="text-gray-400">Store any type of sensitive information: passwords, API keys, credit cards, banking details, Wi-Fi credentials, and more.</p>
+        </div>
+        
+        <!-- Feature Card 3 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">End-to-End Encryption</h3>
+          <p class="text-gray-400">Your data is encrypted on your device before it reaches our servers. Only you have the keys to decrypt your information.</p>
+        </div>
+        
+        <!-- Feature Card 4 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Secure Sharing</h3>
+          <p class="text-gray-400">Share credentials with team members or family without compromising security. Control access and revoke at any time.</p>
+        </div>
+        
+        <!-- Feature Card 5 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Breach Alerts</h3>
+          <p class="text-gray-400">Get notified if your credentials appear in data breaches. Stay one step ahead of potential security threats.</p>
+        </div>
+        
+        <!-- Feature Card 6 -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors">
+          <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Cross-Platform Access</h3>
+          <p class="text-gray-400">Access your credentials from any device. Our platform works seamlessly across desktop, mobile, and browser extensions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security Section -->
+  <section id="security" class="py-24">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0 md:pr-10">
+          <h2 class="text-4xl font-bold mb-6">Bank-Level Security</h2>
+          <p class="text-gray-400 mb-6">
+            Your data is encrypted using AES-256, the same encryption standard used by governments and financial institutions worldwide.
+          </p>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">End-to-end encryption ensures your data is encrypted before it leaves your device</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Zero-knowledge architecture means we never see your unencrypted data</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Two-factor authentication adds an extra layer of security</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Open source code allows security experts to verify our claims</p>
+            </li>
+          </ul>
+        </div>
+        <div class="md:w-1/2">
+          <div class="relative">
+            <div class="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-lg blur opacity-30"></div>
+            <div class="relative bg-gray-900 p-8 rounded-lg border border-gray-800">
+              <pre class="text-sm text-gray-400 overflow-x-auto">
+                <code>// Client-side encryption
+const encryptData = async (data, userKey) => {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encryptionKey = await deriveKey(userKey);
+  
+  const encryptedData = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    encryptionKey,
+    new TextEncoder().encode(JSON.stringify(data))
+  );
+  
+  return {
+    iv: arrayBufferToBase64(iv),
+    data: arrayBufferToBase64(encryptedData)
+  };
+};</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section - UPDATED -->
+  <section id="pricing" class="bg-gray-900 py-24">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-16 text-center">Simple, Transparent Pricing</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <!-- Free Plan -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors flex flex-col">
+          <h3 class="text-xl font-bold mb-2">Free</h3>
+          <div class="text-4xl font-bold mb-1">$0</div>
+          <p class="text-gray-400 mb-6">Forever</p>
+          <ul class="space-y-3 mb-8 flex-grow">
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Up to 50 credentials</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Basic breach alerts</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">End-to-end encryption</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Access on 2 devices</p>
+            </li>
+          </ul>
+          <button class="border border-white text-white hover:bg-white hover:text-black transition-colors py-2 rounded-md w-full">
+            Get Started
+          </button>
+        </div>
+        
+        <!-- Pro Plan - Coming Soon -->
+        <div class="bg-black p-8 rounded-lg border border-white hover:border-gray-300 transition-colors flex flex-col relative transform scale-105">
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-black px-4 py-1 rounded-full text-sm font-bold">
+            Coming Soon
+          </div>
+          <h3 class="text-xl font-bold mb-2">Pro</h3>
+          <div class="text-4xl font-bold mb-1">$4.99</div>
+          <p class="text-gray-400 mb-6">per month</p>
+          <ul class="space-y-3 mb-8 flex-grow">
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Unlimited credentials</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Advanced breach monitoring</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Secure sharing with 5 users</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Access on unlimited devices</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Priority support</p>
+            </li>
+          </ul>
+          <button class="bg-gray-700 text-gray-300 cursor-not-allowed py-2 rounded-md w-full">
+            Coming Soon
+          </button>
+        </div>
+        
+        <!-- Self-Host Option -->
+        <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors flex flex-col">
+          <h3 class="text-xl font-bold mb-2">Self-Hosted</h3>
+          <div class="text-4xl font-bold mb-1">Free</div>
+          <p class="text-gray-400 mb-6">Open Source</p>
+          <ul class="space-y-3 mb-8 flex-grow">
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">All Pro features included</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Full control over your data</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Host on your own infrastructure</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Customize to your needs</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 text-white">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="text-gray-400">Community support</p>
+            </li>
+          </ul>
+          <a href="https://github.com/yourusername/securevault" target="_blank" rel="noopener noreferrer" class="border border-white text-white hover:bg-white hover:text-black transition-colors py-2 rounded-md w-full text-center">
+            View on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works - Improved Section -->
+  <section id="how-it-works" class="py-24">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-16 text-center">How It Works</h2>
+      
+      <div class="relative max-w-5xl mx-auto">
+        <!-- Connection Line -->
+        <div class="hidden md:block absolute top-24 left-0 right-0 h-0.5 bg-gray-800 z-0"></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Step 1 -->
+          <div class="relative z-10">
+            <div class="flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center mb-6 border border-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-center">Sign Up</h3>
+              <p class="text-gray-400 text-center">Create your account with a strong master password that only you know.</p>
+            </div>
+          </div>
+          
+          <!-- Step 2 -->
+          <div class="relative z-10">
+            <div class="flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center mb-6 border border-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-center">Create Your Vault</h3>
+              <p class="text-gray-400 text-center">Set up your secure vault with customized organization for your credentials.</p>
+            </div>
+          </div>
+          
+          <!-- Step 3 -->
+          <div class="relative z-10">
+            <div class="flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center mb-6 border border-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 11.08V8l-6-6H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h6"></path>
+                  <path d="M14 3v5h5M18 21v-6M15 18h6"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-center">Add Credentials</h3>
+              <p class="text-gray-400 text-center">Store passwords, documents, and sensitive information in your encrypted vault.</p>
+            </div>
+          </div>
+          
+          <!-- Step 4 -->
+          <div class="relative z-10">
+            <div class="flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center mb-6 border border-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-center">Access Anywhere</h3>
+              <p class="text-gray-400 text-center">Securely access your data from any device, whenever and wherever you need it.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Additional Details -->
+        <div class="mt-20 bg-black p-8 rounded-lg border border-gray-800">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-xl font-bold mb-4">Seamless Experience</h3>
+              <p class="text-gray-400 mb-4">Our intuitive interface makes managing your credentials simple and efficient. The browser extension automatically fills in your login details, while the mobile app gives you access on the go.</p>
+              <ul class="space-y-2">
+                <li class="flex items-start">
+                  <div class="mr-3 mt-1 text-white">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <p class="text-gray-400">Auto-fill passwords in your browser</p>
+                </li>
+                <li class="flex items-start">
+                  <div class="mr-3 mt-1 text-white">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <p class="text-gray-400">Biometric authentication on mobile</p>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-4">Security First</h3>
+              <p class="text-gray-400 mb-4">Your master password never leaves your device. We use a zero-knowledge architecture, meaning we can't access your data even if we wanted to.</p>
+              <ul class="space-y-2">
+                <li class="flex items-start">
+                  <div class="mr-3 mt-1 text-white">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <p class="text-gray-400">AES-256 encryption standard</p>
+                </li>
+                <li class="flex items-start">
+                  <div class="mr-3 mt-1 text-white">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 8.00002L7 10L11 6.00002" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <p class="text-gray-400">Automatic session timeouts</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-4xl font-bold mb-6">Ready to secure your digital life?</h2>
+      <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
+        Join thousands of users who trust SecureVault with their most sensitive information.
+      </p>
+      <button class="bg-white text-black hover:bg-gray-200 px-8 py-6 text-lg rounded-md">Get Started for Free</button>
+      <p class="mt-6 text-gray-500">No credit card required. Open source forever.</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 py-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-6 md:mb-0">
+          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+            <span class="text-black font-bold text-xl">S</span>
+          </div>
+          <span class="font-bold text-xl">SecureVault</span>
+        </div>
+        <div class="flex flex-wrap justify-center space-x-6 mb-6 md:mb-0">
+          <a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a>
+          <a href="#security" class="text-gray-400 hover:text-white transition-colors">Security</a>
+          <a href="#pricing" class="text-gray-400 hover:text-white transition-colors">Pricing</a>
+          <a href="#how-it-works" class="text-gray-400 hover:text-white transition-colors">How It Works</a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+        </div>
+        <div class="flex space-x-4">
+          <a
+            href="https://github.com/yourusername/securevault"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-500">
+        <p>© <script>document.write(new Date().getFullYear())</script> SecureVault. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
