@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.api_keys.schema import UpdateApiKey, AddApiKey
+from app.api.v1.web.secrets.api_keys.schema import UpdateApiKey, AddApiKey
 from app.api.v1.web.secrets.services import (
     delete_secret,
     update_secret,

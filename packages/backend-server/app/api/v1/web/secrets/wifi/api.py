@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.emails.schema import UpdateEmail, AddEmail
+from app.api.v1.web.secrets.wifi.schema import UpdateWifi, AddWifi
 from app.api.v1.web.secrets.services import (
     delete_secret,
     update_secret,
@@ -9,14 +9,14 @@ from app.api.v1.web.secrets.services import (
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import EMAIL_DETAILS, EMAILS
-from app.utils.constants import SECRET_TYPE_EMAIL as data_type
+from app.api.v1.web.route_constants import WIFI_DETAILS, WIFI
+from app.utils.constants import SECRET_TYPE_WIFI as data_type
 
 router = APIRouter()
 
 
-@router.get(EMAILS)
-async def get_email_api(
+@router.get(WIFI)
+async def get_wifi_api(
     request: Request,
     workspace_id: str,
     project_id: str,
@@ -25,12 +25,12 @@ async def get_email_api(
     return await get_secrets(request, user, data_type)
 
 
-@router.post(EMAILS)
-async def create_emails_api(
+@router.post(WIFI)
+async def create_wifi_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: AddEmail,
+    payload: AddWifi,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -39,13 +39,13 @@ async def create_emails_api(
     )
 
 
-@router.put(EMAIL_DETAILS)
-async def update_email_api(
+@router.put(WIFI_DETAILS)
+async def update_wifi_api(
     request: Request,
     workspace_id: str,
     project_id: str,
     doc_id: str,
-    payload: UpdateEmail,
+    payload: UpdateWifi,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -54,8 +54,8 @@ async def update_email_api(
     )
 
 
-@router.delete(EMAIL_DETAILS)
-async def delete_email_api(
+@router.delete(WIFI_DETAILS)
+async def delete_wifi_api(
     request: Request,
     workspace_id: str,
     project_id: str,

@@ -1,22 +1,27 @@
-from fastapi import APIRouter, Request, Depends, BackgroundTasks
-
-from app.api.v1.web.licenses.schema import UpdateLicense, AddLicense
+from fastapi import APIRouter, Depends, BackgroundTasks, Request
 from app.api.v1.web.secrets.services import (
-    delete_secret,
-    update_secret,
-    add_secret,
     get_secrets,
+    add_secret,
+    update_secret,
+    delete_secret,
+)
+from app.api.v1.web.secrets.wallet_phrases.schema import (
+    WalletPhrase,
+    UpdateWalletPhrase,
 )
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.route_constants import LICENSE_DETAILS, LICENSE
-from app.utils.constants import SECRET_TYPE_LICENSE as data_type
+from app.api.v1.web.route_constants import (
+    WALLET_PHRASES,
+    WALLET_PHRASE_DETAILS,
+)
+from app.utils.constants import SECRET_TYPE_WALLET_PHRASE as data_type
 
 router = APIRouter()
 
 
-@router.get(LICENSE)
-async def get_license_api(
+@router.get(WALLET_PHRASES)
+async def get_wallet_phrases_api(
     request: Request,
     workspace_id: str,
     project_id: str,
@@ -25,12 +30,12 @@ async def get_license_api(
     return await get_secrets(request, user, data_type)
 
 
-@router.post(LICENSE)
-async def create_license_api(
+@router.post(WALLET_PHRASES)
+async def create_wallet_phrase_api(
     request: Request,
     workspace_id: str,
     project_id: str,
-    payload: AddLicense,
+    payload: WalletPhrase,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -39,13 +44,13 @@ async def create_license_api(
     )
 
 
-@router.put(LICENSE_DETAILS)
-async def update_license_api(
+@router.put(WALLET_PHRASE_DETAILS)
+async def update_wallet_phrase_api(
     request: Request,
     workspace_id: str,
     project_id: str,
     doc_id: str,
-    payload: UpdateLicense,
+    payload: UpdateWalletPhrase,
     background_tasks: BackgroundTasks,
     user: UserDetails = Depends(get_current_user),
 ):
@@ -54,8 +59,8 @@ async def update_license_api(
     )
 
 
-@router.delete(LICENSE_DETAILS)
-async def delete_license_api(
+@router.delete(WALLET_PHRASE_DETAILS)
+async def delete_wallet_phrase_api(
     request: Request,
     workspace_id: str,
     project_id: str,

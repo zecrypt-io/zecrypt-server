@@ -301,7 +301,6 @@
     "ssh_keys": "SSH Keys",
     "project_required_title": "Project Required",
     "project_required_description": "Please create your first project to continue.",
-    "cancel": "Cancel",
     "no_projects_available": "No projects available"
   },
   "activity": {

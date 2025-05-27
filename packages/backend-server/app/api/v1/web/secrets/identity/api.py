@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.identity.schema import (
+from app.api.v1.web.secrets.identity.schema import (
     UpdateIdentity,
     AddIdentity,
 )

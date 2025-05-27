@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.accounts.schema import AddAccount, UpdateAccount
+from app.api.v1.web.secrets.accounts.schema import AddAccount, UpdateAccount
 from app.api.v1.web.secrets.services import (
     get_secrets,
     add_secret,

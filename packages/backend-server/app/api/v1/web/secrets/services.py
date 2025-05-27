@@ -21,12 +21,9 @@ async def get_secrets(request, user, data_type):
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
     }
+    secrets = secrets_manager.find(db, query)
 
-    cards = secrets_manager.find(db, query)
-
-    return response_helper(
-        200, translate(f"{data_type}.list"), data=cards, count=len(cards)
-    )
+    return response_helper(200, translate(f"{data_type}.list"), data=secrets, count=len(secrets))
 
 
 async def add_secret(request, user, data_type, payload, background_tasks):
@@ -41,11 +38,8 @@ async def add_secret(request, user, data_type, payload, background_tasks):
         "secret_type": data_type,
     }
 
-    card = secrets_manager.find_one(
-        db,
-        query,
-    )
-    if card:
+    secrets = secrets_manager.find_one(db,query,)
+    if secrets:
         return response_helper(400, translate(f"{data_type}.already_exists"))
 
     payload.update(
@@ -75,7 +69,7 @@ async def update_secret(request, user, data_type, payload, background_tasks):
         lower_title = payload["title"].strip().lower()
         payload["lower_title"] = lower_title
 
-        existing_account = secrets_manager.find_one(
+        existing_details = secrets_manager.find_one(
             db,
             {
                 "project_id": project_id,
@@ -84,10 +78,10 @@ async def update_secret(request, user, data_type, payload, background_tasks):
                 "secret_type": data_type,
             },
         )
-        if existing_account:
+        if existing_details:
             return response_helper(400, translate(f"{data_type}.already_exists"))
 
-    # Update account
+    # Update details
     secrets_manager.update_one(
         db,
         {"doc_id": doc_id},

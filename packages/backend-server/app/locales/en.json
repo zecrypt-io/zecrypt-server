@@ -80,6 +80,15 @@
         "already_exists": "SSH Key details with same name already exists",
         "list": "SSH Keys loaded successfully"
     },
+    "note": {
+        "add": "Note added successfully",
+        "update": "Note details updated successfully",
+        "delete": "Note details deleted successfully",
+        "details": "Note details loaded successfully",
+        "not_found": "Note details not found",
+        "already_exists": "Note details with same name already exists",
+        "list": "Notes loaded successfully"
+    },
     "health": {
         "status": "OK"
     },
@@ -118,7 +127,12 @@
         "keys_updated": "Keys updated successfully",
         "user_details_not_found": "User details not found",
         "user_logged_out": "User logged out successfully",
-        "authentication_failed": "Authentication failed, Please try again"
+        "authentication_failed": "Authentication failed, Please try again",
+        "invalid_credentials": "Invalid credentials, Please try again",
+        "invalid_totp_code": "Invalid TOTP code, Please try again",
+        "invalid_totp_secret": "Invalid TOTP secret, Please try again",
+        "something_went_wrong": "Something went wrong, Please try again",
+        "invalid_header": "Invalid header, Please try again"
     },
     "audit_logs":{
         "audit_logs_fetched": "Audit logs loaded successfully",
