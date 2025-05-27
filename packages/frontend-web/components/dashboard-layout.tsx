@@ -270,11 +270,11 @@ const featureMenuItems: {
         strokeLinejoin="round"
         className="h-4 w-4"
       >
-        <path d="M15 11h.01" />
-        <path d="M11 15h.01" />
-        <path d="M16 16h.01" />
-        <path d="m2 16 20 6-6-20A20 20 0 0 0 2 16" />
-        <path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4" />
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <circle cx="10.5" cy="10.5" r="2" />
+        <path d="M10.5 12.5L16 18" />
+        <path d="M7 15h4" />
+        <path d="M5 8l2 2" />
       </svg>
     ),
   },
