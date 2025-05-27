@@ -13,6 +13,7 @@ interface UserData {
 
 interface UserState {
   userData: UserData | null;
+  authError: boolean; // Add new state property to indicate auth error
 }
 
 const initialState: UserState = {
@@ -26,6 +27,7 @@ const initialState: UserState = {
     locale: null, // Changed from language to locale
     is_2fa_enabled: false,
   },
+  authError: false, // Initialize authError to false
 };
 
 const userSlice = createSlice({
@@ -41,13 +43,19 @@ const userSlice = createSlice({
           (state.userData as any)[key] = value;
         }
       });
+      state.authError = false; // Clear auth error on successful data set
     },
     clearUserData: (state) => {
       state.userData = initialState.userData;
+      state.authError = false; // Clear auth error on manual logout
+    },
+    setAuthError: (state) => {
+      state.authError = true; // Set auth error on 401 from interceptor
+      state.userData = initialState.userData; // Clear user data immediately on auth error
     },
   },
 });
 
-export const { setUserData, clearUserData } = userSlice.actions;
+export const { setUserData, clearUserData, setAuthError } = userSlice.actions;
 export default userSlice.reducer;
 export type { UserState, UserData };

@@ -48,6 +48,7 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
 import { useTranslator } from "@/hooks/use-translations";
+import { secureSetItem } from '@/libs/session-storage-utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -281,8 +282,13 @@ const featureMenuItems: {
 
 export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useUser();
+  const { translate } = useTranslator();
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
@@ -322,10 +328,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     "zh-Hant": "Chinese Traditional (繁體中文)",
   };
 
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const user = useUser();
-
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const selectedProject = useSelector((state: RootState) =>
@@ -359,20 +361,29 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleLogout = useCallback(async () => {
+  const handleLogout = async () => {
     try {
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
+      
+      dispatch(clearUserData());
+      dispatch(resetWorkspaceState());
+      
+      await secureSetItem("privateKey", "");
+      await secureSetItem("publicKey", "");
+      
+      localStorage.removeItem("userPublicKey");
+      localStorage.removeItem("zecrypt_device_id");
+      
       if (user) {
         await user.signOut();
       }
-      dispatch(resetWorkspaceState());
-      dispatch(clearUserData());
-      localStorage.clear(); 
-      sessionStorage.clear(); 
-      router.push(`/${currentLocale}`);
+      
+      router.replace(`/${locale}/login`);
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error("Logout error:", error);
+      router.replace(`/${locale}/login`);
     }
-  }, [user, dispatch, router, locale]);
+  };
 
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
@@ -470,8 +481,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     return nameA.localeCompare(nameB);
   });
 
-  const { translate } = useTranslator();
-
   const enabledMenuItems = displayProject
     ? featureMenuItems.filter((item) => normalizedFeatures[item.key]?.enabled)
     : [];
@@ -506,7 +515,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
                 variant="outline"
                 className="w-full justify-between"
                 onClick={() => setShowProjectDialog(true)}
-                disabled={!selectedWorkspaceId} // Disable if no workspace is selected
+                disabled={!selectedWorkspaceId}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
