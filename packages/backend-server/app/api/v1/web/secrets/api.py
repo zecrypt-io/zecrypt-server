@@ -10,6 +10,7 @@ from app.api.v1.web.secrets.licenses import api as licenses_router
 from app.api.v1.web.secrets.ssh_keys import api as ssh_keys_router
 from app.api.v1.web.secrets.notes import api as notes_router
 from app.api.v1.web.secrets.password_history import api as password_history_router
+
 secrets_router = APIRouter()
 
 
