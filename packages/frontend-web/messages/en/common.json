@@ -201,7 +201,12 @@
     "incorrect_encryption_password": "Incorrect master password. Please try again.",
     "multi_device_login": "Login from New Device",
     "multi_device_desc": "You're logging in from a new device. Please enter your master password to access your encrypted data.",
-    "authenticating": "Authenticating..."
+    "authenticating": "Authenticating...",
+    "welcome_to": "Welcome To Polymerize Labs",
+    "dont_have_account": "Don't have an account?",
+    "privacy_policy": "Privacy Policy",
+    "terms_and_conditions": "Terms & Conditions",
+    "service_status": "Service Status"
   },
   "features": {
     "trial_title": "Your all-in-one password manager",
