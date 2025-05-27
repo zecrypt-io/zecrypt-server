@@ -26,7 +26,7 @@ def find_one_and_update(db, query, update_query, return_document=True):
     details = db_manager.find_one_and_update(
         db, collection_name, query, update_query, return_document=return_document
     )
-    details.pop("_id")
+    details.pop("_id", None)
     return details
 
 
