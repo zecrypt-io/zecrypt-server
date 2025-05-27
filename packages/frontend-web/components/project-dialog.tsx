@@ -239,11 +239,10 @@ const featureMenuItems: {
         strokeLinejoin="round"
         className="h-4 w-4"
       >
-        <rect x="2" y="4" width="20" height="16" rx="2" />
-        <circle cx="10.5" cy="10.5" r="2" />
-        <path d="M10.5 12.5L16 18" />
-        <path d="M7 15h4" />
-        <path d="M5 8l2 2" />
+        <circle cx="8" cy="8" r="4" />
+        <path d="M10.5 8h9.5" />
+        <path d="M15 12V8" />
+        <path d="M17 12V8" />
       </svg>
     ),
   },
