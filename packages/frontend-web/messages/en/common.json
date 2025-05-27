@@ -298,6 +298,7 @@
     "software_licenses_coming_soon": "Software Licenses module is under development.",
     "wifi_coming_soon": "Wi-Fi module is under development.",
     "email":"E-Mail",
+    "ssh_keys": "SSH Keys",
     "project_required_title": "Project Required",
     "project_required_description": "Please create your first project to continue.",
     "cancel": "Cancel",

@@ -49,6 +49,8 @@ const defaultFeatures = {
   identity: { enabled: true, is_client_side_encryption: false },
   card: { enabled: false, is_client_side_encryption: false },
   software_license: { enabled: false, is_client_side_encryption: false },
+  email: { enabled: false, is_client_side_encryption: false },
+  ssh_key: { enabled: false, is_client_side_encryption: false }
 };
 
 // Define featureMenuItems to include icons for each module
@@ -195,6 +197,53 @@ const featureMenuItems: {
         <path d="M15 3h6v6" />
         <path d="M10 14 21 3" />
         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      </svg>
+    ),
+  },
+  {
+    key: "email",
+    labelKey: "email",
+    path: "/dashboard/emails",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <rect width="20" height="16" x="2" y="4" rx="2" />
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      </svg>
+    ),
+  },
+  {
+    key: "ssh_key",
+    labelKey: "ssh_keys",
+    path: "/dashboard/ssh-keys",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M15 11h.01" />
+        <path d="M11 15h.01" />
+        <path d="M16 16h.01" />
+        <path d="m2 16 20 6-6-20A20 20 0 0 0 2 16" />
+        <path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4" />
       </svg>
     ),
   },
@@ -670,6 +719,8 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
     { key: "identity", label: "Identity" },
     { key: "card", label: "Cards" },
     { key: "software_license", label: "Software Licenses" },
+    { key: "email", label: "Email Accounts" },
+    { key: "ssh_key", label: "SSH Keys" }
   ] as const;
 
   type FeatureKey = typeof featureOptions[number]["key"];

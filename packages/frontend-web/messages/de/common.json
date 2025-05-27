@@ -171,6 +171,7 @@
     "software_licenses": "Software-Lizenzen",
     "wifi": "WLAN",
     "email":"E-Mail",
+    "ssh_keys": "SSH-Schlüssel",
     "no_projects_available": "Keine Projekte verfügbar"
   },
   "activity": {
