@@ -578,12 +578,12 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
               <FeatureItem icon={<Globe size={16} />} text={features("multi_platform")} />
             </div>
             
-            <div className="mt-auto pt-4 border-t border-border/30">
+            {/* <div className="mt-auto pt-4 border-t border-border/30">
               <p className="text-xs text-muted-foreground">{features("looking_for_options")}</p>
               <Link href="#" className="text-xs theme-accent-text hover:underline">
                 {features("see_options")}
               </Link>
-            </div>
+            </div> */}
           </div>
           
           {/* Right side - Login component */}
