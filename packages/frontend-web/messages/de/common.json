@@ -162,6 +162,8 @@
     "error": "Fehler"
   },
   "dashboard": {
+    "project_limit_reached": "Projektlimit erreicht",
+    "alpha_one_project_limit": "Wir befinden uns derzeit in der Alpha-Phase, nur ein Projekt pro Workspace ist erlaubt.",
     "welcome_back": "Willkommen zurück in Ihrem sicheren Arbeitsbereich",
     "total_passwords": "Gesamte Passwörter",
     "total_accounts": "Gesamte Konten",

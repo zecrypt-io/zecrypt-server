@@ -223,6 +223,8 @@
     "error": "Error"
   },
   "dashboard": {
+    "project_limit_reached": "Project limit reached",
+    "alpha_one_project_limit": "We are currently running on alpha, only one project is allowed per workspace.",
     "select_project": "Select Projects",
     "manage_projects": "Manage projects",
     "select_or_create_project": "Select or create a project",
