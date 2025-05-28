@@ -480,7 +480,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     <div className="flex min-h-screen bg-background">
       <CommandPalette />
 
-      <div className="hidden md:flex w-64 flex-col border-r border-border">
+      <div className="hidden md:flex flex-col w-64 border-r border-border bg-card">
         <div className="flex h-14 items-center border-b border-border px-4">
           <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
             <Lock className="h-5 w-5" />
@@ -498,7 +498,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto py-2">
+        <div className="flex flex-col flex-grow overflow-auto py-2">
           <div className="px-3 py-2">
             <div className="mb-4">
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
@@ -594,60 +594,43 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div> */}
 
-        {/* <div className="mt-auto border-t border-border">
-          <div className="px-3 py-2">
-            <Link
-              href={`/${currentLocale}/dashboard/notifications`}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                pathname === `/${currentLocale}/dashboard/notifications`
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              <Bell className="h-4 w-4" />
-              {translate("notifications", "dashboard")}
-              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                4
-              </span>
-            </Link>
-          </div> */}
-
-          <div className="p-3 border-t border-border">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
-                    <AvatarFallback>
-                      {user?.displayName
-                        ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
-                        : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
+          <div className="mt-auto border-t border-border">
+            <div className="p-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
+                      <AvatarFallback>
+                        {user?.displayName
+                          ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
+                    </div>
+                    <ChevronDown className="ml-auto h-4 w-4" />
                   </div>
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={`/${currentLocale}/dashboard/user-settings`}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>{translate("settings", "dashboard")}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{translate("logout", "dashboard")}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={`/${currentLocale}/dashboard/user-settings`}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>{translate("settings", "dashboard")}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{translate("logout", "dashboard")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
@@ -731,7 +714,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
         </header>
 
         <main className="flex flex-1">
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 overflow-auto py-6">{children}</div>
         </main>
       </div>
 
