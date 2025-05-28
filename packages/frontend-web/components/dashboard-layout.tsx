@@ -283,13 +283,8 @@ const featureMenuItems: {
 
 export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const user = useUser();
-  const { translate } = useTranslator();
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
-  const [showUserProfile, setShowUserProfile] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
@@ -330,6 +325,10 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     "zh-Hant": "Chinese Traditional (繁體中文)",
   };
 
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useUser();
+
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const selectedProject = useSelector((state: RootState) =>
@@ -363,29 +362,20 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
-      
-      dispatch(clearUserData());
-      dispatch(resetWorkspaceState());
-      
-      await secureSetItem("privateKey", "");
-      await secureSetItem("publicKey", "");
-      
-      localStorage.removeItem("userPublicKey");
-      localStorage.removeItem("zecrypt_device_id");
-      
       if (user) {
         await user.signOut();
       }
-      
-      router.replace(`/${locale}/login`);
+      dispatch(resetWorkspaceState());
+      dispatch(clearUserData());
+      localStorage.clear(); 
+      sessionStorage.clear(); 
+      router.push(`/${currentLocale}`);
     } catch (error) {
-      console.error("Logout error:", error);
-      router.replace(`/${locale}/login`);
+      console.error("Error during logout:", error);
     }
-  };
+  }, [user, dispatch, router, locale]);
 
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
@@ -487,6 +477,8 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     return nameA.localeCompare(nameB);
   });
 
+  const { translate } = useTranslator();
+
   const enabledMenuItems = displayProject
     ? featureMenuItems.filter((item) => normalizedFeatures[item.key]?.enabled)
     : [];
@@ -494,7 +486,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   return (
     <div className="flex min-h-screen bg-background">
       <CommandPalette />
-
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
@@ -521,7 +512,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto py-2 flex flex-col">
+        <div className="flex flex-col flex-grow overflow-auto py-2">
           <div className="px-3 py-2">
             <div className="mb-4">
               <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
@@ -529,7 +520,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
                 variant="outline"
                 className="w-full justify-between"
                 onClick={() => setShowProjectDialog(true)}
-                disabled={!selectedWorkspaceId}
+                disabled={!selectedWorkspaceId} // Disable if no workspace is selected
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
@@ -617,60 +608,43 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           </div>
         </div> */}
 
-        {/* <div className="mt-auto border-t border-border">
-          <div className="px-3 py-2">
-            <Link
-              href={`/${currentLocale}/dashboard/notifications`}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                pathname === `/${currentLocale}/dashboard/notifications`
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              <Bell className="h-4 w-4" />
-              {translate("notifications", "dashboard")}
-              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                4
-              </span>
-            </Link>
-          </div> */}
-
-          <div className="p-3 border-t border-border mt-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
-                    <AvatarFallback>
-                      {user?.displayName
-                        ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
-                        : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
+          <div className="mt-auto border-t border-border">
+            <div className="p-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
+                      <AvatarFallback>
+                        {user?.displayName
+                          ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
+                    </div>
+                    <ChevronDown className="ml-auto h-4 w-4" />
                   </div>
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={`/${currentLocale}/dashboard/user-settings`}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>{translate("settings", "dashboard")}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{translate("logout", "dashboard")}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={`/${currentLocale}/dashboard/user-settings`}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>{translate("settings", "dashboard")}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{translate("logout", "dashboard")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
@@ -756,12 +730,13 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
         </header>
 
         <main className="flex flex-1">
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 overflow-auto py-6">{children}</div>
         </main>
       </div>
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
+      <KeyboardShortcutsHelp />
     </div>
   );
 }

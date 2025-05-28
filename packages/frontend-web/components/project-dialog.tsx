@@ -258,6 +258,8 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(workspaces[0]?.projects.length === 0);
   const [error, setError] = useState<string | null>(null);
+  const [projectLimitError, setProjectLimitError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const projects = Array.isArray(workspaces) && selectedWorkspaceId
     ? workspaces
@@ -277,6 +279,8 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
           },
         })) || []
     : [];
+  
+  const hasExistingProjects = projects.length > 0;
 
   useEffect(() => {
     if (forceCreate && projects.length === 0) {
@@ -301,6 +305,19 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
   const handleEditProject = (projectId: string) => {
     setLocalSelectedProject(projectId);
     setShowEditDialog(true);
+  };
+  
+  const handleCreateProjectClick = () => {
+    // Clear any previous error message
+    setProjectLimitError(null);
+    
+    if (hasExistingProjects) {
+      setProjectLimitError(translate("alpha_one_project_limit", "dashboard") || "During the alpha phase, only one project is allowed per workspace.");
+      return;
+    }
+    
+    setActiveTab("manage");
+    setShowCreateDialog(true);
   };
 
   const { translate } = useTranslator();
@@ -332,17 +349,19 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
           )}
 
           <TabsContent value="select" className="space-y-4 py-4">
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 py-6 border-dashed"
-              onClick={() => {
-                setActiveTab("manage");
-                setShowCreateDialog(true);
-              }}
-            >
-              <Plus className="h-5 w-5" />
-              <span>{translate("create_new_project", "dashboard")}</span>
-            </Button>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 py-6 border-dashed"
+                onClick={handleCreateProjectClick}
+              >
+                <Plus className="h-5 w-5" />
+                <span>{translate("create_new_project", "dashboard")}</span>
+              </Button>
+              {projectLimitError && activeTab === "select" && (
+                <p className="text-sm text-red-500 mt-2">{projectLimitError}</p>
+              )}
+            </div>
 
             <div className="space-y-2">
               {projects.length === 0 ? (
@@ -421,14 +440,19 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
               )}
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => setShowCreateDialog(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>{translate("create_new_project", "dashboard")}</span>
-            </Button>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+                onClick={handleCreateProjectClick}
+              >
+                <Plus className="h-4 w-4" />
+                <span>{translate("create_new_project", "dashboard")}</span>
+              </Button>
+              {projectLimitError && activeTab === "manage" && (
+                <p className="text-sm text-red-500 mt-2">{projectLimitError}</p>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
