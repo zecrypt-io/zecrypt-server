@@ -210,6 +210,14 @@ export function AccountsContent() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => setShowGeneratePassword(true)}
+          >
+            <Key className="h-4 w-4" />
+            {translate("generate_password", "accounts")}
+          </Button>
           <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
             <Plus className="h-4 w-4" />
             {translate("add_account", "accounts")}

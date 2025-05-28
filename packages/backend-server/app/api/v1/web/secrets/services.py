@@ -17,11 +17,18 @@ async def get_secret_details(db, data_type, doc_id):
 
 async def get_secrets(request, user, data_type):
     db = user.get("db")
+    page = request.query_params.get("page", None)
+    limit = request.query_params.get("limit", None)
+
     query = {
         "secret_type": data_type,
         "project_id": request.path_params.get("project_id"),
     }
-    secrets = secrets_manager.find(db, query)
+    if page and limit:
+        skip = (page - 1) * limit
+        secrets = secrets_manager.find(db, query, skip=skip, limit=limit)
+    else:
+        secrets = secrets_manager.find(db, query)
 
     return response_helper(200, translate(f"{data_type}.list"), data=secrets, count=len(secrets))
 

@@ -43,6 +43,9 @@ SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
 NOTES = BASE_URL + "/notes"
 NOTE_DETAILS = BASE_URL + "/notes/{doc_id}"
 
+# Password History
+PASSWORD_HISTORY = "/password-history"
+
 # Login
 LOGIN = "/login"
 LOGOUT = "/logout"
