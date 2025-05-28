@@ -49,6 +49,7 @@ import { clearUserData } from "@/libs/Redux/userSlice";
 import { useUser } from "@stackframe/stack";
 import { useTranslator } from "@/hooks/use-translations";
 import { secureSetItem } from '@/libs/session-storage-utils';
+import { SearchModal } from "@/components/search-modal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -293,6 +294,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   const languageLabels: Record<string, string> = {
     af: "Afrikaans",
@@ -409,11 +411,13 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     const handleProjectDialog = () => setShowProjectDialog(true);
     const handleSearchFocus = () => searchInputRef.current?.focus();
     const handleThemeToggle = () => document.dispatchEvent(new CustomEvent("toggle-theme-event"));
+    const handleOpenSearchModal = () => setShowSearchModal(true);
 
     document.addEventListener("toggle-generate-password", handleGeneratePassword);
     document.addEventListener("toggle-project-dialog", handleProjectDialog);
     document.addEventListener("toggle-search-focus", handleSearchFocus);
     document.addEventListener("toggle-theme", handleThemeToggle);
+    document.addEventListener("open-search-modal", handleOpenSearchModal);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -433,6 +437,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       switch (e.key.toLowerCase()) {
         case "k":
+          setShowSearchModal(true);
           break;
         case "g":
           setShowGeneratePassword(true);
@@ -471,6 +476,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       document.removeEventListener("toggle-project-dialog", handleProjectDialog);
       document.removeEventListener("toggle-search-focus", handleSearchFocus);
       document.removeEventListener("toggle-theme", handleThemeToggle);
+      document.removeEventListener("open-search-modal", handleOpenSearchModal);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [router, currentLocale, handleLogout]);
@@ -488,6 +494,14 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   return (
     <div className="flex min-h-screen bg-background">
       <CommandPalette />
+
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        modules={enabledMenuItems}
+        locale={currentLocale}
+        onSelectModule={(path) => router.push(`/${currentLocale}${path}`)}
+      />
 
       <div className="hidden md:flex w-64 flex-col border-r border-border">
         <div className="flex h-14 items-center border-b border-border px-4">
@@ -676,6 +690,8 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
                   type="search"
                   placeholder={translate("search", "dashboard")}
                   className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  onClick={() => setShowSearchModal(true)}
+                  readOnly
                 />
                 <kbd className="pointer-events-none absolute right-2.5 top-2.5 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
                   ⌘K

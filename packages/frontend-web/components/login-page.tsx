@@ -587,7 +587,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       </div>
 
       {/* Increased max-w for a wider card, added shadow-lg for more depth and rounded corners */}
-      <div className="w-full max-w-6xl bg-card shadow-lg rounded-xl overflow-hidden">
+      <div className="w-full max-w-6xl bg-card shadow-lg rounded-xl overflow-hidden dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]">
         {/* Used gap-10 for more horizontal spacing between columns, items-stretch for equal column height */}
         <div className="grid md:grid-cols-2 gap-10 items-stretch">
           {/* Left side - Feature highlights and footer links */}
@@ -615,17 +615,17 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
             {/* Moved footer links to left column, adjusted layout for responsiveness and spacing */}
             <div className="mt-auto pt-6 md:pt-8 border-t border-border/30 flex flex-col sm:flex-row justify-between text-xs text-muted-foreground space-y-2 sm:space-y-0 sm:space-x-4">
-              <Link href={`/${locale}/privacy-policy`} className="hover:underline">
+              <Link href={`/${locale}/legal/privacy`} className="hover:underline">
                 {t("privacy_policy")}
               </Link>
-              <Link href={`/${locale}/terms`} className="hover:underline">
+              <Link href={`/${locale}/legal/terms`} className="hover:underline">
                 {t("terms_and_conditions")}
               </Link>
               {/* Service status dot as seen in the image */}
-              <span className="flex items-center">
-                <span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-                {t("service_status")}
-              </span>
+              <a href="https://zecrypt.openstatus.dev/" target="_blank" rel="noopener noreferrer" className="flex items-center hover:underline">
+                 <span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>
+                 {t("service_status")}
+              </a>
             </div>
           </div>
 
@@ -641,7 +641,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
                 <SignIn
                   fullPage={false}
                   automaticRedirect={false}
-                  firstTab="password"
+                  firstTab="magic-link"
                   extraInfo={
                     // Kept agreement text; terms link is now in the left footer
                     <div className="text-center text-xs mt-4 text-muted-foreground">
