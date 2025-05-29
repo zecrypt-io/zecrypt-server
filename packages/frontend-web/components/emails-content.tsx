@@ -86,6 +86,8 @@ export function EmailsContent() {
     searchQuery,
     setSearchQuery,
     uniqueTags,
+    selectedTag,
+    setSelectedTag,
     sortConfig,
     setSortConfig,
     handleDeleteEmail: handleDeleteEmailFromHook,
@@ -193,40 +195,46 @@ export function EmailsContent() {
             placeholder={translate("search_email_accounts", "emails", { default: "Search email accounts..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <div className="col-span-1">
-          <Select
-            value={String(itemsPerPage)}
-            onValueChange={(value) => setItemsPerPage(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 {translate("per_page", "emails", { default: "per page" })}</SelectItem>
-              <SelectItem value="10">10 {translate("per_page", "emails", { default: "per page" })}</SelectItem>
-              <SelectItem value="20">20 {translate("per_page", "emails", { default: "per page" })}</SelectItem>
-              <SelectItem value="50">50 {translate("per_page", "emails", { default: "per page" })}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="col-span-1 flex space-x-2">
-          <SortButton
-            sortConfig={sortConfig}
-            onSortChange={setSortConfig}
-            namespace="emails"
-            options={[
-              { field: "title", label: translate("title", "emails", { default: "Title" }) },
-              { field: "email_address", label: translate("email_address", "emails", { default: "Email Address" }) }
-            ]}
-          />
-          <Button variant="outline" onClick={clearFilters} className="w-full">
-            <X className="mr-2 h-4 w-4" />
-            {translate("clear_filters", "emails", { default: "Clear filters" })}
+        <Select value={selectedTag || "all"} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "identity", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "identity", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SortButton
+          sortConfig={sortConfig}
+          onSortChange={setSortConfig}
+          namespace="emails"
+          options={[
+            { field: "title", label: translate("title", "emails", { default: "Title" }) },
+            { field: "email_address", label: translate("email_address", "emails", { default: "Email Address" }) }
+          ]}
+        />
+        {(searchQuery || selectedTag !== "all" || (sortConfig && sortConfig.key !== null)) && (
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
+            <X className="h-3 w-3 mr-1" />
+            {translate("clear", "emails", { default: "Clear" })}
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Email accounts table */}
