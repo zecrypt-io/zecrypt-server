@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAccountManagement } from "@/hooks/use-account-management";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface Account {
   doc_id: string;
@@ -63,15 +64,17 @@ export function AccountsContent() {
     isLoading,
     totalCount,
     currentPage,
-    setCurrentPage,
     totalPages,
     getPaginationRange,
     itemsPerPage,
     setItemsPerPage,
     searchQuery,
     setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteAccount: handleDeleteAccountFromHook,
     fetchAccounts,
     clearFilters,
@@ -81,7 +84,7 @@ export function AccountsContent() {
   } = useAccountManagement({
     selectedWorkspaceId,
     selectedProjectId,
-    initialItemsPerPage: 5
+    initialItemsPerPage: 10
   });
 
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -168,56 +171,70 @@ export function AccountsContent() {
 
   return (
     <div className="p-6">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
-        <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+        </div>
+        <Button className="flex items-center gap-2" onClick={() => setShowAddAccount(true)}>
+          <Plus className="h-4 w-4" />
+          {translate("add_account", "accounts")}
+        </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex flex-1 gap-4 w-full md:w-auto">
-          <div className="relative w-full md:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={translate("search", "accounts")}
-              className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+        <div className="relative col-span-1 md:col-span-2">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={translate("search_across_all_fields", "accounts", { default: "Search across all fields..." })}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
             >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder={translate("all_accounts", "accounts")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{translate("all_accounts", "accounts")}</SelectItem>
-                <SelectItem value="personal">{translate("personal", "accounts")}</SelectItem>
-                <SelectItem value="work">{translate("work", "accounts")}</SelectItem>
-                <SelectItem value="finance">{translate("finance", "accounts")}</SelectItem>
-                <SelectItem value="favorite">{translate("favorite", "accounts")}</SelectItem>
-              </SelectContent>
-            </Select>
-            {(searchQuery || selectedCategory !== "all") && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
-                <X className="h-4 w-4 mr-2" />
-                {translate("clear", "accounts")}
-              </Button>
-            )}
-          </div>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
-            <Plus className="h-4 w-4" />
-            {translate("add_account", "accounts")}
+        
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "accounts", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "accounts", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <SortButton 
+          sortConfig={sortConfig} 
+          onSortChange={setSortConfig} 
+          namespace="accounts"
+        />
+        
+        {(searchQuery || selectedTag !== 'all' || sortConfig) && (
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={clearFilters}
+          >
+            <X className="h-3 w-3 mr-1" />
+            {translate("clear_filters", "accounts", { default: "Clear Filters" })}
           </Button>
-        </div>
+        )}
       </div>
 
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden mt-6">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -388,8 +405,8 @@ export function AccountsContent() {
                       <Search className="h-10 w-10 text-muted-foreground/50" />
                       <h3 className="font-medium">{translate("no_accounts_found", "accounts")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {selectedCategory !== "all"
-                          ? translate("no_accounts_tag_specific", "accounts", { category: selectedCategory })
+                        {selectedTag !== "all"
+                          ? translate("no_accounts_tag_specific", "accounts", { category: selectedTag })
                           : searchQuery
                           ? translate("no_accounts_search_specific", "accounts", { searchQuery: searchQuery })
                           : translate("no_accounts_create", "accounts")
@@ -414,20 +431,6 @@ export function AccountsContent() {
               {translate("of", "accounts")} {totalCount} {translate("accounts", "accounts")}
             </div>
             <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "accounts")}</span>
-                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                  <SelectTrigger className="h-8 w-[70px]">
-                    <SelectValue placeholder={itemsPerPage.toString()} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage === 1}>
                 <ChevronsLeft className="h-4 w-4" />
               </Button>

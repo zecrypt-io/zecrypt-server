@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
 import { store } from '../Redux/store';
-import { clearUserData, setAuthError } from '../Redux/userSlice';
+import { clearUserData } from '../Redux/userSlice';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -44,8 +44,13 @@ axiosInstance.interceptors.response.use(
     if (axios.isAxiosError(error) && error.response) {
       const { status } = error.response;
       if (status === 401) {
-        store.dispatch(setAuthError());
-        console.error('Unauthorized or Not Found:', error.response.data?.message || 'Authentication failed, dispatching error action.');
+        store.dispatch(clearUserData());
+        localStorage.clear();
+        if (typeof window !== 'undefined') {
+          const language = store.getState().user.userData?.locale || 'en'; // Using 'language' as in your newer code
+          window.location.href = `/${language}/login`;
+        }
+        console.error('Unauthorized or Not Found:', error.response.data?.message || 'Redirecting to login');
       }
     }
     return Promise.reject(error);

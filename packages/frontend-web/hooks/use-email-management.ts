@@ -49,6 +49,8 @@ interface UseEmailManagementReturn {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   uniqueTags: string[];
+  selectedTag: string;
+  setSelectedTag: (tag: string) => void;
   sortConfig: SortConfig | null;
   setSortConfig: (config: SortConfig | null) => void;
   handleDeleteEmail: (doc_id: string) => Promise<void>;
@@ -69,6 +71,7 @@ export function useEmailManagement({
   const [filteredEmails, setFilteredEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
+  const [selectedTag, setSelectedTagState] = useState<string>("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   const [projectKey, setProjectKey] = useState<string | null>(null);
@@ -278,6 +281,11 @@ export function useEmailManagement({
         ]);
       }
       
+      // Apply tag filtering
+      if (selectedTag && selectedTag !== "all") {
+        filtered = filterItemsByTag(filtered, selectedTag);
+      }
+      
       // Apply sorting
       if (sortConfig) {
         filtered = sortItems(filtered, sortConfig);
@@ -285,7 +293,7 @@ export function useEmailManagement({
       
       setFilteredEmails(filtered);
     },
-    [sortConfig]
+    [sortConfig, selectedTag]
   );
   
   // Handle search query changes
@@ -293,6 +301,12 @@ export function useEmailManagement({
     setSearchQueryState(query);
     applyFiltersAndSort(allEmails, query);
   }, [allEmails, applyFiltersAndSort]);
+  
+  // Handle tag filtering changes
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    applyFiltersAndSort(allEmails, searchQuery);
+  }, [allEmails, searchQuery, applyFiltersAndSort]);
   
   // Handle sorting changes
   const setSortConfig = useCallback((config: SortConfig | null) => {
@@ -309,6 +323,7 @@ export function useEmailManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSortConfigState(null);
+    setSelectedTagState("all");
     applyFiltersAndSort(allEmails, "");
   }, [allEmails, applyFiltersAndSort]);
 
@@ -389,6 +404,8 @@ export function useEmailManagement({
     searchQuery,
     setSearchQuery,
     uniqueTags,
+    selectedTag,
+    setSelectedTag,
     sortConfig,
     setSortConfig,
     handleDeleteEmail,

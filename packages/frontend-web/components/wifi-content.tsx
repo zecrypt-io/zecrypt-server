@@ -42,6 +42,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { useWifi } from "@/hooks/useWifi"; // Import the new hook
 import { AddWifi } from "./add-wifi";
 import { EditWifi } from "./edit-wifi";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface WifiNetwork {
   doc_id: string;
@@ -72,25 +73,33 @@ export function WifiContent() {
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
   const {
+    allWifiNetworks,
+    filteredWifiNetworks,
     paginatedWifiNetworks,
     isLoading,
-    totalCount,
-    currentPage,
-    totalPages,
-    getPaginationRange,
-    itemsPerPage,
-    setItemsPerPage,
     searchQuery,
-    setSearchQuery,
     selectedSecurityType,
-    setSelectedSecurityType,
+    selectedTag,
+    uniqueTags,
+    currentPage,
+    itemsPerPage,
+    totalCount,
+    totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
+    setSearchQuery,
+    setSelectedSecurityType,
+    setSelectedTag,
+    setCurrentPage,
+    setItemsPerPage,
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
     refreshWifiNetworks,
     handleDeleteWifi: handleDeleteWifiFromHook,
+    getPaginationRange,
     nextPage,
     prevPage,
     goToPage,
@@ -146,7 +155,10 @@ export function WifiContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_wifi_networks", "wifi", { default: "Manage your WiFi network credentials and connection details" })}</p>
+        </div>
         <Button onClick={() => setShowAddWifi(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_wifi", "wifi")}
@@ -154,7 +166,7 @@ export function WifiContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
         <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -187,10 +199,30 @@ export function WifiContent() {
             <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
           </SelectContent>
         </Select>
-        {(searchQuery || selectedSecurityType !== "all") && (
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SortButton
+          sortConfig={sortConfig}
+          onSortChange={setSortConfig}
+          namespace="wifi"
+          options={[
+            { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
+            { field: "security_type", label: translate("security", "wifi", { default: "Security" }) }
+          ]}
+        />
+        {(searchQuery || selectedSecurityType !== "all" || selectedTag !== "all" || sortConfig) && (
           <Button variant="outline" className="w-full" onClick={clearFilters}>
             <X className="h-3 w-3 mr-1" />
-            {translate("clear", "wifi")}
+            {translate("clear_filters", "wifi")}
           </Button>
         )}
       </div>
@@ -208,6 +240,8 @@ export function WifiContent() {
             <p className="text-muted-foreground">
               {selectedSecurityType !== "all"
                 ? translate("no_wifi_for_security_type", "wifi").replace("{security_type}", selectedSecurityType)
+                : selectedTag !== "all"
+                ? translate("no_wifi_for_tag", "wifi", { default: "No Wi-Fi networks found with tag {tag}" }).replace("{tag}", selectedTag)
                 : searchQuery
                 ? translate("no_wifi_match_search", "wifi").replace("{search}", searchQuery)
                 : translate("no_wifi_found", "wifi")}

@@ -83,6 +83,8 @@ export function SSHKeysContent() {
     searchQuery,
     setSearchQuery,
     uniqueTags,
+    selectedTag,
+    setSelectedTag,
     sortConfig,
     setSortConfig,
     handleDeleteSSHKey: handleDeleteSSHKeyFromHook,
@@ -168,9 +170,14 @@ export function SSHKeysContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("ssh_keys", "ssh_keys", { default: "SSH Keys" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("ssh_keys", "ssh_keys", { default: "SSH Keys" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("manage_your_ssh_keys", "ssh_keys", { default: "Manage your SSH keys for secure remote access" })}
+          </p>
+        </div>
         <Button onClick={handleAddSSHKey} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_ssh_key", "ssh_keys", { default: "Add SSH Key" })}
@@ -185,39 +192,45 @@ export function SSHKeysContent() {
             placeholder={translate("search_ssh_keys", "ssh_keys", { default: "Search SSH keys..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
           />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSearchQuery("")}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <div className="col-span-1">
-          <Select
-            value={String(itemsPerPage)}
-            onValueChange={(value) => setItemsPerPage(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="10">10 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="20">20 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="50">50 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="col-span-1 flex space-x-2">
-          <SortButton
-            sortConfig={sortConfig}
-            onSortChange={setSortConfig}
-            namespace="ssh_keys"
-            options={[
-              { field: "name", label: translate("name", "ssh_keys", { default: "Name" }) }
-            ]}
-          />
-          <Button variant="outline" onClick={clearFilters} className="w-full">
-            <X className="mr-2 h-4 w-4" />
-            {translate("clear_filters", "ssh_keys", { default: "Clear filters" })}
+        <Select value={selectedTag || "all"} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "identity", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "identity", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SortButton
+          sortConfig={sortConfig}
+          onSortChange={setSortConfig}
+          namespace="ssh_keys"
+          options={[
+            { field: "name", label: translate("name", "ssh_keys", { default: "Name" }) }
+          ]}
+        />
+        {(searchQuery || selectedTag !== "all" || (sortConfig && sortConfig.key !== null)) && (
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
+            <X className="h-3 w-3 mr-1" />
+            {translate("clear", "ssh_keys", { default: "Clear" })}
           </Button>
-        </div>
+        )}
       </div>
 
       {/* SSH keys table */}

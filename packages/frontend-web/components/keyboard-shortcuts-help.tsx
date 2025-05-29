@@ -140,11 +140,6 @@ export function KeyboardShortcutsHelp() {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="fixed bottom-4 right-4 z-50 gap-2">
-        <Key className="h-4 w-4" />
-        <span>Keyboard Shortcuts</span>
-      </Button>
-
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
           <DialogHeader>
