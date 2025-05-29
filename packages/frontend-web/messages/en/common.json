@@ -1167,9 +1167,6 @@
     "remove": "Remove",
     "adding": "Adding...",
     "add": "Add",
-    "please_fill_all_required_fields": "Please fill all required fields",
-    "ssh_key_name_already_exists": "SSH key with this name already exists",
-    "missing_required_data": "Missing required project data",
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
     "save_changes": "Save Changes"
