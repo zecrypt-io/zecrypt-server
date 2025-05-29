@@ -42,6 +42,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { useWifi } from "@/hooks/useWifi"; // Import the new hook
 import { AddWifi } from "./add-wifi";
 import { EditWifi } from "./edit-wifi";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface WifiNetwork {
   doc_id: string;
@@ -72,25 +73,30 @@ export function WifiContent() {
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
   const {
+    allWifiNetworks,
+    filteredWifiNetworks,
     paginatedWifiNetworks,
     isLoading,
-    totalCount,
-    currentPage,
-    totalPages,
-    getPaginationRange,
-    itemsPerPage,
-    setItemsPerPage,
     searchQuery,
-    setSearchQuery,
     selectedSecurityType,
-    setSelectedSecurityType,
+    currentPage,
+    itemsPerPage,
+    totalCount,
+    totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
+    setSearchQuery,
+    setSelectedSecurityType,
+    setCurrentPage,
+    setItemsPerPage,
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
     refreshWifiNetworks,
     handleDeleteWifi: handleDeleteWifiFromHook,
+    getPaginationRange,
     nextPage,
     prevPage,
     goToPage,
@@ -157,7 +163,7 @@ export function WifiContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -190,7 +196,16 @@ export function WifiContent() {
             <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
           </SelectContent>
         </Select>
-        {(searchQuery || selectedSecurityType !== "all") && (
+        <SortButton
+          sortConfig={sortConfig}
+          onSortChange={setSortConfig}
+          namespace="wifi"
+          options={[
+            { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
+            { field: "security_type", label: translate("security", "wifi", { default: "Security" }) }
+          ]}
+        />
+        {(searchQuery || selectedSecurityType !== "all" || (sortConfig && sortConfig.key !== null)) && (
           <Button variant="outline" className="w-full" onClick={clearFilters}>
             <X className="h-3 w-3 mr-1" />
             {translate("clear", "wifi")}

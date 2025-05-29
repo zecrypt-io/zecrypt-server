@@ -9,6 +9,7 @@ import axiosInstance from "../libs/Middleware/axiosInstace";
 import { decryptDataField } from "../libs/encryption";
 import { secureGetItem } from "../libs/session-storage-utils";
 import React from "react";
+import { sortItems, SortConfig } from "@/libs/utils";
 
 interface WifiNetwork {
   doc_id: string;
@@ -43,6 +44,8 @@ interface UseWifiReturn {
   totalPages: number;
   copiedField: { doc_id: string; field: string } | null;
   viewPassword: string | null;
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   setSearchQuery: (query: string) => void;
   setSelectedSecurityType: (type: string) => void;
   setCurrentPage: (page: number) => void;
@@ -72,6 +75,7 @@ export function useWifi({
   const [isLoading, setIsLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -216,9 +220,14 @@ export function useWifi({
         (network) => network.security_type.toLowerCase() === selectedSecurityType.toLowerCase()
       );
     }
+    
+    // Apply sorting if sortConfig is set
+    if (sortConfig && sortConfig.key) {
+      result = sortItems(result, sortConfig);
+    }
 
     return result;
-  }, [allWifiNetworks, searchQuery, selectedSecurityType]);
+  }, [allWifiNetworks, searchQuery, selectedSecurityType, sortConfig]);
 
   const totalCount = filteredWifiNetworks.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
@@ -258,7 +267,7 @@ export function useWifi({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedSecurityTypeState("all");
-    setCurrentPageState(1);
+    setSortConfig(null);
   }, []);
 
   const handleDeleteWifi = useCallback(
@@ -392,6 +401,8 @@ export function useWifi({
     totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
     setSearchQuery,
     setSelectedSecurityType,
     setCurrentPage,
