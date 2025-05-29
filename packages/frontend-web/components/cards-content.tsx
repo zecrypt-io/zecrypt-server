@@ -149,7 +149,10 @@ export function CardsContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("credit_cards", "cards", { default: "Credit Cards" })}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("credit_cards", "cards", { default: "Credit Cards" })}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_credit_cards", "cards", { default: "Manage your saved credit card information securely" })}</p>
+        </div>
         <Button onClick={handleAddCard} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_card", "cards", { default: "Add Card" })}

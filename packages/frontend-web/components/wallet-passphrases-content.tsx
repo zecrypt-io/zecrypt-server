@@ -184,9 +184,14 @@ export function WalletPassphrasesContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("manage_your_wallet_passphrases", "wallet_passphrases", { default: "Manage your cryptocurrency wallet passphrases and recovery phrases" })}
+          </p>
+        </div>
         <Button onClick={handleAddPassphrase} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
