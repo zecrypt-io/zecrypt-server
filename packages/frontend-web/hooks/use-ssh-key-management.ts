@@ -46,6 +46,8 @@ interface UseSSHKeyManagementReturn {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   uniqueTags: string[];
+  selectedTag: string;
+  setSelectedTag: (tag: string) => void;
   sortConfig: SortConfig | null;
   setSortConfig: (config: SortConfig | null) => void;
   handleDeleteSSHKey: (doc_id: string) => Promise<void>;
@@ -66,6 +68,7 @@ export function useSSHKeyManagement({
   const [filteredSSHKeys, setFilteredSSHKeys] = useState<SSHKey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
+  const [selectedTag, setSelectedTagState] = useState<string>("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   const [projectKey, setProjectKey] = useState<string | null>(null);
@@ -261,8 +264,14 @@ export function useSSHKeyManagement({
         filtered = searchItemsMultiField(filtered, query, [
           "title",
           "name",
+          "ssh_key",
           "notes",
         ]);
+      }
+      
+      // Apply tag filtering
+      if (selectedTag && selectedTag !== "all") {
+        filtered = filterItemsByTag(filtered, selectedTag);
       }
       
       // Apply sorting
@@ -272,7 +281,7 @@ export function useSSHKeyManagement({
       
       setFilteredSSHKeys(filtered);
     },
-    [sortConfig]
+    [sortConfig, selectedTag]
   );
   
   // Handle search query changes
@@ -280,6 +289,12 @@ export function useSSHKeyManagement({
     setSearchQueryState(query);
     applyFiltersAndSort(allSSHKeys, query);
   }, [allSSHKeys, applyFiltersAndSort]);
+  
+  // Handle tag filtering changes
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    applyFiltersAndSort(allSSHKeys, searchQuery);
+  }, [allSSHKeys, searchQuery, applyFiltersAndSort]);
   
   // Handle sorting changes
   const setSortConfig = useCallback((config: SortConfig | null) => {
@@ -296,6 +311,7 @@ export function useSSHKeyManagement({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSortConfigState(null);
+    setSelectedTagState("all");
     applyFiltersAndSort(allSSHKeys, "");
   }, [allSSHKeys, applyFiltersAndSort]);
 
@@ -376,6 +392,8 @@ export function useSSHKeyManagement({
     searchQuery,
     setSearchQuery,
     uniqueTags,
+    selectedTag,
+    setSelectedTag,
     sortConfig,
     setSortConfig,
     handleDeleteSSHKey,
