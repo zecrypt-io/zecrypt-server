@@ -161,7 +161,7 @@ export function usePasswordHistory() {
   }, [translate, projectKey]);
 
   // Save password to history
-  const savePasswordToHistory = useCallback(async (password: string) => {
+  const savePasswordToHistory = useCallback(async (password: string): Promise<void> => {
     if (!password) {
       console.log("No password to save");
       return;
@@ -199,8 +199,10 @@ export function usePasswordHistory() {
         description: translate("error_saving_history", "password_generator", { default: "Failed to save password to history" }),
         variant: "destructive",
       });
+      // Rethrow the error so it can be caught by the component
+      throw error;
     }
-  }, [projectKey, translate]); 
+  }, [projectKey, translate]);
 
   return {
     passwordHistory,

@@ -58,7 +58,28 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     const result = generatePasswordString()
     setPassword(result)
     setCopied(false)
-    // Don't save to history automatically for initial generation
+    
+    // Save the automatically generated password to both local and API history
+    if (result) {
+      console.log("Saving automatically generated password to history");
+      
+      // Update local history for current session
+      setLocalPasswordHistory(prev => {
+        const updated = [result, ...prev];
+        return updated.slice(0, 10); // Keep only most recent 10
+      });
+      
+      // Save to API history
+      savePasswordToHistory(result).catch(error => {
+        console.error("Failed to save initial password to history:", error);
+        toast({
+          title: translate("note", "actions"),
+          description: translate("password_saved_locally", "password_generator", 
+            { default: "Password saved locally but not to server" }),
+          variant: "default",
+        });
+      });
+    }
   }
 
   // Generate password and optionally add to history
@@ -78,7 +99,15 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
       });
       
       // Save to API history without automatically triggering a refresh
-      savePasswordToHistory(result);
+      savePasswordToHistory(result).catch(error => {
+        console.error("Failed to save generated password to history:", error);
+        toast({
+          title: translate("note", "actions"),
+          description: translate("password_saved_locally", "password_generator", 
+            { default: "Password saved locally but not to server" }),
+          variant: "default",
+        });
+      });
     }
   }
 
@@ -101,11 +130,22 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     setPasswordStrength(Math.round(strength))
   }, [password, length, options])
 
-  // Function to handle tab changes
+  // Also update the effect to not fetch on every render
+  useEffect(() => {
+    // Fetch password history only once when the dialog is opened and when not already loading
+    if (passwordHistory.length === 0 && !isLoading) {
+      console.log("Initial fetch of password history on component mount");
+      fetchPasswordHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Ensure we also fetch when switching to history tab
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // When history tab is selected, refresh the data only once
+    // When history tab is selected, refresh the data
     if (value === "history") {
+      console.log("Fetching password history for history tab");
       fetchPasswordHistory();
     }
   }
@@ -289,15 +329,6 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
   const strengthInfo = getStrengthLabel()
   const StrengthIcon = strengthInfo.icon
-
-  // Also update the effect to not fetch on every render
-  useEffect(() => {
-    // Fetch password history only once when the dialog is opened and when not already loading
-    if (passwordHistory.length === 0 && !isLoading) {
-      fetchPasswordHistory();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array with eslint disable to run only once
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
