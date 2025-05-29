@@ -146,7 +146,10 @@ export function WifiContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_wifi_networks", "wifi", { default: "Manage your WiFi network credentials and connection details" })}</p>
+        </div>
         <Button onClick={() => setShowAddWifi(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_wifi", "wifi")}

@@ -168,12 +168,18 @@ export function AccountsContent() {
 
   return (
     <div className="p-6">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
-        <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+        </div>
+        <Button className="flex items-center gap-2" onClick={() => setShowAddAccount(true)}>
+          <Plus className="h-4 w-4" />
+          {translate("add_account", "accounts")}
+        </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-6 mb-6">
         <div className="flex flex-1 gap-4 w-full md:w-auto">
           <div className="relative w-full md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -208,12 +214,6 @@ export function AccountsContent() {
               </Button>
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
-            <Plus className="h-4 w-4" />
-            {translate("add_account", "accounts")}
-          </Button>
         </div>
       </div>
 

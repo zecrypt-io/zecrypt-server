@@ -62,7 +62,8 @@
     "expires": "Läuft ab",
     "expired": "Abgelaufen",
     "expiring_soon": "Läuft bald ab",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "manage_your_software_licenses": "Verwalten Sie Ihre Softwarelizenzen und Aktivierungsschlüssel"
   },
   "navigation": {
     "home": "Startseite",
@@ -233,7 +234,6 @@
     "cards_coming_soon": "Kartenmodul ist in Entwicklung.",
     "software_licenses_coming_soon": "Software-Lizenzen-Modul ist in Entwicklung.",
     "wifi_coming_soon": "WLAN-Modul ist in Entwicklung.",
-    "manage_your_wifi_networks": "Verwalten Sie Ihre WLAN-Netzwerke sicher.",
     "no_wifi_for_security_type": "Keine WLAN-Netzwerke für {security_type} gefunden",
     "no_wifi_match_search": "Keine WLAN-Netzwerke entsprechen Ihrer Suche '{search}'",
     "enter_new_password": "Neues Passwort eingeben (leer lassen, um unverändert zu lassen)",
@@ -518,7 +518,8 @@
     "search_passphrases": "Passphrasen suchen...",
     "wallet_passphrases": "Wallet Passphrasen",
     "securely_store_and_manage_your_wallet_recovery_phrases": "Sichern Sie und verwalten Sie Ihre Wallet Passphrasen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "manage_your_wallet_passphrases": "Verwalten Sie Ihre Kryptowährungs-Wallet-Passphrasen und Wiederherstellungssätze"
   },
   "identity": {
     "identities": "Identitäten",
@@ -563,7 +564,8 @@
     "page_of": "Seite {currentPage} von {totalPages}",
     "edit": "Bearbeiten",
     "copy_passport": "Reisepassnummer kopieren",
-    "copy_national_id": "Personalausweisnummer kopieren"
+    "copy_national_id": "Personalausweisnummer kopieren",
+    "manage_your_personal_identities": "Verwalten Sie Ihre persönlichen Identitätsinformationen und Anmeldedaten"
   },
   "cards": {
     "credit_cards": "Kreditkarten",
@@ -604,7 +606,8 @@
     "show_sensitive_data": "Sensible Daten anzeigen",
     "showing_results": "Zeige {startIdx}-{endIdx} von {totalCount} Ergebnissen",
     "page_of": "Seite {currentPage} von {totalPages}",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "manage_your_credit_cards": "Verwalten Sie Ihre gespeicherten Kreditkarteninformationen sicher"
   },
   "software_licenses": {
     "software_licenses": "Software-Lizenzen",
@@ -683,6 +686,7 @@
   },
   "wifi": {
     "wifi_networks": "WLAN-Netzwerke",
+    "manage_your_wifi_networks": "Verwalten Sie Ihre WLAN-Netzwerkanmeldedaten und Verbindungsdetails",
     "add_wifi": "WLAN hinzufügen",
     "search_wifi": "WLAN-Netzwerke durchsuchen...",
     "filter_by_security": "Nach Sicherheitstyp filtern",
@@ -726,19 +730,7 @@
     "qr_code_placeholder": "QR-Code für:",
     "wifi_credentials": "WLAN-Anmeldedaten:",
     "close": "Schließen",
-    "show_qr_code": "QR-Code anzeigen",
-    "manage_your_wifi_networks": "Verwalten Sie Ihre WLAN-Netzwerke sicher.",
-    "no_wifi_for_security_type": "Keine WLAN-Netzwerke für {security_type} gefunden",
-    "no_wifi_match_search": "Keine WLAN-Netzwerke entsprechen Ihrer Suche '{search}'",
-    "enter_new_password": "Neues Passwort eingeben (leer lassen, um unverändert zu lassen)",
-    "showing": "Anzeigen",
-    "rows_per_page": "Zeilen pro Seite",
-    "confirm_delete_wifi": "WLAN-Löschung bestätigen",
-   
-    "failed_to_delete_wifi": "WLAN-Netzwerk konnte nicht gelöscht werden",
-    "error_deleting_wifi": "Fehler beim Löschen des WLANs",
-    "error_fetching_wifi_networks": "Fehler beim Abrufen der WLAN-Netzwerke",
-    "failed_to_fetch_wifi_networks": "WLAN-Netzwerke konnten nicht abgerufen werden"
+    "show_qr_code": "QR-Code anzeigen"
   },
   "key_shortcuts": {
     "title": "Tastenkürzel"
@@ -816,7 +808,8 @@
     "edit_email_description": "Aktualisieren Sie Ihre E-Mail-Konto-Details",
     "save_changes": "Änderungen speichern",
     "email_updated_successfully": "E-Mail-Konto erfolgreich aktualisiert",
-    "error_updating_email": "Fehler beim Aktualisieren des E-Mail-Kontos. Bitte versuchen Sie es erneut."
+    "error_updating_email": "Fehler beim Aktualisieren des E-Mail-Kontos. Bitte versuchen Sie es erneut.",
+    "manage_your_email_accounts": "Verwalten Sie Ihre E-Mail-Konten und Anmeldedaten"
   },
   "ssh_keys": {
     "ssh_keys": "SSH-Schlüssel",
@@ -881,6 +874,7 @@
     "add": "Hinzufügen",
     "edit_ssh_key": "SSH-Schlüssel bearbeiten",
     "edit_ssh_key_description": "Aktualisieren Sie Ihre SSH-Schlüssel-Details",
-    "save_changes": "Änderungen speichern"
+    "save_changes": "Änderungen speichern",
+    "manage_your_ssh_keys": "Verwalten Sie Ihre SSH-Schlüssel für sicheren Fernzugriff"
   }
 }
