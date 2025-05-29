@@ -505,7 +505,18 @@
     "switch_project": "Switch Project",
     "add_a_tag": "Add a tag",
     "edit_account": "Edit Account",
-    "update_account": "Update Account"
+    "update_account": "Update Account",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags",
+    "search_across_all_fields": "Search across all fields...",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort"
   },
   "api_keys": {
     "title": "API Keys",

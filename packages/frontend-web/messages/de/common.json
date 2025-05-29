@@ -390,7 +390,18 @@
     "adjust_search_filter": "Versuchen Sie, Ihre Suche oder Filterkriterien anzupassen",
     "error_loading_workspace": "Fehler beim Laden der Arbeitsbereichsdaten",
     "focus_search": "Suchfeld fokussieren",
-    "switch_project": "Projekt wechseln"
+    "switch_project": "Projekt wechseln",
+    "filter_by_tag": "Nach Tag filtern",
+    "all_tags": "Alle Tags",
+    "search_across_all_fields": "Über alle Felder suchen...",
+    "sort": "Sortieren",
+    "sort_options": "Sortieroptionen",
+    "sort_by_name": "Nach Name sortieren",
+    "sort_by_created": "Nach Erstellungsdatum sortieren",
+    "sort_by_updated": "Nach Aktualisierungsdatum sortieren",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend",
+    "clear_sort": "Sortierung aufheben"
   },
   "user_settings": {
     "title": "Benutzer Einstellungen",

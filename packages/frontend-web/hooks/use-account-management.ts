@@ -7,6 +7,7 @@ import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { decryptAccountData } from '@/libs/encryption';
 import { secureGetItem } from '@/libs/session-storage-utils';
+import { sortItems, SortConfig } from '@/libs/utils';
 
 interface Account {
   doc_id: string;
@@ -46,8 +47,11 @@ interface UseAccountManagementReturn {
   setItemsPerPage: (items: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  selectedTag: string;
+  setSelectedTag: (tag: string) => void;
+  uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteAccount: (doc_id: string) => Promise<void>;
   fetchAccounts: () => Promise<void>;
   clearFilters: () => void;
@@ -66,8 +70,9 @@ export function useAccountManagement({
   const [processedAccounts, setProcessedAccounts] = useState<Account[]>([]); // Stores data after processing username/password
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [selectedCategory, setSelectedCategoryState] = useState("all");
+  const [selectedTag, setSelectedTagState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -167,14 +172,31 @@ export function useAccountManagement({
     }
   }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
-  const getCategoryTag = useCallback((category: string): string => {
-    switch (category.toLowerCase()) {
-      case 'personal': return 'personal';
-      case 'work': return 'work';
-      case 'finance': return 'finance';
-      case 'favorite': return 'favorite';
-      default: return category.toLowerCase();
-    }
+  // Filter items by tag
+  const filterItemsByTag = useCallback((items: Account[], tag: string): Account[] => {
+    if (!tag || tag === 'all') return items;
+    return items.filter(item => 
+      item.tags && Array.isArray(item.tags) && item.tags.includes(tag)
+    );
+  }, []);
+
+  // Search across multiple fields
+  const searchItemsMultiField = useCallback((items: Account[], query: string, fields: string[]): Account[] => {
+    if (!query) return items;
+    
+    const searchTerm = query.toLowerCase();
+    return items.filter(item => {
+      return fields.some(field => {
+        const value = item[field as keyof Account];
+        if (Array.isArray(value)) {
+          return value.some(v => v.toString().toLowerCase().includes(searchTerm));
+        }
+        if (value) {
+          return value.toString().toLowerCase().includes(searchTerm);
+        }
+        return false;
+      });
+    });
   }, []);
 
   const fetchAccounts = useCallback(async () => {
@@ -186,27 +208,36 @@ export function useAccountManagement({
     }
     setIsLoading(true);
     try {
-      let tagsArray: string[] = [];
-      if (selectedCategory !== "all") {
-        tagsArray = [getCategoryTag(selectedCategory)];
-      }
-      const queryParams = new URLSearchParams();
-      if (searchQuery.trim()) {
-        queryParams.append('name', searchQuery.trim());
-      }
-      if (tagsArray.length > 0) {
-        tagsArray.forEach(tag => queryParams.append('tags', tag));
-      }
-
+      // Fetch all accounts - we'll handle filtering client-side for better search
       const response = await axiosInstance.get(
-        `/${selectedWorkspaceId}/${selectedProjectId}/accounts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+        `/${selectedWorkspaceId}/${selectedProjectId}/accounts`
       );
 
       if (response.status === 200) {
         const { data: fetchedAccounts = [] } = response.data || {};
         setAllRawAccounts(fetchedAccounts);
-        const processed = await Promise.all(fetchedAccounts.map(processAccountData));
-        setProcessedAccounts(processed);
+        let processed = await Promise.all(fetchedAccounts.map(processAccountData));
+        
+        // Apply multi-field search if there's a search query
+        if (searchQuery.trim()) {
+          processed = searchItemsMultiField(processed, searchQuery, [
+            'title',
+            'name',
+            'username',
+            'user_name',
+            'website',
+            'url',
+            'tags'
+          ]);
+        }
+        
+        // Apply tag filtering
+        const filteredAccounts = filterItemsByTag(processed, selectedTag);
+        
+        // Apply sorting if a sort config is set
+        const sortedAccounts = sortItems(filteredAccounts, sortConfig);
+        
+        setProcessedAccounts(sortedAccounts);
       } else {
         console.error("Error in accounts response (hook):", response);
         setAllRawAccounts([]);
@@ -222,7 +253,7 @@ export function useAccountManagement({
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedCategory, getCategoryTag, processAccountData]);
+  }, [selectedWorkspaceId, selectedProjectId, searchQuery, selectedTag, sortConfig, processAccountData, filterItemsByTag, searchItemsMultiField]);
 
   useEffect(() => {
     fetchAccounts();
@@ -263,7 +294,8 @@ export function useAccountManagement({
 
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
-    setSelectedCategoryState("all");
+    setSelectedTagState("all");
+    setSortConfigState(null);
     setCurrentPage(1); // Reset pagination to the first page
   }, [setCurrentPage]);
 
@@ -279,15 +311,31 @@ export function useAccountManagement({
     };
   }, [setCurrentPage]);
 
-  const setSelectedCategory = useCallback((category: string) => {
-    setSelectedCategoryState(category);
-    setCurrentPage(1); // Reset to first page on category change
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1);
   }, [setCurrentPage]);
 
   const setItemsPerPage = useCallback((items: number) => {
-      setItemsPerPageState(items);
-      setCurrentPage(1);
+    setItemsPerPageState(items);
+    setCurrentPage(1);
   }, [setCurrentPage]);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
+    setCurrentPage(1);
+  }, [setCurrentPage]);
+
+  // Add useMemo to get unique tags from all accounts for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    processedAccounts.forEach(account => {
+      if (account.tags && Array.isArray(account.tags)) {
+        account.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [processedAccounts]);
 
   return {
     accountsToDisplay,
@@ -302,8 +350,11 @@ export function useAccountManagement({
     setItemsPerPage,
     searchQuery,
     setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
+    selectedTag,
+    setSelectedTag,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteAccount,
     fetchAccounts, // Expose fetchAccounts if manual refresh is needed
     clearFilters,
