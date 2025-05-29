@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Copy, RefreshCw, X, Check, Shield, ShieldCheck, ShieldAlert, Save, Clock, Sparkles } from "lucide-react"
+import { Copy, RefreshCw, X, Check, Shield, ShieldCheck, ShieldAlert, Clock, Sparkles } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
@@ -11,6 +11,10 @@ import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTranslator } from "@/hooks/use-translations"
+import { usePasswordHistory } from "@/hooks/use-password-history"
+import { formatDate } from "@/libs/api-client"
+import { Loader2 } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 
 interface GeneratePasswordDialogProps {
   onClose: () => void
@@ -22,7 +26,9 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   const [length, setLength] = useState(16)
   const [copied, setCopied] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
-  const [passwordHistory, setPasswordHistory] = useState<string[]>([])
+  const { passwordHistory, isLoading, fetchPasswordHistory, savePasswordToHistory } = usePasswordHistory()
+  const [localPasswordHistory, setLocalPasswordHistory] = useState<string[]>([])
+  const [activeTab, setActiveTab] = useState("options")
   const [options, setOptions] = useState({
     uppercase: true,
     lowercase: true,
@@ -32,11 +38,49 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     easyToRead: false,
     allCharacters: true,
   })
+  
+  // Track whether we've manually saved a password to avoid showing 
+  // the current password in history until it's explicitly saved
+  const [hasManuallyCreatedPassword, setHasManuallyCreatedPassword] = useState(false)
+
+  // Reference to the history container for scrolling
+  const historyContainerRef = useRef<HTMLDivElement>(null)
 
   // Generate password on initial load and when options change
   useEffect(() => {
-    generatePassword()
+    if (!hasManuallyCreatedPassword) {
+      generateInitialPassword()
+    }
   }, [length, options])
+
+  // Generate initial password without adding to history
+  const generateInitialPassword = () => {
+    const result = generatePasswordString()
+    setPassword(result)
+    setCopied(false)
+    // Don't save to history automatically for initial generation
+  }
+
+  // Generate password and optionally add to history
+  const generatePassword = (saveToHistory = true) => {
+    const result = generatePasswordString();
+    setPassword(result);
+    setCopied(false);
+    setHasManuallyCreatedPassword(true);
+    
+    // Save to local history and API history if requested
+    if (saveToHistory && result) {
+      console.log("Saving newly generated password to history");
+      // Update local history for current session
+      setLocalPasswordHistory(prev => {
+        const updated = [result, ...prev];
+        return updated.slice(0, 10); // Keep only most recent 10
+      });
+      
+      // Save to API history without automatically triggering a refresh
+      savePasswordToHistory(result);
+    }
+  }
 
   // Calculate password strength
   useEffect(() => {
@@ -56,6 +100,15 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
     setPasswordStrength(Math.round(strength))
   }, [password, length, options])
+
+  // Function to handle tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // When history tab is selected, refresh the data only once
+    if (value === "history") {
+      fetchPasswordHistory();
+    }
+  }
 
   const handleOptionChange = (option: keyof typeof options) => {
     if (option === "easyToSay" || option === "easyToRead" || option === "allCharacters") {
@@ -89,7 +142,8 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     }
   }
 
-  const generatePassword = () => {
+  // Extracts the actual password generation logic into a separate function
+  const generatePasswordString = (): string => {
     const chars = {
       lowercase: "abcdefghijklmnopqrstuvwxyz",
       uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -143,15 +197,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     }
 
     // Shuffle the result to avoid predictable patterns
-    result = shuffleString(result)
-
-    // Add to history
-    if (password) {
-      setPasswordHistory((prev) => [password, ...prev.slice(0, 4)])
-    }
-
-    setPassword(result)
-    setCopied(false)
+    return shuffleString(result)
   }
 
   const getRandomChar = (charSet: string): string => {
@@ -244,10 +290,19 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   const strengthInfo = getStrengthLabel()
   const StrengthIcon = strengthInfo.icon
 
+  // Also update the effect to not fetch on every render
+  useEffect(() => {
+    // Fetch password history only once when the dialog is opened and when not already loading
+    if (passwordHistory.length === 0 && !isLoading) {
+      fetchPasswordHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array with eslint disable to run only once
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg bg-card p-6 border border-border shadow-lg">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="w-full max-w-2xl rounded-lg bg-card p-6 border border-border shadow-lg max-h-[90vh] overflow-y-auto">
+        <div className="mb-6 flex items-center justify-between sticky top-0 bg-card z-10">
           <h2 className="text-2xl font-bold">{translate("title", "password_generator")}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -304,7 +359,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={generatePassword} className="h-10 w-10">
+                      <Button variant="outline" size="icon" onClick={() => generatePassword(true)} className="h-10 w-10">
                         <RefreshCw className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
@@ -331,19 +386,6 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-10 w-10">
-                        <Save className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{translate("save", "password_generator")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
             </div>
 
@@ -362,13 +404,20 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
             </div>
           </div>
 
-          <Tabs defaultValue="options" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="options">{translate("options", "password_generator")}</TabsTrigger>
-              <TabsTrigger value="advanced">{translate("advanced", "password_generator")}</TabsTrigger>
-              <TabsTrigger value="history">{translate("history", "password_generator")}</TabsTrigger>
+          <Tabs defaultValue="options" className="w-full" value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid grid-cols-3 mt-6">
+              <TabsTrigger value="options" onClick={() => handleTabChange("options")}>
+                {translate("options", "password_generator")}
+              </TabsTrigger>
+              <TabsTrigger value="advanced" onClick={() => handleTabChange("advanced")}>
+                {translate("advanced", "password_generator")}
+              </TabsTrigger>
+              <TabsTrigger value="history" onClick={() => handleTabChange("history")}>
+                {translate("history", "password_generator")}
+              </TabsTrigger>
             </TabsList>
 
+            {/* Options Tab */}
             <TabsContent value="options" className="space-y-4 mt-4">
               {/* Password Length */}
               <div>
@@ -481,6 +530,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
               </div>
             </TabsContent>
 
+            {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4 mt-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -532,52 +582,101 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
               </div>
             </TabsContent>
 
-            <TabsContent value="history" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    {translate("recently_generated", "password_generator")}
-                  </h3>
-                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => setPasswordHistory([])}>
-                    {translate("clear_history", "password_generator")}
-                  </Button>
-                </div>
-
-                {passwordHistory.length > 0 ? (
+            {/* History Tab */}
+            <TabsContent value="history" className="mt-4" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <div className="space-y-4">
+                <h3 className="font-semibold mb-2">{translate("history", "password_generator")}</h3>
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-[180px]">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="text-sm text-muted-foreground">{translate("loading", "common")}</p>
+                    </div>
+                  </div>
+                ) : (
                   <div className="space-y-2">
-                    {passwordHistory.map((historyPassword, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-md">
-                        <code className="text-sm font-mono truncate max-w-[300px]">{historyPassword}</code>
-                        <div className="flex gap-1">
+                    {/* Show local history first (current session) */}
+                    {localPasswordHistory.length > 0 && (
+                      localPasswordHistory.map((historyPass, idx) => (
+                        <div 
+                          key={`local-${idx}`}
+                          className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-mono text-sm truncate max-w-[260px]">
+                              {historyPass}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {translate("current_session", "password_generator")}
+                            </span>
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100"
                             onClick={() => {
-                              navigator.clipboard.writeText(historyPassword)
-                              setCopied(true)
-                              setTimeout(() => setCopied(false), 2000)
+                              navigator.clipboard.writeText(historyPass)
+                              toast({
+                                description: translate("copied", "password_generator"),
+                              })
                             }}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setPassword(historyPassword)}
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <p>{translate("no_history", "password_generator")}</p>
-                    <p className="text-xs mt-1">{translate("history_hint", "password_generator")}</p>
+                      ))
+                    )}
+                    
+                    {/* Show API history */}
+                    {passwordHistory && passwordHistory.length > 0 ? (
+                      passwordHistory.map((item) => {
+                        // Skip showing items that are already in local history to avoid duplicates
+                        const isInLocalHistory = localPasswordHistory.includes(item.data);
+                        if (isInLocalHistory) return null;
+                        
+                        return (
+                          <div 
+                            key={item.doc_id}
+                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-mono text-sm truncate max-w-[260px]">
+                                {item.data === "**Encrypted**" || item.data === "**Decryption Error**" 
+                                  ? item.data 
+                                  : item.data
+                                }
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(item.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                              disabled={item.data === "**Encrypted**" || item.data === "**Decryption Error**"}
+                              onClick={() => {
+                                if (item.data !== "**Encrypted**" && item.data !== "**Decryption Error**") {
+                                  navigator.clipboard.writeText(item.data)
+                                  toast({
+                                    description: translate("copied", "password_generator"),
+                                  })
+                                }
+                              }}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      }).filter(Boolean)
+                    ) : (
+                      !localPasswordHistory.length && (
+                        <div className="p-3 text-center text-muted-foreground">
+                          <p>{translate("no_history", "password_generator")}</p>
+                          <p className="text-xs">{translate("history_hint", "password_generator")}</p>
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
               </div>
