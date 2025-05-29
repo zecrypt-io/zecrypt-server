@@ -333,7 +333,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-lg bg-card p-6 border border-border shadow-lg max-h-[90vh] overflow-y-auto">
-        <div className="mb-6 flex items-center justify-between sticky top-0 bg-card z-10">
+        <div className="mb-6 flex items-center justify-between bg-card z-10">
           <h2 className="text-2xl font-bold">{translate("title", "password_generator")}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -342,42 +342,42 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
         <div className="space-y-6">
           {/* Quick Presets */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             <Card
               className="cursor-pointer hover:border-primary transition-colors"
               onClick={() => applyPreset("strong")}
             >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <ShieldCheck className="h-5 w-5 text-green-500 mb-1" />
-                <span className="text-sm font-medium">{translate("strong", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">20 {translate("chars", "password_generator")}</span>
+              <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                <ShieldCheck className="h-4 w-4 text-green-500 mb-1" />
+                <span className="text-xs font-medium">{translate("strong", "password_generator")}</span>
+                <span className="text-[10px] text-muted-foreground">20 {translate("chars", "password_generator")}</span>
               </CardContent>
             </Card>
             <Card
               className="cursor-pointer hover:border-primary transition-colors"
               onClick={() => applyPreset("memorable")}
             >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Sparkles className="h-5 w-5 text-blue-500 mb-1" />
-                <span className="text-sm font-medium">{translate("memorable", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">14 {translate("chars", "password_generator")}</span>
+              <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                <Sparkles className="h-4 w-4 text-blue-500 mb-1" />
+                <span className="text-xs font-medium">{translate("memorable", "password_generator")}</span>
+                <span className="text-[10px] text-muted-foreground">14 {translate("chars", "password_generator")}</span>
               </CardContent>
             </Card>
             <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => applyPreset("pin")}>
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Shield className="h-5 w-5 text-purple-500 mb-1" />
-                <span className="text-sm font-medium">{translate("pin", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">6 {translate("digits", "password_generator")}</span>
+              <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                <Shield className="h-4 w-4 text-purple-500 mb-1" />
+                <span className="text-xs font-medium">{translate("pin", "password_generator")}</span>
+                <span className="text-[10px] text-muted-foreground">6 {translate("digits", "password_generator")}</span>
               </CardContent>
             </Card>
             <Card
               className="cursor-pointer hover:border-primary transition-colors"
               onClick={() => applyPreset("passphrase")}
             >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Shield className="h-5 w-5 text-yellow-500 mb-1" />
-                <span className="text-sm font-medium">{translate("passphrase", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">18 {translate("chars", "password_generator")}</span>
+              <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                <Shield className="h-4 w-4 text-yellow-500 mb-1" />
+                <span className="text-xs font-medium">{translate("passphrase", "password_generator")}</span>
+                <span className="text-[10px] text-muted-foreground">18 {translate("chars", "password_generator")}</span>
               </CardContent>
             </Card>
           </div>
@@ -436,12 +436,9 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           </div>
 
           <Tabs defaultValue="options" className="w-full" value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-3 mt-6">
+            <TabsList className="grid grid-cols-2 mt-6">
               <TabsTrigger value="options" onClick={() => handleTabChange("options")}>
                 {translate("options", "password_generator")}
-              </TabsTrigger>
-              <TabsTrigger value="advanced" onClick={() => handleTabChange("advanced")}>
-                {translate("advanced", "password_generator")}
               </TabsTrigger>
               <TabsTrigger value="history" onClick={() => handleTabChange("history")}>
                 {translate("history", "password_generator")}
@@ -558,58 +555,6 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                     </li>
                   </ul>
                 </div>
-              </div>
-            </TabsContent>
-
-            {/* Advanced Tab */}
-            <TabsContent value="advanced" className="space-y-4 mt-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${options.allCharacters ? "border-primary" : "border-border"}`}
-                    onClick={() => handleOptionChange("allCharacters")}
-                  >
-                    {options.allCharacters && <div className="h-3 w-3 rounded-full bg-primary"></div>}
-                  </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("allCharacters")}>
-                    {translate("all_characters", "password_generator")}
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${options.easyToRead ? "border-primary" : "border-border"}`}
-                    onClick={() => handleOptionChange("easyToRead")}
-                  >
-                    {options.easyToRead && <div className="h-3 w-3 rounded-full bg-primary"></div>}
-                  </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("easyToRead")}>
-                    {translate("easy_to_read", "password_generator")}
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${options.easyToSay ? "border-primary" : "border-border"}`}
-                    onClick={() => handleOptionChange("easyToSay")}
-                  >
-                    {options.easyToSay && <div className="h-3 w-3 rounded-full bg-primary"></div>}
-                  </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("easyToSay")}>
-                    {translate("easy_to_say", "password_generator")}
-                  </label>
-                </div>
-              </div>
-
-              <div className="mt-4 p-4 bg-muted/50 rounded-md">
-                <h3 className="font-medium mb-2">{translate("password_tips", "password_generator")}</h3>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li>{translate("tip_min_length", "password_generator")}</li>
-                  <li>{translate("tip_mix", "password_generator")}</li>
-                  <li>{translate("tip_no_personal", "password_generator")}</li>
-                  <li>{translate("tip_unique", "password_generator")}</li>
-                  <li>{translate("tip_manager", "password_generator")}</li>
-                </ul>
               </div>
             </TabsContent>
 
