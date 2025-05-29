@@ -38,6 +38,8 @@ interface UseWifiReturn {
   isLoading: boolean;
   searchQuery: string;
   selectedSecurityType: string;
+  selectedTag: string;
+  uniqueTags: string[];
   currentPage: number;
   itemsPerPage: number;
   totalCount: number;
@@ -48,6 +50,7 @@ interface UseWifiReturn {
   setSortConfig: (config: SortConfig | null) => void;
   setSearchQuery: (query: string) => void;
   setSelectedSecurityType: (type: string) => void;
+  setSelectedTag: (tag: string) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
   copyToClipboard: (doc_id: string, field: string, value: string) => Promise<void>;
@@ -70,6 +73,7 @@ export function useWifi({
   const [allWifiNetworks, setAllWifiNetworks] = useState<WifiNetwork[]>([]);
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedSecurityType, setSelectedSecurityTypeState] = useState("all");
+  const [selectedTag, setSelectedTagState] = useState("all");
   const [currentPage, setCurrentPageState] = useState(1);
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,6 +207,17 @@ export function useWifi({
     }
   }, [fetchWifiNetworks, selectedWorkspaceId, selectedProjectId]);
 
+  // Add useMemo to get unique tags from all wifi networks for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allWifiNetworks.forEach(network => {
+      if (network.tags && Array.isArray(network.tags)) {
+        network.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allWifiNetworks]);
+
   const filteredWifiNetworks = useMemo(() => {
     let result = allWifiNetworks;
 
@@ -211,7 +226,9 @@ export function useWifi({
       result = result.filter(
         (network) =>
           network.title.toLowerCase().includes(query) ||
-          network.notes?.toLowerCase().includes(query)
+          network.notes?.toLowerCase().includes(query) ||
+          network.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+          false
       );
     }
 
@@ -221,13 +238,19 @@ export function useWifi({
       );
     }
     
+    if (selectedTag !== "all") {
+      result = result.filter(
+        (network) => network.tags && Array.isArray(network.tags) && network.tags.includes(selectedTag)
+      );
+    }
+    
     // Apply sorting if sortConfig is set
-    if (sortConfig && sortConfig.key) {
+    if (sortConfig) {
       result = sortItems(result, sortConfig);
     }
 
     return result;
-  }, [allWifiNetworks, searchQuery, selectedSecurityType, sortConfig]);
+  }, [allWifiNetworks, searchQuery, selectedSecurityType, selectedTag, sortConfig]);
 
   const totalCount = filteredWifiNetworks.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
@@ -267,6 +290,7 @@ export function useWifi({
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedSecurityTypeState("all");
+    setSelectedTagState("all");
     setSortConfig(null);
   }, []);
 
@@ -358,6 +382,11 @@ export function useWifi({
     []
   );
 
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1); // Reset to first page when tag changes
+  }, []);
+
   const setItemsPerPage = useCallback(
     (items: number) => {
       setItemsPerPageState(items);
@@ -395,6 +424,8 @@ export function useWifi({
     isLoading,
     searchQuery,
     selectedSecurityType,
+    selectedTag,
+    uniqueTags,
     currentPage,
     itemsPerPage,
     totalCount,
@@ -405,6 +436,7 @@ export function useWifi({
     setSortConfig,
     setSearchQuery,
     setSelectedSecurityType,
+    setSelectedTag,
     setCurrentPage,
     setItemsPerPage,
     copyToClipboard,

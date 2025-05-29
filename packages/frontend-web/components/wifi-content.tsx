@@ -79,6 +79,8 @@ export function WifiContent() {
     isLoading,
     searchQuery,
     selectedSecurityType,
+    selectedTag,
+    uniqueTags,
     currentPage,
     itemsPerPage,
     totalCount,
@@ -89,6 +91,7 @@ export function WifiContent() {
     setSortConfig,
     setSearchQuery,
     setSelectedSecurityType,
+    setSelectedTag,
     setCurrentPage,
     setItemsPerPage,
     copyToClipboard,
@@ -163,7 +166,7 @@ export function WifiContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
         <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -196,6 +199,17 @@ export function WifiContent() {
             <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={selectedTag} onValueChange={setSelectedTag}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <SortButton
           sortConfig={sortConfig}
           onSortChange={setSortConfig}
@@ -205,10 +219,10 @@ export function WifiContent() {
             { field: "security_type", label: translate("security", "wifi", { default: "Security" }) }
           ]}
         />
-        {(searchQuery || selectedSecurityType !== "all" || (sortConfig && sortConfig.key !== null)) && (
+        {(searchQuery || selectedSecurityType !== "all" || selectedTag !== "all" || sortConfig) && (
           <Button variant="outline" className="w-full" onClick={clearFilters}>
             <X className="h-3 w-3 mr-1" />
-            {translate("clear", "wifi")}
+            {translate("clear_filters", "wifi")}
           </Button>
         )}
       </div>
@@ -226,6 +240,8 @@ export function WifiContent() {
             <p className="text-muted-foreground">
               {selectedSecurityType !== "all"
                 ? translate("no_wifi_for_security_type", "wifi").replace("{security_type}", selectedSecurityType)
+                : selectedTag !== "all"
+                ? translate("no_wifi_for_tag", "wifi", { default: "No Wi-Fi networks found with tag {tag}" }).replace("{tag}", selectedTag)
                 : searchQuery
                 ? translate("no_wifi_match_search", "wifi").replace("{search}", searchQuery)
                 : translate("no_wifi_found", "wifi")}
