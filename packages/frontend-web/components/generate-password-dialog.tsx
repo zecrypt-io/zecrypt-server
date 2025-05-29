@@ -610,6 +610,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                         const isInLocalHistory = localPasswordHistory.includes(item.data);
                         if (isInLocalHistory) return null;
                         
+                        // Only display passwords that were successfully decrypted (handled by the hook)
                         return (
                           <div 
                             key={item.doc_id}
@@ -617,10 +618,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                           >
                             <div className="flex flex-col">
                               <span className="font-mono text-sm truncate max-w-[260px]">
-                                {item.data === "**Encrypted**" || item.data === "**Decryption Error**" 
-                                  ? item.data 
-                                  : item.data
-                                }
+                                {item.data}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 {new Date(item.created_at).toLocaleString()}
@@ -630,14 +628,11 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                              disabled={item.data === "**Encrypted**" || item.data === "**Decryption Error**"}
                               onClick={() => {
-                                if (item.data !== "**Encrypted**" && item.data !== "**Decryption Error**") {
-                                  navigator.clipboard.writeText(item.data)
-                                  toast({
-                                    description: translate("copied", "password_generator"),
-                                  })
-                                }
+                                navigator.clipboard.writeText(item.data)
+                                toast({
+                                  description: translate("copied", "password_generator"),
+                                })
                               }}
                             >
                               <Copy className="h-4 w-4" />

@@ -22,6 +22,7 @@ export interface PasswordHistoryItem {
 export interface ProcessedPasswordHistoryItem extends Omit<PasswordHistoryItem, 'data'> {
   data: string; // Decrypted data
   encryptedData: string; // Original encrypted data
+  decryptSuccess: boolean; // Whether decryption was successful
 }
 
 export function usePasswordHistory() {
@@ -80,17 +81,19 @@ export function usePasswordHistory() {
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
   // Helper function to attempt decryption with various strategies
-  const tryDecrypt = async (encryptedData: string, projectKey: string): Promise<string> => {
+  const tryDecrypt = async (encryptedData: string, projectKey: string): Promise<{success: boolean; data: string}> => {
     try {
       // If it looks like our encrypted format (contains a period separator for IV)
       if (encryptedData.includes('.')) {
-        return await decryptDataField(encryptedData, projectKey);
+        const decryptedValue = await decryptDataField(encryptedData, projectKey);
+        return { success: true, data: decryptedValue };
       }
       // If it's not in encrypted format, return as is (plaintext)
-      return encryptedData;
+      return { success: true, data: encryptedData };
     } catch (error) {
-      console.error("Decryption failed:", error);
-      return "**Decryption Error**";
+      // Don't log the error as this is an expected scenario when switching between projects
+      // We're handling it by filtering out passwords that don't belong to the current project
+      return { success: false, data: "**Decryption Error**" };
     }
   };
 
@@ -116,25 +119,35 @@ export function usePasswordHistory() {
         
         if (projectKey) {
           console.log("Project key available, attempting to decrypt items");
-          processedItems = await Promise.all(
+          const decryptResults = await Promise.all(
             historyItems.map(async (item) => {
-              const decryptedData = await tryDecrypt(item.data, projectKey);
+              const decryptResult = await tryDecrypt(item.data, projectKey);
               
               return {
                 ...item,
-                data: decryptedData,
-                encryptedData: item.data
+                data: decryptResult.data,
+                encryptedData: item.data,
+                decryptSuccess: decryptResult.success
               };
             })
           );
-          console.log("Decryption completed");
+          
+          // Filter to only include successfully decrypted items for this project
+          processedItems = decryptResults.filter(item => item.decryptSuccess);
+          
+          // Only log how many items were filtered (not as an error)
+          const excluded = historyItems.length - processedItems.length;
+          if (excluded > 0) {
+            console.log(`Filtered out ${excluded} password(s) that don't belong to the current project context.`);
+          }
         } else {
           console.log("No project key available, marking items as encrypted");
           // If no project key, just mark data as encrypted
           processedItems = historyItems.map(item => ({
             ...item,
             data: "**Encrypted**",
-            encryptedData: item.data
+            encryptedData: item.data,
+            decryptSuccess: false
           }));
         }
         

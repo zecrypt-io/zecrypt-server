@@ -49,7 +49,8 @@ export async function decryptData(encryptedHex: string, ivHex: string, keyHex: s
 
     return new TextDecoder().decode(decrypted)
   } catch (error) {
-    console.error("Decryption error:", error)
+    // Don't log error - this is an expected case when switching between projects
+    // or when trying to decrypt data with a key from a different project
     throw new Error("Failed to decrypt data. Invalid encryption key.")
   }
 }
@@ -235,7 +236,8 @@ export async function decryptDataField(encryptedString: string, projectAesKey: s
     
     return await decryptData(encryptedHex, ivHex, projectAesKey);
   } catch (error) {
-    console.error("Error decrypting data field:", error);
+    // Don't log error for decryption failures due to key mismatches
+    // as this is an expected scenario when switching between projects
     throw new Error("Failed to decrypt data field");
   }
 }
