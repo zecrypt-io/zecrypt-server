@@ -516,7 +516,9 @@
     "sort_by_updated": "Sort by Updated Date",
     "ascending": "Ascending",
     "descending": "Descending",
-    "clear_sort": "Clear Sort"
+    "clear_sort": "Clear Sort",
+    "enter_username": "Enter username",
+    "notes": "Notes"
   },
   "api_keys": {
     "title": "API Keys",

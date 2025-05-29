@@ -401,7 +401,8 @@
     "sort_by_updated": "Nach Aktualisierungsdatum sortieren",
     "ascending": "Aufsteigend",
     "descending": "Absteigend",
-    "clear_sort": "Sortierung aufheben"
+    "clear_sort": "Sortierung aufheben",
+    "notes": "Notizen"
   },
   "user_settings": {
     "title": "Benutzer Einstellungen",
