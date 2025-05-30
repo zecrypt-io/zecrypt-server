@@ -78,7 +78,7 @@ export function KeyboardShortcutsHelp() {
         { keys: ["⌘", "K"], description: "Open command palette", icon: <Command className="h-4 w-4" /> },
         { keys: ["Shift", "?"], description: "Show keyboard shortcuts", icon: <Key className="h-4 w-4" /> },
         { keys: ["/"], description: "Focus search", icon: <Search className="h-4 w-4" /> },
-        { keys: ["⌘", "S"], description: "Save changes", icon: <Save className="h-4 w-4" /> },
+        // { keys: ["⌘", "S"], description: "Save changes", icon: <Save className="h-4 w-4" /> },
         { keys: ["⌘", "R"], description: "Refresh data", icon: <RefreshCw className="h-4 w-4" /> },
       ],
     },

@@ -472,10 +472,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
           if (e.shiftKey) {
             // Refresh data
             window.location.reload();
-          } else {
-            // Go to Recent
-            router.push(`/${currentLocale}/dashboard/recent`);
-          }
+          } 
           break;
 
         // Navigation shortcuts
