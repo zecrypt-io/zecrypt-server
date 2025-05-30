@@ -215,7 +215,8 @@ export function LocalizedOverviewContent() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
+        {/* Removed project details display */}
+        {/* <div>
           <h1 className="text-2xl font-bold">{translate("dashboard", "navigation")}</h1>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-muted-foreground">{translate("current_project", "dashboard")}:</p>
@@ -234,15 +235,19 @@ export function LocalizedOverviewContent() {
               <p className="text-sm text-muted-foreground">{translate("no_project_selected", "dashboard")}</p>
             )}
           </div>
-        </div>
+        </div> */}
         <div>
+          <h1 className="text-2xl font-bold">{translate("dashboard", "navigation")}</h1>
+        </div>
+        {/* Commented out time-based dropdown */}
+        {/* <div>
           <select className="rounded-md border border-border bg-background px-3 py-2 text-sm">
             <option>{translate("today", "time")}</option>
             <option>{translate("last_7_days", "time")}</option>
             <option>{translate("last_30_days", "time")}</option>
             <option>{translate("all_time", "time")}</option>
           </select>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
