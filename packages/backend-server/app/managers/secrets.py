@@ -53,3 +53,6 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
 
 def count_documents(db, query):
     return db_manager.count_documents(db, collection_name, query)
+
+def get_project_secrets_count(db,data_type, project_id):
+    return count_documents(db, {"project_id": project_id, "data_type": data_type, "access": {"$ne":False}})
