@@ -28,7 +28,6 @@
   "licenses": {
     "software_licenses": "Software Licenses",
     "add_license": "Add License",
-    "search_licenses": "Search licenses...",
     "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",
     "search": "Search",
@@ -67,7 +66,6 @@
     "enter_software_name": "Enter software name",
     "enter_license_key": "Enter license key",
     "enter_notes": "Enter notes",
-    "add_a_tag": "Add a tag",
     "confirm_deletion": "Confirm Deletion",
     "confirm_delete_license_description": "Are you sure you want to delete this license? This action cannot be undone.",
     "license_added_successfully": "License added successfully",
@@ -141,7 +139,7 @@
     "sign_up": "Sign up",
     "email": "Email",
     "password": "Password",
-    "agreement": "When signing in, you agree to our Terms of Service and Privacy Policy",
+    "agreement": "When signing in, you agree to our terms and conditions",
     "terms": "Terms",
     "verification_code": "Verification Code",
     "2fa_verify": "2FA Verification",
@@ -204,10 +202,10 @@
   },
   "features": {
     "trial_title": "Your Secured Storage Manager",
-    "unlimited_devices": "Unlimited devices—completely free forever",
-    "shared_vaults": "Effortlessly share credentials with teammates and family",
+    "unlimited_devices": "Unlimited devices — completely free forever",
+    "shared_vaults": "Effortlessly share credentials with teammates - (Coming Soon)",
     "advanced_security": "Military-grade encryption (AES-GCM) for rock-solid security",
-    "security_alerts": "Instant breach alerts so you're always one step ahead - (coming soon)",
+    "security_alerts": "Instant breach alerts so you're always one step ahead - (Coming Soon)",
     "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux - (coming soon)",
     "organization": "Organization",
     "organization_desc": "Organize credentials into projects for better management and quick access.",
@@ -874,10 +872,7 @@
     "clear_sort": "Clear Sort",
     "search_across_all_fields": "Search across all fields...",
     "searches_all_fields": "Searches title, card holder, card number, brand and tags",
-   
-   
     "missing_auth_or_selection": "Missing authentication or selection",
- 
     "encryption_key_not_found": "Project encryption key not found. Cannot save card.",
     "project_not_found": "Project not found. Please select a valid project.",
     "encryption_failed": "Failed to encrypt card data. Please try again.",

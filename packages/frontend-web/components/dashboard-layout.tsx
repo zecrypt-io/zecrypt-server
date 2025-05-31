@@ -39,7 +39,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserProfileDialog } from "@/components/user-profile-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProjectDialog } from "@/components/project-dialog";
-import { CommandPalette } from "@/components/command-palette";
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
 import { useRouter } from "next/navigation";
 import { locales } from "@/middleware";
@@ -402,58 +401,161 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     const handleSearchFocus = () => searchInputRef.current?.focus();
     const handleThemeToggle = () => document.dispatchEvent(new CustomEvent("toggle-theme-event"));
     const handleOpenSearchModal = () => setShowSearchModal(true);
+    const handleOpenKeyboardShortcuts = () => document.dispatchEvent(new CustomEvent("open-keyboard-shortcuts"));
 
     document.addEventListener("toggle-generate-password", handleGeneratePassword);
     document.addEventListener("toggle-project-dialog", handleProjectDialog);
     document.addEventListener("toggle-search-focus", handleSearchFocus);
     document.addEventListener("toggle-theme", handleThemeToggle);
     document.addEventListener("open-search-modal", handleOpenSearchModal);
+    document.addEventListener("open-keyboard-shortcuts", handleOpenKeyboardShortcuts);
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input or textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
+      // Handle search focus
       if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
 
+      // Handle Shift + ? for keyboard shortcuts
+      if (e.shiftKey && e.key === "?") {
+        e.preventDefault();
+        document.dispatchEvent(new CustomEvent("open-keyboard-shortcuts"));
+        return;
+      }
+
+      // Only handle keyboard shortcuts with modifier keys
       if (!(e.metaKey || e.ctrlKey)) return;
 
-      if (["k", "g", "p", "d", "a", "f", "n", "s", "t", "l"].includes(e.key.toLowerCase())) {
+      // Prevent default for all our shortcut keys
+      if (["k", "g", "p", "d", "a", "x", "f", "n", "s", "t", "l", "h", "r", "v", "c", "e", "u", "j", "i", "q"].includes(e.key.toLowerCase())) {
         e.preventDefault();
       }
 
+      // Handle shortcuts
       switch (e.key.toLowerCase()) {
+        // General shortcuts
         case "k":
-          setShowSearchModal(true);
+          if (e.shiftKey) {
+            // Go to API Keys
+            router.push(`/${currentLocale}/dashboard/api-keys`);
+          } else {
+            // Open search modal
+            setShowSearchModal(true);
+          }
           break;
-        case "g":
-          setShowGeneratePassword(true);
+        case "s":
+          if (e.shiftKey) {
+            // Security settings
+            router.push(`/${currentLocale}/dashboard/security`);
+          } else {
+            // Go to SSH Keys
+            router.push(`/${currentLocale}/dashboard/ssh-keys`);
+          }
           break;
-        case "p":
-          setShowProjectDialog(true);
+        case "r":
+          if (e.shiftKey) {
+            // Refresh data
+            window.location.reload();
+          } 
           break;
+
+        // Navigation shortcuts
         case "d":
           router.push(`/${currentLocale}/dashboard`);
           break;
         case "a":
           router.push(`/${currentLocale}/dashboard/accounts`);
           break;
-        case "f":
-          router.push(`/${currentLocale}/dashboard/files`);
+        case "x":  
+          router.push(`/${currentLocale}/dashboard/api-keys`);
           break;
-        case "n":
-          router.push(`/${currentLocale}/dashboard/notifications`);
+        case "y":
+          router.push(`/${currentLocale}/dashboard/wallet-passphrases`);
           break;
-        case "s":
-          router.push(`/${currentLocale}/dashboard/user-settings`);
+        case "i":
+          router.push(`/${currentLocale}/dashboard/wifi`);
           break;
-        case "t":
-          document.dispatchEvent(new CustomEvent("toggle-theme-event"));
+        case "z":
+          router.push(`/${currentLocale}/dashboard/identity`);
+          break;
+        case "c":
+          router.push(`/${currentLocale}/dashboard/cards`);
           break;
         case "l":
+          if (e.shiftKey) {
+            // Lock workspace
+            document.dispatchEvent(new CustomEvent("lock-workspace"));
+          } else {
+            // Go to Software Licenses
+            router.push(`/${currentLocale}/dashboard/software-licenses`);
+          }
+          break;
+        case "e":
+          router.push(`/${currentLocale}/dashboard/emails`);
+          break;
+
+        // Action shortcuts
+        case "g":
+          setShowGeneratePassword(true);
+          break;
+        case "p":
+          setShowProjectDialog(true);
+          break;
+        case "+":
+          document.dispatchEvent(new CustomEvent("toggle-add-account"));
+          break;
+        case "n":
+          if (e.shiftKey) {
+            // Go to Notifications
+            router.push(`/${currentLocale}/dashboard/notifications`);
+          }
+          break;
+        case "h":
+          if (e.shiftKey) {
+            // Show help
+            document.dispatchEvent(new CustomEvent("open-keyboard-shortcuts"));
+          } else {
+            // Go to Shared
+            router.push(`/${currentLocale}/dashboard/shared`);
+          }
+          break;
+        case "v":
+          router.push(`/${currentLocale}/dashboard/storage`);
+          break;
+        case "t":
+          if (e.shiftKey) {
+            // Go to Team
+            router.push(`/${currentLocale}/dashboard/team`);
+          } else {
+            // Toggle theme
+            document.dispatchEvent(new CustomEvent("toggle-theme-event"));
+          }
+          break;
+
+        // File operation shortcuts
+        case "u":
+          document.dispatchEvent(new CustomEvent("upload-file"));
+          break;
+        case "j":
+          document.dispatchEvent(new CustomEvent("download-file"));
+          break;
+
+        // Security shortcuts
+        case "a":
+          if (e.shiftKey) {
+            // Security alerts
+            router.push(`/${currentLocale}/dashboard/security/alerts`);
+          }
+          break;
+
+        // Settings shortcuts
+        case "q":
           handleLogout();
           break;
       }
@@ -467,9 +569,10 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       document.removeEventListener("toggle-search-focus", handleSearchFocus);
       document.removeEventListener("toggle-theme", handleThemeToggle);
       document.removeEventListener("open-search-modal", handleOpenSearchModal);
+      document.removeEventListener("open-keyboard-shortcuts", handleOpenKeyboardShortcuts);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [router, currentLocale, handleLogout]);
+  }, [currentLocale, router]);
 
   const sortedLocales = [...locales].sort((a, b) => {
     const nameA = languageLabels[a] || a;
@@ -485,7 +588,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
   return (
     <div className="flex min-h-screen bg-background">
-      <CommandPalette />
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}

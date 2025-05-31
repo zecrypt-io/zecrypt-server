@@ -34,3 +34,11 @@ def filter_payload(data):
 
 def create_uuid():
     return str(uuid7())
+
+
+def get_origins(env):
+    data = {
+        "production": ["https://app.zecrypt.io"],
+        "dev": ["http://localhost:3000", "https://preview.app.zecrypt.io"],
+    }
+    return data.get(env, ["*"])

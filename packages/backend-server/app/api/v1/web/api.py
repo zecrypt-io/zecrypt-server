@@ -5,6 +5,7 @@ from app.api.v1.web.workspace import api as workspace_router
 from app.api.v1.web.audit_logs import api as audit_logs_router
 from app.api.v1.web.user import api as user_router
 from app.api.v1.web.secrets import api as secrets_router
+from app.api.v1.web.dashboard import api as dashboard_router
 api_router = APIRouter()
 
 api_router.prefix = "/web"
@@ -15,4 +16,5 @@ api_router.include_router(projects_router.router, tags=["Projects"])
 api_router.include_router(secrets_router.secrets_router)
 api_router.include_router(user_router.router, tags=["User"])
 api_router.include_router(workspace_router.router, tags=["Workspace"])
+api_router.include_router(dashboard_router.router, tags=["Dashboard"])
     
