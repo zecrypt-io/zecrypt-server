@@ -1108,6 +1108,7 @@
     "add": "Add",
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
-    "save_changes": "Save Changes"
+    "save_changes": "Save Changes",
+    "search_licenses": "Search licenses..."
   }
 }
