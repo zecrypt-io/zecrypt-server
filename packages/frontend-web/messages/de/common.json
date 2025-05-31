@@ -244,8 +244,7 @@
     "of": "von",
     "rows_per_page": "Zeilen pro Seite",
     "confirm_delete_wifi": "WLAN-Löschung bestätigen",
-    "wifi_deleted": "WLAN gelöscht",
-    "wifi_deleted_description": "Das WLAN-Netzwerk wurde erfolgreich gelöscht.",
+   
     "failed_to_delete_wifi": "WLAN-Netzwerk konnte nicht gelöscht werden",
     "error_deleting_wifi": "Fehler beim Löschen des WLANs",
     "error_fetching_wifi_networks": "Fehler beim Abrufen der WLAN-Netzwerke",
@@ -313,7 +312,8 @@
     "fair": "Fair",
     "good": "Gut",
     "strong_strength": "Stark",
-    "strength": "{strength}% Stärke"
+    "strength": "{strength}% Stärke",
+    "current_session": "Aktuelle Sitzung"
   },
   "accounts": {
     "loading_accounts": "Konten werden geladen...",

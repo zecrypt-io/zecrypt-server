@@ -367,7 +367,8 @@
     "fair": "Fair",
     "good": "Good",
     "strong_strength": "Strong",
-    "strength": "{strength}% Strength"
+    "strength": "{strength}% Strength",
+    "current_session": "Current Session"
   },
   "user_settings": {
     "title": "User Settings",

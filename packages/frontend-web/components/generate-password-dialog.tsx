@@ -38,10 +38,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     uppercase: true,
     lowercase: true,
     numbers: true,
-    symbols: true,
-    easyToSay: false,
-    easyToRead: false,
-    allCharacters: true,
+    symbols: true
   })
   
   // Reference to the history container for scrolling
@@ -105,34 +102,14 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   }
 
   const handleOptionChange = (option: keyof typeof options) => {
-    if (option === "easyToSay" || option === "easyToRead" || option === "allCharacters") {
-      // These are mutually exclusive options
-      const newOptions = {
-        ...options,
-        easyToSay: option === "easyToSay",
-        easyToRead: option === "easyToRead",
-        allCharacters: option === "allCharacters",
-      }
+    // For individual character set options
+    const newOptions = { ...options, [option]: !options[option] }
 
-      // Adjust character sets based on the selected option
-      if (option === "easyToSay") {
-        newOptions.symbols = false
-        newOptions.numbers = false
-      } else if (option === "easyToRead") {
-        newOptions.symbols = true
-      }
+    // Ensure at least one character set is selected
+    const anySelected = newOptions.uppercase || newOptions.lowercase || newOptions.numbers || newOptions.symbols
 
+    if (anySelected) {
       setOptions(newOptions)
-    } else {
-      // For individual character set options
-      const newOptions = { ...options, [option]: !options[option] }
-
-      // Ensure at least one character set is selected
-      const anySelected = newOptions.uppercase || newOptions.lowercase || newOptions.numbers || newOptions.symbols
-
-      if (anySelected) {
-        setOptions(newOptions)
-      }
     }
   }
 
@@ -187,10 +164,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           uppercase: true,
           lowercase: true,
           numbers: true,
-          symbols: true,
-          easyToSay: false,
-          easyToRead: false,
-          allCharacters: true,
+          symbols: true
         })
         break
       case "memorable":
@@ -199,10 +173,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           uppercase: true,
           lowercase: true,
           numbers: false,
-          symbols: false,
-          easyToSay: true,
-          easyToRead: false,
-          allCharacters: false,
+          symbols: false
         })
         break
       case "pin":
@@ -211,10 +182,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           uppercase: false,
           lowercase: false,
           numbers: true,
-          symbols: false,
-          easyToSay: false,
-          easyToRead: false,
-          allCharacters: false,
+          symbols: false
         })
         break
       case "passphrase":
@@ -223,10 +191,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           uppercase: true,
           lowercase: true,
           numbers: true,
-          symbols: false,
-          easyToSay: false,
-          easyToRead: true,
-          allCharacters: false,
+          symbols: false
         })
         break
     }
@@ -241,29 +206,12 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
       symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
     }
 
-    // Handle easy to read (remove similar characters)
-    const easyToReadChars = {
-      lowercase: "abcdefghijkmnpqrstuvwxyz", // removed l and o
-      uppercase: "ABCDEFGHJKLMNPQRSTUVWXYZ", // removed I and O
-      numbers: "23456789", // removed 0 and 1
-      symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
-    }
-
-    // Handle easy to say (only letters)
-    const easyToSayChars = {
-      lowercase: "abcdefghijklmnopqrstuvwxyz",
-      uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-      numbers: "",
-      symbols: "",
-    }
-
     let validChars = ""
-    const charSet = options.easyToRead ? easyToReadChars : options.easyToSay ? easyToSayChars : chars
 
-    if (options.lowercase) validChars += charSet.lowercase
-    if (options.uppercase) validChars += charSet.uppercase
-    if (options.numbers) validChars += charSet.numbers
-    if (options.symbols) validChars += charSet.symbols
+    if (options.lowercase) validChars += chars.lowercase
+    if (options.uppercase) validChars += chars.uppercase
+    if (options.numbers) validChars += chars.numbers
+    if (options.symbols) validChars += chars.symbols
 
     // Fallback to lowercase if nothing is selected
     if (validChars === "") validChars = chars.lowercase
@@ -273,10 +221,10 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
     // Ensure we have at least one character from each selected set
     const requiredChars = []
-    if (options.lowercase) requiredChars.push(getRandomChar(charSet.lowercase))
-    if (options.uppercase) requiredChars.push(getRandomChar(charSet.uppercase))
-    if (options.numbers) requiredChars.push(getRandomChar(charSet.numbers))
-    if (options.symbols) requiredChars.push(getRandomChar(charSet.symbols))
+    if (options.lowercase) requiredChars.push(getRandomChar(chars.lowercase))
+    if (options.uppercase) requiredChars.push(getRandomChar(chars.uppercase))
+    if (options.numbers) requiredChars.push(getRandomChar(chars.numbers))
+    if (options.symbols) requiredChars.push(getRandomChar(chars.symbols))
 
     // Add required characters
     result = requiredChars.join("")
@@ -316,6 +264,15 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
       })
   }
 
+  // For handling clear history - just refresh the history data
+  const handleClearHistory = () => {
+    // Refresh history after a small delay to simulate clearing
+    console.log("Clear history requested - triggering refresh")
+    setTimeout(() => {
+      fetchPasswordHistoryRef.current()
+    }, 500)
+  }
+
   const strengthInfo = getStrengthLabel()
   const StrengthIcon = strengthInfo.icon
 
@@ -327,394 +284,342 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   }, []); // Empty dependency array
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg bg-card p-6 border border-border shadow-lg">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{translate("title", "password_generator")}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden">
+      <div className="relative w-full max-w-xl rounded-lg bg-card border border-border shadow-lg flex flex-col max-h-[90vh]">
+        {/* Fixed Header */}
+        <div className="p-4 border-b border-border sticky top-0 bg-card z-10 flex items-center justify-between">
+          <h2 className="text-lg font-bold">{translate("title", "password_generator")}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="space-y-6">
-          {/* Quick Presets */}
-          <div className="grid grid-cols-4 gap-3">
-            <Card
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => applyPreset("strong")}
-            >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <ShieldCheck className="h-5 w-5 text-green-500 mb-1" />
-                <span className="text-sm font-medium">{translate("strong", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">20 {translate("chars", "password_generator")}</span>
-              </CardContent>
-            </Card>
-            <Card
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => applyPreset("memorable")}
-            >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Sparkles className="h-5 w-5 text-blue-500 mb-1" />
-                <span className="text-sm font-medium">{translate("memorable", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">14 {translate("chars", "password_generator")}</span>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => applyPreset("pin")}>
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Shield className="h-5 w-5 text-purple-500 mb-1" />
-                <span className="text-sm font-medium">{translate("pin", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">6 {translate("digits", "password_generator")}</span>
-              </CardContent>
-            </Card>
-            <Card
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => applyPreset("passphrase")}
-            >
-              <CardContent className="p-3 flex flex-col items-center justify-center text-center">
-                <Shield className="h-5 w-5 text-yellow-500 mb-1" />
-                <span className="text-sm font-medium">{translate("passphrase", "password_generator")}</span>
-                <span className="text-xs text-muted-foreground">18 {translate("chars", "password_generator")}</span>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Generate Password Button - Prominent */}
-          <div className="flex justify-center">
-            <Button 
-              size="lg" 
-              className="w-full py-6 text-lg gap-2"
-              onClick={handleGeneratePasswordAndSave}
-            >
-              <RefreshCw className="h-5 w-5" />
-              {translate("generate_password", "password_generator", { default: "Generate Password" })}
-            </Button>
-          </div>
-
-          {/* Password Display - Only show when password exists */}
-          {password ? (
-            <div className="relative">
-              <div className="flex items-center justify-between bg-muted p-4 rounded-md font-mono text-xl break-all">
-                <div className="flex-1 mr-2 select-all">
-                  {password}
-                </div>
-                <div className="flex gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={copied ? "default" : "outline"}
-                          size="icon"
-                          onClick={copyToClipboard}
-                          className="h-10 w-10"
-                        >
-                          {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{copied ? translate("copied", "password_generator") : translate("copy", "password_generator")}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
-
-              {/* Password Strength Indicator */}
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${strengthInfo.bgColor}`}>
-                      <StrengthIcon className={`h-4 w-4 ${strengthInfo.color}`} />
-                    </div>
-                    <span className={`font-medium ${strengthInfo.color}`}>{strengthInfo.label}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">{translate("strength", "password_generator", { strength: passwordStrength })}</span>
-                </div>
-                <Progress value={passwordStrength} className="h-2" />
-              </div>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-4">
+            {/* Quick Presets */}
+            <div className="grid grid-cols-4 gap-2">
+              <Card
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => applyPreset("strong")}
+              >
+                <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                  <ShieldCheck className="h-4 w-4 text-green-500 mb-1" />
+                  <span className="text-xs font-medium">{translate("strong", "password_generator")}</span>
+                  <span className="text-xs text-muted-foreground">20</span>
+                </CardContent>
+              </Card>
+              <Card
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => applyPreset("memorable")}
+              >
+                <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                  <Sparkles className="h-4 w-4 text-blue-500 mb-1" />
+                  <span className="text-xs font-medium">{translate("memorable", "password_generator")}</span>
+                  <span className="text-xs text-muted-foreground">14</span>
+                </CardContent>
+              </Card>
+              <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => applyPreset("pin")}>
+                <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                  <Shield className="h-4 w-4 text-purple-500 mb-1" />
+                  <span className="text-xs font-medium">{translate("pin", "password_generator")}</span>
+                  <span className="text-xs text-muted-foreground">6</span>
+                </CardContent>
+              </Card>
+              <Card
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => applyPreset("passphrase")}
+              >
+                <CardContent className="p-2 flex flex-col items-center justify-center text-center">
+                  <Shield className="h-4 w-4 text-yellow-500 mb-1" />
+                  <span className="text-xs font-medium">{translate("passphrase", "password_generator")}</span>
+                  <span className="text-xs text-muted-foreground">18</span>
+                </CardContent>
+              </Card>
             </div>
-          ) : null}
 
-          <Tabs defaultValue="options" className="w-full" value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-2 mt-6">
-              <TabsTrigger value="options" onClick={() => handleTabChange("options")}>
-                {translate("options", "password_generator")}
-              </TabsTrigger>
-              <TabsTrigger value="history" onClick={() => handleTabChange("history")}>
-                {translate("history", "password_generator")}
-              </TabsTrigger>
-            </TabsList>
+            {/* Generate Password Button */}
+            <div className="flex justify-center">
+              <Button 
+                className="w-full py-2 gap-2"
+                onClick={handleGeneratePasswordAndSave}
+              >
+                <RefreshCw className="h-4 w-4" />
+                {translate("generate_password", "password_generator", { default: "Generate Password" })}
+              </Button>
+            </div>
 
-            <TabsContent value="options" className="space-y-4 mt-4">
-              {/* Password Length */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium">{translate("password_length", "password_generator")}</label>
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded">{length}</span>
-                </div>
-                <Slider
-                  value={[length]}
-                  min={4}
-                  max={32}
-                  step={1}
-                  onValueChange={(value) => setLength(value[0])}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>4</span>
-                  <span>12</span>
-                  <span>20</span>
-                  <span>28</span>
-                  <span>32</span>
-                </div>
-              </div>
-
-              {/* Character Sets */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="uppercase"
-                      checked={options.uppercase}
-                      onCheckedChange={() => handleOptionChange("uppercase")}
-                    />
-                    <Label htmlFor="uppercase" className="cursor-pointer">
-                      {translate("uppercase", "password_generator")}
-                    </Label>
+            {/* Password Display - Only show when password exists */}
+            {password ? (
+              <div className="relative">
+                <div className="flex items-center justify-between bg-muted p-3 rounded-md font-mono text-base break-all">
+                  <div className="flex-1 mr-2 select-all">
+                    {password}
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="lowercase"
-                      checked={options.lowercase}
-                      onCheckedChange={() => handleOptionChange("lowercase")}
-                    />
-                    <Label htmlFor="lowercase" className="cursor-pointer">
-                      {translate("lowercase", "password_generator")}
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="numbers"
-                      checked={options.numbers}
-                      onCheckedChange={() => handleOptionChange("numbers")}
-                    />
-                    <Label htmlFor="numbers" className="cursor-pointer">
-                      {translate("numbers", "password_generator")}
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="symbols"
-                      checked={options.symbols}
-                      onCheckedChange={() => handleOptionChange("symbols")}
-                    />
-                    <Label htmlFor="symbols" className="cursor-pointer">
-                      {translate("symbols", "password_generator")}
-                    </Label>
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={copied ? "default" : "outline"}
+                            size="icon"
+                            onClick={copyToClipboard}
+                            className="h-8 w-8"
+                          >
+                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{copied ? translate("copied", "password_generator") : translate("copy", "password_generator")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
 
-                <div className="bg-muted/30 p-4 rounded-md">
-                  <h3 className="text-sm font-medium mb-2">{translate("password_analysis", "password_generator")}</h3>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <div
-                        className={`h-2 w-2 rounded-full ${passwordStrength > 60 ? "bg-green-500" : "bg-gray-300"}`}
-                      ></div>
-                      <span className={passwordStrength > 60 ? "" : "text-muted-foreground"}>
-                        {passwordStrength > 60
-                          ? translate("strong_enough", "password_generator")
-                          : translate("not_strong_enough", "password_generator")}
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${length >= 12 ? "bg-green-500" : "bg-gray-300"}`}></div>
-                      <span className={length >= 12 ? "" : "text-muted-foreground"}>
-                        {length >= 12 ? translate("good_length", "password_generator") : translate("consider_longer", "password_generator")}
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div
-                        className={`h-2 w-2 rounded-full ${options.uppercase && options.lowercase && options.numbers && options.symbols ? "bg-green-500" : "bg-gray-300"}`}
-                      ></div>
-                      <span
-                        className={
-                          options.uppercase && options.lowercase && options.numbers && options.symbols
-                            ? ""
-                            : "text-muted-foreground"
-                        }
-                      >
-                        {options.uppercase && options.lowercase && options.numbers && options.symbols
-                          ? translate("using_all_types", "password_generator")
-                          : translate("consider_more_types", "password_generator")}
-                      </span>
-                    </li>
-                  </ul>
+                {/* Password Strength Indicator */}
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`flex h-6 w-6 items-center justify-center rounded-full ${strengthInfo.bgColor}`}>
+                        <StrengthIcon className={`h-3 w-3 ${strengthInfo.color}`} />
+                      </div>
+                      <span className={`text-sm font-medium ${strengthInfo.color}`}>{strengthInfo.label}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{translate("strength", "password_generator", { strength: passwordStrength })}</span>
+                  </div>
+                  <Progress value={passwordStrength} className="h-2" />
                 </div>
               </div>
-            </TabsContent>
+            ) : null}
 
-            {/* History Tab */}
-            <TabsContent value="history" className="mt-4" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              <div className="space-y-4">
-                <h3 className="font-semibold mb-2">{translate("history", "password_generator")}</h3>
-                {isHistoryLoading ? (
-                  <div className="flex justify-center items-center h-[180px]">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="text-sm text-muted-foreground">{translate("loading", "common")}</p>
+            <Tabs defaultValue="options" className="w-full" value={activeTab} onValueChange={handleTabChange}>
+              <TabsList className="grid grid-cols-2 mt-2">
+                <TabsTrigger value="options" onClick={() => handleTabChange("options")}>
+                  {translate("options", "password_generator")}
+                </TabsTrigger>
+                <TabsTrigger value="history" onClick={() => handleTabChange("history")}>
+                  {translate("history", "password_generator")}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="options" className="space-y-3 mt-3">
+                {/* Password Length */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium">{translate("password_length", "password_generator")}</label>
+                    <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{length}</span>
+                  </div>
+                  <Slider
+                    value={[length]}
+                    min={4}
+                    max={32}
+                    step={1}
+                    onValueChange={(value) => setLength(value[0])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span>4</span>
+                    <span>12</span>
+                    <span>20</span>
+                    <span>28</span>
+                    <span>32</span>
+                  </div>
+                </div>
+
+                {/* Character Sets */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="uppercase"
+                        checked={options.uppercase}
+                        onCheckedChange={() => handleOptionChange("uppercase")}
+                      />
+                      <Label htmlFor="uppercase" className="cursor-pointer text-xs">
+                        {translate("uppercase", "password_generator")}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="lowercase"
+                        checked={options.lowercase}
+                        onCheckedChange={() => handleOptionChange("lowercase")}
+                      />
+                      <Label htmlFor="lowercase" className="cursor-pointer text-xs">
+                        {translate("lowercase", "password_generator")}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="numbers"
+                        checked={options.numbers}
+                        onCheckedChange={() => handleOptionChange("numbers")}
+                      />
+                      <Label htmlFor="numbers" className="cursor-pointer text-xs">
+                        {translate("numbers", "password_generator")}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="symbols"
+                        checked={options.symbols}
+                        onCheckedChange={() => handleOptionChange("symbols")}
+                      />
+                      <Label htmlFor="symbols" className="cursor-pointer text-xs">
+                        {translate("symbols", "password_generator")}
+                      </Label>
                     </div>
                   </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("allCharacters")}>
-                    {translate("all_characters", "password_generator")}
-                  </label>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${options.easyToRead ? "border-primary" : "border-border"}`}
-                    onClick={() => handleOptionChange("easyToRead")}
-                  >
-                    {options.easyToRead && <div className="h-3 w-3 rounded-full bg-primary"></div>}
-                  </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("easyToRead")}>
-                    {translate("easy_to_read", "password_generator")}
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${options.easyToSay ? "border-primary" : "border-border"}`}
-                    onClick={() => handleOptionChange("easyToSay")}
-                  >
-                    {options.easyToSay && <div className="h-3 w-3 rounded-full bg-primary"></div>}
-                  </div>
-                  <label className="text-sm cursor-pointer" onClick={() => handleOptionChange("easyToSay")}>
-                    {translate("easy_to_say", "password_generator")}
-                  </label>
-                </div>
-              </div>
-
-              <div className="mt-4 p-4 bg-muted/50 rounded-md">
-                <h3 className="font-medium mb-2">{translate("password_tips", "password_generator")}</h3>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li>{translate("tip_min_length", "password_generator")}</li>
-                  <li>{translate("tip_mix", "password_generator")}</li>
-                  <li>{translate("tip_no_personal", "password_generator")}</li>
-                  <li>{translate("tip_unique", "password_generator")}</li>
-                  <li>{translate("tip_manager", "password_generator")}</li>
-                </ul>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    {translate("recently_generated", "password_generator")}
-                  </h3>
-                  <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => setPasswordHistory([])}>
-                    {translate("clear_history", "password_generator")}
-                  </Button>
-                </div>
-
-                {passwordHistory.length > 0 ? (
-                  <div className="space-y-2">
-                    {/* Show only current password in "current session" if exists */}
-                    {password && (
-                      <div 
-                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-mono text-sm truncate max-w-[260px]">
-                            {password}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {translate("current_session", "password_generator")}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                          onClick={() => {
-                            navigator.clipboard.writeText(password)
-                            toast({
-                              description: translate("copied", "password_generator"),
-                            })
-                          }}
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <h3 className="text-xs font-medium mb-1">{translate("password_analysis", "password_generator")}</h3>
+                    <ul className="space-y-1 text-xs">
+                      <li className="flex items-center gap-2">
+                        <div
+                          className={`h-1.5 w-1.5 rounded-full ${passwordStrength > 60 ? "bg-green-500" : "bg-gray-300"}`}
+                        ></div>
+                        <span className={passwordStrength > 60 ? "" : "text-muted-foreground"}>
+                          {passwordStrength > 60
+                            ? translate("strong_enough", "password_generator")
+                            : translate("not_strong_enough", "password_generator")}
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className={`h-1.5 w-1.5 rounded-full ${length >= 12 ? "bg-green-500" : "bg-gray-300"}`}></div>
+                        <span className={length >= 12 ? "" : "text-muted-foreground"}>
+                          {length >= 12 ? translate("good_length", "password_generator") : translate("consider_longer", "password_generator")}
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div
+                          className={`h-1.5 w-1.5 rounded-full ${options.uppercase && options.lowercase && options.numbers && options.symbols ? "bg-green-500" : "bg-gray-300"}`}
+                        ></div>
+                        <span
+                          className={
+                            options.uppercase && options.lowercase && options.numbers && options.symbols
+                              ? ""
+                              : "text-muted-foreground"
+                          }
                         >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                    
-                    {/* Show API history, filtering out the current password */}
-                    {passwordHistory && passwordHistory.length > 0 ? (
-                      passwordHistory.map((item) => {
-                        // Skip showing the current password to avoid duplicates
-                        if (item.data === password) return null;
-                        
-                        // Only display passwords that were successfully decrypted (handled by the hook)
-                        return (
-                          <div 
-                            key={item.doc_id}
-                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-mono text-sm truncate max-w-[260px]">
-                                {item.data}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(item.created_at).toLocaleString()}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                              onClick={() => {
-                                navigator.clipboard.writeText(item.data)
-                                toast({
-                                  description: translate("copied", "password_generator"),
-                                })
-                              }}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        );
-                      }).filter(Boolean)
-                    ) : (
-                      passwordHistory.length === 0 && (
-                        <div className="p-3 text-center text-muted-foreground">
-                          <p>{translate("no_history", "password_generator")}</p>
-                          <p className="text-xs">{translate("history_hint", "password_generator")}</p>
-                        </div>
-                      </div>
-                    ))}
+                          {options.uppercase && options.lowercase && options.numbers && options.symbols
+                            ? translate("using_all_types", "password_generator")
+                            : translate("consider_more_types", "password_generator")}
+                        </span>
+                      </li>
+                    </ul>
                   </div>
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <p>{translate("no_history", "password_generator")}</p>
-                    <p className="text-xs mt-1">{translate("history_hint", "password_generator")}</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+                </div>
+              </TabsContent>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
-              {translate("close", "password_generator")}
-            </Button>
-            <Button onClick={copyToClipboard} disabled={!password}>
-              {copied ? translate("copied", "password_generator") : translate("copy_password", "password_generator")}
-            </Button>
+              <TabsContent value="history" className="space-y-3 mt-3 max-h-[240px] overflow-y-auto">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-medium flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      {translate("recently_generated", "password_generator")}
+                    </h3>
+                    <Button variant="ghost" size="sm" className="text-xs h-6" onClick={handleClearHistory}>
+                      {translate("clear_history", "password_generator")}
+                    </Button>
+                  </div>
+
+                  {isHistoryLoading ? (
+                    <div className="flex justify-center items-center h-[100px]">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <p className="text-xs text-muted-foreground">{translate("loading", "common")}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-1" ref={historyContainerRef}>
+                      {/* Show current password in "current session" if exists */}
+                      {password && (
+                        <div 
+                          className="flex items-center justify-between p-1.5 bg-gray-50 dark:bg-gray-900 rounded group"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-mono text-xs truncate max-w-[220px]">
+                              {password}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {translate("current_session", "password_generator")}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                            onClick={() => {
+                              navigator.clipboard.writeText(password)
+                              toast({
+                                description: translate("copied", "password_generator"),
+                              })
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Show history items (filtered to remove current password) */}
+                      {passwordHistory && passwordHistory.length > 0 ? 
+                        passwordHistory
+                          .filter(item => item.data !== password)
+                          .map((item) => (
+                            <div 
+                              key={item.doc_id}
+                              className="flex items-center justify-between p-1.5 bg-gray-50 dark:bg-gray-900 rounded group"
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-mono text-xs truncate max-w-[220px]">
+                                  {item.data}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {new Date(item.created_at).toLocaleString()}
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(item.data)
+                                  toast({
+                                    description: translate("copied", "password_generator"),
+                                  })
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))
+                        : (
+                          <div className="p-4 text-center text-muted-foreground">
+                            <p className="text-xs">{translate("no_history", "password_generator")}</p>
+                            <p className="text-[10px] mt-1">{translate("history_hint", "password_generator")}</p>
+                          </div>
+                        )
+                      }
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
+        </div>
+        
+        {/* Fixed Footer */}
+        <div className="p-4 border-t border-border sticky bottom-0 bg-card z-10 flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>
+            {translate("close", "password_generator")}
+          </Button>
+          <Button size="sm" onClick={copyToClipboard} disabled={!password}>
+            {copied ? translate("copied", "password_generator") : translate("copy_password", "password_generator")}
+          </Button>
         </div>
       </div>
     </div>
