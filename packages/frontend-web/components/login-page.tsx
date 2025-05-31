@@ -390,10 +390,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
   if (isAuthenticating || isCheckingKeys || isProcessingAuth || (user && !showLoginForm && !show2FAModal && !isAuthFlowComplete)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-3"></div>
-        <p className="text-sm text-muted-foreground">
-          {isCheckingKeys ? t("checking_encryption_keys") : t("verifying_authentication")}
-        </p>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
       </div>
     );
   }

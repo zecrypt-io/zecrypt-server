@@ -4,7 +4,42 @@ import React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Command, Key, Search, Home, User, FileText, Bell, Settings, LogOut, Plus, Lock, Smile } from "lucide-react"
+import {
+  Command,
+  Key,
+  Search,
+  Home,
+  User,
+  FileText,
+  Bell,
+  Settings,
+  LogOut,
+  Plus,
+  Lock,
+  Smile,
+  Share,
+  Clock,
+  HardDrive,
+  Copy,
+  Edit,
+  Trash,
+  Eye,
+  EyeOff,
+  Filter,
+  RefreshCw,
+  Save,
+  Download,
+  Upload,
+  FolderPlus,
+  FilePlus,
+  Users,
+  Shield,
+  AlertCircle,
+  HelpCircle,
+  Wifi,
+  CreditCard,
+  Mail,
+} from "lucide-react"
 import { useState, useEffect } from "react"
 
 export function openKeyboardShortcutsHelp() {
@@ -43,6 +78,8 @@ export function KeyboardShortcutsHelp() {
         { keys: ["⌘", "K"], description: "Open command palette", icon: <Command className="h-4 w-4" /> },
         { keys: ["Shift", "?"], description: "Show keyboard shortcuts", icon: <Key className="h-4 w-4" /> },
         { keys: ["/"], description: "Focus search", icon: <Search className="h-4 w-4" /> },
+        // { keys: ["⌘", "S"], description: "Save changes", icon: <Save className="h-4 w-4" /> },
+        { keys: ["⌘", "R"], description: "Refresh data", icon: <RefreshCw className="h-4 w-4" /> },
       ],
     },
     {
@@ -50,8 +87,14 @@ export function KeyboardShortcutsHelp() {
       items: [
         { keys: ["⌘", "D"], description: "Go to Dashboard", icon: <Home className="h-4 w-4" /> },
         { keys: ["⌘", "A"], description: "Go to Accounts", icon: <User className="h-4 w-4" /> },
-        { keys: ["⌘", "F"], description: "Go to Files", icon: <FileText className="h-4 w-4" /> },
-        { keys: ["⌘", "N"], description: "Go to Notifications", icon: <Bell className="h-4 w-4" /> },
+        { keys: ["⌘", "X"], description: "Go to API Keys", icon: <Key className="h-4 w-4" /> },
+        { keys: ["⌘", "Y"], description: "Go to Wallet Passphrases", icon: <Lock className="h-4 w-4" /> },
+        { keys: ["⌘", "I"], description: "Go to WiFi", icon: <Wifi className="h-4 w-4" /> },
+        { keys: ["⌘", "Z"], description: "Go to Identity", icon: <User className="h-4 w-4" /> },
+        { keys: ["⌘", "C"], description: "Go to Cards", icon: <CreditCard className="h-4 w-4" /> },
+        { keys: ["⌘", "L"], description: "Go to Software Licenses", icon: <FileText className="h-4 w-4" /> },
+        { keys: ["⌘", "E"], description: "Go to Emails", icon: <Mail className="h-4 w-4" /> },
+        { keys: ["⌘", "S"], description: "Go to SSH Keys", icon: <Key className="h-4 w-4" /> },
       ],
     },
     {
@@ -60,6 +103,28 @@ export function KeyboardShortcutsHelp() {
         { keys: ["⌘", "G"], description: "Generate password", icon: <Key className="h-4 w-4" /> },
         { keys: ["⌘", "P"], description: "Switch project", icon: <Lock className="h-4 w-4" /> },
         { keys: ["⌘", "+"], description: "Add new account", icon: <Plus className="h-4 w-4" /> },
+        { keys: ["⌘", "C"], description: "Copy selected", icon: <Copy className="h-4 w-4" /> },
+        { keys: ["⌘", "E"], description: "Edit selected", icon: <Edit className="h-4 w-4" /> },
+        { keys: ["⌘", "Delete"], description: "Delete selected", icon: <Trash className="h-4 w-4" /> },
+        { keys: ["⌘", "I"], description: "Toggle visibility", icon: <Eye className="h-4 w-4" /> },
+        { keys: ["⌘", "L"], description: "Filter/Search", icon: <Filter className="h-4 w-4" /> },
+      ],
+    },
+    {
+      category: "File Operations",
+      items: [
+        { keys: ["⌘", "U"], description: "Upload file", icon: <Upload className="h-4 w-4" /> },
+        { keys: ["⌘", "J"], description: "Download file", icon: <Download className="h-4 w-4" /> },
+        { keys: ["⌘", "Shift", "F"], description: "New folder", icon: <FolderPlus className="h-4 w-4" /> },
+        { keys: ["⌘", "Shift", "N"], description: "New file", icon: <FilePlus className="h-4 w-4" /> },
+      ],
+    },
+    {
+      category: "Security",
+      items: [
+        { keys: ["⌘", "Shift", "L"], description: "Lock workspace", icon: <Lock className="h-4 w-4" /> },
+        { keys: ["⌘", "Shift", "S"], description: "Security settings", icon: <Shield className="h-4 w-4" /> },
+        { keys: ["⌘", "Shift", "A"], description: "Security alerts", icon: <AlertCircle className="h-4 w-4" /> },
       ],
     },
     {
@@ -67,7 +132,8 @@ export function KeyboardShortcutsHelp() {
       items: [
         { keys: ["⌘", "S"], description: "Open settings", icon: <Settings className="h-4 w-4" /> },
         { keys: ["⌘", "T"], description: "Toggle theme", icon: <Smile className="h-4 w-4" /> },
-        { keys: ["⌘", "L"], description: "Logout", icon: <LogOut className="h-4 w-4" /> },
+        { keys: ["⌘", "H"], description: "Show help", icon: <HelpCircle className="h-4 w-4" /> },
+        { keys: ["⌘", "Q"], description: "Logout", icon: <LogOut className="h-4 w-4" /> },
       ],
     },
   ]
@@ -81,9 +147,9 @@ export function KeyboardShortcutsHelp() {
             <DialogDescription>Use these keyboard shortcuts to work more efficiently in Zecrypt</DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {shortcuts.map((category) => (
-              <div key={category.category}>
+              <div key={category.category} className="space-y-4">
                 <h3 className="font-medium text-lg mb-2">{category.category}</h3>
                 <div className="space-y-2">
                   {category.items.map((shortcut, index) => (

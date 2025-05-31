@@ -14,8 +14,7 @@ export default function ReduxProvider({ children }: ReduxProviderProps) {
       <PersistGate
         loading={
           <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
-            <div className="loader" />
-            <p className="mt-4 text-sm font-medium">Initializing application...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
           </div>
         }
         persistor={persistor}
