@@ -172,4 +172,5 @@ This project is licensed under the terms of the license included in the reposito
 
 ## 📞 Support
 
-For support, please open an issue in the repository or contact the maintainers. 
+For support, please open an issue in the repository or contact the maintainer [@anandude](https://github.com/anandude) [itsmeakhil](https://github.com/itsmeakhil). 
+ 
