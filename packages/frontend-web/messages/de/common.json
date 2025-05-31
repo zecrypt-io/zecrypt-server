@@ -274,6 +274,8 @@
     "chars": "Zeichen",
     "digits": "Ziffern",
     "generate_new": "Neues Passwort generieren",
+    "generate_password": "Passwort generieren",
+    "click_generate_button": "Klicken Sie auf die Generieren-Schaltfläche oben",
     "copy": "Passwort kopieren",
     "copied": "Kopiert!",
     "save": "Passwort speichern",

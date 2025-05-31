@@ -328,6 +328,8 @@
     "chars": "chars",
     "digits": "digits",
     "generate_new": "Generate new password",
+    "generate_password": "Generate Password",
+    "click_generate_button": "Click the Generate button to generate a new password",
     "copy": "Copy password",
     "copied": "Copied!",
     "save": "Save password",
