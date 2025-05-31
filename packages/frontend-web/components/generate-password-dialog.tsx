@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Copy, RefreshCw, X, Check, Shield, ShieldCheck, ShieldAlert, Clock, Sparkles } from "lucide-react"
@@ -12,8 +12,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Card, CardContent } from "@/components/ui/card"
 import { useTranslator } from "@/hooks/use-translations"
 import { usePasswordHistory } from "@/hooks/use-password-history"
-import { formatDate } from "@/libs/api-client"
-import { Loader2 } from "lucide-react"
+// import { formatDate } from "@/libs/api-client"
+// import { Loader2 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 
 interface GeneratePasswordDialogProps {
@@ -26,8 +26,13 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   const [length, setLength] = useState(16)
   const [copied, setCopied] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
-  const { passwordHistory, isLoading, fetchPasswordHistory, savePasswordToHistory } = usePasswordHistory()
-  const [localPasswordHistory, setLocalPasswordHistory] = useState<string[]>([])
+  const { 
+    passwordHistory, 
+    isLoading: isHistoryLoading,
+    fetchPasswordHistory, 
+    savePasswordToHistory,
+    isProjectKeyLoading
+  } = usePasswordHistory()
   const [activeTab, setActiveTab] = useState("options")
   const [options, setOptions] = useState({
     uppercase: true,
@@ -39,80 +44,43 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     allCharacters: true,
   })
   
-  // Track whether we've manually saved a password to avoid showing 
-  // the current password in history until it's explicitly saved
-  const [hasManuallyCreatedPassword, setHasManuallyCreatedPassword] = useState(false)
-
   // Reference to the history container for scrolling
   const historyContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Refs for functions that might be unstable
+  const savePasswordToHistoryRef = useRef(savePasswordToHistory)
+  const fetchPasswordHistoryRef = useRef(fetchPasswordHistory)
+  const translateRef = useRef(translate)
 
-  // Generate password on initial load and when options change
+  // Update refs when dependencies change
   useEffect(() => {
-    if (!hasManuallyCreatedPassword) {
-      generateInitialPassword()
-    }
-  }, [length, options])
+    savePasswordToHistoryRef.current = savePasswordToHistory
+  }, [savePasswordToHistory])
 
-  // Generate initial password without adding to history
-  const generateInitialPassword = () => {
-    const result = generatePasswordString()
-    setPassword(result)
-    setCopied(false)
-    
-    // Save the automatically generated password to both local and API history
-    if (result) {
-      console.log("Saving automatically generated password to history");
-      
-      // Update local history for current session
-      setLocalPasswordHistory(prev => {
-        const updated = [result, ...prev];
-        return updated.slice(0, 10); // Keep only most recent 10
-      });
-      
-      // Save to API history
-      savePasswordToHistory(result).catch(error => {
-        console.error("Failed to save initial password to history:", error);
-        toast({
-          title: translate("note", "actions"),
-          description: translate("password_saved_locally", "password_generator", 
-            { default: "Password saved locally but not to server" }),
-          variant: "default",
-        });
-      });
-    }
-  }
-
-  // Generate password and optionally add to history
-  const generatePassword = (saveToHistory = true) => {
-    const result = generatePasswordString();
-    setPassword(result);
-    setCopied(false);
-    setHasManuallyCreatedPassword(true);
-    
-    // Save to local history and API history if requested
-    if (saveToHistory && result) {
-      console.log("Saving newly generated password to history");
-      // Update local history for current session
-      setLocalPasswordHistory(prev => {
-        const updated = [result, ...prev];
-        return updated.slice(0, 10); // Keep only most recent 10
-      });
-      
-      // Save to API history without automatically triggering a refresh
-      savePasswordToHistory(result).catch(error => {
-        console.error("Failed to save generated password to history:", error);
-        toast({
-          title: translate("note", "actions"),
-          description: translate("password_saved_locally", "password_generator", 
-            { default: "Password saved locally but not to server" }),
-          variant: "default",
-        });
-      });
-    }
-  }
-
-  // Calculate password strength
   useEffect(() => {
+    fetchPasswordHistoryRef.current = fetchPasswordHistory
+  }, [fetchPasswordHistory])
+
+  useEffect(() => {
+    translateRef.current = translate
+  }, [translate])
+
+  // Fetch password history only when tab is changed to history
+  useEffect(() => {
+    if (activeTab === "history" && !isHistoryLoading) {
+      console.log("Fetching password history for history tab")
+      fetchPasswordHistory()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]) // Only depend on activeTab changes to prevent loops
+
+  // Calculate password strength whenever password changes
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(0)
+      return
+    }
+    
     let strength = 0
 
     // Length contribution (up to 40%)
@@ -130,24 +98,10 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     setPasswordStrength(Math.round(strength))
   }, [password, length, options])
 
-  // Also update the effect to not fetch on every render
-  useEffect(() => {
-    // Fetch password history only once when the dialog is opened and when not already loading
-    if (passwordHistory.length === 0 && !isLoading) {
-      console.log("Initial fetch of password history on component mount");
-      fetchPasswordHistory();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Ensure we also fetch when switching to history tab
+  // Handle tab switching
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // When history tab is selected, refresh the data
-    if (value === "history") {
-      console.log("Fetching password history for history tab");
-      fetchPasswordHistory();
-    }
+    // Don't fetch here, let the useEffect handle it
   }
 
   const handleOptionChange = (option: keyof typeof options) => {
@@ -182,64 +136,6 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     }
   }
 
-  // Extracts the actual password generation logic into a separate function
-  const generatePasswordString = (): string => {
-    const chars = {
-      lowercase: "abcdefghijklmnopqrstuvwxyz",
-      uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-      numbers: "0123456789",
-      symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
-    }
-
-    // Handle easy to read (remove similar characters)
-    const easyToReadChars = {
-      lowercase: "abcdefghijkmnpqrstuvwxyz", // removed l and o
-      uppercase: "ABCDEFGHJKLMNPQRSTUVWXYZ", // removed I and O
-      numbers: "23456789", // removed 0 and 1
-      symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
-    }
-
-    // Handle easy to say (only letters)
-    const easyToSayChars = {
-      lowercase: "abcdefghijklmnopqrstuvwxyz",
-      uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-      numbers: "",
-      symbols: "",
-    }
-
-    let validChars = ""
-    const charSet = options.easyToRead ? easyToReadChars : options.easyToSay ? easyToSayChars : chars
-
-    if (options.lowercase) validChars += charSet.lowercase
-    if (options.uppercase) validChars += charSet.uppercase
-    if (options.numbers) validChars += charSet.numbers
-    if (options.symbols) validChars += charSet.symbols
-
-    // Fallback to lowercase if nothing is selected
-    if (validChars === "") validChars = chars.lowercase
-
-    let result = ""
-    const validCharsLength = validChars.length
-
-    // Ensure we have at least one character from each selected set
-    const requiredChars = []
-    if (options.lowercase) requiredChars.push(getRandomChar(charSet.lowercase))
-    if (options.uppercase) requiredChars.push(getRandomChar(charSet.uppercase))
-    if (options.numbers) requiredChars.push(getRandomChar(charSet.numbers))
-    if (options.symbols) requiredChars.push(getRandomChar(charSet.symbols))
-
-    // Add required characters
-    result = requiredChars.join("")
-
-    // Fill the rest randomly
-    for (let i = result.length; i < length; i++) {
-      result += validChars.charAt(Math.floor(Math.random() * validCharsLength))
-    }
-
-    // Shuffle the result to avoid predictable patterns
-    return shuffleString(result)
-  }
-
   const getRandomChar = (charSet: string): string => {
     if (!charSet.length) return ""
     return charSet.charAt(Math.floor(Math.random() * charSet.length))
@@ -256,6 +152,15 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
   const copyToClipboard = async () => {
     try {
+      if (!password) {
+        toast({
+          title: translate("note", "actions"),
+          description: translate("no_password_to_copy", "password_generator", { default: "Generate a password first" }),
+          variant: "default",
+        })
+        return
+      }
+      
       await navigator.clipboard.writeText(password)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -327,8 +232,99 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     }
   }
 
+  // Memoized password generation function
+  const generatePasswordString = useCallback((): string => {
+    const chars = {
+      lowercase: "abcdefghijklmnopqrstuvwxyz",
+      uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      numbers: "0123456789",
+      symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
+    }
+
+    // Handle easy to read (remove similar characters)
+    const easyToReadChars = {
+      lowercase: "abcdefghijkmnpqrstuvwxyz", // removed l and o
+      uppercase: "ABCDEFGHJKLMNPQRSTUVWXYZ", // removed I and O
+      numbers: "23456789", // removed 0 and 1
+      symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
+    }
+
+    // Handle easy to say (only letters)
+    const easyToSayChars = {
+      lowercase: "abcdefghijklmnopqrstuvwxyz",
+      uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      numbers: "",
+      symbols: "",
+    }
+
+    let validChars = ""
+    const charSet = options.easyToRead ? easyToReadChars : options.easyToSay ? easyToSayChars : chars
+
+    if (options.lowercase) validChars += charSet.lowercase
+    if (options.uppercase) validChars += charSet.uppercase
+    if (options.numbers) validChars += charSet.numbers
+    if (options.symbols) validChars += charSet.symbols
+
+    // Fallback to lowercase if nothing is selected
+    if (validChars === "") validChars = chars.lowercase
+
+    let result = ""
+    const validCharsLength = validChars.length
+
+    // Ensure we have at least one character from each selected set
+    const requiredChars = []
+    if (options.lowercase) requiredChars.push(getRandomChar(charSet.lowercase))
+    if (options.uppercase) requiredChars.push(getRandomChar(charSet.uppercase))
+    if (options.numbers) requiredChars.push(getRandomChar(charSet.numbers))
+    if (options.symbols) requiredChars.push(getRandomChar(charSet.symbols))
+
+    // Add required characters
+    result = requiredChars.join("")
+
+    // Fill the rest randomly
+    for (let i = result.length; i < length; i++) {
+      result += validChars.charAt(Math.floor(Math.random() * validCharsLength))
+    }
+
+    // Shuffle the result to avoid predictable patterns
+    return shuffleString(result)
+  }, [length, options])
+
+  // Function to generate password and update UI
+  const generatePasswordAndUpdateDisplay = useCallback(() => {
+    const newPassword = generatePasswordString()
+    setPassword(newPassword)
+    setCopied(false)
+    return newPassword
+  }, [generatePasswordString])
+
+  // Function to generate password, update UI, and save to history
+  const handleGeneratePasswordAndSave = () => {
+    const newPassword = generatePasswordAndUpdateDisplay()
+    savePasswordToHistoryRef.current(newPassword)
+      .then(() => {
+        fetchPasswordHistoryRef.current() // Refresh history
+      })
+      .catch(error => {
+        console.error("Failed to save new password to history:", error)
+        toast({
+          title: translateRef.current("note", "actions"),
+          description: translateRef.current("password_saved_locally", "password_generator", 
+            { default: "Password saved locally but not to server" }),
+          variant: "default",
+        })
+      })
+  }
+
   const strengthInfo = getStrengthLabel()
   const StrengthIcon = strengthInfo.icon
+
+  useEffect(() => {
+    console.log("GeneratePasswordDialog MOUNTED");
+    return () => {
+      console.log("GeneratePasswordDialog UNMOUNTED");
+    };
+  }, []); // Empty dependency array
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
@@ -382,58 +378,61 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
             </Card>
           </div>
 
-          {/* Password Display */}
-          <div className="relative">
-            <div className="flex items-center justify-between bg-muted p-4 rounded-md font-mono text-xl break-all">
-              <div className="flex-1 mr-2 select-all">{password}</div>
-              <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => generatePassword(true)} className="h-10 w-10">
-                        <RefreshCw className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{translate("generate_new", "password_generator")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={copied ? "default" : "outline"}
-                        size="icon"
-                        onClick={copyToClipboard}
-                        className="h-10 w-10"
-                      >
-                        {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{copied ? translate("copied", "password_generator") : translate("copy", "password_generator")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-
-            {/* Password Strength Indicator */}
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${strengthInfo.bgColor}`}>
-                    <StrengthIcon className={`h-4 w-4 ${strengthInfo.color}`} />
-                  </div>
-                  <span className={`font-medium ${strengthInfo.color}`}>{strengthInfo.label}</span>
-                </div>
-                <span className="text-sm text-muted-foreground">{translate("strength", "password_generator", { strength: passwordStrength })}</span>
-              </div>
-              <Progress value={passwordStrength} className="h-2" />
-            </div>
+          {/* Generate Password Button - Prominent */}
+          <div className="flex justify-center">
+            <Button 
+              size="lg" 
+              className="w-full py-6 text-lg gap-2"
+              onClick={handleGeneratePasswordAndSave}
+            >
+              <RefreshCw className="h-5 w-5" />
+              {translate("generate_password", "password_generator", { default: "Generate Password" })}
+            </Button>
           </div>
+
+          {/* Password Display - Only show when password exists */}
+          {password ? (
+            <div className="relative">
+              <div className="flex items-center justify-between bg-muted p-4 rounded-md font-mono text-xl break-all">
+                <div className="flex-1 mr-2 select-all">
+                  {password}
+                </div>
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={copied ? "default" : "outline"}
+                          size="icon"
+                          onClick={copyToClipboard}
+                          className="h-10 w-10"
+                        >
+                          {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{copied ? translate("copied", "password_generator") : translate("copy", "password_generator")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+
+              {/* Password Strength Indicator */}
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${strengthInfo.bgColor}`}>
+                      <StrengthIcon className={`h-4 w-4 ${strengthInfo.color}`} />
+                    </div>
+                    <span className={`font-medium ${strengthInfo.color}`}>{strengthInfo.label}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{translate("strength", "password_generator", { strength: passwordStrength })}</span>
+                </div>
+                <Progress value={passwordStrength} className="h-2" />
+              </div>
+            </div>
+          ) : null}
 
           <Tabs defaultValue="options" className="w-full" value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid grid-cols-2 mt-6">
@@ -562,7 +561,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
             <TabsContent value="history" className="mt-4" style={{ maxHeight: '300px', overflowY: 'auto' }}>
               <div className="space-y-4">
                 <h3 className="font-semibold mb-2">{translate("history", "password_generator")}</h3>
-                {isLoading ? (
+                {isHistoryLoading ? (
                   <div className="flex justify-center items-center h-[180px]">
                     <div className="flex flex-col items-center gap-2">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -571,44 +570,40 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {/* Show local history first (current session) */}
-                    {localPasswordHistory.length > 0 && (
-                      localPasswordHistory.map((historyPass, idx) => (
-                        <div 
-                          key={`local-${idx}`}
-                          className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-mono text-sm truncate max-w-[260px]">
-                              {historyPass}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {translate("current_session", "password_generator")}
-                            </span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                            onClick={() => {
-                              navigator.clipboard.writeText(historyPass)
-                              toast({
-                                description: translate("copied", "password_generator"),
-                              })
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+                    {/* Show only current password in "current session" if exists */}
+                    {password && (
+                      <div 
+                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded group"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-mono text-sm truncate max-w-[260px]">
+                            {password}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {translate("current_session", "password_generator")}
+                          </span>
                         </div>
-                      ))
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                          onClick={() => {
+                            navigator.clipboard.writeText(password)
+                            toast({
+                              description: translate("copied", "password_generator"),
+                            })
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                     
-                    {/* Show API history */}
+                    {/* Show API history, filtering out the current password */}
                     {passwordHistory && passwordHistory.length > 0 ? (
                       passwordHistory.map((item) => {
-                        // Skip showing items that are already in local history to avoid duplicates
-                        const isInLocalHistory = localPasswordHistory.includes(item.data);
-                        if (isInLocalHistory) return null;
+                        // Skip showing the current password to avoid duplicates
+                        if (item.data === password) return null;
                         
                         // Only display passwords that were successfully decrypted (handled by the hook)
                         return (
@@ -641,7 +636,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                         );
                       }).filter(Boolean)
                     ) : (
-                      !localPasswordHistory.length && (
+                      passwordHistory.length === 0 && (
                         <div className="p-3 text-center text-muted-foreground">
                           <p>{translate("no_history", "password_generator")}</p>
                           <p className="text-xs">{translate("history_hint", "password_generator")}</p>
@@ -658,7 +653,9 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
             <Button variant="outline" onClick={onClose}>
               {translate("close", "password_generator")}
             </Button>
-            <Button onClick={copyToClipboard}>{copied ? translate("copied", "password_generator") : translate("copy_password", "password_generator")}</Button>
+            <Button onClick={copyToClipboard} disabled={!password}>
+              {copied ? translate("copied", "password_generator") : translate("copy_password", "password_generator")}
+            </Button>
           </div>
         </div>
       </div>

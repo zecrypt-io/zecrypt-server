@@ -37,13 +37,16 @@ export function usePasswordHistory() {
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   
   const [projectKey, setProjectKey] = useState<string | null>(null);
+  const [isProjectKeyLoading, setIsProjectKeyLoading] = useState(true);
 
   // Load the project key when component mounts or project changes
   useEffect(() => {
     const loadProjectKey = async () => {
+      setIsProjectKeyLoading(true);
       if (!workspaces || !selectedWorkspaceId || !selectedProjectId) {
-        console.log("Missing workspace or project information");
+        console.log("Missing workspace or project information for key loading");
         setProjectKey(null);
+        setIsProjectKeyLoading(false);
         return;
       }
       
@@ -54,8 +57,9 @@ export function usePasswordHistory() {
           ?.projects.find(p => p.project_id === selectedProjectId);
           
         if (!currentProject) {
-          console.log("Project not found in workspaces");
+          console.log("Project not found in workspaces for key loading");
           setProjectKey(null);
+          setIsProjectKeyLoading(false);
           return;
         }
 
@@ -74,6 +78,8 @@ export function usePasswordHistory() {
       } catch (error) {
         console.error("Error loading project key:", error);
         setProjectKey(null);
+      } finally {
+        setIsProjectKeyLoading(false);
       }
     };
     
@@ -181,38 +187,29 @@ export function usePasswordHistory() {
     }
     
     try {
-      // Determine what to save - encrypted or plaintext
       let dataToSave: string;
       
       if (projectKey) {
-        console.log("Encrypting password before saving");
-        // Encrypt the password
+        console.log("Encrypting password before saving (project key available)");
         dataToSave = await encryptDataField(password, projectKey);
       } else {
-        console.log("No project key available, saving password without encryption");
-        // If no project key, save in plaintext (backend should ideally have its own encryption)
+        console.log("No project key available at save time, saving password without encryption");
         dataToSave = password;
       }
       
-      // Save to API
       console.log("Sending POST request to /password-history");
       const response = await axiosInstance.post('/password-history', { 
         data: dataToSave 
       });
       
       console.log("Password saved to history:", response.status);
-      
-      // Don't automatically refresh to prevent potential loops
-      // fetchPasswordHistory();
     } catch (error) {
       console.error("Error saving password to history:", error);
-      // Show toast for error
       toast({
         title: translate("error", "actions"),
         description: translate("error_saving_history", "password_generator", { default: "Failed to save password to history" }),
         variant: "destructive",
       });
-      // Rethrow the error so it can be caught by the component
       throw error;
     }
   }, [projectKey, translate]);
@@ -220,6 +217,8 @@ export function usePasswordHistory() {
   return {
     passwordHistory,
     isLoading,
+    isProjectKeyLoading,
+    projectKey,
     fetchPasswordHistory,
     savePasswordToHistory
   };
