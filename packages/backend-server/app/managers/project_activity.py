@@ -1,13 +1,12 @@
 from app.framework.mongo_db import base_manager as db_manager
-from app.managers.collection_names import SECRET
+from app.managers.collection_names import PROJECT_ACTIVITY
 
 
-collection_name = SECRET
+collection_name = PROJECT_ACTIVITY
 
 
 def insert_one(db, data):
     db_manager.insert_one(db, collection_name, data)
-    data.pop("_id", None)
 
 
 def insert_many(db, data_list):
@@ -22,12 +21,10 @@ def update_many(db, query, payload):
     db_manager.update_many(db, collection_name, query, payload)
 
 
-def find_one_and_update(db, query, update_query, return_document=True):
-    details = db_manager.find_one_and_update(
+def find_one_and_update(db, query, update_query, return_document=False):
+    return db_manager.find_one_and_update(
         db, collection_name, query, update_query, return_document=return_document
     )
-    details.pop("_id")
-    return details
 
 
 def delete_one(db, query):
@@ -53,6 +50,3 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
 
 def count_documents(db, query):
     return db_manager.count_documents(db, collection_name, query)
-
-def get_project_secrets_count(db,data_type, project_id):
-    return count_documents(db, {"project_id": project_id, "data_type": data_type, "access": {"$ne":False}})
