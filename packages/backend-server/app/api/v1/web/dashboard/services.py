@@ -8,7 +8,7 @@ from app.managers import (
 async def get_dashboard_overview(request, user):
     db=user.get("db")
     project_id = request.path_params.get("project_id")
-    project_details = project_manager.find_one(db, {"project_id": project_id})
+    project_details = project_manager.find_one(db, {"doc_id": project_id})
     if not project_details:
         return response_helper(404, "Project not found")
     
@@ -24,7 +24,7 @@ async def get_dashboard_overview(request, user):
 async def get_dashboard_recent_activity(request, user):
     db=user.get("db")
     project_id = request.path_params.get("project_id")
-    project_details = project_manager.find_one(db, {"project_id": project_id})
+    project_details = project_manager.find_one(db, {"doc_id": project_id})
     if not project_details:
         return response_helper(404, "Project not found")
     

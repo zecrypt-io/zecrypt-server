@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, Request
-from app.api.v1.web.dashboard.services import get_dashboard_overview
+from app.api.v1.web.dashboard.services import get_dashboard_overview, get_dashboard_recent_activity
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
 from app.api.v1.web.route_constants import (
