@@ -7,6 +7,7 @@ from app.api.v1.web.project_activity.services import add_recent_activity
 
 background_tasks = BackgroundTasks()
 
+
 async def get_secret_details(db, data_type, doc_id):
     secret = secrets_manager.find_one(
         db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
@@ -33,7 +34,9 @@ async def get_secrets(request, user, data_type):
     else:
         secrets = secrets_manager.find(db, query)
 
-    return response_helper(200, translate(f"{data_type}.list"), data=secrets, count=len(secrets))
+    return response_helper(
+        200, translate(f"{data_type}.list"), data=secrets, count=len(secrets)
+    )
 
 
 async def add_secret(request, user, data_type, payload, background_tasks):
@@ -48,7 +51,10 @@ async def add_secret(request, user, data_type, payload, background_tasks):
         "secret_type": data_type,
     }
 
-    secrets = secrets_manager.find_one(db,query,)
+    secrets = secrets_manager.find_one(
+        db,
+        query,
+    )
     if secrets:
         return response_helper(400, translate(f"{data_type}.already_exists"))
 
@@ -62,7 +68,14 @@ async def add_secret(request, user, data_type, payload, background_tasks):
         }
     )
     secrets_manager.insert_one(db, payload)
-    background_tasks.add_task(add_recent_activity, user, project_id, data_type, payload.get("doc_id"), "create")
+    background_tasks.add_task(
+        add_recent_activity,
+        user,
+        project_id,
+        data_type,
+        payload.get("doc_id"),
+        "create",
+    )
     return response_helper(201, translate(f"{data_type}.add"), data=payload)
 
 
@@ -97,7 +110,9 @@ async def update_secret(request, user, data_type, payload, background_tasks):
         {"doc_id": doc_id},
         {"$set": payload},
     )
-    background_tasks.add_task(add_recent_activity, user, project_id, data_type, doc_id, "update")
+    background_tasks.add_task(
+        add_recent_activity, user, project_id, data_type, doc_id, "update"
+    )
     return response_helper(200, translate(f"{data_type}.update"), data=payload)
 
 
@@ -105,10 +120,12 @@ async def delete_secret(request, user, data_type, background_tasks):
     db = user.get("db")
     doc_id = request.path_params.get("doc_id")
     project_id = request.path_params.get("project_id")
-    
+
     if not secrets_manager.find_one(db, {"doc_id": doc_id, "secret_type": data_type}):
         return response_helper(404, translate(f"{data_type}.not_found"))
 
     secrets_manager.delete_one(db, {"doc_id": doc_id, "secret_type": data_type})
-    background_tasks.add_task(add_recent_activity, user, project_id, data_type, doc_id, "delete")
+    background_tasks.add_task(
+        add_recent_activity, user, project_id, data_type, doc_id, "delete"
+    )
     return response_helper(200, translate(f"{data_type}.delete"), data={})

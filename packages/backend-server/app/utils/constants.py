@@ -10,4 +10,3 @@ SECRET_TYPE_CARD = "card"
 SECRET_TYPE_SSH_KEY = "ssh_key"
 SECRET_TYPE_NOTE = "note"
 SECRET_TYPE_PASSWORD_HISTORY = "password_history"
-

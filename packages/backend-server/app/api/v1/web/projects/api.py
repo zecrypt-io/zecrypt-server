@@ -89,4 +89,4 @@ async def get_project_keys_api(
     workspace_id: str,
     user: UserDetails = Depends(get_current_user),
 ):
-    return get_project_keys(request, user.get("db"), user.get("user_id"))
+    return get_project_keys(request, user)

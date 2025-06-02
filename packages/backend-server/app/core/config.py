@@ -4,9 +4,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     MONGO_DB_URL: str
     JWT_SECRET: str
-    JWT_ALGORITHM: str="HS512"
+    JWT_ALGORITHM: str = "HS512"
     ENV: str
-    DB_NAME:str
+    DB_NAME: str
 
     STACK_AUTH_PROJECT_ID: str
     STACK_AUTH_CLIENT_ID: str
