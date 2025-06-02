@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { logoutAPI } from "./api-client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -183,30 +184,38 @@ export async function logout({
   onComplete?: () => void;
 }): Promise<void> {
   try {
-    // 1. Clear access token cookie
+    // 1. Call the logout API endpoint to notify the backend
+    try {
+      await logoutAPI();
+    } catch (apiError) {
+      // Log but continue with logout process even if API call fails
+      console.error("Error calling logout API:", apiError);
+    }
+    
+    // 2. Clear access token cookie
     document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
     
-    // 2. Clear Redux state
+    // 3. Clear Redux state
     dispatch(clearUserData());
     if (resetWorkspaceState) {
       dispatch(resetWorkspaceState());
     }
     
-    // 3. Completely clear session storage
+    // 4. Completely clear session storage
     sessionStorage.clear();
     
-    // 4. Completely clear local storage
+    // 5. Completely clear local storage
     localStorage.clear();
     
-    // 5. Sign out from Stack auth
+    // 6. Sign out from Stack auth
     if (user && typeof user.signOut === 'function') {
       await user.signOut();
     }
     
-    // 6. Redirect to login page
+    // 7. Redirect to login page
     router.replace(`/${locale}/login`);
     
-    // 7. Execute completion callback if provided
+    // 8. Execute completion callback if provided
     if (onComplete && typeof onComplete === 'function') {
       onComplete();
     }
