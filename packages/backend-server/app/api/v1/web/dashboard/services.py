@@ -17,9 +17,10 @@ async def get_dashboard_overview(request, user):
 
     data = {}
     for key, value in features.items():
-        data[key] = secret_manager.get_project_secrets_count(
-            user.get("db"), key, project_id
-        )
+        if value.get("enabled"):
+            data[key] = secret_manager.get_project_secrets_count(
+                user.get("db"), key, project_id
+            )
 
     return response_helper(200, "Dashboard overview loaded successfully", data)
 
