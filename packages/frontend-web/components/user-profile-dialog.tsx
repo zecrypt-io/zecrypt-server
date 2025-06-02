@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../libs/Redux/store";
 import { clearUserData } from "../libs/Redux/userSlice";
+import { logout } from "@/libs/utils";
 // import { clearWorkspaceData } from "../libs/Redux/workspaceSlice";
 
 interface UserProfileDialogProps {
@@ -35,7 +36,7 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
   // Sync state with Redux data when userData changes
   useEffect(() => {
     if (userData) {
-      setName(userData.name);
+      setName(userData.name || "Sadik Ali");
       setEmail(userData.email || "sadik@example.com"); // Email might not be in userSlice
       setAvatarSrc(userData.profile_url || "/placeholder.svg?height=128&width=128");
     }
@@ -61,26 +62,14 @@ export function UserProfileDialog({ onClose }: UserProfileDialogProps) {
   };
 
   const handleLogout = async () => {
-    try {
-      if (user) {
-        // Sign out from Stack using the user object's signOut method
-        await user.signOut();
-      }
-
-      // Clear Redux state
-      dispatch(clearUserData());
-      // dispatch(clearWorkspaceData());
-
-      // Remove any local storage items (if applicable)
-      localStorage.removeItem("authToken"); // Optional, remove if not used
-
-      // Redirect to login page
-      router.push("/");
-      onClose(); // Close the dialog
-    } catch (error) {
-      console.error("Error during logout:", error);
-      // Optionally show an error message to the user
-    }
+    await logout({
+      user,
+      dispatch,
+      router,
+      clearUserData,
+      locale: "en", // Default to English if locale isn't available in this component
+      onComplete: onClose // Close the dialog after logout
+    });
   };
 
   // If no user is logged in, don't render the dialog

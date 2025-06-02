@@ -49,6 +49,7 @@ import { useUser } from "@stackframe/stack";
 import { useTranslator } from "@/hooks/use-translations";
 import { secureSetItem } from '@/libs/session-storage-utils';
 import { SearchModal } from "@/components/search-modal";
+import { logout } from "@/libs/utils";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -363,27 +364,14 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   };
 
   const handleLogout = async () => {
-    try {
-      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
-      
-      dispatch(clearUserData());
-      dispatch(resetWorkspaceState());
-      
-      await secureSetItem("privateKey", "");
-      await secureSetItem("publicKey", "");
-      
-      localStorage.removeItem("userPublicKey");
-      localStorage.removeItem("zecrypt_device_id");
-      
-      if (user) {
-        await user.signOut();
-      }
-      
-      router.replace(`/${locale}/login`);
-    } catch (error) {
-      console.error("Logout error:", error);
-      router.replace(`/${locale}/login`);
-    }
+    await logout({
+      user,
+      dispatch,
+      router,
+      clearUserData,
+      resetWorkspaceState,
+      locale
+    });
   };
 
   const switchLanguage = (newLocale: string) => {

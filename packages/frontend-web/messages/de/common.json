@@ -60,6 +60,7 @@
     "login": "Anmelden",
     "signup": "Registrieren",
     "logout": "Abmelden",
+    "dont_have_account": "Noch kein Konto?",
     "email": "Email",
     "password": "Passwort",
     "agreement": "Beim Anmelden stimmen Sie unseren",
