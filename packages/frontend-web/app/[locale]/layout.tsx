@@ -8,6 +8,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import ReduxProvider from "../../libs/Redux/ReduxProvider";
 import { AuthErrorListener } from '@/components/auth-error-listener';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,6 +67,7 @@ export default async function LocaleLayout({
           </StackTheme>
         </StackProvider>
       </NextIntlClientProvider>
+      <Analytics />
     </ThemeProvider>
   );
 }
