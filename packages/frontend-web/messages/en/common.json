@@ -96,9 +96,7 @@
     "ascending": "Ascending",
     "descending": "Descending",
     "clear_sort": "Clear Sort",
-    "search_licenses": "Search licenses...",
     "search_across_all_fields": "Search across all fields...",
-    "add_a_tag": "Add a tag",
     "update_api_key": "Update API Key",
     "licenses": {
       "licenses": "Software Licenses",
@@ -139,10 +137,14 @@
     "signup": "Sign Up",
     "logout": "Logout",
     "sign_up": "Sign up",
+    "dont_have_account": "Don't have an account?",
     "email": "Email",
     "password": "Password",
     "agreement": "When signing in, you agree to our terms and conditions",
     "terms": "Terms",
+    "privacy_policy": "Privacy Policy",
+    "terms_and_conditions": "Terms and Conditions",
+    "service_status": "Service Status",
     "verification_code": "Verification Code",
     "2fa_verify": "2FA Verification",
     "2fa_enter_code": "Enter the 6-digit code from your authenticator app",
@@ -200,12 +202,7 @@
     "incorrect_encryption_password": "Incorrect master password. Please try again.",
     "multi_device_login": "Login from New Device",
     "multi_device_desc": "You're logging in from a new device. Please enter your master password to access your encrypted data.",
-    "authenticating": "Authenticating...",
-    "welcome_to": "Welcome To Polymerize Labs",
-    "dont_have_account": "Don't have an account?",
-    "privacy_policy": "Privacy Policy",
-    "terms_and_conditions": "Terms & Conditions",
-    "service_status": "Service Status"
+    "authenticating": "Authenticating..."
   },
   "features": {
     "trial_title": "Your Secured Storage Manager",
@@ -214,13 +211,11 @@
     "advanced_security": "Military-grade encryption (AES-GCM) for rock-solid security",
     "security_alerts": "Instant breach alerts so you're always one step ahead - (Coming Soon)",
     "multi_platform": "Available on Mac, iOS, Windows, Android, Chrome OS, and Linux - (coming soon)",
-    "looking_for_options": "Looking for an individual, team, or business account?",
-    "see_options": "See all account options",
     "organization": "Organization",
     "organization_desc": "Organize credentials into projects for better management and quick access.",
     "secure_storage": "Secure Storage",
     "secure_storage_desc": "Store all your passwords and sensitive data with military-grade encryption.",
-    "secure_password_manager": "Secure Password Manager"
+    "secure_password_manager": "End to end encrypted cloud storage"
   },
   "actions": {
     "save": "Save",
@@ -231,6 +226,8 @@
     "error": "Error"
   },
   "dashboard": {
+    "project_limit_reached": "Project limit reached",
+    "alpha_one_project_limit": "We are currently running on alpha, only one project is allowed per workspace.",
     "select_project": "Select Projects",
     "manage_projects": "Manage projects",
     "select_or_create_project": "Select or create a project",
@@ -330,6 +327,8 @@
     "chars": "chars",
     "digits": "digits",
     "generate_new": "Generate new password",
+    "generate_password": "Generate Password",
+    "click_generate_button": "Click the Generate button to generate a new password",
     "copy": "Copy password",
     "copied": "Copied!",
     "save": "Save password",
@@ -367,7 +366,8 @@
     "fair": "Fair",
     "good": "Good",
     "strong_strength": "Strong",
-    "strength": "{strength}% Strength"
+    "strength": "{strength}% Strength",
+    "current_session": "Current Session"
   },
   "user_settings": {
     "title": "User Settings",
@@ -1108,6 +1108,7 @@
     "add": "Add",
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
-    "save_changes": "Save Changes"
+    "save_changes": "Save Changes",
+    "search_licenses": "Search licenses..."
   }
 }
