@@ -150,3 +150,70 @@ function getNestedValue(obj: Record<string, any>, path: string): any {
     current && current[key] !== undefined ? current[key] : undefined, obj
   );
 }
+
+/**
+ * Centralized logout function to be used across the application
+ * Handles all logout-related tasks: clearing cookies, Redux state, storage, and auth
+ * 
+ * @param options Configuration options for logout
+ * @param options.user Stack user object for signOut
+ * @param options.dispatch Redux dispatch function
+ * @param options.router Next.js router for redirection
+ * @param options.clearUserData Redux action to clear user data
+ * @param options.resetWorkspaceState Redux action to reset workspace state
+ * @param options.locale Current locale for redirecting to login page
+ * @param options.onComplete Optional callback to run after logout is completed
+ * @returns Promise that resolves when logout is complete
+ */
+export async function logout({
+  user,
+  dispatch,
+  router,
+  clearUserData,
+  resetWorkspaceState,
+  locale = 'en',
+  onComplete,
+}: {
+  user: any;
+  dispatch: Function;
+  router: any;
+  clearUserData: Function;
+  resetWorkspaceState?: Function;
+  locale?: string;
+  onComplete?: () => void;
+}): Promise<void> {
+  try {
+    // 1. Clear access token cookie
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
+    
+    // 2. Clear Redux state
+    dispatch(clearUserData());
+    if (resetWorkspaceState) {
+      dispatch(resetWorkspaceState());
+    }
+    
+    // 3. Completely clear session storage
+    sessionStorage.clear();
+    
+    // 4. Completely clear local storage
+    localStorage.clear();
+    
+    // 5. Sign out from Stack auth
+    if (user && typeof user.signOut === 'function') {
+      await user.signOut();
+    }
+    
+    // 6. Redirect to login page
+    router.replace(`/${locale}/login`);
+    
+    // 7. Execute completion callback if provided
+    if (onComplete && typeof onComplete === 'function') {
+      onComplete();
+    }
+    
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Still try to redirect even if there's an error
+    router.replace(`/${locale}/login`);
+  }
+}

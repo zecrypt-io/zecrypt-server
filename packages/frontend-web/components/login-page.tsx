@@ -39,6 +39,7 @@ import { EncryptionSetupModal } from "./encryption-setup-modal";
 import { EncryptionUnlockModal } from "./encryption-unlock-modal";
 import { exportKeyToString } from "@/libs/crypto-utils";
 import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { logout } from "@/libs/utils";
 
 export interface LoginPageProps {
   locale?: string;
@@ -390,29 +391,13 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
   // Handle logout
   const handleLogout = () => {
-    // Clear access token cookie
-    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
-    
-    // Clear user data from Redux
-    dispatch(
-      setUserData({
-        user_id: null,
-        name: null,
-        profile_url: null,
-        email: null,
-        access_token: null,
-        refresh_token: null,
-        locale: locale || "en",
-        is_2fa_enabled: false,
-      })
-    );
-    
-    // Clear session storage
-    secureSetItem("privateKey", "");
-    secureSetItem("publicKey", "");
-    
-    // Redirect to login
-    router.push(`/${locale}/login`);
+    logout({
+      user,
+      dispatch,
+      router,
+      clearUserData: setUserData,
+      locale
+    });
   };
 
   // Loading state
