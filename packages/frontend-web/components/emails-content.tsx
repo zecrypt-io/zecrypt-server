@@ -16,7 +16,9 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
-  Filter
+  Filter,
+  ArrowDownAZ,
+  Clock
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -73,6 +75,7 @@ export function EmailsContent() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [emailToDelete, setEmailToDelete] = useState<string | null>(null);
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const {
     emailsToDisplay,
@@ -95,6 +98,7 @@ export function EmailsContent() {
     nextPage,
     prevPage,
     goToPage,
+    filterByTag,
   } = useEmailManagement({
     selectedWorkspaceId,
     selectedProjectId,
@@ -169,6 +173,12 @@ export function EmailsContent() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Handle tag filter change
+  const handleTagChange = (tag: string | null) => {
+    setSelectedTag(tag);
+    filterByTag(tag);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -177,7 +187,7 @@ export function EmailsContent() {
             {translate("email_accounts", "emails", { default: "Email Accounts" })}
           </h1>
           <p className="text-muted-foreground">
-            {translate("manage_your_email_accounts", "emails", { default: "Manage your email accounts and server settings" })}
+            {translate("manage_your_email_accounts", "emails", { default: "Manage your email accounts and server settings securely" })}
           </p>
         </div>
       </div>
@@ -207,19 +217,54 @@ export function EmailsContent() {
           </div>
           
           <div className="w-40">
+            <Select
+              value={selectedTag || "all"}
+              onValueChange={(value) => handleTagChange(value === "all" ? null : value)}
+            >
+              <SelectTrigger className="w-full h-9">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <SelectValue placeholder={translate("filter_by_tag", "emails", { default: "Filter by tag" })} />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {translate("all_tags", "emails", { default: "All Tags" })}
+                </SelectItem>
+                {uniqueTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="w-40">
             <SortButton
               sortConfig={sortConfig}
               onSortChange={setSortConfig}
               namespace="emails"
               options={[
-                { field: "title", label: translate("title", "emails", { default: "Title" }) },
-                { field: "created_at", label: translate("date_created", "emails", { default: "Date Created" }) }
+                { 
+                  field: "title", 
+                  label: translate("title", "emails", { default: "Title" }),
+                  icon: <ArrowDownAZ className="mr-2 h-4 w-4" />
+                },
+                { 
+                  field: "created_at", 
+                  label: translate("date_created", "emails", { default: "Date Created" }),
+                  icon: <Clock className="mr-2 h-4 w-4" />
+                }
               ]}
             />
           </div>
           
-          {(searchQuery || sortConfig) && (
-            <Button variant="outline" size="sm" onClick={clearFilters}>
+          {(searchQuery || sortConfig || selectedTag) && (
+            <Button variant="outline" size="sm" onClick={() => {
+              clearFilters();
+              setSelectedTag(null);
+            }}>
               <X className="h-3 w-3 mr-1" />
               {translate("clear_filters", "emails", { default: "Clear filters" })}
             </Button>

@@ -478,8 +478,6 @@
     "copy_password": "Copy Password",
     "show_password": "Show Password",
     "hide_password": "Hide Password",
-    "show_username": "Show Username",
-    "hide_username": "Hide Username",
     "edit": "Edit",
     "delete": "Delete",
     "confirm_deletion": "Confirm Deletion",
@@ -1090,7 +1088,11 @@
     "edit_email_description": "Update your email account details",
     "save_changes": "Save Changes",
     "email_updated_successfully": "Email account updated successfully",
-    "error_updating_email": "Error updating email account. Please try again."
+    "error_updating_email": "Error updating email account. Please try again.",
+    "manage_your_email_accounts": "Manage your email accounts and server settings securely",
+    "date_created": "Date Created",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags"
   },
   "ssh_keys": {
     "ssh_keys": "SSH Keys",

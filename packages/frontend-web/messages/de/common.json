@@ -52,11 +52,7 @@
     "edit": "Bearbeiten",
     "manage_your_software_licenses": "Verwalten Sie Ihre Software-Lizenzen und Schlüssel",
     "date_created": "Erstellungsdatum",
-    "add_a_tag": "Tag hinzufügen",
-    "licenses": {
-      "add_a_tag": "Tag hinzufügen",
-      "date_created": "Erstellungsdatum"
-    }
+    "add_a_tag": "Tag hinzufügen"
   },
   "navigation": {
     "home": "Startseite",
@@ -601,39 +597,8 @@
     "expired": "Abgelaufen",
     "expiring_soon": "Läuft bald ab",
     "licenses": {
-      "software_licenses": "Software-Lizenzen",
-      "add_license": "Lizenz hinzufügen",
-      "search_licenses": "Lizenzen durchsuchen...",
-      "filter_by_tag": "Nach Tag filtern",
-      "all_tags": "Alle Tags",
-      "search": "Suchen",
-      "loading_licenses": "Lizenzen werden geladen...",
-      "no_licenses_found": "Keine Lizenzen gefunden",
-      "clear_filters": "Filter löschen",
-      "name": "Name",
-      "software": "Software",
-      "license_key": "Lizenzschlüssel",
-      "expiry_date": "Ablaufdatum",
-      "tags": "Tags",
-      "actions": "Aktionen",
-      "add_new_license": "Neue Lizenz hinzufügen",
-      "add_new_license_description": "Geben Sie Ihre Software-Lizenzdaten unten ein",
-      "cancel": "Abbrechen",
-      "save": "Speichern",
-      "edit_license": "Lizenz bearbeiten",
-      "edit_license_description": "Aktualisieren Sie Ihre Software-Lizenzdaten",
-      "update": "Aktualisieren",
-      "delete": "Löschen",
-      "license_deleted": "Lizenz gelöscht",
-      "license_deleted_description": "Die Lizenz wurde erfolgreich gelöscht",
-      "copied": "Kopiert",
-      "field_copied": "Feld in die Zwischenablage kopiert",
-      "copy_failed": "Kopieren fehlgeschlagen",
-      "failed_to_copy_field": "Fehler beim Kopieren des Feldes in die Zwischenablage",
-      "hide_license_key": "Lizenzschlüssel ausblenden",
-      "show_license_key": "Lizenzschlüssel anzeigen",
-      "showing_results": "Zeige {startIdx}-{endIdx} von {totalCount} Ergebnissen",
-      "page_of": "Seite {currentPage} von {totalPages}"
+      "add_a_tag": "Tag hinzufügen",
+      "date_created": "Erstellungsdatum"
     }
   },
   "wifi": {
@@ -813,7 +778,11 @@
     "edit_email_description": "Aktualisieren Sie Ihre E-Mail-Konto-Details",
     "save_changes": "Änderungen speichern",
     "email_updated_successfully": "E-Mail-Konto erfolgreich aktualisiert",
-    "error_updating_email": "Fehler beim Aktualisieren des E-Mail-Kontos. Bitte versuchen Sie es erneut."
+    "error_updating_email": "Fehler beim Aktualisieren des E-Mail-Kontos. Bitte versuchen Sie es erneut.",
+    "manage_your_email_accounts": "Verwalten Sie Ihre E-Mail-Konten und Servereinstellungen sicher",
+    "date_created": "Erstellungsdatum",
+    "filter_by_tag": "Nach Tag filtern",
+    "all_tags": "Alle Tags"
   },
   "ssh_keys": {
     "ssh_keys": "SSH-Schlüssel",
