@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, ExternalLink, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash, Filter
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useAccountManagement } from "@/hooks/use-account-management";
-import { SortButton2 as SortButton } from "@/components/ui/sort-button";
+import { SortButton, SortButton2 } from "@/components/ui/sort-button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Account {
@@ -185,59 +185,40 @@ export function AccountsContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => setShowAddAccount(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {translate("add_account", "accounts")}
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_accounts", "accounts")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <div className="col-span-1">
-          <Select
-            value={String(itemsPerPage)}
-            onValueChange={(value) => setItemsPerPage(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 {translate("per_page", "accounts")}</SelectItem>
-              <SelectItem value="10">10 {translate("per_page", "accounts")}</SelectItem>
-              <SelectItem value="20">20 {translate("per_page", "accounts")}</SelectItem>
-              <SelectItem value="50">50 {translate("per_page", "accounts")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="col-span-1">
-          <Select
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={translate("all_accounts", "accounts")} />
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_accounts", "accounts")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "accounts", { default: "Filter by tag" })} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{translate("all_accounts", "accounts")}</SelectItem>
@@ -253,17 +234,31 @@ export function AccountsContent() {
               }
             </SelectContent>
           </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="accounts"
+              options={[
+                { field: "title", label: translate("account", "accounts") },
+                { field: "created_at", label: translate("date_created", "accounts", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedCategory !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "accounts")}
+            </Button>
+          )}
         </div>
-        {(searchQuery || selectedCategory !== "all" || sortConfig) && (
-          <Button 
-            variant="outline" 
-            onClick={clearFilters} 
-            className="w-full md:w-auto md:col-span-4 flex items-center justify-center gap-2"
-          >
-            <X className="h-3 w-3" />
-            {translate("clear_filters", "accounts")}
-          </Button>
-        )}
+        
+        <Button onClick={() => setShowAddAccount(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          {translate("add_account", "accounts")}
+        </Button>
       </div>
 
       {/* Accounts Table */}
@@ -276,8 +271,8 @@ export function AccountsContent() {
           <div className="p-8 text-center">
             <p className="text-muted-foreground">
               {searchQuery || selectedCategory !== "all"
-                ? translate("no_matching_accounts", "accounts")
-                : translate("no_accounts", "accounts")}
+                ? translate("no_matching_accounts", "accounts", { default: "No matching accounts" })
+                : translate("no_accounts", "accounts", { default: "No accounts" })}
             </p>
             <Button
               variant="outline"
@@ -551,32 +546,39 @@ export function AccountsContent() {
       )}
 
       {/* Dialogs */}
-      <AddAccountDialog
-        open={showAddAccount}
-        onOpenChange={setShowAddAccount}
-        onAccountAdded={() => {
-          fetchAccounts();
-          toast({ title: translate("success", "common"), description: translate("account_added_successfully", "accounts") });
-        }}
-        onGeneratePasswordRequest={() => {
-          setShowGeneratePassword(true);
-        }}
-      />
+      {showAddAccount && (
+        <AddAccountDialog
+          open={showAddAccount}
+          onOpenChange={setShowAddAccount}
+          onClose={() => setShowAddAccount(false)}
+          onAccountAdded={() => {
+            fetchAccounts();
+            toast({ title: translate("success", "common"), description: translate("account_added_successfully", "accounts") });
+          }}
+          onGeneratePasswordRequest={() => {
+            setShowGeneratePassword(true);
+          }}
+        />
+      )}
 
-      <EditAccountDialog
-        open={showEditAccount}
-        onOpenChange={setShowEditAccount}
-        account={selectedAccountForEdit}
-        onAccountUpdated={handleAccountUpdated}
-        onGeneratePasswordRequest={() => {
-          setShowGeneratePassword(true);
-        }}
-      />
+      {showGeneratePassword && (
+        <GeneratePasswordDialog
+          open={showGeneratePassword}
+          onOpenChange={setShowGeneratePassword}
+        />
+      )}
 
-      <GeneratePasswordDialog
-        open={showGeneratePassword}
-        onOpenChange={setShowGeneratePassword}
-      />
+      {showEditAccount && selectedAccountForEdit && (
+        <EditAccountDialog
+          open={showEditAccount}
+          onOpenChange={setShowEditAccount}
+          account={selectedAccountForEdit}
+          onAccountUpdated={handleAccountUpdated}
+          onGeneratePasswordRequest={() => {
+            setShowGeneratePassword(true);
+          }}
+        />
+      )}
 
       <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
         <AlertDialogContent>

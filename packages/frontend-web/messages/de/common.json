@@ -238,6 +238,8 @@
     "strength": "{strength}% Stärke"
   },
   "accounts": {
+    "no_accounts": "Keine Konten",
+    "no_matching_accounts": "Keine passenden Konten gefunden",
     "loading_accounts": "Konten werden geladen...",
     "error_fetching_accounts": "Fehler beim Abrufen der Konten",
     "account_deleted_successfully": "Konto erfolgreich gelöscht",
@@ -280,6 +282,7 @@
     "account": "Konto",
     "category": "Kategorie",
     "last_modified": "Letzte Änderung",
+    "date_created": "Erstellungsdatum",
     "actions": "Aktionen",
     "copy_username": "Benutzername kopieren",
     "copied": "Kopiert",
@@ -307,6 +310,7 @@
     "view_details": "Details anzeigen",
     "filter_warning": "Filter können die Seitenzahl beeinflussen, da serverseitige Filterung nicht unterstützt wird.",
     "search": "Suchen",
+    "search_accounts": "Konten durchsuchen",
     "all_accounts": "Alle Konten",
     "personal": "Persönlich",
     "work": "Arbeit",
@@ -317,7 +321,18 @@
     "adjust_search_filter": "Versuchen Sie, Ihre Suche oder Filterkriterien anzupassen",
     "error_loading_workspace": "Fehler beim Laden der Arbeitsbereichsdaten",
     "focus_search": "Suchfeld fokussieren",
-    "switch_project": "Projekt wechseln"
+    "switch_project": "Projekt wechseln",
+    "add_a_tag": "Tag hinzufügen",
+    "edit_account": "Konto bearbeiten",
+    "update_account": "Konto aktualisieren",
+    "filter_by_tag": "Nach Tag filtern",
+    "confirm_delete": "Löschen bestätigen",
+    "delete_account_confirmation": "Sind Sie sicher, dass Sie dieses Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "sort": "Sortieren",
+    "sort_options": "Sortieroptionen",
+    "sort_by_name": "Nach Name sortieren",
+    "sort_by_created": "Nach Erstellungsdatum sortieren",
+    "sort_by_updated": "Nach Änderungsdatum sortieren"
   },
   "user_settings": {
     "title": "Benutzer Einstellungen",
@@ -853,7 +868,11 @@
     "missing_required_data": "Erforderliche Projektdaten fehlen",
     "edit_ssh_key": "SSH-Schlüssel bearbeiten",
     "edit_ssh_key_description": "Aktualisieren Sie Ihre SSH-Schlüssel-Details",
-    "save_changes": "Änderungen speichern"
+    "save_changes": "Änderungen speichern",
+    "manage_your_ssh_keys": "Verwalten Sie Ihre SSH-Schlüssel sicher",
+    "filter_by_tag": "Nach Tag filtern",
+    "all_tags": "Alle Tags",
+    "date_created": "Erstellungsdatum"
   },
   "generator": {
     "password": "Passwort",

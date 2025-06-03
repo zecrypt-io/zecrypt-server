@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
+  Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -168,40 +169,77 @@ export function SSHKeysContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("ssh_keys", "ssh_keys", { default: "SSH Keys" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("ssh_keys", "ssh_keys", { default: "SSH Keys" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("manage_your_ssh_keys", "ssh_keys", { default: "Manage your SSH keys securely" })}
+          </p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_ssh_keys", "ssh_keys", { default: "Search SSH keys..." })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={""} onValueChange={() => {}}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "ssh_keys", { default: "Filter by tag" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_tags", "ssh_keys", { default: "All Tags" })}</SelectItem>
+              {uniqueTags.map(tag => (
+                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="ssh_keys"
+              options={[
+                { field: "name", label: translate("name", "ssh_keys", { default: "Name" }) },
+                { field: "created_at", label: translate("date_created", "ssh_keys", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "ssh_keys", { default: "Clear filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddSSHKey} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_ssh_key", "ssh_keys", { default: "Add SSH Key" })}
         </Button>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_ssh_keys", "ssh_keys", { default: "Search SSH keys..." })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="col-span-1 flex space-x-2">
-          <SortButton
-            sortConfig={sortConfig}
-            onSortChange={setSortConfig}
-            namespace="ssh_keys"
-            options={[
-              { field: "name", label: translate("name", "ssh_keys", { default: "Name" }) }
-            ]}
-          />
-          <Button variant="outline" onClick={clearFilters} className="w-full">
-            <X className="mr-2 h-4 w-4" />
-            {translate("clear_filters", "ssh_keys", { default: "Clear filters" })}
-          </Button>
-        </div>
       </div>
 
       {/* SSH keys table */}

@@ -302,7 +302,21 @@
     "ssh_keys": "SSH Keys",
     "project_required_title": "Project Required",
     "project_required_description": "Please create your first project to continue.",
-    "no_projects_available": "No projects available"
+    "no_projects_available": "No projects available",
+    "favorite": "Favorite",
+    "no_accounts_create": "No accounts found. Create one to get started.",
+    "adjust_search_filter": "Try adjusting your search or filter criteria",
+    "error_loading_workspace": "Failed to load workspace data",
+    "focus_search": "Focus Search",
+    "switch_project": "Switch Project",
+    "add_a_tag": "Add a tag",
+    "edit_account": "Edit Account",
+    "update_account": "Update Account",
+    "search_accounts": "Search accounts",
+    "filter_by_tag": "Filter by tag",
+    "no_accounts": "No accounts",
+    "confirm_delete": "Confirm Delete",
+    "delete_account_confirmation": "Are you sure you want to delete this account? This action cannot be undone."
   },
   "activity": {
     "password_updated": "Password updated",
@@ -401,6 +415,8 @@
     "time": "Time"
   },
   "accounts": {
+    "no_accounts": "No accounts",
+    "no_matching_accounts": "No matching accounts found",
     "loading_accounts": "Loading accounts...",
     "error_fetching_accounts": "Failed to fetch accounts",
     "account_deleted_successfully": "Account deleted successfully",
@@ -451,6 +467,7 @@
     "account": "Account",
     "category": "Category",
     "last_modified": "Last Modified",
+    "date_created": "Date Created",
     "actions": "Actions",
     "copy_username": "Copy Username",
     "copied": "Copied",
@@ -478,6 +495,7 @@
     "view_details": "View Details",
     "filter_warning": "Filters may affect pagination accuracy as server-side filtering is not supported.",
     "search": "Search",
+    "search_accounts": "Search accounts",
     "all_accounts": "All Accounts",
     "personal": "Personal",
     "work": "Work",
@@ -491,7 +509,15 @@
     "switch_project": "Switch Project",
     "add_a_tag": "Add a tag",
     "edit_account": "Edit Account",
-    "update_account": "Update Account"
+    "update_account": "Update Account",
+    "filter_by_tag": "Filter by tag",
+    "confirm_delete": "Confirm Delete",
+    "delete_account_confirmation": "Are you sure you want to delete this account? This action cannot be undone.",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date"
   },
   "api_keys": {
     "title": "API Keys",
@@ -1120,6 +1146,10 @@
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
     "save_changes": "Save Changes",
-    "search_licenses": "Search licenses..."
+    "search_licenses": "Search licenses...",
+    "manage_your_ssh_keys": "Manage your SSH keys securely",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags",
+    "date_created": "Date Created"
   }
 }

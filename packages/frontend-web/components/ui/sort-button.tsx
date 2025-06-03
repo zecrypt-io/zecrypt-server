@@ -168,7 +168,7 @@ export function SortButton2({ field, sortConfig, setSortConfig, label }: InlineS
       onClick={toggleSort}
       title={label}
     >
-      {sortConfig?.field === field ? (
+      {sortConfig && sortConfig.field === field ? (
         sortConfig.direction === 'asc' ? (
           <ChevronUp className="h-4 w-4" />
         ) : (
