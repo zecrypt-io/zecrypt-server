@@ -45,7 +45,7 @@ interface UseEmailManagementReturn {
   totalPages: number;
   getPaginationRange: () => (number | string)[];
   itemsPerPage: number;
-  setItemsPerPage: (items: number) => void;
+  setItemsPerPage?: (items: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   uniqueTags: string[];
@@ -62,14 +62,14 @@ interface UseEmailManagementReturn {
 export function useEmailManagement({
   selectedWorkspaceId,
   selectedProjectId,
-  initialItemsPerPage = 5,
+  initialItemsPerPage = 10,
 }: UseEmailManagementProps): UseEmailManagementReturn {
   const { translate } = useTranslator();
   const [allEmails, setAllEmails] = useState<Email[]>([]);
   const [filteredEmails, setFilteredEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [itemsPerPage] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   const [projectKey, setProjectKey] = useState<string | null>(null);
   const [fetchTrigger, setFetchTrigger] = useState(0);
@@ -300,11 +300,6 @@ export function useEmailManagement({
     applyFiltersAndSort(allEmails, searchQuery);
   }, [allEmails, searchQuery, applyFiltersAndSort]);
   
-  // Handle items per page changes
-  const setItemsPerPage = useCallback((items: number) => {
-    setItemsPerPageState(items);
-  }, []);
-  
   // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
@@ -385,7 +380,7 @@ export function useEmailManagement({
     totalPages,
     getPaginationRange,
     itemsPerPage,
-    setItemsPerPage,
+    setItemsPerPage: () => {},
     searchQuery,
     setSearchQuery,
     uniqueTags,

@@ -178,7 +178,7 @@ export function SSHKeysContent() {
       </div>
 
       {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative col-span-1 md:col-span-2">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -187,22 +187,6 @@ export function SSHKeysContent() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
-        </div>
-        <div className="col-span-1">
-          <Select
-            value={String(itemsPerPage)}
-            onValueChange={(value) => setItemsPerPage(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="10">10 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="20">20 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-              <SelectItem value="50">50 {translate("per_page", "ssh_keys", { default: "per page" })}</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         <div className="col-span-1 flex space-x-2">
           <SortButton

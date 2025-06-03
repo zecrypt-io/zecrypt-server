@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ArrowDownAZ, ArrowDownZA, ArrowDownUp, Clock, CalendarClock } from "lucide-react";
+import { ArrowDownAZ, ArrowDownZA, ArrowDownUp, Clock, CalendarClock, ArrowUp, ArrowDown, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslator } from "@/hooks/use-translations";
 import { SortConfig } from '@/libs/utils';
 
@@ -24,6 +24,14 @@ interface SortButtonProps {
   onSortChange: (config: SortConfig | null) => void;
   options?: SortOption[];
   namespace?: string;
+}
+
+// Simpler inline sort button for table headers
+interface InlineSortButtonProps {
+  field: string;
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
+  label?: string;
 }
 
 export function SortButton({ 
@@ -136,5 +144,38 @@ export function SortButton({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+// Inline sort button for table headers
+export function SortButton2({ field, sortConfig, setSortConfig, label }: InlineSortButtonProps) {
+  const toggleSort = () => {
+    if (!sortConfig || sortConfig.field !== field) {
+      setSortConfig({ field, direction: 'asc' });
+    } else if (sortConfig.field === field && sortConfig.direction === 'asc') {
+      setSortConfig({ field, direction: 'desc' });
+    } else {
+      setSortConfig(null);
+    }
+  };
+
+  return (
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      className="h-8 px-1 ml-1" 
+      onClick={toggleSort}
+      title={label}
+    >
+      {sortConfig?.field === field ? (
+        sortConfig.direction === 'asc' ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )
+      ) : (
+        <ArrowDownUp className="h-4 w-4 opacity-50" />
+      )}
+    </Button>
   );
 } 

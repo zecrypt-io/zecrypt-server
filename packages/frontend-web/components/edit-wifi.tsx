@@ -39,12 +39,12 @@ interface EditWifiProps {
 
 export function EditWifi({ wifi, open, onOpenChange, onWifiUpdated }: EditWifiProps) {
   const { translate } = useTranslator();
-  const [title, setTitle] = useState(wifi.title);
+  const [title, setTitle] = useState(wifi?.title || "");
   const [data, setData] = useState(""); // Empty by default, only update if user enters a new password
-  const [securityType, setSecurityType] = useState<string>(wifi.security_type || "wpa2");
-  const [notes, setNotes] = useState(wifi.notes || "");
+  const [securityType, setSecurityType] = useState<string>(wifi?.security_type || "wpa2");
+  const [notes, setNotes] = useState(wifi?.notes || "");
   const [showPassword, setShowPassword] = useState(false);
-  const [tags, setTags] = useState<string[]>(wifi.tags || []);
+  const [tags, setTags] = useState<string[]>(wifi?.tags || []);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
