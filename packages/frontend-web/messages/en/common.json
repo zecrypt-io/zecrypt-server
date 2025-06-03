@@ -906,6 +906,7 @@
     "security": "Security",
     "security_type": "Security Type",
     "select_security_type": "Select security type",
+    "none": "None",
     "notes": "Notes",
     "enter_notes": "Enter notes",
     "password": "Password",

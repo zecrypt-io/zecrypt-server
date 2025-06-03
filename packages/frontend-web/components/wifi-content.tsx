@@ -161,64 +161,66 @@ export function WifiContent() {
       </div>
 
       {/* Search, Filter, Sort and Add */}
-      <div className="flex flex-wrap items-center gap-4 mt-6">
-        <div className="relative flex-grow max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_wifi", "wifi")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_wifi", "wifi")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
+              {uniqueTags.map(tag => (
+                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="wifi"
+              options={[
+                { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
+                { field: "created_at", label: translate("date_created", "wifi", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedTag !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "wifi")}
             </Button>
           )}
-        </div>
-        
-        <Select value={selectedTag} onValueChange={setSelectedTag}>
-          <SelectTrigger className="w-40">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
-            {uniqueTags.map(tag => (
-              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        <div className="w-40">
-          <SortButton
-            sortConfig={sortConfig}
-            onSortChange={setSortConfig}
-            namespace="wifi"
-            options={[
-              { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
-              { field: "created_at", label: translate("date_created", "wifi", { default: "Date Created" }) }
-            ]}
-          />
         </div>
         
         <Button onClick={() => setShowAddWifi(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_wifi", "wifi")}
         </Button>
-        
-        {(searchQuery || selectedTag !== "all" || sortConfig) && (
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear_filters", "wifi")}
-          </Button>
-        )}
       </div>
 
       {/* Wi-Fi Networks Table */}
