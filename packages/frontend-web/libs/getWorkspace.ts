@@ -151,3 +151,57 @@ export const fetchProjectKeys = async (workspaceId: string, accessToken: string)
     return null;
   }
 };
+
+// New function to fetch dashboard overview data
+export const fetchDashboardOverview = async (workspaceId: string, projectId: string, accessToken: string) => {
+  if (!accessToken) {
+    console.error("No access token provided for fetchDashboardOverview");
+    return null;
+  }
+  
+  if (!workspaceId || !projectId) {
+    console.error("Missing workspace ID or project ID for fetchDashboardOverview");
+    return null;
+  }
+  
+  try {
+    const response = await axiosInstance.get(`/${workspaceId}/${projectId}/dashboard/overview`);
+    const data = response.data;
+    
+    if (data.status_code === 200) {
+      return data.data;
+    } else {
+      throw new Error(data.message || "Failed to fetch dashboard overview");
+    }
+  } catch (err) {
+    console.error("Error fetching dashboard overview:", err);
+    return null;
+  }
+};
+
+// New function to fetch recent activity data
+export const fetchRecentActivity = async (workspaceId: string, projectId: string, accessToken: string) => {
+  if (!accessToken) {
+    console.error("No access token provided for fetchRecentActivity");
+    return null;
+  }
+  
+  if (!workspaceId || !projectId) {
+    console.error("Missing workspace ID or project ID for fetchRecentActivity");
+    return null;
+  }
+  
+  try {
+    const response = await axiosInstance.get(`/${workspaceId}/${projectId}/dashboard/recent-activity`);
+    const data = response.data;
+    
+    if (data.status_code === 200) {
+      return data.data;
+    } else {
+      throw new Error(data.message || "Failed to fetch recent activity");
+    }
+  } catch (err) {
+    console.error("Error fetching recent activity:", err);
+    return null;
+  }
+};

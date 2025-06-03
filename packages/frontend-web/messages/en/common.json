@@ -266,6 +266,7 @@
     "total_projects": "Total Projects",
     "total_workspaces": "Total Workspaces",
     "total_team_members": "Total Team Members",
+    "total_records": "Total Records",
     "my_account": "My Account",
     "change_language": "Change language",
     "language": "Language",
@@ -305,11 +306,26 @@
     "ssh_keys": "SSH Keys",
     "project_required_title": "Project Required",
     "project_required_description": "Please create your first project to continue.",
-    "no_projects_available": "No projects available"
+    "no_projects_available": "No projects available",
+    "last_24_hours": "Last 24 hours",
+    "recent_accounts": "Recent Accounts",
+    "no_recent_accounts": "No recent accounts"
   },
   "activity": {
     "password_updated": "Password updated",
-    "note_created": "Secure note created"
+    "note_created": "Secure note created",
+    "you_create_login": "You created a new login",
+    "you_create_api_key": "You created a new API key",
+    "you_update_login": "You updated a login",
+    "you_update_api_key": "You updated an API key",
+    "you_delete_login": "You deleted a login",
+    "you_delete_api_key": "You deleted an API key",
+    "create_login": "Created a new login",
+    "create_api_key": "Created a new API key",
+    "update_login": "Updated a login",
+    "update_api_key": "Updated an API key",
+    "delete_login": "Deleted a login",
+    "delete_api_key": "Deleted an API key"
   },
   "time": {
     "today": "Today",
