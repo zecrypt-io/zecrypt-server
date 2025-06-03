@@ -96,13 +96,14 @@ export function SortButton({
       ? translate("ascending", namespace, { default: "Ascending" })
       : translate("descending", namespace, { default: "Descending" });
     
-    return `${option.label} (${directionText})`;
+    // Return shorter label for more compact display
+    return translate("sort", namespace, { default: "Sort" });
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center">
+        <Button variant="outline" size="sm" className="flex items-center h-9 px-3">
           {getButtonIcon()}
           <span>{getSortLabel()}</span>
         </Button>

@@ -965,7 +965,18 @@
     "encryption_key_not_found": "Project encryption key not found. Cannot save Wi-Fi network.",
     "project_not_found": "Project not found. Please select a valid project.",
     "encryption_failed": "Failed to encrypt Wi-Fi data. Please try again.",
-    "decryption_failed": "Failed to decrypt Wi-Fi data. This could be due to a missing or invalid encryption key."
+    "decryption_failed": "Failed to decrypt Wi-Fi data. This could be due to a missing or invalid encryption key.",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "clear_sort": "Clear Sort",
+    "filter_by_tag": "Filter by tag",
+    "all_tags": "All Tags",
+    "scan_with_phone": "Scan this QR code with your phone to connect to the network"
   },
   "key_shortcuts": {
     "title": "Key Shortcuts"

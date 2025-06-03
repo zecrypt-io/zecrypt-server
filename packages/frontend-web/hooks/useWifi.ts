@@ -8,8 +8,8 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { decryptDataField } from "../libs/encryption";
 import { secureGetItem } from "../libs/session-storage-utils";
-import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
 import React from "react";
+import { sortItems, SortConfig } from "@/libs/utils";
 
 interface WifiNetwork {
   doc_id: string;
@@ -37,18 +37,18 @@ interface UseWifiReturn {
   paginatedWifiNetworks: WifiNetwork[];
   isLoading: boolean;
   searchQuery: string;
-  selectedSecurityType: string;
+  selectedTag: string;
+  uniqueTags: string[];
   currentPage: number;
   itemsPerPage: number;
   totalCount: number;
   totalPages: number;
   copiedField: { doc_id: string; field: string } | null;
   viewPassword: string | null;
-  uniqueTags: string[];
   sortConfig: SortConfig | null;
   setSortConfig: (config: SortConfig | null) => void;
   setSearchQuery: (query: string) => void;
-  setSelectedSecurityType: (type: string) => void;
+  setSelectedTag: (tag: string) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
   copyToClipboard: (doc_id: string, field: string, value: string) => Promise<void>;
@@ -65,39 +65,21 @@ interface UseWifiReturn {
 export function useWifi({
   selectedWorkspaceId,
   selectedProjectId,
-  initialItemsPerPage = 10,
+  initialItemsPerPage = 5,
 }: UseWifiProps): UseWifiReturn {
   const { translate } = useTranslator();
   const [allWifiNetworks, setAllWifiNetworks] = useState<WifiNetwork[]>([]);
-  const [filteredWifiNetworks, setFilteredWifiNetworks] = useState<WifiNetwork[]>([]);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [selectedSecurityType, setSelectedSecurityTypeState] = useState("all");
+  const [selectedTag, setSelectedTagState] = useState("all");
   const [currentPage, setCurrentPageState] = useState(1);
-  const [itemsPerPage] = useState(initialItemsPerPage);
+  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
-  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
-  const [projectKey, setProjectKey] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
   
-  // Add a dummy setItemsPerPage function
-  const setItemsPerPage = useCallback((items: number) => {
-    // This is a placeholder since we're using a fixed itemsPerPage
-  }, []);
-
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
-
-  // Get all unique tags from networks
-  const uniqueTags = useMemo(() => {
-    const tagsSet = new Set<string>();
-    allWifiNetworks.forEach(wifi => {
-      if (wifi.tags && Array.isArray(wifi.tags)) {
-        wifi.tags.forEach(tag => tagsSet.add(tag));
-      }
-    });
-    return Array.from(tagsSet).sort();
-  }, [allWifiNetworks]);
 
   // Process Wi-Fi network data - decrypt passwords where needed
   const processWifiData = useCallback(async (network: WifiNetwork): Promise<WifiNetwork> => {
@@ -205,7 +187,7 @@ export function useWifi({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, translate, processWifiData]);
+  }, [selectedWorkspaceId, selectedProjectId, translate]);
 
   useEffect(() => {
     // Make sure we don't trigger multiple fetches when our dependencies change
@@ -222,206 +204,201 @@ export function useWifi({
     }
   }, [fetchWifiNetworks, selectedWorkspaceId, selectedProjectId]);
 
-  // Apply filters and sorting
-  useEffect(() => {
-    if (!allWifiNetworks) return;
+  // Add useMemo to get unique tags from all wifi networks for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allWifiNetworks.forEach(network => {
+      if (network.tags && Array.isArray(network.tags)) {
+        network.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allWifiNetworks]);
 
-    let result = [...allWifiNetworks];
+  const filteredWifiNetworks = useMemo(() => {
+    let result = allWifiNetworks;
 
-    // Filter by security type
-    if (selectedSecurityType !== "all") {
-      result = result.filter(network => 
-        network.security_type?.toLowerCase() === selectedSecurityType.toLowerCase()
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (network) =>
+          network.title.toLowerCase().includes(query) ||
+          network.notes?.toLowerCase().includes(query) ||
+          network.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+          false
       );
     }
-
-    // Apply search
-    if (searchQuery) {
-      result = searchItemsMultiField(result, searchQuery, ['title', 'security_type', 'notes']);
+    
+    if (selectedTag !== "all") {
+      result = result.filter(
+        (network) => network.tags && Array.isArray(network.tags) && network.tags.includes(selectedTag)
+      );
     }
-
-    // Apply sorting
+    
+    // Apply sorting if sortConfig is set
     if (sortConfig) {
       result = sortItems(result, sortConfig);
     }
 
-    setFilteredWifiNetworks(result);
-  }, [allWifiNetworks, selectedSecurityType, searchQuery, sortConfig]);
+    return result;
+  }, [allWifiNetworks, searchQuery, selectedTag, sortConfig]);
 
-  // Calculate pagination
-  const {
-    start,
-    end,
-    paginatedData: paginatedWifiNetworks,
-    totalPages,
-    nextPage: goToNextPage,
-    prevPage: goToPrevPage,
-    goToPage: goToSpecificPage,
-    getPaginationRange
-  } = useMemo(() => {
-    // Calculate values for the current page
+  const totalCount = filteredWifiNetworks.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+
+  const paginatedWifiNetworks = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const paginatedData = filteredWifiNetworks.slice(start, end);
-    const totalPagesCount = Math.ceil(filteredWifiNetworks.length / itemsPerPage);
-
-    // Define pagination functions
-    const goToNextPage = () => {
-      if (currentPage < totalPagesCount) {
-        setCurrentPageState(currentPage + 1);
-      }
-    };
-
-    const goToPrevPage = () => {
-      if (currentPage > 1) {
-        setCurrentPageState(currentPage - 1);
-      }
-    };
-
-    const goToSpecificPage = (page: number) => {
-      if (page >= 1 && page <= totalPagesCount) {
-        setCurrentPageState(page);
-      }
-    };
-
-    // Generate pagination range with ellipsis for large page counts
-    const getPaginationRange = () => {
-      const maxPagesToShow = 5; // Show up to 5 page numbers
-      const range: (number | string)[] = [];
-      
-      if (totalPagesCount <= maxPagesToShow) {
-        // If we have fewer pages than the max, show all pages
-        for (let i = 1; i <= totalPagesCount; i++) {
-          range.push(i);
-        }
-      } else {
-        // Always show first page
-        range.push(1);
-        
-        // Calculate start and end of the middle section
-        let startPage = Math.max(2, currentPage - 1);
-        let endPage = Math.min(totalPagesCount - 1, currentPage + 1);
-        
-        // Adjust if we're at the start or end
-        if (currentPage <= 2) {
-          endPage = 3;
-        } else if (currentPage >= totalPagesCount - 1) {
-          startPage = totalPagesCount - 2;
-        }
-        
-        // Add ellipsis if needed before middle section
-        if (startPage > 2) {
-          range.push("...");
-        }
-        
-        // Add the middle section
-        for (let i = startPage; i <= endPage; i++) {
-          range.push(i);
-        }
-        
-        // Add ellipsis if needed after middle section
-        if (endPage < totalPagesCount - 1) {
-          range.push("...");
-        }
-        
-        // Always show last page
-        range.push(totalPagesCount);
-      }
-      
-      return range;
-    };
-
-    return {
-      start,
-      end,
-      paginatedData,
-      totalPages: totalPagesCount,
-      nextPage: goToNextPage,
-      prevPage: goToPrevPage,
-      goToPage: goToSpecificPage,
-      getPaginationRange
-    };
+    return filteredWifiNetworks.slice(start, end);
   }, [filteredWifiNetworks, currentPage, itemsPerPage]);
 
-  const handleDeleteWifi = useCallback(async (doc_id: string) => {
-    if (!selectedWorkspaceId || !selectedProjectId) {
-      toast({
-        title: translate("error", "wifi"),
-        description: translate("missing_workspace_or_project", "wifi"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/wifi/${doc_id}`);
-      
-      if (response.status === 200) {
-        setAllWifiNetworks(prev => prev.filter(wifi => wifi.doc_id !== doc_id));
+  const copyToClipboard = useCallback(
+    async (doc_id: string, field: string, value: string) => {
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopiedField({ doc_id, field });
+        setTimeout(() => setCopiedField(null), 2000);
         toast({
-          title: translate("success", "wifi"),
-          description: translate("wifi_deleted_successfully", "wifi"),
+          title: translate("copied", "wifi"),
+          description: translate("field_copied", "wifi"),
         });
-      } else {
+      } catch (err) {
+        console.error("Failed to copy:", err);
         toast({
-          title: translate("error", "wifi"),
-          description: translate("failed_to_delete_wifi", "wifi"),
+          title: translate("copy_failed", "wifi"),
+          description: translate("failed_to_copy_field", "wifi"),
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Error deleting WiFi network:", error);
-      toast({
-        title: translate("error", "wifi"),
-        description: translate("failed_to_delete_wifi", "wifi"),
-        variant: "destructive",
-      });
-    }
-  }, [selectedWorkspaceId, selectedProjectId, translate]);
-
-  const copyToClipboard = useCallback(async (doc_id: string, field: string, value: string) => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedField({ doc_id, field });
-      setTimeout(() => setCopiedField(null), 2000);
-      toast({
-        title: translate("copied", "wifi", { default: "Copied" }),
-        description: translate("password_copied", "wifi", { default: "Password copied to clipboard" }),
-      });
-    } catch (error) {
-      console.error("Failed to copy to clipboard:", error);
-      toast({
-        title: translate("error", "wifi"),
-        description: translate("failed_to_copy", "wifi"),
-        variant: "destructive",
-      });
-    }
-  }, [translate]);
+    },
+    [translate]
+  );
 
   const togglePasswordVisibility = useCallback((doc_id: string) => {
-    setViewPassword(prev => prev === doc_id ? null : doc_id);
-  }, []);
-
-  const setSearchQuery = useCallback((query: string) => {
-    setSearchQueryState(query);
-    setCurrentPageState(1); // Reset to first page on search change
-  }, []);
-
-  const setSelectedSecurityType = useCallback((type: string) => {
-    setSelectedSecurityTypeState(type);
-    setCurrentPageState(1); // Reset to first page on type change
-  }, []);
-
-  const setSortConfig = useCallback((config: SortConfig | null) => {
-    setSortConfigState(config);
+    setViewPassword((prev) => (prev === doc_id ? null : doc_id));
   }, []);
 
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
-    setSelectedSecurityTypeState("all");
-    setSortConfigState(null);
+    setSelectedTagState("all");
+    setSortConfig(null);
     setCurrentPageState(1);
   }, []);
+
+  const handleDeleteWifi = useCallback(
+    async (doc_id: string) => {
+      if (!selectedWorkspaceId || !selectedProjectId) {
+        console.error("Missing required data for deleting Wi-Fi network:", {
+          selectedWorkspaceId,
+          selectedProjectId,
+        });
+        toast({
+          title: translate("error_deleting_wifi", "wifi"),
+          description: translate("no_project_selected", "wifi"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/wifi/${doc_id}`);
+        refreshWifiNetworks();
+        toast({
+          title: translate("wifi_deleted", "wifi"),
+          description: translate("wifi_deleted_description", "wifi"),
+        });
+      } catch (error: any) {
+        console.error("Error deleting Wi-Fi network:", error);
+        toast({
+          title: translate("error_deleting_wifi", "wifi"),
+          description: error.response?.data?.message || translate("failed_to_delete_wifi", "wifi"),
+          variant: "destructive",
+        });
+      }
+    },
+    [selectedWorkspaceId, selectedProjectId, refreshWifiNetworks, translate]
+  );
+
+  const getPaginationRange = useCallback(() => {
+    const maxPagesToShow = 5;
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const half = Math.floor(maxPagesToShow / 2);
+      let start = Math.max(1, currentPage - half);
+      let end = Math.min(totalPages, start + maxPagesToShow - 1);
+
+      if (end - start < maxPagesToShow - 1) {
+        start = end - maxPagesToShow + 1;
+      }
+
+      if (start > 1) {
+        pageNumbers.push(1);
+        if (start > 2) pageNumbers.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pageNumbers.push("...");
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  }, [currentPage, totalPages]);
+
+  const setSearchQuery = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearchQueryState(value);
+        setCurrentPageState(1);
+      }, 300);
+    };
+  }, []);
+
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1); // Reset to first page when tag changes
+  }, []);
+
+  const setItemsPerPage = useCallback(
+    (items: number) => {
+      setItemsPerPageState(items);
+      setCurrentPageState(1);
+    },
+    []
+  );
+
+  const setCurrentPage = useCallback((page: number) => {
+    setCurrentPageState(page);
+  }, []);
+
+  const nextPage = useCallback(() => {
+    if (currentPage < totalPages) {
+      setCurrentPageState(currentPage + 1);
+    }
+  }, [currentPage, totalPages]);
+
+  const prevPage = useCallback(() => {
+    if (currentPage > 1) {
+      setCurrentPageState(currentPage - 1);
+    }
+  }, [currentPage]);
+
+  const goToPage = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPageState(page);
+    }
+  }, [totalPages]);
 
   return {
     allWifiNetworks,
@@ -429,19 +406,19 @@ export function useWifi({
     paginatedWifiNetworks,
     isLoading,
     searchQuery,
-    selectedSecurityType,
+    selectedTag,
+    uniqueTags,
     currentPage,
     itemsPerPage,
-    totalCount: filteredWifiNetworks.length,
+    totalCount,
     totalPages,
     copiedField,
     viewPassword,
-    uniqueTags,
     sortConfig,
     setSortConfig,
     setSearchQuery,
-    setSelectedSecurityType,
-    setCurrentPage: goToSpecificPage,
+    setSelectedTag,
+    setCurrentPage,
     setItemsPerPage,
     copyToClipboard,
     togglePasswordVisibility,
@@ -449,8 +426,8 @@ export function useWifi({
     refreshWifiNetworks,
     handleDeleteWifi,
     getPaginationRange,
-    nextPage: goToNextPage,
-    prevPage: goToPrevPage,
-    goToPage: goToSpecificPage,
+    nextPage,
+    prevPage,
+    goToPage,
   };
 }
