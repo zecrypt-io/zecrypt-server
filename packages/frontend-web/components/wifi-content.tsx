@@ -203,7 +203,7 @@ export function WifiContent() {
             namespace="wifi"
             options={[
               { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
-              { field: "security_type", label: translate("security", "wifi", { default: "Security" }) }
+              { field: "created_at", label: translate("date_created", "wifi", { default: "Date Created" }) }
             ]}
           />
         </div>
