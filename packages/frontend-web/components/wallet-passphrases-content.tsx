@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
+  Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -184,81 +185,110 @@ export function WalletPassphrasesContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("securely_store_and_manage_your_wallet_recovery_phrases", "wallet_passphrases", { 
+              default: "Securely store and manage your wallet recovery phrases" 
+            })}
+          </p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_across_all_fields", "wallet_passphrases", {
+                default: "Search across all fields...",
+              })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedWalletType} onValueChange={setSelectedWalletType}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_wallet_type", "wallet_passphrases", {
+                default: "Filter by wallet type",
+              })} />
+            </SelectTrigger>
+            <SelectContent>
+              {walletTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type === "all"
+                    ? translate("all_wallet_types", "wallet_passphrases", { default: "All Wallet Types" })
+                    : type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton 
+              sortConfig={sortConfig} 
+              onSortChange={setSortConfig} 
+              namespace="wallet_passphrases"
+              options={[
+                { field: "title", label: translate("name", "wallet_passphrases", { default: "Name" }) },
+                { field: "created_at", label: translate("date_created", "wallet_passphrases", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedWalletType !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "wallet_passphrases", { default: "Clear Filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddPassphrase} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_across_all_fields", "wallet_passphrases", {
-              default: "Search across all fields...",
-            })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedWalletType} onValueChange={setSelectedWalletType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_wallet_type", "wallet_passphrases", {
-              default: "Filter by wallet type",
-            })} />
-          </SelectTrigger>
-          <SelectContent>
-            {walletTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type === "all"
-                  ? translate("all_wallet_types", "wallet_passphrases", { default: "All Wallet Types" })
-                  : type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SortButton sortConfig={sortConfig} onSortChange={setSortConfig} namespace="wallet_passphrases" />
-        {(searchQuery || selectedWalletType !== "all" || sortConfig) && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear_filters", "wallet_passphrases", { default: "Clear Filters" })}
-          </Button>
-        )}
-      </div>
-
       {/* Wallet Passphrases Table */}
       <div className="border rounded-md">
         {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">
               {translate("loading_passphrases", "wallet_passphrases", { default: "Loading wallet passphrases..." })}
             </p>
           </div>
         ) : walletPassphrasesToDisplay.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">
-              {translate("no_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
+              {searchQuery || selectedWalletType !== "all"
+                ? translate("no_passphrases_found_search", "wallet_passphrases", { default: "No passphrases match your search criteria" })
+                : translate("no_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
             </p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "wallet_passphrases", { default: "Clear filters" })}
+            <Button
+              variant="outline"
+              onClick={handleAddPassphrase}
+              className="mt-4"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
             </Button>
           </div>
         ) : (

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   CreditCard, Plus, Search, Copy, Check, Eye, EyeOff, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, AlertTriangle, Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -149,85 +149,97 @@ export function CardsContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("credit_cards", "cards", { default: "Credit Cards" })}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("credit_cards", "cards", { default: "Credit Cards" })}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_cards", "cards", { default: "Manage your credit and debit card information securely" })}</p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_across_all_fields", "cards", { default: "Search across all fields..." })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_brand", "cards", { default: "Filter by brand" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_brands", "cards", { default: "All Brands" })}</SelectItem>
+              <SelectItem value="visa">Visa</SelectItem>
+              <SelectItem value="mastercard">Mastercard</SelectItem>
+              <SelectItem value="american express">American Express</SelectItem>
+              <SelectItem value="discover">Discover</SelectItem>
+              <SelectItem value="other">{translate("other", "cards", { default: "Other" })}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton 
+              sortConfig={sortConfig} 
+              onSortChange={setSortConfig} 
+              namespace="cards"
+              options={[
+                { field: "title", label: translate("title", "cards", { default: "Title" }) },
+                { field: "created_at", label: translate("date_created", "cards", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedBrand !== 'all' || selectedTag !== 'all' || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "cards", { default: "Clear Filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddCard} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_card", "cards", { default: "Add Card" })}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_across_all_fields", "cards", { default: "Search across all fields..." })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_brand", "cards", { default: "Filter by brand" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_brands", "cards", { default: "All Brands" })}</SelectItem>
-            <SelectItem value="visa">Visa</SelectItem>
-            <SelectItem value="mastercard">Mastercard</SelectItem>
-            <SelectItem value="american express">American Express</SelectItem>
-            <SelectItem value="discover">Discover</SelectItem>
-            <SelectItem value="other">{translate("other", "cards", { default: "Other" })}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={selectedTag} onValueChange={setSelectedTag}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_tag", "cards", { default: "Filter by tag" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_tags", "cards", { default: "All Tags" })}</SelectItem>
-            {uniqueTags.map(tag => (
-              <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SortButton 
-          sortConfig={sortConfig} 
-          onSortChange={setSortConfig} 
-          namespace="cards"
-        />
-        {(searchQuery || selectedBrand !== 'all' || selectedTag !== 'all' || sortConfig) && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear_filters", "cards", { default: "Clear Filters" })}
-          </Button>
-        )}
-      </div>
-
       {/* Cards Table */}
       <div className="border rounded-md">
         {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_cards", "cards", { default: "Loading cards..." })}</p>
           </div>
         ) : cardsToDisplay.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">{translate("no_cards_found", "cards", { default: "No cards found" })}</p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "cards", { default: "Clear filters" })}
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">
+              {searchQuery || selectedBrand !== 'all' || selectedTag !== 'all'
+                ? translate("no_matching_cards", "cards", { default: "No matching cards found" })
+                : translate("no_cards_found", "cards", { default: "No cards found" })}
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleAddCard}
+              className="mt-4"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {translate("add_card", "cards", { default: "Add Card" })}
             </Button>
           </div>
         ) : (

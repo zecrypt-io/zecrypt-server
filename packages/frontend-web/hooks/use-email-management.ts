@@ -45,7 +45,7 @@ interface UseEmailManagementReturn {
   totalPages: number;
   getPaginationRange: () => (number | string)[];
   itemsPerPage: number;
-  setItemsPerPage: (items: number) => void;
+  setItemsPerPage?: (items: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   uniqueTags: string[];
@@ -57,22 +57,24 @@ interface UseEmailManagementReturn {
   nextPage: () => void;
   prevPage: () => void;
   goToPage: (page: number) => void;
+  filterByTag: (tag: string | null) => void;
 }
 
 export function useEmailManagement({
   selectedWorkspaceId,
   selectedProjectId,
-  initialItemsPerPage = 5,
+  initialItemsPerPage = 10,
 }: UseEmailManagementProps): UseEmailManagementReturn {
   const { translate } = useTranslator();
   const [allEmails, setAllEmails] = useState<Email[]>([]);
   const [filteredEmails, setFilteredEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [itemsPerPage] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   const [projectKey, setProjectKey] = useState<string | null>(null);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -237,7 +239,7 @@ export function useEmailManagement({
       console.log("Processed emails:", processedData.length);
       
       setAllEmails(processedData);
-      applyFiltersAndSort(processedData, searchQuery);
+      applyFiltersAndSort(processedData, searchQuery, selectedTag);
     } catch (error) {
       console.error("Error fetching emails:", error);
       toast({
@@ -257,16 +259,24 @@ export function useEmailManagement({
     selectedProjectId,
     projectKey,
     processEmails,
-    translate
-    // Removed searchQuery from dependencies as it's not needed for fetching
+    translate,
+    selectedTag
   ]);
   
   // Apply filters and sorting to data
   const applyFiltersAndSort = useCallback(
-    (data: Email[], query: string) => {
-      // Search by query
+    (data: Email[], query: string, tag: string | null = null) => {
+      // Start with all data
       let filtered = data;
       
+      // Apply tag filter
+      if (tag) {
+        filtered = filtered.filter(email => 
+          email.tags && Array.isArray(email.tags) && email.tags.includes(tag)
+        );
+      }
+      
+      // Apply search filter
       if (query) {
         filtered = searchItemsMultiField(filtered, query, [
           "title",
@@ -291,25 +301,27 @@ export function useEmailManagement({
   // Handle search query changes
   const setSearchQuery = useCallback((query: string) => {
     setSearchQueryState(query);
-    applyFiltersAndSort(allEmails, query);
-  }, [allEmails, applyFiltersAndSort]);
+    applyFiltersAndSort(allEmails, query, selectedTag);
+  }, [allEmails, applyFiltersAndSort, selectedTag]);
   
   // Handle sorting changes
   const setSortConfig = useCallback((config: SortConfig | null) => {
     setSortConfigState(config);
-    applyFiltersAndSort(allEmails, searchQuery);
-  }, [allEmails, searchQuery, applyFiltersAndSort]);
+    applyFiltersAndSort(allEmails, searchQuery, selectedTag);
+  }, [allEmails, searchQuery, applyFiltersAndSort, selectedTag]);
   
-  // Handle items per page changes
-  const setItemsPerPage = useCallback((items: number) => {
-    setItemsPerPageState(items);
-  }, []);
+  // Handle tag filter changes
+  const filterByTag = useCallback((tag: string | null) => {
+    setSelectedTag(tag);
+    applyFiltersAndSort(allEmails, searchQuery, tag);
+  }, [allEmails, searchQuery, applyFiltersAndSort]);
   
   // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSortConfigState(null);
-    applyFiltersAndSort(allEmails, "");
+    setSelectedTag(null);
+    applyFiltersAndSort(allEmails, "", null);
   }, [allEmails, applyFiltersAndSort]);
 
   // Delete email
@@ -358,8 +370,8 @@ export function useEmailManagement({
   
   // Effect to update filtered data when all data changes
   useEffect(() => {
-    applyFiltersAndSort(allEmails, searchQuery);
-  }, [allEmails, applyFiltersAndSort, searchQuery]);
+    applyFiltersAndSort(allEmails, searchQuery, selectedTag);
+  }, [allEmails, applyFiltersAndSort, searchQuery, selectedTag]);
   
   // Extract unique tags from all emails
   const uniqueTags = useMemo(() => {
@@ -385,7 +397,7 @@ export function useEmailManagement({
     totalPages,
     getPaginationRange,
     itemsPerPage,
-    setItemsPerPage,
+    setItemsPerPage: () => {},
     searchQuery,
     setSearchQuery,
     uniqueTags,
@@ -397,5 +409,6 @@ export function useEmailManagement({
     nextPage,
     prevPage,
     goToPage,
+    filterByTag,
   };
 } 
