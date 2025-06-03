@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
+  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -284,77 +285,102 @@ export function ApiKeysContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("api_keys", "api_keys", { default: "API Keys" })}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("api_keys", "api_keys", { default: "API Keys" })}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_api_keys", "api_keys", { default: "Manage your API keys" })}</p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_across_all_fields", "api_keys", {
+                default: "Search across all fields...",
+              })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedEnv} onValueChange={setSelectedEnv}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_env", "api_keys", { default: "Filter by environment" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_envs", "api_keys", { default: "All Environments" })}</SelectItem>
+              <SelectItem value="Development">{translate("development", "api_keys", { default: "Development" })}</SelectItem>
+              <SelectItem value="Staging">{translate("staging", "api_keys", { default: "Staging" })}</SelectItem>
+              <SelectItem value="Production">{translate("production", "api_keys", { default: "Production" })}</SelectItem>
+              <SelectItem value="Testing">{translate("testing", "api_keys", { default: "Testing" })}</SelectItem>
+              <SelectItem value="Local">{translate("local", "api_keys", { default: "Local" })}</SelectItem>
+              <SelectItem value="UAT">{translate("uat", "api_keys", { default: "UAT" })}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton 
+              sortConfig={sortConfig} 
+              onSortChange={setSortConfig} 
+              namespace="api_keys" 
+              options={[
+                { field: "title", label: translate("name", "api_keys", { default: "Name" }) },
+                { field: "created_at", label: translate("date_created", "api_keys", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedEnv !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "api_keys", { default: "Clear Filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddApiKey} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_api_key", "api_keys", { default: "Add API Key" })}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_across_all_fields", "api_keys", {
-              default: "Search across all fields...",
-            })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedEnv} onValueChange={setSelectedEnv}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_env", "api_keys", { default: "Filter by environment" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_envs", "api_keys", { default: "All Environments" })}</SelectItem>
-            <SelectItem value="Development">{translate("development", "api_keys", { default: "Development" })}</SelectItem>
-            <SelectItem value="Staging">{translate("staging", "api_keys", { default: "Staging" })}</SelectItem>
-            <SelectItem value="Production">{translate("production", "api_keys", { default: "Production" })}</SelectItem>
-            <SelectItem value="Testing">{translate("testing", "api_keys", { default: "Testing" })}</SelectItem>
-            <SelectItem value="Local">{translate("local", "api_keys", { default: "Local" })}</SelectItem>
-            <SelectItem value="UAT">{translate("uat", "api_keys", { default: "UAT" })}</SelectItem>
-          </SelectContent>
-        </Select>
-        <SortButton sortConfig={sortConfig} onSortChange={setSortConfig} namespace="api_keys" />
-        {(searchQuery || selectedEnv !== "all" || sortConfig) && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear_filters", "api_keys", { default: "Clear Filters" })}
-          </Button>
-        )}
-      </div>
-
       {/* API Keys Table */}
       <div className="border rounded-md">
         {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">
               {translate("loading_api_keys", "api_keys", { default: "Loading API keys..." })}
             </p>
           </div>
         ) : apiKeysToDisplay.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">
-              {translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
+              {searchQuery || selectedEnv !== "all"
+                ? translate("try_adjusting_search_or_filter", "api_keys", { default: "Try adjusting your search or filter criteria" })
+                : translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
             </p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "api_keys", { default: "Clear filters" })}
+            <Button
+              variant="outline"
+              onClick={handleAddApiKey}
+              className="mt-4"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {translate("add_api_key", "api_keys", { default: "Add API Key" })}
             </Button>
           </div>
         ) : (

@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
+  Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -171,96 +172,119 @@ export function EmailsContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("email_accounts", "emails", { default: "Email Accounts" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("email_accounts", "emails", { default: "Email Accounts" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("manage_your_email_accounts", "emails", { default: "Manage your email accounts and server settings" })}
+          </p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_email_accounts", "emails", { default: "Search email accounts..." })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="emails"
+              options={[
+                { field: "title", label: translate("title", "emails", { default: "Title" }) },
+                { field: "created_at", label: translate("date_created", "emails", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "emails", { default: "Clear filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddEmail} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_email", "emails", { default: "Add Email" })}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_email_accounts", "emails", { default: "Search email accounts..." })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="col-span-1 flex space-x-2">
-          <SortButton
-            sortConfig={sortConfig}
-            onSortChange={setSortConfig}
-            namespace="emails"
-            options={[
-              { field: "title", label: translate("title", "emails", { default: "Title" }) },
-              { field: "email_address", label: translate("email_address", "emails", { default: "Email Address" }) }
-            ]}
-          />
-          <Button variant="outline" onClick={clearFilters} className="w-full">
-            <X className="mr-2 h-4 w-4" />
-            {translate("clear_filters", "emails", { default: "Clear filters" })}
-          </Button>
-        </div>
-      </div>
-
       {/* Email accounts table */}
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[250px]">
-                {translate("title", "emails", { default: "Title" })}
-              </TableHead>
-              <TableHead className="w-[250px]">
-                {translate("email_address", "emails", { default: "Email Address" })}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                {translate("servers", "emails", { default: "Servers" })}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                {translate("username", "emails", { default: "Username" })}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                {translate("password", "emails", { default: "Password" })}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                {translate("tags", "emails", { default: "Tags" })}
-              </TableHead>
-              <TableHead>
-                <span className="sr-only">{translate("actions", "emails", { default: "Actions" })}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+      <div className="border rounded-md">
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">
+              {translate("loading", "emails", { default: "Loading..." })}
+            </p>
+          </div>
+        ) : emailsToDisplay.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">
+              {searchQuery
+                ? translate("no_results_found", "emails", { default: "No results found" })
+                : translate("no_email_accounts", "emails", { default: "No email accounts" })}
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleAddEmail}
+              className="mt-4"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {translate("add_email", "emails", { default: "Add Email" })}
+            </Button>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  {translate("loading", "emails", { default: "Loading..." })}
-                </TableCell>
+                <TableHead className="w-[250px]">
+                  {translate("title", "emails", { default: "Title" })}
+                </TableHead>
+                <TableHead className="w-[250px]">
+                  {translate("email_address", "emails", { default: "Email Address" })}
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  {translate("servers", "emails", { default: "Servers" })}
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  {translate("username", "emails", { default: "Username" })}
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  {translate("password", "emails", { default: "Password" })}
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  {translate("tags", "emails", { default: "Tags" })}
+                </TableHead>
+                <TableHead>
+                  <span className="sr-only">{translate("actions", "emails", { default: "Actions" })}</span>
+                </TableHead>
               </TableRow>
-            ) : emailsToDisplay.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  {searchQuery ? (
-                    <>
-                      <AlertTriangle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                      {translate("no_results_found", "emails", { default: "No results found" })}
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                      {translate("no_email_accounts", "emails", { default: "No email accounts" })}
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ) : (
-              emailsToDisplay.map((email) => (
+            </TableHeader>
+            <TableBody>
+              {emailsToDisplay.map((email) => (
                 <TableRow key={email.doc_id}>
                   <TableCell className="font-medium overflow-hidden text-ellipsis">
                     {email.title}
@@ -464,10 +488,10 @@ export function EmailsContent() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* Pagination - only show if more than 1 page */}

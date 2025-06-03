@@ -49,7 +49,14 @@
     "expires": "Läuft ab",
     "expired": "Abgelaufen",
     "expiring_soon": "Läuft bald ab",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "manage_your_software_licenses": "Verwalten Sie Ihre Software-Lizenzen und Schlüssel",
+    "date_created": "Erstellungsdatum",
+    "add_a_tag": "Tag hinzufügen",
+    "licenses": {
+      "add_a_tag": "Tag hinzufügen",
+      "date_created": "Erstellungsdatum"
+    }
   },
   "navigation": {
     "home": "Startseite",
@@ -446,7 +453,8 @@
     "sort_by_updated": "Nach Aktualisierungsdatum sortieren",
     "ascending": "Aufsteigend",
     "descending": "Absteigend",
-    "clear_sort": "Sortierung aufheben"
+    "clear_sort": "Sortierung aufheben",
+    "date_created": "Erstellungsdatum"
   },
   "wallet_passphrases": {
     "no_passphrases_found_search": "Keine Passphrasen passen zu Ihren Suchkriterien.",
@@ -460,7 +468,8 @@
     "search_passphrases": "Passphrasen suchen...",
     "wallet_passphrases": "Wallet Passphrasen",
     "securely_store_and_manage_your_wallet_recovery_phrases": "Sichern Sie und verwalten Sie Ihre Wallet Passphrasen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "date_created": "Erstellungsdatum"
   },
   "identity": {
     "identities": "Identitäten",
@@ -505,7 +514,9 @@
     "page_of": "Seite {currentPage} von {totalPages}",
     "edit": "Bearbeiten",
     "copy_passport": "Reisepassnummer kopieren",
-    "copy_national_id": "Personalausweisnummer kopieren"
+    "copy_national_id": "Personalausweisnummer kopieren",
+    "manage_your_personal_identities": "Verwalten Sie Ihre persönlichen Identitätsinformationen sicher",
+    "date_created": "Erstellungsdatum"
   },
   "cards": {
     "credit_cards": "Kreditkarten",
@@ -546,7 +557,9 @@
     "show_sensitive_data": "Sensible Daten anzeigen",
     "showing_results": "Zeige {startIdx}-{endIdx} von {totalCount} Ergebnissen",
     "page_of": "Seite {currentPage} von {totalPages}",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "manage_your_cards": "Verwalten Sie Ihre Kredit- und Debitkarten sicher",
+    "date_created": "Erstellungsdatum"
   },
   "software_licenses": {
     "software_licenses": "Software-Lizenzen",

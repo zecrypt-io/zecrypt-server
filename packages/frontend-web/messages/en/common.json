@@ -98,6 +98,8 @@
     "clear_sort": "Clear Sort",
     "search_across_all_fields": "Search across all fields...",
     "update_api_key": "Update API Key",
+    "manage_your_software_licenses": "Manage your software licenses and keys",
+    "date_created": "Date Created",
     "licenses": {
       "licenses": "Software Licenses",
       "add_license": "Add License",
@@ -122,7 +124,9 @@
       "project_not_found": "Project not found for encryption",
       "encryption_key_not_found": "Encryption key not found for this project",
       "encryption_failed": "Failed to encrypt license data",
-      "decryption_failed": "Failed to decrypt license data"
+      "decryption_failed": "Failed to decrypt license data",
+      "add_a_tag": "Add a tag",
+      "date_created": "Date Created"
     }
   },
   "navigation": {
@@ -623,7 +627,8 @@
     "showing_results": "Showing {startIdx}-{endIdx} of {totalCount} results",
     "notes": "Notes",
     "enter_notes": "Enter notes",
-    "filter_by_env": "Filter by environment"
+    "filter_by_env": "Filter by environment",
+    "date_created": "Date Created"
   },
   "wallet_passphrases": {
     "wallet_passphrases": "Wallet Passphrases",
@@ -693,7 +698,8 @@
     "passphrase_copied": "Passphrase copied to clipboard",
     "copy_failed": "Copy failed",
     "failed_to_copy_passphrase": "Failed to copy passphrase to clipboard",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "date_created": "Date Created"
   },
   "identity": {
     "title": "Identity",
@@ -803,7 +809,9 @@
     "encryption_key_not_found": "Project encryption key not found. Cannot save identity.",
     "project_not_found": "Project not found. Please select a valid project.",
     "encryption_failed": "Failed to encrypt identity data. Please try again.",
-    "decryption_failed": "Failed to decrypt identity data. This could be due to a missing or invalid encryption key."
+    "decryption_failed": "Failed to decrypt identity data. This could be due to a missing or invalid encryption key.",
+    "manage_your_personal_identities": "Manage your personal identity information securely",
+    "date_created": "Date Created"
   },
   "cards": {
     "title": "Cards",
@@ -909,7 +917,9 @@
     "encryption_key_not_found": "Project encryption key not found. Cannot save card.",
     "project_not_found": "Project not found. Please select a valid project.",
     "encryption_failed": "Failed to encrypt card data. Please try again.",
-    "decryption_failed": "Failed to decrypt card data. This could be due to a missing or invalid encryption key."
+    "decryption_failed": "Failed to decrypt card data. This could be due to a missing or invalid encryption key.",
+    "manage_your_cards": "Manage your credit and debit card information securely",
+    "date_created": "Date Created"
   },
   "wifi": {
     "wifi_networks": "WiFi Networks",
