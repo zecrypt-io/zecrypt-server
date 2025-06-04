@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   QrCode,
   Plus,
+  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -42,6 +43,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { useWifi } from "@/hooks/useWifi"; // Import the new hook
 import { AddWifi } from "./add-wifi";
 import { EditWifi } from "./edit-wifi";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface WifiNetwork {
   doc_id: string;
@@ -72,25 +74,31 @@ export function WifiContent() {
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
   const {
+    allWifiNetworks,
+    filteredWifiNetworks,
     paginatedWifiNetworks,
     isLoading,
-    totalCount,
-    currentPage,
-    totalPages,
-    getPaginationRange,
-    itemsPerPage,
-    setItemsPerPage,
     searchQuery,
-    setSearchQuery,
-    selectedSecurityType,
-    setSelectedSecurityType,
+    selectedTag,
+    uniqueTags,
+    currentPage,
+    itemsPerPage,
+    totalCount,
+    totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
+    setSearchQuery,
+    setSelectedTag,
+    setCurrentPage,
+    setItemsPerPage,
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
     refreshWifiNetworks,
     handleDeleteWifi: handleDeleteWifiFromHook,
+    getPaginationRange,
     nextPage,
     prevPage,
     goToPage,
@@ -146,53 +154,73 @@ export function WifiContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_wifi_networks", "wifi", { default: "Manage your WiFi network credentials and connection details" })}</p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_wifi", "wifi")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
+              {uniqueTags.map(tag => (
+                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="wifi"
+              options={[
+                { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
+                { field: "created_at", label: translate("date_created", "wifi", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedTag !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "wifi")}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={() => setShowAddWifi(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_wifi", "wifi")}
         </Button>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_wifi", "wifi")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedSecurityType} onValueChange={setSelectedSecurityType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_security", "wifi")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_security_types", "wifi")}</SelectItem>
-            <SelectItem value="wpa2">WPA2</SelectItem>
-            <SelectItem value="wpa3">WPA3</SelectItem>
-            <SelectItem value="wep">WEP</SelectItem>
-            <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
-          </SelectContent>
-        </Select>
-        {(searchQuery || selectedSecurityType !== "all") && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear", "wifi")}
-          </Button>
-        )}
       </div>
 
       {/* Wi-Fi Networks Table */}
@@ -206,8 +234,8 @@ export function WifiContent() {
           <div className="p-10 text-center">
             <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">
-              {selectedSecurityType !== "all"
-                ? translate("no_wifi_for_security_type", "wifi").replace("{security_type}", selectedSecurityType)
+              {selectedTag !== "all"
+                ? translate("no_wifi_for_tag", "wifi", { default: "No Wi-Fi networks found with tag {tag}" }).replace("{tag}", selectedTag)
                 : searchQuery
                 ? translate("no_wifi_match_search", "wifi").replace("{search}", searchQuery)
                 : translate("no_wifi_found", "wifi")}

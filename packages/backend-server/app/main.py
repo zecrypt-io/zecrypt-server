@@ -6,22 +6,29 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.api import api_router
 from app.middlewares.lang_middleware import LanguageMiddleware
 from app.utils.i8ns import load_translations, translate
+from app.core.config import settings
+from app.utils.utils import get_origins
 
 load_translations()
+
+# Configure documentation URLs based on environment
+docs_url = "/docs" if settings.ENV != "production" else None
+redoc_url = "/redoc" if settings.ENV != "production" else None
+openapi_url = "/openapi.json" if settings.ENV != "production" else None
 
 app = FastAPI(
     title="Zecrypt API Documentation",
     version="v1",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=docs_url,
+    redoc_url=redoc_url,
+    openapi_url=openapi_url,
 )
 
 app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://app.zecrypt.io", "http://localhost:3000"],
+    allow_origins=get_origins(settings.ENV),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

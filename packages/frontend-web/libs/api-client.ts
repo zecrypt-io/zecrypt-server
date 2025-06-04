@@ -133,4 +133,22 @@ export function getDeviceInfo(entry: any) {
     return 'Computer';
   }
   return 'Unknown device';
+}
+
+/**
+ * API call to notify the backend that the user has logged out
+ * @returns Promise with the API response
+ */
+export async function logoutAPI(): Promise<{ status_code: number; message: string }> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
+    const fullUrl = `${baseUrl.replace(/\/$/, '')}/logout`;
+    
+    const response = await axiosInstance.post<{ status_code: number; message: string }>(fullUrl);
+    return response.data;
+  } catch (error) {
+    console.error("Error calling logout API:", error);
+    // We don't want to block the logout process if the API call fails
+    return { status_code: 0, message: "Failed to call logout API" };
+  }
 } 

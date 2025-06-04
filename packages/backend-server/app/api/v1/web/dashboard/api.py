@@ -19,3 +19,12 @@ async def get_dashboard_overview_api(
 ):
     
     return await get_dashboard_overview(request, user)
+
+@router.get(DASHBOARD_RECENT_ACTIVITY)
+async def get_dashboard_recent_activity_api(
+    request: Request,
+    workspace_id: str,
+    project_id: str,
+    user: UserDetails = Depends(get_current_user),
+):
+    return await get_dashboard_recent_activity(request, user)

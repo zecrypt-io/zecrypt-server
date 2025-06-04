@@ -3,6 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { 
   TrendingUp, 
   Users, 
@@ -21,8 +22,11 @@ import {
   Plus,
   Activity,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
+import { getWebsiteIcon } from "@/libs/icon-mappings";
 import { useTranslator } from "@/hooks/use-translations";
 import { useEffect, useState, useCallback } from "react";
 import React from "react";
@@ -32,7 +36,7 @@ import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
 import { useFormatter } from "next-intl";
 import { useUser } from "@stackframe/stack";
-import { loadInitialData, fetchProjects, fetchProjectKeys, fetchDashboardOverview, fetchRecentActivity } from "@/libs/getWorkspace";
+import { loadInitialData, fetchProjects, fetchProjectKeys, fetchDashboardOverview, fetchRecentActivity, fetchRecentAccounts } from "@/libs/getWorkspace";
 import { importRSAPrivateKey, decryptAESKeyWithRSA, decryptAccountData } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
 import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
@@ -128,7 +132,6 @@ export function LocalizedOverviewContent() {
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const userId = useSelector((state: RootState) => state.user.userData?.user_id);
-  console.log("Current user ID from Redux:", userId);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
@@ -140,6 +143,9 @@ export function LocalizedOverviewContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [recentAccounts, setRecentAccounts] = useState<Account[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
+  const [showAllActivities, setShowAllActivities] = useState(false);
+  const ACTIVITIES_PER_PAGE = 4;
+  const MAX_ACTIVITIES = 7;
 
   const processAccountData = useCallback(async (account: Account): Promise<Account> => {
     try {
@@ -175,7 +181,6 @@ export function LocalizedOverviewContent() {
               finalPassword = parsedData.password || finalPassword;
             }
           } catch (decryptError) {
-            console.error("Decryption failed, trying legacy JSON parse:", decryptError);
             try {
               const parsedData = JSON.parse(account.data);
               if (parsedData && typeof parsedData === 'object') {
@@ -184,11 +189,9 @@ export function LocalizedOverviewContent() {
               }
             } catch (parseError) {
               if (!finalPassword) finalPassword = "••••••••";
-              console.log("Error parsing data:", parseError);
             }
           }
         } catch (e) {
-          console.error("Error processing account data:", e);
           if (!finalPassword) finalPassword = "••••••••";
         }
       } else if (account.data && typeof account.data === 'object') {
@@ -208,7 +211,6 @@ export function LocalizedOverviewContent() {
         password: finalPassword,
       };
     } catch (error) {
-      console.error("Failed to process account data:", error);
       return {
         ...account,
         username: account.username || '-',
@@ -268,36 +270,38 @@ export function LocalizedOverviewContent() {
     };
 
     fetchDashboardData();
+
+    // Add event listener for project updates
+    const handleProjectUpdate = () => {
+      fetchDashboardData();
+    };
+
+    document.addEventListener("project-updated", handleProjectUpdate);
+
+    return () => {
+      document.removeEventListener("project-updated", handleProjectUpdate);
+    };
   }, [accessToken, selectedWorkspaceId, selectedProjectId]);
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("fetchData: Starting...");
       if (!accessToken) {
-        console.error("fetchData: No access token available in Redux");
         dispatch(setWorkspaceData({ workspaces: [], selectedWorkspaceId: null, selectedProjectId: null }));
         return;
       }
-      console.log("fetchData: Access token available.");
 
       const initialData: Workspace[] | null = await loadInitialData(accessToken);
-      console.log("fetchData: initialData fetched", initialData);
 
       if (initialData && Array.isArray(initialData) && initialData.length > 0) {
-        console.log("fetchData: initialData is valid and has workspaces.");
         const defaultWorkspace = initialData[0];
-
         const projectsData = await fetchProjects(defaultWorkspace.workspaceId, accessToken);
-        console.log("fetchData: projectsData fetched", projectsData);
 
         if (projectsData && projectsData.projects && projectsData.projects.length > 0) {
-          console.log("fetchData: projectsData is valid and has projects. Preparing to call syncProjectKeys.");
           setForceCreateProject(false);
           const updatedInitialData = initialData.map(ws => 
             ws.workspaceId === defaultWorkspace.workspaceId ? { ...ws, projects: projectsData.projects } : ws
           );
           
-          console.log("✅ Dispatching initial data to Redux with new projects (localized):", updatedInitialData);
           const defaultProj = projectsData.projects.find((p: Project) => p.is_default);
           
           dispatch(setWorkspaceData({
@@ -307,10 +311,7 @@ export function LocalizedOverviewContent() {
           }));
           
           await syncProjectKeys(defaultWorkspace.workspaceId, projectsData.projects);
-          console.log("fetchData: syncProjectKeys has been called.");
         } else {
-          console.log("fetchData: No projects found in projectsData, or projectsData is invalid. Skipping syncProjectKeys.", projectsData);
-          console.log("No projects found, showing project creation dialog (forced, localized)");
           dispatch(setWorkspaceData({
             workspaces: initialData.map(ws => ({ ...ws, projects: [] })),
             selectedWorkspaceId: defaultWorkspace.workspaceId,
@@ -320,7 +321,6 @@ export function LocalizedOverviewContent() {
           setShowProjectDialog(true);
         }
       } else {
-        console.error("❌ Failed to load initial data or no workspaces available (localized).");
         setForceCreateProject(false);
         dispatch(setWorkspaceData({ workspaces: [], selectedWorkspaceId: null, selectedProjectId: null }));
       }
@@ -331,18 +331,14 @@ export function LocalizedOverviewContent() {
 
   // Function to synchronize project keys
   const syncProjectKeys = async (workspaceId: string, projects: Project[]) => {
-    console.log("syncProjectKeys: Function has been entered. Args:", { workspaceId, projects });
     if (!workspaceId || !projects.length) {
-      console.log("syncProjectKeys: Returning early because workspaceId is missing or projects array is empty.", { workspaceId, projectsLength: projects?.length });
       return;
     }
     
     try {
-      console.log("syncProjectKeys: Starting try block.");
       const storedKeys: Record<string, string> = {};
       for (const project of projects) {
         const storedKey = await secureGetItem(`projectKey_${project.project_id}`);
-        console.log("syncProjectKeys: storedKey", storedKey);
         if (storedKey) {
           storedKeys[project.project_id] = storedKey;
         }
@@ -351,73 +347,58 @@ export function LocalizedOverviewContent() {
       const missingKeyProjects = projects.filter(project => !storedKeys[project.project_id]);
       
       if (missingKeyProjects.length === 0) {
-        console.log("All project keys are present in session storage");
         return;
       }
-      
-      console.log("Missing project keys for projects:", missingKeyProjects.map(p => p.name));
 
       if (!accessToken) {
-        console.log("syncProjectKeys: Missing accessToken, returning early.");
         return;
       }
       const projectKeys = await fetchProjectKeys(workspaceId, accessToken);
       
       if (!projectKeys) {
-        console.error("Failed to fetch project keys from API");
         return;
       }
 
       const privateKeyPEM = await secureGetItem('privateKey');
-      console.log("syncProjectKeys: privateKeyPEM", privateKeyPEM);
       if (!privateKeyPEM) {
-        console.error("Private key not found in session storage");
         return;
       }
 
       const privateKey = await importRSAPrivateKey(privateKeyPEM);
-      console.log("syncProjectKeys: privateKey", privateKey);
 
       for (const projectKey of projectKeys) {
         if (missingKeyProjects.some(p => p.project_id === projectKey.project_id)) {
           try {
-            console.log("decryption started")
             const decryptedKey = await decryptAESKeyWithRSA(projectKey.project_key, privateKey);
-            console.log("syncProjectKeys: decryptedKey", decryptedKey);
             await secureSetItem(`projectKey_${projectKey.project_name}`, decryptedKey);
-            console.log(`✅ Project key synchronized for project: ${projectKey.project_name || projectKey.project_id}`);
           } catch (error) {
-            console.error(`Error processing key for project ID ${projectKey.project_id}:`, error);
+            // Handle error silently
           }
         }
       }
     } catch (error) {
-      console.error("Error synchronizing project keys:", error);
+      // Handle error silently
     }
   };
 
   useEffect(() => {
-    const fetchRecentAccounts = async () => {
+    const loadRecentAccounts = async () => {
       if (!accessToken || !selectedWorkspaceId || !selectedProjectId) {
         return;
       }
 
       try {
-        const response = await axiosInstance.get(
-          `/${selectedWorkspaceId}/${selectedProjectId}/accounts?limit=5&sort=created_at:desc`
-        );
-
-        if (response.status === 200) {
-          const { data: accounts = [] } = response.data || {};
+        const accounts = await fetchRecentAccounts(selectedWorkspaceId, selectedProjectId, accessToken);
+        if (accounts && Array.isArray(accounts)) {
           const processedAccounts = await Promise.all(accounts.map(processAccountData));
           setRecentAccounts(processedAccounts);
         }
       } catch (error) {
-        console.error("Error fetching recent accounts:", error);
+        // Handle error silently
       }
     };
 
-    fetchRecentAccounts();
+    loadRecentAccounts();
   }, [accessToken, selectedWorkspaceId, selectedProjectId, processAccountData]);
 
   const togglePasswordVisibility = (accountId: string) => {
@@ -430,12 +411,7 @@ export function LocalizedOverviewContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{translate("dashboard", "navigation")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {translate("welcome_back", "dashboard")} {useUser()?.displayName || "User"}
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight">{translate("dashboard", "navigation")}</h1>
       </div>
 
       {/* Dashboard Overview Cards */}
@@ -454,7 +430,7 @@ export function LocalizedOverviewContent() {
           ))
         ) : (
           dashboardData && Object.entries(dashboardData).map(([key, value]) => (
-            <Card key={key} className="relative overflow-hidden border-0 shadow-md">
+            <Card key={key} className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10"></div>
               <CardHeader className="relative pb-2">
                 <div className="flex items-center justify-between">
@@ -482,7 +458,7 @@ export function LocalizedOverviewContent() {
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Recent Activity */}
-        <Card className="md:col-span-4 shadow-md">
+        <Card className="md:col-span-4 shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -497,7 +473,7 @@ export function LocalizedOverviewContent() {
           <CardContent>
             <div className="space-y-1">
               {isLoading ? (
-                Array(5).fill(0).map((_, index) => (
+                Array(4).fill(0).map((_, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 animate-pulse">
                     <div className="h-10 w-10 rounded-full bg-muted"></div>
                     <div className="flex-1 space-y-2">
@@ -512,73 +488,100 @@ export function LocalizedOverviewContent() {
                   <p>{translate("no_recent_activity", "dashboard") || "No recent activity"}</p>
                 </div>
               ) : (
-                recentActivities.map((activity) => {
-                  const isCurrentUser = activity.user_id === userId;
-                  const userName = isCurrentUser ? "You" : "Team member";
-                  const actionText = activity.action === "create" ? "created" : 
-                                   activity.action === "update" ? "updated" : 
-                                   activity.action === "delete" ? "deleted" : activity.action;
-                  const dataTypeName = formatDataTypeName(activity.data_type);
-                  
-                  return (
-                    <div 
-                      key={activity.doc_id} 
-                      className="flex items-start gap-4 p-4 hover:bg-muted/30 rounded-lg transition-all duration-200 border border-transparent hover:border-border"
-                    >
-                      <div className="relative">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-primary/20">
-                          {getDataTypeIcon(activity.data_type, "h-4 w-4 text-primary")}
+                <>
+                  {(showAllActivities 
+                    ? [...recentActivities].reverse().slice(0, MAX_ACTIVITIES)
+                    : [...recentActivities].reverse().slice(0, ACTIVITIES_PER_PAGE)
+                  ).map((activity) => {
+                    const isCurrentUser = activity.user_id === userId;
+                    const userName = isCurrentUser ? "You" : "Team member";
+                    const actionText = activity.action === "create" ? "created" : 
+                                     activity.action === "update" ? "updated" : 
+                                     activity.action === "delete" ? "deleted" : activity.action;
+                    const dataTypeName = formatDataTypeName(activity.data_type);
+                    
+                    return (
+                      <div 
+                        key={activity.doc_id} 
+                        className="flex items-start gap-4 p-4 hover:bg-muted/30 rounded-lg transition-all duration-200 border border-transparent hover:border-border group"
+                      >
+                        <div className="relative">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                            {getDataTypeIcon(activity.data_type, "h-4 w-4 text-primary")}
+                          </div>
+                          <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-background border-2 border-background flex items-center justify-center ${getActionColor(activity.action)}`}>
+                            {getActionIcon(activity.action)}
+                          </div>
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-background border-2 border-background flex items-center justify-center ${getActionColor(activity.action)}`}>
-                          {getActionIcon(activity.action)}
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium text-sm leading-5">
-                              <span className={isCurrentUser ? "text-primary font-semibold" : "text-foreground"}>
-                                {userName}
-                              </span>
-                              {" "}
-                              <span className={`${getActionColor(activity.action)} font-medium`}>
-                                {actionText}
-                              </span>
-                              {" "}
-                              <span className="text-muted-foreground">a</span>
-                              {" "}
-                              <span className="text-foreground font-medium">
-                                {dataTypeName}
-                              </span>
-                            </p>
-                            
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-muted-foreground">
-                                {format.relativeTime(new Date(activity.created_at), new Date())}
-                              </span>
-                              {activity.record_id && (
-                                <>
-                                  <span className="text-xs text-muted-foreground">•</span>
-                                  <span className="text-xs text-muted-foreground font-mono">
-                                    {activity.record_id.split('-')[0]}...
-                                  </span>
-                                </>
-                              )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm leading-5">
+                                <span className={isCurrentUser ? "text-primary font-semibold" : "text-foreground"}>
+                                  {userName}
+                                </span>
+                                {" "}
+                                <span className={`${getActionColor(activity.action)} font-medium`}>
+                                  {actionText}
+                                </span>
+                                {" "}
+                                <span className="text-muted-foreground">a</span>
+                                {" "}
+                                <span className="text-foreground font-medium">
+                                  {dataTypeName}
+                                </span>
+                              </p>
+                              
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {format.relativeTime(new Date(activity.created_at), new Date())}
+                                </span>
+                                {activity.record_id && (
+                                  <>
+                                    <span className="text-xs text-muted-foreground">•</span>
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {activity.record_id.split('-')[0]}...
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    );
+                  })}
+                  {recentActivities.length > ACTIVITIES_PER_PAGE && (
+                    <div className="flex justify-center pt-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllActivities(!showAllActivities)}
+                        className="text-muted-foreground hover:text-foreground group"
+                      >
+                        {showAllActivities ? (
+                          <>
+                            <ChevronUp className="h-4 w-4 mr-1 group-hover:transform group-hover:-translate-y-0.5 transition-transform" />
+                            {translate("show_less", "dashboard") || "Show Less"}
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-1 group-hover:transform group-hover:translate-y-0.5 transition-transform" />
+                            {translate("show_more", "dashboard") || "Show More"}
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  );
-                })
+                  )}
+                </>
               )}
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Stats */}
-        <Card className="md:col-span-2 lg:col-span-3 shadow-md border-0 bg-gradient-to-br from-background to-muted/20">
+        <Card className="md:col-span-2 lg:col-span-3 shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
@@ -586,53 +589,70 @@ export function LocalizedOverviewContent() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {/* Recent Accounts Section */}
-              <div>
-                <h3 className="text-sm font-medium mb-4 text-muted-foreground">{translate("recent_accounts", "dashboard")}</h3>
-                <div className="space-y-3">
-                  {recentAccounts.map((account) => (
-                    <div 
-                      key={account.doc_id} 
-                      className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-200 group"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-sm group-hover:text-primary transition-colors">
+            <div className="space-y-3">
+              {recentAccounts.map((account) => (
+                <div 
+                  key={account.doc_id} 
+                  className="relative p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-200 group"
+                >
+                  {/* Main Account Info */}
+                  <div className={`flex items-center justify-between gap-2 transition-all duration-300 ${
+                    revealedPasswords[account.doc_id] ? 'blur-sm opacity-50' : ''
+                  }`}>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="p-2 rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow">
+                        {getWebsiteIcon(account.url || account.website || '', "h-4 w-4 text-slate-700")}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-medium text-sm group-hover:text-primary transition-colors truncate">
                           {account.name || account.title}
                         </span>
-                        <button
-                          onClick={() => togglePasswordVisibility(account.doc_id)}
-                          className="text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          {revealedPasswords[account.doc_id] ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      <div className="text-sm space-y-1.5">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <User className="h-3.5 w-3.5" />
-                          <span className="truncate">{account.username}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="font-mono text-xs bg-muted/50 px-2 py-0.5 rounded">
-                            {revealedPasswords[account.doc_id] ? account.password : "••••••••"}
-                          </span>
-                        </div>
+                        <span className="text-muted-foreground text-xs truncate">
+                          {account.username}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                  {recentAccounts.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed border-border">
-                      <Shield className="h-8 w-8 mx-auto mb-3 opacity-30" />
-                      <p>{translate("no_recent_accounts", "dashboard")}</p>
+                    <button
+                      onClick={() => togglePasswordVisibility(account.doc_id)}
+                      className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 z-10 relative"
+                    >
+                      {revealedPasswords[account.doc_id] ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Password Modal/Projection */}
+                  {revealedPasswords[account.doc_id] && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                      <div className="bg-background/95 backdrop-blur-sm border border-primary/10 rounded-lg shadow-sm px-3 py-2 max-w-[60%] animate-in fade-in-0 zoom-in-95 duration-200">
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-3.5 w-3.5 text-primary/70" />
+                          <div className="font-mono text-sm bg-primary/5 text-primary px-2.5 py-0.5 rounded border border-primary/10">
+                            {account.password}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
+
+                  {/* Click overlay to close when password is shown */}
+                  {revealedPasswords[account.doc_id] && (
+                    <div 
+                      className="absolute inset-0 z-10 cursor-pointer"
+                      onClick={() => togglePasswordVisibility(account.doc_id)}
+                    />
+                  )}
                 </div>
-              </div>
+              ))}
+              {recentAccounts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed border-border">
+                  <Shield className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                  <p>{translate("no_recent_accounts", "dashboard")}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

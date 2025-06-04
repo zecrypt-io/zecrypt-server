@@ -205,3 +205,31 @@ export const fetchRecentActivity = async (workspaceId: string, projectId: string
     return null;
   }
 };
+
+// New function to fetch recent accounts
+export const fetchRecentAccounts = async (workspaceId: string, projectId: string, accessToken: string, limit: number = 5) => {
+  if (!accessToken) {
+    console.error("No access token provided for fetchRecentAccounts");
+    return null;
+  }
+  
+  if (!workspaceId || !projectId) {
+    console.error("Missing workspace ID or project ID for fetchRecentAccounts");
+    return null;
+  }
+  
+  try {
+    const response = await axiosInstance.get(
+      `/${workspaceId}/${projectId}/accounts?limit=${limit}&sort=created_at:desc`
+    );
+
+    if (response.status === 200) {
+      return response.data.data || [];
+    } else {
+      throw new Error(response.data.message || "Failed to fetch recent accounts");
+    }
+  } catch (err) {
+    console.error("Error fetching recent accounts:", err);
+    return null;
+  }
+};
