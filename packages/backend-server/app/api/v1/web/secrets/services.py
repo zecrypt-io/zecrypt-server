@@ -4,30 +4,23 @@ from app.managers import secrets as secrets_manager
 from app.utils.i8ns import translate
 from fastapi import BackgroundTasks
 from app.api.v1.web.project_activity.services import add_recent_activity
+from app.framework.valkey import services as valkey_services
 
-background_tasks = BackgroundTasks()
-
-
-async def get_secret_details(db, data_type, doc_id):
-    secret = secrets_manager.find_one(
-        db, {"doc_id": doc_id, "secret_type": data_type}, {"_id": False}
-    )
-
-    if not secret:
-        return response_helper(404, translate(f"{data_type}.not_found"))
-
-    return response_helper(200, translate(f"{data_type}.details"), data=secret)
 
 
 async def get_secrets(request, user, data_type):
     db = user.get("db")
     page = request.query_params.get("page", None)
     limit = request.query_params.get("limit", None)
-
+    project_id = request.path_params.get("project_id")
     query = {
         "secret_type": data_type,
-        "project_id": request.path_params.get("project_id"),
+        "project_id": project_id,
     }
+    if valkey_services.check_secret_exists(project_id, data_type, query):
+        data = valkey_services.get_secret(project_id, data_type, query)
+        return response_helper(200, translate(f"{data_type}.list"), data=data, count=len(data))
+
     if page and limit:
         skip = (page - 1) * limit
         secrets = secrets_manager.find(db, query, skip=skip, limit=limit)
@@ -76,6 +69,7 @@ async def add_secret(request, user, data_type, payload, background_tasks):
         payload.get("doc_id"),
         "create",
     )
+    background_tasks.add_task(valkey_services.delete_secret, project_id, data_type)
     return response_helper(201, translate(f"{data_type}.add"), data=payload)
 
 
@@ -113,6 +107,7 @@ async def update_secret(request, user, data_type, payload, background_tasks):
     background_tasks.add_task(
         add_recent_activity, user, project_id, data_type, doc_id, "update"
     )
+    background_tasks.add_task(valkey_services.delete_secret, project_id, data_type)
     return response_helper(200, translate(f"{data_type}.update"), data=payload)
 
 
@@ -128,4 +123,5 @@ async def delete_secret(request, user, data_type, background_tasks):
     background_tasks.add_task(
         add_recent_activity, user, project_id, data_type, doc_id, "delete"
     )
+    background_tasks.add_task(valkey_services.delete_secret, project_id, data_type)
     return response_helper(200, translate(f"{data_type}.delete"), data={})
