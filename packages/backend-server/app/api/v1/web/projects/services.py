@@ -149,13 +149,18 @@ def add_project_key(db, user_id, project_id, workspace_id, project_key=None):
     )
 
 
-def get_project_keys(request, db, user_id):
+def get_project_keys(request, user):
+    db = user.get("db")
+    user_id = user.get("user_id")
     project_keys = project_keys_manager.find(
         db,
         {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
     )
+    final_project_keys = []
     for key in project_keys:
-        key["project_name"] = project_manager.get_project_name(
-            db, key.get("project_id")
-        )
-    return response_helper(200, translate("project.keys"), data=project_keys)
+        project_name = project_manager.get_project_name(db, key.get("project_id"))
+        if project_name:
+            key["project_name"] = project_name
+        final_project_keys.append(key)
+
+    return response_helper(200, translate("project.keys"), data=final_project_keys)

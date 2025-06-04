@@ -22,6 +22,10 @@ secrets_router.include_router(identity_router.router, tags=["Secrets: Identities
 secrets_router.include_router(licenses_router.router, tags=["Secrets: Licenses"])
 secrets_router.include_router(notes_router.router, tags=["Secrets: Notes"])
 secrets_router.include_router(ssh_keys_router.router, tags=["Secrets: SSH Keys"])
-secrets_router.include_router(wallet_phrases_router.router, tags=["Secrets: Wallet Phrases"])
+secrets_router.include_router(
+    wallet_phrases_router.router, tags=["Secrets: Wallet Phrases"]
+)
 secrets_router.include_router(wifi_router.router, tags=["Secrets: Wifi"])
-secrets_router.include_router(password_history_router.router, tags=["Secrets: Password History"])
+secrets_router.include_router(
+    password_history_router.router, tags=["Secrets: Password History"]
+)

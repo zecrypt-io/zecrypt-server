@@ -18,4 +18,3 @@ def get_db(db_name=settings.DB_NAME):
     """Get a specific database."""
     client = _get_client()
     return client[db_name]
-

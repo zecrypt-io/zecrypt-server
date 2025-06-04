@@ -14,7 +14,7 @@ db = get_db()
 
 def get_current_user(response: Response, access_token: str = Header(...)):
     token = access_token
-    common_message=translate("auth.something_went_wrong")
+    common_message = translate("auth.something_went_wrong")
     if not token:
         raise HTTPException(status_code=401, detail=translate("auth.invalid_header"))
     user_id = None

@@ -1,11 +1,7 @@
 import uuid
 from datetime import datetime, timedelta as timedzelta
-import hashlib
-import os
-import json
 
 
-from app.core.config import settings
 from app.utils.security.security_utils import encrypt_message, decrypt_message
 
 
@@ -45,5 +41,3 @@ def validate_access_token(access_token, user_id):
         return True
     else:
         return False
-
-

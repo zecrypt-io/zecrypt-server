@@ -54,6 +54,8 @@ def find(db, query, projection=None, sort=None, skip=0, limit=0):
 def get_project_name(db, project_id):
     query = {"doc_id": project_id}
     project = db_manager.find_one(db, collection_name, query, {"name": 1})
+    if not project:
+        return None
     return project.get("name")
 
 
