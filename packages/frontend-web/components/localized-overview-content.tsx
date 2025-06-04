@@ -144,8 +144,8 @@ export function LocalizedOverviewContent() {
   const [recentAccounts, setRecentAccounts] = useState<Account[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
   const [showAllActivities, setShowAllActivities] = useState(false);
-  const ACTIVITIES_PER_PAGE = 4;
-  const MAX_ACTIVITIES = 7;
+  const ACTIVITIES_DISPLAY_COUNT = 5;
+  const ACCOUNTS_DISPLAY_COUNT = 5;
 
   const processAccountData = useCallback(async (account: Account): Promise<Account> => {
     try {
@@ -414,38 +414,38 @@ export function LocalizedOverviewContent() {
         <h1 className="text-3xl font-bold tracking-tight">{translate("dashboard", "navigation")}</h1>
       </div>
 
-      {/* Dashboard Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Dashboard Overview Cards - Max 2 rows, 5 cards per row */}
+      <div className="grid gap-3 grid-cols-5">
         {isLoading ? (
-          Array(4).fill(0).map((_, index) => (
+          Array(10).fill(0).map((_, index) => (
             <Card key={index} className="animate-pulse">
               <CardHeader className="pb-2">
-                <div className="h-4 bg-muted rounded w-1/2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-muted rounded w-1/3"></div>
-                <div className="h-4 bg-muted rounded w-1/2 mt-2"></div>
+                <div className="h-6 bg-muted rounded w-1/3"></div>
+                <div className="h-3 bg-muted rounded w-1/2 mt-2"></div>
               </CardContent>
             </Card>
           ))
         ) : (
-          dashboardData && Object.entries(dashboardData).map(([key, value]) => (
+          dashboardData && Object.entries(dashboardData).slice(0, 10).map(([key, value]) => (
             <Card key={key} className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10"></div>
-              <CardHeader className="relative pb-2">
+              <CardHeader className="relative pb-1 px-3 pt-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-xs font-medium text-muted-foreground leading-tight">
                     {formatDataTypeName(key)}
                   </CardTitle>
-                  <div className="p-2 rounded-full bg-primary/10">
-                    {getDataTypeIcon(key, "h-4 w-4 text-primary")}
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    {getDataTypeIcon(key, "h-3 w-3 text-primary")}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="relative">
-                <div className="text-3xl font-bold text-foreground">{value.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground mt-2 flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+              <CardContent className="relative px-3 pb-3">
+                <div className="text-2xl font-bold text-foreground">{value.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground mt-1 flex items-center">
+                  <TrendingUp className="h-2.5 w-2.5 mr-1 text-green-500" />
                   <span className="text-green-500 font-medium">+0%</span>{" "}
                   {translate("from_last_month", "dashboard")}
                 </div>
@@ -471,14 +471,14 @@ export function LocalizedOverviewContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
+            <div className="h-[320px] overflow-y-auto pr-2">
               {isLoading ? (
-                Array(4).fill(0).map((_, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 animate-pulse">
-                    <div className="h-10 w-10 rounded-full bg-muted"></div>
+                Array(5).fill(0).map((_, index) => (
+                  <div key={index} className="flex items-center gap-4 p-3 animate-pulse">
+                    <div className="h-8 w-8 rounded-full bg-muted"></div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                      <div className="h-3 bg-muted rounded w-3/4"></div>
+                      <div className="h-2 bg-muted rounded w-1/2"></div>
                     </div>
                   </div>
                 ))
@@ -488,11 +488,8 @@ export function LocalizedOverviewContent() {
                   <p>{translate("no_recent_activity", "dashboard") || "No recent activity"}</p>
                 </div>
               ) : (
-                <>
-                  {(showAllActivities 
-                    ? [...recentActivities].reverse().slice(0, MAX_ACTIVITIES)
-                    : [...recentActivities].reverse().slice(0, ACTIVITIES_PER_PAGE)
-                  ).map((activity) => {
+                <div className="space-y-1">
+                  {[...recentActivities].reverse().slice(0, showAllActivities ? recentActivities.length : ACTIVITIES_DISPLAY_COUNT).map((activity) => {
                     const isCurrentUser = activity.user_id === userId;
                     const userName = isCurrentUser ? "You" : "Team member";
                     const actionText = activity.action === "create" ? "created" : 
@@ -503,14 +500,14 @@ export function LocalizedOverviewContent() {
                     return (
                       <div 
                         key={activity.doc_id} 
-                        className="flex items-start gap-4 p-4 hover:bg-muted/30 rounded-lg transition-all duration-200 border border-transparent hover:border-border group"
+                        className="flex items-start gap-3 p-3 hover:bg-muted/30 rounded-lg transition-all duration-200 border border-transparent hover:border-border group"
                       >
                         <div className="relative">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                            {getDataTypeIcon(activity.data_type, "h-4 w-4 text-primary")}
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                            {getDataTypeIcon(activity.data_type, "h-3 w-3 text-primary")}
                           </div>
-                          <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-background border-2 border-background flex items-center justify-center ${getActionColor(activity.action)}`}>
-                            {getActionIcon(activity.action)}
+                          <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-background border border-background flex items-center justify-center ${getActionColor(activity.action)}`}>
+                            {getActionIcon(activity.action, "h-2 w-2")}
                           </div>
                         </div>
                         
@@ -552,8 +549,8 @@ export function LocalizedOverviewContent() {
                       </div>
                     );
                   })}
-                  {recentActivities.length > ACTIVITIES_PER_PAGE && (
-                    <div className="flex justify-center pt-4">
+                  {recentActivities.length > ACTIVITIES_DISPLAY_COUNT && (
+                    <div className="flex justify-center pt-2">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -574,85 +571,87 @@ export function LocalizedOverviewContent() {
                       </Button>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Stats */}
+        {/* Recently Added Accounts */}
         <Card className="md:col-span-2 lg:col-span-3 shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              {translate("quick_stats", "dashboard")}
+              {translate("recently_added_accounts", "dashboard") || "Recently Added Accounts"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentAccounts.map((account) => (
-                <div 
-                  key={account.doc_id} 
-                  className="relative p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-200 group"
-                >
-                  {/* Main Account Info */}
-                  <div className={`flex items-center justify-between gap-2 transition-all duration-300 ${
-                    revealedPasswords[account.doc_id] ? 'blur-sm opacity-50' : ''
-                  }`}>
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="p-2 rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow">
-                        {getWebsiteIcon(account.url || account.website || '', "h-4 w-4 text-slate-700")}
+            <div className="h-[320px] overflow-y-auto pr-2">
+              <div className="space-y-3">
+                {recentAccounts.slice(0, ACCOUNTS_DISPLAY_COUNT).map((account) => (
+                  <div 
+                    key={account.doc_id} 
+                    className="relative p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-200 group"
+                  >
+                    {/* Main Account Info */}
+                    <div className={`flex items-center justify-between gap-2 transition-all duration-300 ${
+                      revealedPasswords[account.doc_id] ? 'blur-sm opacity-50' : ''
+                    }`}>
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="p-2 rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow">
+                          {getWebsiteIcon(account.url || account.website || '', "h-4 w-4 text-slate-700")}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium text-sm group-hover:text-primary transition-colors truncate">
+                            {account.name || account.title}
+                          </span>
+                          <span className="text-muted-foreground text-xs truncate">
+                            {account.username}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-medium text-sm group-hover:text-primary transition-colors truncate">
-                          {account.name || account.title}
-                        </span>
-                        <span className="text-muted-foreground text-xs truncate">
-                          {account.username}
-                        </span>
-                      </div>
+                      <button
+                        onClick={() => togglePasswordVisibility(account.doc_id)}
+                        className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 z-10 relative"
+                      >
+                        {revealedPasswords[account.doc_id] ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => togglePasswordVisibility(account.doc_id)}
-                      className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 z-10 relative"
-                    >
-                      {revealedPasswords[account.doc_id] ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
 
-                  {/* Password Modal/Projection */}
-                  {revealedPasswords[account.doc_id] && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                      <div className="bg-background/95 backdrop-blur-sm border border-primary/10 rounded-lg shadow-sm px-3 py-2 max-w-[60%] animate-in fade-in-0 zoom-in-95 duration-200">
-                        <div className="flex items-center gap-2">
-                          <Lock className="h-3.5 w-3.5 text-primary/70" />
-                          <div className="font-mono text-sm bg-primary/5 text-primary px-2.5 py-0.5 rounded border border-primary/10">
-                            {account.password}
+                    {/* Password Modal/Projection */}
+                    {revealedPasswords[account.doc_id] && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                        <div className="bg-background/95 backdrop-blur-sm border border-primary/10 rounded-lg shadow-sm px-3 py-2 max-w-[60%] animate-in fade-in-0 zoom-in-95 duration-200">
+                          <div className="flex items-center gap-2">
+                            <Lock className="h-3.5 w-3.5 text-primary/70" />
+                            <div className="font-mono text-sm bg-primary/5 text-primary px-2.5 py-0.5 rounded border border-primary/10">
+                              {account.password}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Click overlay to close when password is shown */}
-                  {revealedPasswords[account.doc_id] && (
-                    <div 
-                      className="absolute inset-0 z-10 cursor-pointer"
-                      onClick={() => togglePasswordVisibility(account.doc_id)}
-                    />
-                  )}
-                </div>
-              ))}
-              {recentAccounts.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed border-border">
-                  <Shield className="h-8 w-8 mx-auto mb-3 opacity-30" />
-                  <p>{translate("no_recent_accounts", "dashboard")}</p>
-                </div>
-              )}
+                    {/* Click overlay to close when password is shown */}
+                    {revealedPasswords[account.doc_id] && (
+                      <div 
+                        className="absolute inset-0 z-10 cursor-pointer"
+                        onClick={() => togglePasswordVisibility(account.doc_id)}
+                      />
+                    )}
+                  </div>
+                ))}
+                {recentAccounts.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed border-border">
+                    <Shield className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                    <p>{translate("no_recent_accounts", "dashboard")}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
