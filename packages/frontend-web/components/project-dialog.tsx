@@ -574,6 +574,8 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
         }
       }
 
+      // Dispatch project updated event
+      document.dispatchEvent(new CustomEvent("project-updated"));
       onClose();
     } catch (err: any) {
       console.error("EditProject error:", err);
@@ -798,8 +800,6 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       if (!response.ok) {
         throw new Error(result.message || "Failed to create project");
       }
-      // const response = await axiosInstance.post(`/${workspaceId}/projects`, payload);
-      // const result = response.data;
 
       const newProject = {
         project_id: result.data.doc_id,
@@ -841,6 +841,9 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       }
 
       dispatch(setSelectedProject({ projectId: newProject.project_id }));
+      
+      // Dispatch project updated event
+      document.dispatchEvent(new CustomEvent("project-updated"));
       onClose();
     } catch (err: any) {
       console.error("CreateProject error:", err);
