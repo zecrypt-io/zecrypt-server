@@ -57,5 +57,6 @@ def count_documents(db, query):
 
 def get_project_secrets_count(db, data_type, project_id):
     return count_documents(
-        db, {"project_id": project_id, "data_type": data_type, "access": {"$ne": False}}
+        db,
+        {"project_id": project_id, "secret_type": data_type, "access": {"$ne": False}},
     )
