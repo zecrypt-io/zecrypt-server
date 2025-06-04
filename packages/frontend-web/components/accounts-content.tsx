@@ -285,43 +285,19 @@ export function AccountsContent() {
           </div>
         ) : (
           <Table>
-            <TableHeader>
+            <TableHeader className="accounts-table-header">
               <TableRow>
                 <TableHead className="w-[200px]">
-                  <div className="flex items-center">
-                    {translate("account", "accounts")}
-                    <SortButton
-                      field="title"
-                      sortConfig={sortConfig}
-                      setSortConfig={setSortConfig}
-                      label={translate("account", "accounts")}
-                    />
-                  </div>
+                  {translate("account", "accounts")}
                 </TableHead>
                 <TableHead>
-                  <div className="flex items-center">
-                    {translate("username", "accounts")}
-                    <SortButton
-                      field="username"
-                      sortConfig={sortConfig}
-                      setSortConfig={setSortConfig}
-                      label={translate("username", "accounts")}
-                    />
-                  </div>
+                  {translate("username", "accounts")}
                 </TableHead>
                 <TableHead>{translate("password", "accounts")}</TableHead>
                 <TableHead>{translate("website", "accounts")}</TableHead>
                 <TableHead>{translate("tags", "accounts")}</TableHead>
                 <TableHead>
-                  <div className="flex items-center">
-                    {translate("last_modified", "accounts")}
-                    <SortButton
-                      field="updated_at"
-                      sortConfig={sortConfig}
-                      setSortConfig={setSortConfig}
-                      label={translate("last_modified", "accounts")}
-                    />
-                  </div>
+                  {translate("last_modified", "accounts")}
                 </TableHead>
                 <TableHead className="text-right">{translate("actions", "accounts")}</TableHead>
               </TableRow>

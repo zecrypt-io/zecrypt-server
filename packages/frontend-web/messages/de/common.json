@@ -596,10 +596,8 @@
     "expires": "Läuft ab",
     "expired": "Abgelaufen",
     "expiring_soon": "Läuft bald ab",
-    "licenses": {
-      "add_a_tag": "Tag hinzufügen",
-      "date_created": "Erstellungsdatum"
-    }
+    "add_a_tag": "Tag hinzufügen",
+    "date_created": "Erstellungsdatum"
   },
   "wifi": {
     "wifi_networks": "WLAN-Netzwerke",

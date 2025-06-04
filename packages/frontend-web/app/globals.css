@@ -64,6 +64,11 @@
   }
 }
 
+/* Hide default sort UI in account table headers */
+.accounts-table-header th::after {
+  display: none !important;
+}
+
 /* CSS property for animation */
 @property --angle {
   syntax: "<angle>";
