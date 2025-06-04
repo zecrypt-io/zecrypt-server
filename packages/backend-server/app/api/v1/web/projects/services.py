@@ -6,7 +6,6 @@ from app.managers import (
     secrets as secrets_manager,
 )
 
-from app.framework.encryption.service import get_project_key
 from app.utils.i8ns import translate
 
 
@@ -133,10 +132,8 @@ def get_tags(db, project_id):
     return response_helper(200, translate("project.tags"), data=unique_tags)
 
 
-def add_project_key(db, user_id, project_id, workspace_id, project_key=None):
-    if not project_key:
-        project_key = get_project_key(db, user_id)
-
+def add_project_key(db, user_id, project_id, workspace_id, project_key):
+   
     project_keys_manager.insert_one(
         db,
         {
