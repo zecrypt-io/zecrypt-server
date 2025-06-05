@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "卡片添加成功",
+        "update": "卡片信息更新成功",
+        "delete": "卡片信息删除成功",
+        "details": "卡片信息获取成功",
+        "not_found": "未找到卡片信息",
+        "already_exists": "同名卡片信息已存在",
+        "list": "卡片获取成功"
+    },
+    "api_key": {
+        "add": "API密钥添加成功",
+        "update": "API密钥信息更新成功",
+        "delete": "API密钥信息删除成功",
+        "details": "API密钥信息获取成功",
+        "not_found": "未找到API密钥信息",
+        "already_exists": "同名API密钥信息已存在",
+        "list": "API密钥获取成功"
+    },
+    "wallet_phrase": {
+        "add": "钱包助记词添加成功",
+        "update": "钱包助记词信息更新成功",
+        "delete": "钱包助记词信息删除成功",
+        "details": "钱包助记词信息获取成功",
+        "not_found": "未找到钱包助记词信息",
+        "already_exists": "同名钱包助记词信息已存在",
+        "list": "钱包助记词获取成功"
+    },
+    "wifi": {
+        "add": "WiFi添加成功",
+        "update": "WiFi信息更新成功",
+        "delete": "WiFi信息删除成功",
+        "details": "WiFi信息获取成功",
+        "not_found": "未找到WiFi信息",
+        "already_exists": "同名WiFi信息已存在",
+        "list": "WiFi信息获取成功"
+    },
+    "license": {
+        "add": "许可证添加成功",
+        "update": "许可证信息更新成功",
+        "delete": "许可证信息删除成功",
+        "details": "许可证信息获取成功",
+        "not_found": "未找到许可证信息",
+        "already_exists": "同名许可证信息已存在",
+        "list": "许可证获取成功"
+    },
+    "login": {
+        "add": "账户添加成功",
+        "update": "账户信息更新成功",
+        "delete": "账户信息删除成功",
+        "details": "账户信息获取成功",
+        "not_found": "未找到账户信息",
+        "already_exists": "同名账户信息已存在",
+        "list": "账户获取成功"
+    },
+    "identity": {
+        "add": "身份添加成功",
+        "update": "身份信息更新成功",
+        "delete": "身份信息删除成功",
+        "details": "身份信息获取成功",
+        "not_found": "未找到身份信息",
+        "already_exists": "同名身份信息已存在",
+        "list": "身份获取成功"
+    },
+    "email": {
+        "add": "邮箱添加成功",
+        "update": "邮箱信息更新成功",
+        "delete": "邮箱信息删除成功",
+        "details": "邮箱信息获取成功",
+        "not_found": "未找到邮箱信息",
+        "already_exists": "同名邮箱信息已存在",
+        "list": "邮箱获取成功"
+    },
+    "ssh_key": {
+        "add": "SSH密钥添加成功",
+        "update": "SSH密钥信息更新成功",
+        "delete": "SSH密钥信息删除成功",
+        "details": "SSH密钥信息获取成功",
+        "not_found": "未找到SSH密钥信息",
+        "already_exists": "同名SSH密钥信息已存在",
+        "list": "SSH密钥获取成功"
+    },
+    "note": {
+        "add": "笔记添加成功",
+        "update": "笔记信息更新成功",
+        "delete": "笔记信息删除成功",
+        "details": "笔记信息获取成功",
+        "not_found": "未找到笔记信息",
+        "already_exists": "同名笔记信息已存在",
+        "list": "笔记获取成功"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "工作区信息获取成功",
+        "tags": "标签获取成功",
+        "initial_data": "初始数据获取成功"
+    },
+    "project":{
+        "details": "项目信息获取成功",
+        "list": "项目获取成功",
+        "already_exists": "项目已存在",
+        "added": "项目添加成功",
+        "updated": "项目更新成功",
+        "keys": "项目密钥获取成功",
+        "deleted": "项目删除成功",
+        "not_found": "未找到项目信息",
+        "tags": "标签获取成功"
+    },
+    "user": {
+        "favorite_tags_list": "收藏标签获取成功",
+        "favorite_tags_updated": "收藏标签更新成功",
+        "profile_details": "个人资料信息获取成功",
+        "login_history": "登录历史获取成功",
+        "profile_updated": "个人资料更新成功",
+        "no_changes_to_update": "没有可更新的更改",
+        "user_details_not_found": "未找到用户信息"
+    },
+    "auth":{
+        "user_signed_up": "用户注册成功",
+        "user_logged_in": "用户登录成功",
+        "invalid_code": "无效的验证码，请重试。",
+        "two_factor_auth_verified": "两步验证成功",
+        "keys_fetched": "密钥获取成功",
+        "keys_already_exist": "密钥已存在",
+        "keys_updated": "密钥更新成功",
+        "user_details_not_found": "未找到用户信息",
+        "user_logged_out": "用户已成功登出",
+        "authentication_failed": "认证失败，请重试。",
+        "invalid_credentials": "无效的凭证，请重试。",
+        "invalid_totp_code": "无效的TOTP代码，请重试。",
+        "invalid_totp_secret": "无效的TOTP密钥，请重试。",
+        "something_went_wrong": "发生错误，请重试。",
+        "invalid_header": "无效的请求头，请重试。"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "审计日志获取成功",
+        "audit_log_actions": "审计日志操作获取成功"
+    },
+    "password_history":{
+        "list": "密码历史获取成功",
+        "add": "密码历史添加成功"
+    },
+    "dashboard":{
+        "overview": "仪表板概览获取成功",
+        "recent_activity": "最近活动获取成功"
+    }
+} 
