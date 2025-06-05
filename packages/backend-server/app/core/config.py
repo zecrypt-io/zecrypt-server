@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     STACK_AUTH_CLIENT_SECRET: str
     TOTP_SECRET: str
 
+    VALKEY_URL: str
+
     class Config:
         case_sensitive = True
         env_file = ".env"

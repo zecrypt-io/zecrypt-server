@@ -16,3 +16,4 @@ PyJWT
 cryptography
 fastapi-limiter
 pyotp
+valkey
