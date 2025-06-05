@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Targeta afegida amb èxit",
+        "update": "Detalls de la targeta actualitzats amb èxit",
+        "delete": "Detalls de la targeta eliminats amb èxit",
+        "details": "Detalls de la targeta carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la targeta",
+        "already_exists": "Ja existeixen detalls de la targeta amb el mateix nom",
+        "list": "Targetes carregades amb èxit"
+    },
+    "api_key": {
+        "add": "Clau API afegida amb èxit",
+        "update": "Detalls de la clau API actualitzats amb èxit",
+        "delete": "Detalls de la clau API eliminats amb èxit",
+        "details": "Detalls de la clau API carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la clau API",
+        "already_exists": "Ja existeixen detalls de la clau API amb el mateix nom",
+        "list": "Claus API carregades amb èxit"
+    },
+    "wallet_phrase": {
+        "add": "Frase de cartera afegida amb èxit",
+        "update": "Detalls de la frase de cartera actualitzats amb èxit",
+        "delete": "Detalls de la frase de cartera eliminats amb èxit",
+        "details": "Detalls de la frase de cartera carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la frase de cartera",
+        "already_exists": "Ja existeixen detalls de la frase de cartera amb el mateix nom",
+        "list": "Frases de cartera carregades amb èxit"
+    },
+    "wifi": {
+        "add": "WiFi afegit amb èxit",
+        "update": "Detalls del WiFi actualitzats amb èxit",
+        "delete": "Detalls del WiFi eliminats amb èxit",
+        "details": "Detalls del WiFi carregats amb èxit",
+        "not_found": "No s'han trobat detalls del WiFi",
+        "already_exists": "Ja existeixen detalls del WiFi amb el mateix nom",
+        "list": "Detalls del WiFi carregats amb èxit"
+    },
+    "license": {
+        "add": "Llicència afegida amb èxit",
+        "update": "Detalls de la llicència actualitzats amb èxit",
+        "delete": "Detalls de la llicència eliminats amb èxit",
+        "details": "Detalls de la llicència carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la llicència",
+        "already_exists": "Ja existeixen detalls de la llicència amb el mateix nom",
+        "list": "Llicències carregades amb èxit"
+    },
+    "login": {
+        "add": "Compte afegit amb èxit",
+        "update": "Detalls del compte actualitzats amb èxit",
+        "delete": "Detalls del compte eliminats amb èxit",
+        "details": "Detalls del compte carregats amb èxit",
+        "not_found": "No s'han trobat detalls del compte",
+        "already_exists": "Ja existeixen detalls del compte amb el mateix nom",
+        "list": "Comptes carregats amb èxit"
+    },
+    "identity": {
+        "add": "Identitat afegida amb èxit",
+        "update": "Detalls de la identitat actualitzats amb èxit",
+        "delete": "Detalls de la identitat eliminats amb èxit",
+        "details": "Detalls de la identitat carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la identitat",
+        "already_exists": "Ja existeixen detalls de la identitat amb el mateix nom",
+        "list": "Identitats carregades amb èxit"
+    },
+    "email": {
+        "add": "Correu electrònic afegit amb èxit",
+        "update": "Detalls del correu electrònic actualitzats amb èxit",
+        "delete": "Detalls del correu electrònic eliminats amb èxit",
+        "details": "Detalls del correu electrònic carregats amb èxit",
+        "not_found": "No s'han trobat detalls del correu electrònic",
+        "already_exists": "Ja existeixen detalls del correu electrònic amb el mateix nom",
+        "list": "Correus electrònics carregats amb èxit"
+    },
+    "ssh_key": {
+        "add": "Clau SSH afegida amb èxit",
+        "update": "Detalls de la clau SSH actualitzats amb èxit",
+        "delete": "Detalls de la clau SSH eliminats amb èxit",
+        "details": "Detalls de la clau SSH carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la clau SSH",
+        "already_exists": "Ja existeixen detalls de la clau SSH amb el mateix nom",
+        "list": "Claus SSH carregades amb èxit"
+    },
+    "note": {
+        "add": "Nota afegida amb èxit",
+        "update": "Detalls de la nota actualitzats amb èxit",
+        "delete": "Detalls de la nota eliminats amb èxit",
+        "details": "Detalls de la nota carregats amb èxit",
+        "not_found": "No s'han trobat detalls de la nota",
+        "already_exists": "Ja existeixen detalls de la nota amb el mateix nom",
+        "list": "Notes carregades amb èxit"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Detalls de l'espai de treball carregats amb èxit",
+        "tags": "Etiquetes carregades amb èxit",
+        "initial_data": "Dades inicials carregades amb èxit"
+    },
+    "project":{
+        "details": "Detalls del projecte carregats amb èxit",
+        "list": "Projectes carregats amb èxit",
+        "already_exists": "El projecte ja existeix",
+        "added": "Projecte afegit amb èxit",
+        "updated": "Projecte actualitzat amb èxit",
+        "keys": "Claus del projecte carregades amb èxit",
+        "deleted": "Projecte eliminat amb èxit",
+        "not_found": "No s'han trobat detalls del projecte",
+        "tags": "Etiquetes carregades amb èxit"
+    },
+    "user": {
+        "favorite_tags_list": "Etiquetes preferides recuperades amb èxit",
+        "favorite_tags_updated": "Etiquetes preferides actualitzades amb èxit",
+        "profile_details": "Detalls del perfil carregats amb èxit",
+        "login_history": "Historial d'inici de sessió carregat amb èxit",
+        "profile_updated": "Perfil actualitzat amb èxit",
+        "no_changes_to_update": "No hi ha canvis per actualitzar",
+        "user_details_not_found": "No s'han trobat detalls de l'usuari"
+    },
+    "auth":{
+        "user_signed_up": "Usuari registrat amb èxit",
+        "user_logged_in": "Usuari connectat amb èxit",
+        "invalid_code": "Codi no vàlid, torneu-ho a provar",
+        "two_factor_auth_verified": "Autenticació de dos factors verificada amb èxit",
+        "keys_fetched": "Claus recuperades amb èxit",
+        "keys_already_exist": "Les claus ja existeixen",
+        "keys_updated": "Claus actualitzades amb èxit",
+        "user_details_not_found": "No s'han trobat detalls de l'usuari",
+        "user_logged_out": "Usuari desconnectat amb èxit",
+        "authentication_failed": "L'autenticació ha fallat, torneu-ho a provar",
+        "invalid_credentials": "Credencials no vàlides, torneu-ho a provar",
+        "invalid_totp_code": "Codi TOTP no vàlid, torneu-ho a provar",
+        "invalid_totp_secret": "Secret TOTP no vàlid, torneu-ho a provar",
+        "something_went_wrong": "Alguna cosa ha anat malament, torneu-ho a provar",
+        "invalid_header": "Capçalera no vàlida, torneu-ho a provar"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Registres d'auditoria carregats amb èxit",
+        "audit_log_actions": "Accions del registre d'auditoria carregades amb èxit"
+    },
+    "password_history":{
+        "list": "Historial de contrasenyes carregat amb èxit",
+        "add": "Historial de contrasenyes afegit amb èxit"
+    },
+    "dashboard":{
+        "overview": "Visió general del tauler carregada amb èxit",
+        "recent_activity": "Activitat recent carregada amb èxit"
+    }
+} 
