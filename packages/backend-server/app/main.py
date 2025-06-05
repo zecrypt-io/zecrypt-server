@@ -43,12 +43,6 @@ static_files = StaticFiles(directory="static")
 app.mount("/static", static_files)
 
 
-# Landing page route
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-
 @app.get("/health")
 async def health():
     return {"status": translate("health.status")}
