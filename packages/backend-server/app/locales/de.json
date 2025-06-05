@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Karte erfolgreich hinzugefügt",
+        "update": "Kartendetails erfolgreich aktualisiert",
+        "delete": "Kartendetails erfolgreich gelöscht",
+        "details": "Kartendetails erfolgreich geladen",
+        "not_found": "Kartendetails nicht gefunden",
+        "already_exists": "Kartendetails mit demselben Namen existieren bereits",
+        "list": "Karten erfolgreich geladen"
+    },
+    "api_key": {
+        "add": "API-Schlüssel erfolgreich hinzugefügt",
+        "update": "API-Schlüsseldetails erfolgreich aktualisiert",
+        "delete": "API-Schlüsseldetails erfolgreich gelöscht",
+        "details": "API-Schlüsseldetails erfolgreich geladen",
+        "not_found": "API-Schlüsseldetails nicht gefunden",
+        "already_exists": "API-Schlüsseldetails mit demselben Namen existieren bereits",
+        "list": "API-Schlüssel erfolgreich geladen"
+    },
+    "wallet_phrase": {
+        "add": "Wallet-Phrase erfolgreich hinzugefügt",
+        "update": "Wallet-Phrasendetails erfolgreich aktualisiert",
+        "delete": "Wallet-Phrasendetails erfolgreich gelöscht",
+        "details": "Wallet-Phrasendetails erfolgreich geladen",
+        "not_found": "Wallet-Phrasendetails nicht gefunden",
+        "already_exists": "Wallet-Phrasendetails mit demselben Namen existieren bereits",
+        "list": "Wallet-Phrasen erfolgreich geladen"
+    },
+    "wifi": {
+        "add": "WLAN erfolgreich hinzugefügt",
+        "update": "WLAN-Details erfolgreich aktualisiert",
+        "delete": "WLAN-Details erfolgreich gelöscht",
+        "details": "WLAN-Details erfolgreich geladen",
+        "not_found": "WLAN-Details nicht gefunden",
+        "already_exists": "WLAN-Details mit demselben Namen existieren bereits",
+        "list": "WLAN-Details erfolgreich geladen"
+    },
+    "license": {
+        "add": "Lizenz erfolgreich hinzugefügt",
+        "update": "Lizenzdetails erfolgreich aktualisiert",
+        "delete": "Lizenzdetails erfolgreich gelöscht",
+        "details": "Lizenzdetails erfolgreich geladen",
+        "not_found": "Lizenzdetails nicht gefunden",
+        "already_exists": "Lizenzdetails mit demselben Namen existieren bereits",
+        "list": "Lizenzen erfolgreich geladen"
+    },
+    "login": {
+        "add": "Konto erfolgreich hinzugefügt",
+        "update": "Kontodetails erfolgreich aktualisiert",
+        "delete": "Kontodetails erfolgreich gelöscht",
+        "details": "Kontodetails erfolgreich geladen",
+        "not_found": "Kontodetails nicht gefunden",
+        "already_exists": "Kontodetails mit demselben Namen existieren bereits",
+        "list": "Konten erfolgreich geladen"
+    },
+    "identity": {
+        "add": "Identität erfolgreich hinzugefügt",
+        "update": "Identitätsdetails erfolgreich aktualisiert",
+        "delete": "Identitätsdetails erfolgreich gelöscht",
+        "details": "Identitätsdetails erfolgreich geladen",
+        "not_found": "Identitätsdetails nicht gefunden",
+        "already_exists": "Identitätsdetails mit demselben Namen existieren bereits",
+        "list": "Identitäten erfolgreich geladen"
+    },
+    "email": {
+        "add": "E-Mail erfolgreich hinzugefügt",
+        "update": "E-Mail-Details erfolgreich aktualisiert",
+        "delete": "E-Mail-Details erfolgreich gelöscht",
+        "details": "E-Mail-Details erfolgreich geladen",
+        "not_found": "E-Mail-Details nicht gefunden",
+        "already_exists": "E-Mail-Details mit demselben Namen existieren bereits",
+        "list": "E-Mails erfolgreich geladen"
+    },
+    "ssh_key": {
+        "add": "SSH-Schlüssel erfolgreich hinzugefügt",
+        "update": "SSH-Schlüsseldetails erfolgreich aktualisiert",
+        "delete": "SSH-Schlüsseldetails erfolgreich gelöscht",
+        "details": "SSH-Schlüsseldetails erfolgreich geladen",
+        "not_found": "SSH-Schlüsseldetails nicht gefunden",
+        "already_exists": "SSH-Schlüsseldetails mit demselben Namen existieren bereits",
+        "list": "SSH-Schlüssel erfolgreich geladen"
+    },
+    "note": {
+        "add": "Notiz erfolgreich hinzugefügt",
+        "update": "Notizdetails erfolgreich aktualisiert",
+        "delete": "Notizdetails erfolgreich gelöscht",
+        "details": "Notizdetails erfolgreich geladen",
+        "not_found": "Notizdetails nicht gefunden",
+        "already_exists": "Notizdetails mit demselben Namen existieren bereits",
+        "list": "Notizen erfolgreich geladen"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Arbeitsbereichdetails erfolgreich geladen",
+        "tags": "Tags erfolgreich geladen",
+        "initial_data": "Initialdaten erfolgreich geladen"
+    },
+    "project":{
+        "details": "Projektdetails erfolgreich geladen",
+        "list": "Projekte erfolgreich geladen",
+        "already_exists": "Projekt existiert bereits",
+        "added": "Projekt erfolgreich hinzugefügt",
+        "updated": "Projekt erfolgreich aktualisiert",
+        "keys": "Projektschlüssel erfolgreich geladen",
+        "deleted": "Projekt erfolgreich gelöscht",
+        "not_found": "Projektdetails nicht gefunden",
+        "tags": "Tags erfolgreich geladen"
+    },
+    "user": {
+        "favorite_tags_list": "Lieblingstags erfolgreich abgerufen",
+        "favorite_tags_updated": "Lieblingstags erfolgreich aktualisiert",
+        "profile_details": "Profildetails erfolgreich geladen",
+        "login_history": "Anmeldeverlauf erfolgreich geladen",
+        "profile_updated": "Profil erfolgreich aktualisiert",
+        "no_changes_to_update": "Keine Änderungen zum Aktualisieren",
+        "user_details_not_found": "Benutzerdetails nicht gefunden"
+    },
+    "auth":{
+        "user_signed_up": "Benutzer erfolgreich registriert",
+        "user_logged_in": "Benutzer erfolgreich angemeldet",
+        "invalid_code": "Ungültiger Code, bitte versuchen Sie es erneut",
+        "two_factor_auth_verified": "Zwei-Faktor-Authentifizierung erfolgreich verifiziert",
+        "keys_fetched": "Schlüssel erfolgreich abgerufen",
+        "keys_already_exist": "Schlüssel existieren bereits",
+        "keys_updated": "Schlüssel erfolgreich aktualisiert",
+        "user_details_not_found": "Benutzerdetails nicht gefunden",
+        "user_logged_out": "Benutzer erfolgreich abgemeldet",
+        "authentication_failed": "Authentifizierung fehlgeschlagen, bitte versuchen Sie es erneut",
+        "invalid_credentials": "Ungültige Anmeldedaten, bitte versuchen Sie es erneut",
+        "invalid_totp_code": "Ungültiger TOTP-Code, bitte versuchen Sie es erneut",
+        "invalid_totp_secret": "Ungültiges TOTP-Geheimnis, bitte versuchen Sie es erneut",
+        "something_went_wrong": "Etwas ist schief gelaufen, bitte versuchen Sie es erneut",
+        "invalid_header": "Ungültiger Header, bitte versuchen Sie es erneut"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Audit-Logs erfolgreich geladen",
+        "audit_log_actions": "Audit-Log-Aktionen erfolgreich geladen"
+    },
+    "password_history":{
+        "list": "Passworthistorie erfolgreich geladen",
+        "add": "Passworthistorie erfolgreich hinzugefügt"
+    },
+    "dashboard":{
+        "overview": "Dashboard-Übersicht erfolgreich geladen",
+        "recent_activity": "Letzte Aktivitäten erfolgreich geladen"
+    }
+} 
