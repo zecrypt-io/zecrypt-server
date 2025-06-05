@@ -10,7 +10,6 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash, Filter
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
-import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +20,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { useFormatter } from "next-intl";
 import { toast } from "@/components/ui/use-toast";
+import { getWebsiteIcon } from "@/libs/icon-mappings";
 import {
   Table,
   TableBody,
@@ -99,7 +99,6 @@ export function AccountsContent() {
   });
 
   const [showAddAccount, setShowAddAccount] = useState(false);
-  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showEditAccount, setShowEditAccount] = useState(false);
   const [selectedAccountForEdit, setSelectedAccountForEdit] = useState<Account | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -307,8 +306,8 @@ export function AccountsContent() {
                 <TableRow key={account.doc_id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                        {(account.title || account.name || "A").charAt(0).toUpperCase()}
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+                        {getWebsiteIcon((account.url || account.website || '') as string, "h-4 w-4")}
                       </div>
                       <span>{account.title || account.name}</span>
                     </div>
@@ -410,7 +409,10 @@ export function AccountsContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  onClick={() => window.open(account.website || account.url, "_blank")}
+                                  onClick={() => {
+                                    const url = account.website || account.url;
+                                    if (url) window.open(url, "_blank");
+                                  }}
                                 >
                                   <ExternalLink className="h-4 w-4" />
                                 </Button>
@@ -531,28 +533,14 @@ export function AccountsContent() {
             fetchAccounts();
             toast({ title: translate("success", "common"), description: translate("account_added_successfully", "accounts") });
           }}
-          onGeneratePasswordRequest={() => {
-            setShowGeneratePassword(true);
-          }}
-        />
-      )}
-
-      {showGeneratePassword && (
-        <GeneratePasswordDialog
-          open={showGeneratePassword}
-          onOpenChange={setShowGeneratePassword}
         />
       )}
 
       {showEditAccount && selectedAccountForEdit && (
         <EditAccountDialog
-          open={showEditAccount}
-          onOpenChange={setShowEditAccount}
           account={selectedAccountForEdit}
+          onClose={() => setShowEditAccount(false)}
           onAccountUpdated={handleAccountUpdated}
-          onGeneratePasswordRequest={() => {
-            setShowGeneratePassword(true);
-          }}
         />
       )}
 

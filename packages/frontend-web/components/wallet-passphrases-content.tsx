@@ -54,6 +54,7 @@ interface WalletPassphrase {
   updated_at: string | null;
   created_by: string;
   project_id: string;
+  wallet_address: string;
 }
 
 const walletTypes = [
@@ -301,6 +302,7 @@ export function WalletPassphrasesContent() {
                   </TableHead>
                   <TableHead>{translate("wallet_type", "wallet_passphrases", { default: "Wallet Type" })}</TableHead>
                   <TableHead>{translate("passphrase", "wallet_passphrases", { default: "Passphrase" })}</TableHead>
+                  <TableHead>{translate("wallet_address", "wallet_passphrases", { default: "Wallet Address" })}</TableHead>
                   <TableHead>{translate("tags", "wallet_passphrases", { default: "Tags" })}</TableHead>
                   <TableHead>{translate("last_modified", "wallet_passphrases", { default: "Last Modified" })}</TableHead>
                   <TableHead className="text-right">
@@ -363,6 +365,34 @@ export function WalletPassphrasesContent() {
                             </TooltipTrigger>
                             <TooltipContent>
                               {translate("copy_passphrase", "wallet_passphrases", { default: "Copy passphrase" })}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      <div className="flex items-center gap-2">
+                        <span className="max-w-[200px] truncate">
+                          {passphrase.wallet_address}
+                        </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => copyToClipboard(passphrase.doc_id, "wallet_address", passphrase.wallet_address)}
+                              >
+                                {copiedField?.doc_id === passphrase.doc_id && copiedField?.field === "wallet_address" ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {translate("copy_wallet_address", "wallet_passphrases", { default: "Copy wallet address" })}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

@@ -626,21 +626,34 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 
           <div className="space-y-2">
             <Label>{translate("project_color", "dashboard")}</Label>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                    color === c.value ? "ring-2 ring-offset-2 ring-primary" : ""
-                  }`}
-                  style={{ backgroundColor: c.value }}
-                  onClick={() => setColor(c.value)}
-                  title={c.name}
-                >
-                  {color === c.value && <Check className="h-4 w-4 text-white" />}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="flex flex-wrap gap-2">
+                {colors.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                      color === c.value ? "ring-2 ring-offset-2 ring-primary" : ""
+                    }`}
+                    style={{ backgroundColor: c.value }}
+                    onClick={() => setColor(c.value)}
+                    title={c.name}
+                  >
+                    {color === c.value && <Check className="h-4 w-4 text-white" />}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="default-project"
+                  checked={isDefault}
+                  onCheckedChange={(checked) => setIsDefault(!!checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <Label htmlFor="default-project" className="cursor-pointer text-sm">
+                  {translate("set_as_default_project", "dashboard")}
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -868,20 +881,9 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader className="relative">
+        <DialogHeader>
           <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
           {/* <DialogDescription>{translate("create_project_details", "dashboard")}</DialogDescription> */}
-          <div className="absolute top-1 right-1 flex items-center gap-2">
-            <Checkbox
-              id="default-project"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(!!checked)}
-              className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <Label htmlFor="default-project" className="cursor-pointer text-sm">
-              {translate("set_as_default_project", "dashboard")}
-            </Label>
-          </div>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -905,7 +907,20 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
           </div>
 
           <div className="space-y-2">
-            <Label>{translate("project_color", "dashboard")}</Label>
+            <div className="flex items-center justify-between">
+              <Label>{translate("project_color", "dashboard")}</Label>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="default-project"
+                  checked={isDefault}
+                  onCheckedChange={(checked) => setIsDefault(!!checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <Label htmlFor="default-project" className="cursor-pointer text-sm">
+                  {translate("set_as_default_project", "dashboard")}
+                </Label>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
               {colors.map((c) => (
                 <button
