@@ -1,0 +1,156 @@
+{
+    "card": {
+        "add": "Kortti lisätty onnistuneesti",
+        "update": "Kortin tiedot päivitetty onnistuneesti",
+        "delete": "Kortin tiedot poistettu onnistuneesti",
+        "details": "Kortin tiedot ladattu onnistuneesti",
+        "not_found": "Kortin tietoja ei löytynyt",
+        "already_exists": "Samanniminen korttitieto on jo olemassa",
+        "list": "Kortit ladattu onnistuneesti"
+    },
+    "api_key": {
+        "add": "API-avain lisätty onnistuneesti",
+        "update": "API-avaimen tiedot päivitetty onnistuneesti",
+        "delete": "API-avaimen tiedot poistettu onnistuneesti",
+        "details": "API-avaimen tiedot ladattu onnistuneesti",
+        "not_found": "API-avaimen tietoja ei löytynyt",
+        "already_exists": "Samanniminen API-avain on jo olemassa",
+        "list": "API-avaimet ladattu onnistuneesti"
+    },
+    "wallet_phrase": {
+        "add": "Lompakon lause lisätty onnistuneesti",
+        "update": "Lompakon lauseen tiedot päivitetty onnistuneesti",
+        "delete": "Lompakon lauseen tiedot poistettu onnistuneesti",
+        "details": "Lompakon lauseen tiedot ladattu onnistuneesti",
+        "not_found": "Lompakon lauseen tietoja ei löytynyt",
+        "already_exists": "Samanniminen lompakon lause on jo olemassa",
+        "list": "Lompakon lauseet ladattu onnistuneesti"
+    },
+    "wifi": {
+        "add": "WiFi lisätty onnistuneesti",
+        "update": "WiFi-tiedot päivitetty onnistuneesti",
+        "delete": "WiFi-tiedot poistettu onnistuneesti",
+        "details": "WiFi-tiedot ladattu onnistuneesti",
+        "not_found": "WiFi-tietoja ei löytynyt",
+        "already_exists": "Samanniminen WiFi-tieto on jo olemassa",
+        "list": "WiFi-tiedot ladattu onnistuneesti"
+    },
+    "license": {
+        "add": "Lisenssi lisätty onnistuneesti",
+        "update": "Lisenssin tiedot päivitetty onnistuneesti",
+        "delete": "Lisenssin tiedot poistettu onnistuneesti",
+        "details": "Lisenssin tiedot ladattu onnistuneesti",
+        "not_found": "Lisenssin tietoja ei löytynyt",
+        "already_exists": "Samanniminen lisenssi on jo olemassa",
+        "list": "Lisenssit ladattu onnistuneesti"
+    },
+    "login": {
+        "add": "Tili lisätty onnistuneesti",
+        "update": "Tilin tiedot päivitetty onnistuneesti",
+        "delete": "Tilin tiedot poistettu onnistuneesti",
+        "details": "Tilin tiedot ladattu onnistuneesti",
+        "not_found": "Tilin tietoja ei löytynyt",
+        "already_exists": "Samanniminen tili on jo olemassa",
+        "list": "Tilit ladattu onnistuneesti"
+    },
+    "identity": {
+        "add": "Henkilöllisyys lisätty onnistuneesti",
+        "update": "Henkilöllisyyden tiedot päivitetty onnistuneesti",
+        "delete": "Henkilöllisyyden tiedot poistettu onnistuneesti",
+        "details": "Henkilöllisyyden tiedot ladattu onnistuneesti",
+        "not_found": "Henkilöllisyyden tietoja ei löytynyt",
+        "already_exists": "Samanniminen henkilöllisyys on jo olemassa",
+        "list": "Henkilöllisyydet ladattu onnistuneesti"
+    },
+    "email": {
+        "add": "Sähköposti lisätty onnistuneesti",
+        "update": "Sähköpostin tiedot päivitetty onnistuneesti",
+        "delete": "Sähköpostin tiedot poistettu onnistuneesti",
+        "details": "Sähköpostin tiedot ladattu onnistuneesti",
+        "not_found": "Sähköpostin tietoja ei löytynyt",
+        "already_exists": "Samanniminen sähköposti on jo olemassa",
+        "list": "Sähköpostit ladattu onnistuneesti"
+    },
+    "ssh_key": {
+        "add": "SSH-avain lisätty onnistuneesti",
+        "update": "SSH-avaimen tiedot päivitetty onnistuneesti",
+        "delete": "SSH-avaimen tiedot poistettu onnistuneesti",
+        "details": "SSH-avaimen tiedot ladattu onnistuneesti",
+        "not_found": "SSH-avaimen tietoja ei löytynyt",
+        "already_exists": "Samanniminen SSH-avain on jo olemassa",
+        "list": "SSH-avaimet ladattu onnistuneesti"
+    },
+    "note": {
+        "add": "Muistiinpano lisätty onnistuneesti",
+        "update": "Muistiinpanon tiedot päivitetty onnistuneesti",
+        "delete": "Muistiinpanon tiedot poistettu onnistuneesti",
+        "details": "Muistiinpanon tiedot ladattu onnistuneesti",
+        "not_found": "Muistiinpanon tietoja ei löytynyt",
+        "already_exists": "Samanniminen muistiinpano on jo olemassa",
+        "list": "Muistiinpanot ladattu onnistuneesti"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Työtilan tiedot ladattu onnistuneesti",
+        "tags": "Tunnisteet ladattu onnistuneesti",
+        "initial_data": "Alkutiedot ladattu onnistuneesti"
+    },
+    "project":{
+        "details": "Projektin tiedot ladattu onnistuneesti",
+        "list": "Projektit ladattu onnistuneesti",
+        "already_exists": "Projekti on jo olemassa",
+        "added": "Projekti lisätty onnistuneesti",
+        "updated": "Projekti päivitetty onnistuneesti",
+        "keys": "Projektin avaimet ladattu onnistuneesti",
+        "deleted": "Projekti poistettu onnistuneesti",
+        "not_found": "Projektin tietoja ei löytynyt",
+        "tags": "Tunnisteet ladattu onnistuneesti"
+    },
+    "user": {
+        "favorite_tags_list": "Suosikkitunnisteet haettu onnistuneesti",
+        "favorite_tags_updated": "Suosikkitunnisteet päivitetty onnistuneesti",
+        "profile_details": "Profiilin tiedot ladattu onnistuneesti",
+        "login_history": "Kirjautumishistoria ladattu onnistuneesti",
+        "profile_updated": "Profiili päivitetty onnistuneesti",
+        "no_changes_to_update": "Ei päivitettäviä muutoksia",
+        "user_details_not_found": "Käyttäjätietoja ei löytynyt"
+    },
+    "auth":{
+        "user_signed_up": "Käyttäjä rekisteröity onnistuneesti",
+        "user_logged_in": "Käyttäjä kirjautui sisään onnistuneesti",
+        "invalid_code": "Virheellinen koodi, yritä uudelleen",
+        "two_factor_auth_verified": "Kaksivaiheinen todennus vahvistettu onnistuneesti",
+        "keys_fetched": "Avaimet haettu onnistuneesti",
+        "keys_already_exist": "Avaimet ovat jo olemassa",
+        "keys_updated": "Avaimet päivitetty onnistuneesti",
+        "user_details_not_found": "Käyttäjätietoja ei löytynyt",
+        "user_logged_out": "Käyttäjä kirjautui ulos onnistuneesti",
+        "authentication_failed": "Todennus epäonnistui, yritä uudelleen",
+        "invalid_credentials": "Virheelliset tunnistetiedot, yritä uudelleen",
+        "invalid_totp_code": "Virheellinen TOTP-koodi, yritä uudelleen",
+        "invalid_totp_secret": "Virheellinen TOTP-salaisuus, yritä uudelleen",
+        "something_went_wrong": "Jotain meni pieleen, yritä uudelleen",
+        "invalid_header": "Virheellinen otsake, yritä uudelleen"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Audit-lokit ladattu onnistuneesti",
+        "audit_log_actions": "Audit-lokin toiminnot ladattu onnistuneesti"
+    },
+    "password_history":{
+        "list": "Salasanahistoria ladattu onnistuneesti",
+        "add": "Salasanahistoria lisätty onnistuneesti"
+    },
+    "dashboard":{
+        "overview": "Hallintapaneelin yleiskatsaus ladattu onnistuneesti",
+        "recent_activity": "Viimeaikainen toiminta ladattu onnistuneesti"
+    }
+}
+
+
+
+
+
+
+
