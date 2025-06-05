@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kort lagt til",
+        "update": "Kortdetaljer oppdatert",
+        "delete": "Kortdetaljer slettet",
+        "details": "Kortdetaljer lastet inn",
+        "not_found": "Kortdetaljer ikke funnet",
+        "already_exists": "Kortdetaljer med samme navn finnes allerede",
+        "list": "Kort lastet inn"
+    },
+    "api_key": {
+        "add": "API-nøkkel lagt til",
+        "update": "API-nøkkeldetaljer oppdatert",
+        "delete": "API-nøkkeldetaljer slettet",
+        "details": "API-nøkkeldetaljer lastet inn",
+        "not_found": "API-nøkkeldetaljer ikke funnet",
+        "already_exists": "API-nøkkeldetaljer med samme navn finnes allerede",
+        "list": "API-nøkler lastet inn"
+    },
+    "wallet_phrase": {
+        "add": "Lommebokfrase lagt til",
+        "update": "Lommebokfrasedetaljer oppdatert",
+        "delete": "Lommebokfrasedetaljer slettet",
+        "details": "Lommebokfrasedetaljer lastet inn",
+        "not_found": "Lommebokfrasedetaljer ikke funnet",
+        "already_exists": "Lommebokfrasedetaljer med samme navn finnes allerede",
+        "list": "Lommebokfraser lastet inn"
+    },
+    "wifi": {
+        "add": "WiFi lagt til",
+        "update": "WiFi-detaljer oppdatert",
+        "delete": "WiFi-detaljer slettet",
+        "details": "WiFi-detaljer lastet inn",
+        "not_found": "WiFi-detaljer ikke funnet",
+        "already_exists": "WiFi-detaljer med samme navn finnes allerede",
+        "list": "WiFi-detaljer lastet inn"
+    },
+    "license": {
+        "add": "Lisens lagt til",
+        "update": "Lisensdetaljer oppdatert",
+        "delete": "Lisensdetaljer slettet",
+        "details": "Lisensdetaljer lastet inn",
+        "not_found": "Lisensdetaljer ikke funnet",
+        "already_exists": "Lisensdetaljer med samme navn finnes allerede",
+        "list": "Lisenser lastet inn"
+    },
+    "login": {
+        "add": "Konto lagt til",
+        "update": "Kontodetaljer oppdatert",
+        "delete": "Kontodetaljer slettet",
+        "details": "Kontodetaljer lastet inn",
+        "not_found": "Kontodetaljer ikke funnet",
+        "already_exists": "Kontodetaljer med samme navn finnes allerede",
+        "list": "Kontoer lastet inn"
+    },
+    "identity": {
+        "add": "Identitet lagt til",
+        "update": "Identitetsdetaljer oppdatert",
+        "delete": "Identitetsdetaljer slettet",
+        "details": "Identitetsdetaljer lastet inn",
+        "not_found": "Identitetsdetaljer ikke funnet",
+        "already_exists": "Identitetsdetaljer med samme navn finnes allerede",
+        "list": "Identiteter lastet inn"
+    },
+    "email": {
+        "add": "E-post lagt til",
+        "update": "E-postdetaljer oppdatert",
+        "delete": "E-postdetaljer slettet",
+        "details": "E-postdetaljer lastet inn",
+        "not_found": "E-postdetaljer ikke funnet",
+        "already_exists": "E-postdetaljer med samme navn finnes allerede",
+        "list": "E-poster lastet inn"
+    },
+    "ssh_key": {
+        "add": "SSH-nøkkel lagt til",
+        "update": "SSH-nøkkeldetaljer oppdatert",
+        "delete": "SSH-nøkkeldetaljer slettet",
+        "details": "SSH-nøkkeldetaljer lastet inn",
+        "not_found": "SSH-nøkkeldetaljer ikke funnet",
+        "already_exists": "SSH-nøkkeldetaljer med samme navn finnes allerede",
+        "list": "SSH-nøkler lastet inn"
+    },
+    "note": {
+        "add": "Notat lagt til",
+        "update": "Notatdetaljer oppdatert",
+        "delete": "Notatdetaljer slettet",
+        "details": "Notatdetaljer lastet inn",
+        "not_found": "Notatdetaljer ikke funnet",
+        "already_exists": "Notatdetaljer med samme navn finnes allerede",
+        "list": "Notater lastet inn"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Arbeidsområdedetaljer lastet inn",
+        "tags": "Tagger lastet inn",
+        "initial_data": "Startdata lastet inn"
+    },
+    "project":{
+        "details": "Prosjektdetaljer lastet inn",
+        "list": "Prosjekter lastet inn",
+        "already_exists": "Prosjektet finnes allerede",
+        "added": "Prosjekt lagt til",
+        "updated": "Prosjekt oppdatert",
+        "keys": "Prosjektnøkler lastet inn",
+        "deleted": "Prosjekt slettet",
+        "not_found": "Prosjektdetaljer ikke funnet",
+        "tags": "Tagger lastet inn"
+    },
+    "user": {
+        "favorite_tags_list": "Favorittagger lastet inn",
+        "favorite_tags_updated": "Favorittagger oppdatert",
+        "profile_details": "Profildetaljer lastet inn",
+        "login_history": "Innloggingshistorikk lastet inn",
+        "profile_updated": "Profil oppdatert",
+        "no_changes_to_update": "Ingen endringer å oppdatere",
+        "user_details_not_found": "Brukerdetaljer ikke funnet"
+    },
+    "auth":{
+        "user_signed_up": "Bruker registrert",
+        "user_logged_in": "Bruker logget inn",
+        "invalid_code": "Ugyldig kode, prøv igjen",
+        "two_factor_auth_verified": "Tofaktorautentisering bekreftet",
+        "keys_fetched": "Nøkler hentet",
+        "keys_already_exist": "Nøkler finnes allerede",
+        "keys_updated": "Nøkler oppdatert",
+        "user_details_not_found": "Brukerdetaljer ikke funnet",
+        "user_logged_out": "Bruker logget ut",
+        "authentication_failed": "Autentisering mislyktes, prøv igjen",
+        "invalid_credentials": "Ugyldige påloggingsdetaljer, prøv igjen",
+        "invalid_totp_code": "Ugyldig TOTP-kode, prøv igjen",
+        "invalid_totp_secret": "Ugyldig TOTP-hemmelighet, prøv igjen",
+        "something_went_wrong": "Noe gikk galt, prøv igjen",
+        "invalid_header": "Ugyldig header, prøv igjen"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Revisjonslogger lastet inn",
+        "audit_log_actions": "Revisjonsloggaksjoner lastet inn"
+    },
+    "password_history":{
+        "list": "Passordhistorikk lastet inn",
+        "add": "Passordhistorikk lagt til"
+    },
+    "dashboard":{
+        "overview": "Oversikt over dashbord lastet inn",
+        "recent_activity": "Siste aktivitet lastet inn"
+    }
+} 
