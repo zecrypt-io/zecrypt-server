@@ -141,6 +141,10 @@
     "password_history":{
         "list": "Password history loaded successfully",
         "add": "Password history added successfully"
+    },
+    "dashboard":{
+        "overview": "Dashboard overview loaded successfully",
+        "recent_activity": "Recent activity loaded successfully"
     }
 }
 

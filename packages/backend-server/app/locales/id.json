@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kartu berhasil ditambahkan",
+        "update": "Detail kartu berhasil diperbarui",
+        "delete": "Detail kartu berhasil dihapus",
+        "details": "Detail kartu berhasil dimuat",
+        "not_found": "Detail kartu tidak ditemukan",
+        "already_exists": "Detail kartu dengan nama yang sama sudah ada",
+        "list": "Kartu berhasil dimuat"
+    },
+    "api_key": {
+        "add": "API Key berhasil ditambahkan",
+        "update": "Detail API Key berhasil diperbarui",
+        "delete": "Detail API Key berhasil dihapus",
+        "details": "Detail API Key berhasil dimuat",
+        "not_found": "Detail API Key tidak ditemukan",
+        "already_exists": "Detail API Key dengan nama yang sama sudah ada",
+        "list": "API Key berhasil dimuat"
+    },
+    "wallet_phrase": {
+        "add": "Frasa dompet berhasil ditambahkan",
+        "update": "Detail frasa dompet berhasil diperbarui",
+        "delete": "Detail frasa dompet berhasil dihapus",
+        "details": "Detail frasa dompet berhasil dimuat",
+        "not_found": "Detail frasa dompet tidak ditemukan",
+        "already_exists": "Detail frasa dompet dengan nama yang sama sudah ada",
+        "list": "Frasa dompet berhasil dimuat"
+    },
+    "wifi": {
+        "add": "WiFi berhasil ditambahkan",
+        "update": "Detail WiFi berhasil diperbarui",
+        "delete": "Detail WiFi berhasil dihapus",
+        "details": "Detail WiFi berhasil dimuat",
+        "not_found": "Detail WiFi tidak ditemukan",
+        "already_exists": "Detail WiFi dengan nama yang sama sudah ada",
+        "list": "Detail WiFi berhasil dimuat"
+    },
+    "license": {
+        "add": "Lisensi berhasil ditambahkan",
+        "update": "Detail lisensi berhasil diperbarui",
+        "delete": "Detail lisensi berhasil dihapus",
+        "details": "Detail lisensi berhasil dimuat",
+        "not_found": "Detail lisensi tidak ditemukan",
+        "already_exists": "Detail lisensi dengan nama yang sama sudah ada",
+        "list": "Lisensi berhasil dimuat"
+    },
+    "login": {
+        "add": "Akun berhasil ditambahkan",
+        "update": "Detail akun berhasil diperbarui",
+        "delete": "Detail akun berhasil dihapus",
+        "details": "Detail akun berhasil dimuat",
+        "not_found": "Detail akun tidak ditemukan",
+        "already_exists": "Detail akun dengan nama yang sama sudah ada",
+        "list": "Akun berhasil dimuat"
+    },
+    "identity": {
+        "add": "Identitas berhasil ditambahkan",
+        "update": "Detail identitas berhasil diperbarui",
+        "delete": "Detail identitas berhasil dihapus",
+        "details": "Detail identitas berhasil dimuat",
+        "not_found": "Detail identitas tidak ditemukan",
+        "already_exists": "Detail identitas dengan nama yang sama sudah ada",
+        "list": "Identitas berhasil dimuat"
+    },
+    "email": {
+        "add": "Email berhasil ditambahkan",
+        "update": "Detail email berhasil diperbarui",
+        "delete": "Detail email berhasil dihapus",
+        "details": "Detail email berhasil dimuat",
+        "not_found": "Detail email tidak ditemukan",
+        "already_exists": "Detail email dengan nama yang sama sudah ada",
+        "list": "Email berhasil dimuat"
+    },
+    "ssh_key": {
+        "add": "Kunci SSH berhasil ditambahkan",
+        "update": "Detail kunci SSH berhasil diperbarui",
+        "delete": "Detail kunci SSH berhasil dihapus",
+        "details": "Detail kunci SSH berhasil dimuat",
+        "not_found": "Detail kunci SSH tidak ditemukan",
+        "already_exists": "Detail kunci SSH dengan nama yang sama sudah ada",
+        "list": "Kunci SSH berhasil dimuat"
+    },
+    "note": {
+        "add": "Catatan berhasil ditambahkan",
+        "update": "Detail catatan berhasil diperbarui",
+        "delete": "Detail catatan berhasil dihapus",
+        "details": "Detail catatan berhasil dimuat",
+        "not_found": "Detail catatan tidak ditemukan",
+        "already_exists": "Detail catatan dengan nama yang sama sudah ada",
+        "list": "Catatan berhasil dimuat"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Detail workspace berhasil dimuat",
+        "tags": "Tag berhasil dimuat",
+        "initial_data": "Data awal berhasil dimuat"
+    },
+    "project":{
+        "details": "Detail proyek berhasil dimuat",
+        "list": "Proyek berhasil dimuat",
+        "already_exists": "Proyek sudah ada",
+        "added": "Proyek berhasil ditambahkan",
+        "updated": "Proyek berhasil diperbarui",
+        "keys": "Kunci proyek berhasil dimuat",
+        "deleted": "Proyek berhasil dihapus",
+        "not_found": "Detail proyek tidak ditemukan",
+        "tags": "Tag berhasil dimuat"
+    },
+    "user": {
+        "favorite_tags_list": "Tag favorit berhasil diambil",
+        "favorite_tags_updated": "Tag favorit berhasil diperbarui",
+        "profile_details": "Detail profil berhasil dimuat",
+        "login_history": "Riwayat login berhasil dimuat",
+        "profile_updated": "Profil berhasil diperbarui",
+        "no_changes_to_update": "Tidak ada perubahan untuk diperbarui",
+        "user_details_not_found": "Detail pengguna tidak ditemukan"
+    },
+    "auth":{
+        "user_signed_up": "Pengguna berhasil mendaftar",
+        "user_logged_in": "Pengguna berhasil masuk",
+        "invalid_code": "Kode tidak valid, silakan coba lagi",
+        "two_factor_auth_verified": "Otentikasi dua faktor berhasil diverifikasi",
+        "keys_fetched": "Kunci berhasil diambil",
+        "keys_already_exist": "Kunci sudah ada",
+        "keys_updated": "Kunci berhasil diperbarui",
+        "user_details_not_found": "Detail pengguna tidak ditemukan",
+        "user_logged_out": "Pengguna berhasil keluar",
+        "authentication_failed": "Otentikasi gagal, silakan coba lagi",
+        "invalid_credentials": "Kredensial tidak valid, silakan coba lagi",
+        "invalid_totp_code": "Kode TOTP tidak valid, silakan coba lagi",
+        "invalid_totp_secret": "Rahasia TOTP tidak valid, silakan coba lagi",
+        "something_went_wrong": "Terjadi kesalahan, silakan coba lagi",
+        "invalid_header": "Header tidak valid, silakan coba lagi"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Log audit berhasil dimuat",
+        "audit_log_actions": "Aksi log audit berhasil dimuat"
+    },
+    "password_history":{
+        "list": "Riwayat kata sandi berhasil dimuat",
+        "add": "Riwayat kata sandi berhasil ditambahkan"
+    },
+    "dashboard":{
+        "overview": "Ringkasan dashboard berhasil dimuat",
+        "recent_activity": "Aktivitas terbaru berhasil dimuat"
+    }
+} 

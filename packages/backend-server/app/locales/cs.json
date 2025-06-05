@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Karta byla úspěšně přidána",
+        "update": "Detaily karty byly úspěšně aktualizovány",
+        "delete": "Detaily karty byly úspěšně smazány",
+        "details": "Detaily karty byly úspěšně načteny",
+        "not_found": "Detaily karty nebyly nalezeny",
+        "already_exists": "Detaily karty se stejným názvem již existují",
+        "list": "Karty byly úspěšně načteny"
+    },
+    "api_key": {
+        "add": "API klíč byl úspěšně přidán",
+        "update": "Detaily API klíče byly úspěšně aktualizovány",
+        "delete": "Detaily API klíče byly úspěšně smazány",
+        "details": "Detaily API klíče byly úspěšně načteny",
+        "not_found": "Detaily API klíče nebyly nalezeny",
+        "already_exists": "Detaily API klíče se stejným názvem již existují",
+        "list": "API klíče byly úspěšně načteny"
+    },
+    "wallet_phrase": {
+        "add": "Fráze peněženky byla úspěšně přidána",
+        "update": "Detaily fráze peněženky byly úspěšně aktualizovány",
+        "delete": "Detaily fráze peněženky byly úspěšně smazány",
+        "details": "Detaily fráze peněženky byly úspěšně načteny",
+        "not_found": "Detaily fráze peněženky nebyly nalezeny",
+        "already_exists": "Detaily fráze peněženky se stejným názvem již existují",
+        "list": "Fráze peněženky byly úspěšně načteny"
+    },
+    "wifi": {
+        "add": "WiFi bylo úspěšně přidáno",
+        "update": "Detaily WiFi byly úspěšně aktualizovány",
+        "delete": "Detaily WiFi byly úspěšně smazány",
+        "details": "Detaily WiFi byly úspěšně načteny",
+        "not_found": "Detaily WiFi nebyly nalezeny",
+        "already_exists": "Detaily WiFi se stejným názvem již existují",
+        "list": "Detaily WiFi byly úspěšně načteny"
+    },
+    "license": {
+        "add": "Licence byla úspěšně přidána",
+        "update": "Detaily licence byly úspěšně aktualizovány",
+        "delete": "Detaily licence byly úspěšně smazány",
+        "details": "Detaily licence byly úspěšně načteny",
+        "not_found": "Detaily licence nebyly nalezeny",
+        "already_exists": "Detaily licence se stejným názvem již existují",
+        "list": "Licence byly úspěšně načteny"
+    },
+    "login": {
+        "add": "Účet byl úspěšně přidán",
+        "update": "Detaily účtu byly úspěšně aktualizovány",
+        "delete": "Detaily účtu byly úspěšně smazány",
+        "details": "Detaily účtu byly úspěšně načteny",
+        "not_found": "Detaily účtu nebyly nalezeny",
+        "already_exists": "Detaily účtu se stejným názvem již existují",
+        "list": "Účty byly úspěšně načteny"
+    },
+    "identity": {
+        "add": "Identita byla úspěšně přidána",
+        "update": "Detaily identity byly úspěšně aktualizovány",
+        "delete": "Detaily identity byly úspěšně smazány",
+        "details": "Detaily identity byly úspěšně načteny",
+        "not_found": "Detaily identity nebyly nalezeny",
+        "already_exists": "Detaily identity se stejným názvem již existují",
+        "list": "Identity byly úspěšně načteny"
+    },
+    "email": {
+        "add": "E-mail byl úspěšně přidán",
+        "update": "Detaily e-mailu byly úspěšně aktualizovány",
+        "delete": "Detaily e-mailu byly úspěšně smazány",
+        "details": "Detaily e-mailu byly úspěšně načteny",
+        "not_found": "Detaily e-mailu nebyly nalezeny",
+        "already_exists": "Detaily e-mailu se stejným názvem již existují",
+        "list": "E-maily byly úspěšně načteny"
+    },
+    "ssh_key": {
+        "add": "SSH klíč byl úspěšně přidán",
+        "update": "Detaily SSH klíče byly úspěšně aktualizovány",
+        "delete": "Detaily SSH klíče byly úspěšně smazány",
+        "details": "Detaily SSH klíče byly úspěšně načteny",
+        "not_found": "Detaily SSH klíče nebyly nalezeny",
+        "already_exists": "Detaily SSH klíče se stejným názvem již existují",
+        "list": "SSH klíče byly úspěšně načteny"
+    },
+    "note": {
+        "add": "Poznámka byla úspěšně přidána",
+        "update": "Detaily poznámky byly úspěšně aktualizovány",
+        "delete": "Detaily poznámky byly úspěšně smazány",
+        "details": "Detaily poznámky byly úspěšně načteny",
+        "not_found": "Detaily poznámky nebyly nalezeny",
+        "already_exists": "Detaily poznámky se stejným názvem již existují",
+        "list": "Poznámky byly úspěšně načteny"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Detaily pracovního prostoru byly úspěšně načteny",
+        "tags": "Tagy byly úspěšně načteny",
+        "initial_data": "Počáteční data byla úspěšně načtena"
+    },
+    "project":{
+        "details": "Detaily projektu byly úspěšně načteny",
+        "list": "Projekty byly úspěšně načteny",
+        "already_exists": "Projekt již existuje",
+        "added": "Projekt byl úspěšně přidán",
+        "updated": "Projekt byl úspěšně aktualizován",
+        "keys": "Klíče projektu byly úspěšně načteny",
+        "deleted": "Projekt byl úspěšně smazán",
+        "not_found": "Detaily projektu nebyly nalezeny",
+        "tags": "Tagy byly úspěšně načteny"
+    },
+    "user": {
+        "favorite_tags_list": "Oblíbené tagy byly úspěšně načteny",
+        "favorite_tags_updated": "Oblíbené tagy byly úspěšně aktualizovány",
+        "profile_details": "Detaily profilu byly úspěšně načteny",
+        "login_history": "Historie přihlášení byla úspěšně načtena",
+        "profile_updated": "Profil byl úspěšně aktualizován",
+        "no_changes_to_update": "Žádné změny k aktualizaci",
+        "user_details_not_found": "Detaily uživatele nebyly nalezeny"
+    },
+    "auth":{
+        "user_signed_up": "Uživatel byl úspěšně zaregistrován",
+        "user_logged_in": "Uživatel byl úspěšně přihlášen",
+        "invalid_code": "Neplatný kód, zkuste to znovu",
+        "two_factor_auth_verified": "Dvoufaktorové ověření bylo úspěšně ověřeno",
+        "keys_fetched": "Klíče byly úspěšně načteny",
+        "keys_already_exist": "Klíče již existují",
+        "keys_updated": "Klíče byly úspěšně aktualizovány",
+        "user_details_not_found": "Detaily uživatele nebyly nalezeny",
+        "user_logged_out": "Uživatel byl úspěšně odhlášen",
+        "authentication_failed": "Ověření selhalo, zkuste to znovu",
+        "invalid_credentials": "Neplatné přihlašovací údaje, zkuste to znovu",
+        "invalid_totp_code": "Neplatný TOTP kód, zkuste to znovu",
+        "invalid_totp_secret": "Neplatný TOTP tajný klíč, zkuste to znovu",
+        "something_went_wrong": "Něco se pokazilo, zkuste to znovu",
+        "invalid_header": "Neplatná hlavička, zkuste to znovu"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Auditní záznamy byly úspěšně načteny",
+        "audit_log_actions": "Akce auditního záznamu byly úspěšně načteny"
+    },
+    "password_history":{
+        "list": "Historie hesel byla úspěšně načtena",
+        "add": "Historie hesel byla úspěšně přidána"
+    },
+    "dashboard":{
+        "overview": "Přehled dashboardu byl úspěšně načten",
+        "recent_activity": "Nedávná aktivita byla úspěšně načtena"
+    }
+} 

@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kartica je uspešno dodata",
+        "update": "Detalji kartice su uspešno ažurirani",
+        "delete": "Detalji kartice su uspešno obrisani",
+        "details": "Detalji kartice su uspešno učitani",
+        "not_found": "Detalji kartice nisu pronađeni",
+        "already_exists": "Detalji kartice sa istim imenom već postoje",
+        "list": "Kartice su uspešno učitane"
+    },
+    "api_key": {
+        "add": "API ključ je uspešno dodat",
+        "update": "Detalji API ključa su uspešno ažurirani",
+        "delete": "Detalji API ključa su uspešno obrisani",
+        "details": "Detalji API ključa su uspešno učitani",
+        "not_found": "Detalji API ključa nisu pronađeni",
+        "already_exists": "Detalji API ključa sa istim imenom već postoje",
+        "list": "API ključevi su uspešno učitani"
+    },
+    "wallet_phrase": {
+        "add": "Fraza novčanika je uspešno dodata",
+        "update": "Detalji fraze novčanika su uspešno ažurirani",
+        "delete": "Detalji fraze novčanika su uspešno obrisani",
+        "details": "Detalji fraze novčanika su uspešno učitani",
+        "not_found": "Detalji fraze novčanika nisu pronađeni",
+        "already_exists": "Detalji fraze novčanika sa istim imenom već postoje",
+        "list": "Faze novčanika su uspešno učitane"
+    },
+    "wifi": {
+        "add": "WiFi je uspešno dodat",
+        "update": "Detalji WiFi-ja su uspešno ažurirani",
+        "delete": "Detalji WiFi-ja su uspešno obrisani",
+        "details": "Detalji WiFi-ja su uspešno učitani",
+        "not_found": "Detalji WiFi-ja nisu pronađeni",
+        "already_exists": "Detalji WiFi-ja sa istim imenom već postoje",
+        "list": "Detalji WiFi-ja su uspešno učitani"
+    },
+    "license": {
+        "add": "Licenca je uspešno dodata",
+        "update": "Detalji licence su uspešno ažurirani",
+        "delete": "Detalji licence su uspešno obrisani",
+        "details": "Detalji licence su uspešno učitani",
+        "not_found": "Detalji licence nisu pronađeni",
+        "already_exists": "Detalji licence sa istim imenom već postoje",
+        "list": "Licence su uspešno učitane"
+    },
+    "login": {
+        "add": "Nalog je uspešno dodat",
+        "update": "Detalji naloga su uspešno ažurirani",
+        "delete": "Detalji naloga su uspešno obrisani",
+        "details": "Detalji naloga su uspešno učitani",
+        "not_found": "Detalji naloga nisu pronađeni",
+        "already_exists": "Detalji naloga sa istim imenom već postoje",
+        "list": "Nalozi su uspešno učitani"
+    },
+    "identity": {
+        "add": "Identitet je uspešno dodat",
+        "update": "Detalji identiteta su uspešno ažurirani",
+        "delete": "Detalji identiteta su uspešno obrisani",
+        "details": "Detalji identiteta su uspešno učitani",
+        "not_found": "Detalji identiteta nisu pronađeni",
+        "already_exists": "Detalji identiteta sa istim imenom već postoje",
+        "list": "Identiteti su uspešno učitani"
+    },
+    "email": {
+        "add": "E-mail je uspešno dodat",
+        "update": "Detalji e-maila su uspešno ažurirani",
+        "delete": "Detalji e-maila su uspešno obrisani",
+        "details": "Detalji e-maila su uspešno učitani",
+        "not_found": "Detalji e-maila nisu pronađeni",
+        "already_exists": "Detalji e-maila sa istim imenom već postoje",
+        "list": "E-mailovi su uspešno učitani"
+    },
+    "ssh_key": {
+        "add": "SSH ključ je uspešno dodat",
+        "update": "Detalji SSH ključa su uspešno ažurirani",
+        "delete": "Detalji SSH ključa su uspešno obrisani",
+        "details": "Detalji SSH ključa su uspešno učitani",
+        "not_found": "Detalji SSH ključa nisu pronađeni",
+        "already_exists": "Detalji SSH ključa sa istim imenom već postoje",
+        "list": "SSH ključevi su uspešno učitani"
+    },
+    "note": {
+        "add": "Beleška je uspešno dodata",
+        "update": "Detalji beleške su uspešno ažurirani",
+        "delete": "Detalji beleške su uspešno obrisani",
+        "details": "Detalji beleške su uspešno učitani",
+        "not_found": "Detalji beleške nisu pronađeni",
+        "already_exists": "Detalji beleške sa istim imenom već postoje",
+        "list": "Beleške su uspešno učitane"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Detalji radnog prostora su uspešno učitani",
+        "tags": "Tagovi su uspešno učitani",
+        "initial_data": "Početni podaci su uspešno učitani"
+    },
+    "project":{
+        "details": "Detalji projekta su uspešno učitani",
+        "list": "Projekti su uspešno učitani",
+        "already_exists": "Projekat već postoji",
+        "added": "Projekat je uspešno dodat",
+        "updated": "Projekat je uspešno ažuriran",
+        "keys": "Ključevi projekta su uspešno učitani",
+        "deleted": "Projekat je uspešno obrisan",
+        "not_found": "Detalji projekta nisu pronađeni",
+        "tags": "Tagovi su uspešno učitani"
+    },
+    "user": {
+        "favorite_tags_list": "Omiljeni tagovi su uspešno preuzeti",
+        "favorite_tags_updated": "Omiljeni tagovi su uspešno ažurirani",
+        "profile_details": "Detalji profila su uspešno učitani",
+        "login_history": "Istorija prijava je uspešno učitana",
+        "profile_updated": "Profil je uspešno ažuriran",
+        "no_changes_to_update": "Nema izmena za ažuriranje",
+        "user_details_not_found": "Detalji korisnika nisu pronađeni"
+    },
+    "auth":{
+        "user_signed_up": "Korisnik je uspešno registrovan",
+        "user_logged_in": "Korisnik je uspešno prijavljen",
+        "invalid_code": "Nevažeći kod, pokušajte ponovo",
+        "two_factor_auth_verified": "Dvofaktorska autentifikacija je uspešno potvrđena",
+        "keys_fetched": "Ključevi su uspešno preuzeti",
+        "keys_already_exist": "Ključevi već postoje",
+        "keys_updated": "Ključevi su uspešno ažurirani",
+        "user_details_not_found": "Detalji korisnika nisu pronađeni",
+        "user_logged_out": "Korisnik je uspešno odjavljen",
+        "authentication_failed": "Autentifikacija nije uspela, pokušajte ponovo",
+        "invalid_credentials": "Nevažeći podaci za prijavu, pokušajte ponovo",
+        "invalid_totp_code": "Nevažeći TOTP kod, pokušajte ponovo",
+        "invalid_totp_secret": "Nevažeći TOTP tajni kod, pokušajte ponovo",
+        "something_went_wrong": "Došlo je do greške, pokušajte ponovo",
+        "invalid_header": "Nevažeći header, pokušajte ponovo"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Dnevnici revizije su uspešno učitani",
+        "audit_log_actions": "Akcije dnevnika revizije su uspešno učitane"
+    },
+    "password_history":{
+        "list": "Istorija lozinki je uspešno učitana",
+        "add": "Istorija lozinki je uspešno dodata"
+    },
+    "dashboard":{
+        "overview": "Pregled kontrolne table je uspešno učitan",
+        "recent_activity": "Skorašnje aktivnosti su uspešno učitane"
+    }
+} 

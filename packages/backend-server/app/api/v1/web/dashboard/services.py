@@ -4,6 +4,7 @@ from app.managers import (
     project as project_manager,
     project_activity as project_activity_manager,
 )
+from app.utils.i8ns import translate
 
 
 async def get_dashboard_overview(request, user):
@@ -17,10 +18,11 @@ async def get_dashboard_overview(request, user):
 
     data = {}
     for key, value in features.items():
+        print(key, value.get("enabled"))
         if value.get("enabled"):
             data[key] = secret_manager.get_project_secrets_count(db, key, project_id)
 
-    return response_helper(200, "Dashboard overview loaded successfully", data)
+    return response_helper(200, translate("dashboard.overview"), data)
 
 
 async def get_dashboard_recent_activity(request, user):
@@ -31,4 +33,4 @@ async def get_dashboard_recent_activity(request, user):
         return response_helper(404, "Project not found")
 
     data = project_activity_manager.find(db, {"project_id": project_id})
-    return response_helper(200, "Dashboard recent activity loaded successfully", data)
+    return response_helper(200, translate("dashboard.recent_activity"), data)
