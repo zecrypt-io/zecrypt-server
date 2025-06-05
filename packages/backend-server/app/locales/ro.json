@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Card adăugat cu succes",
+        "update": "Detaliile cardului au fost actualizate cu succes",
+        "delete": "Detaliile cardului au fost șterse cu succes",
+        "details": "Detaliile cardului au fost încărcate cu succes",
+        "not_found": "Detaliile cardului nu au fost găsite",
+        "already_exists": "Există deja detalii ale cardului cu același nume",
+        "list": "Carduri încărcate cu succes"
+    },
+    "api_key": {
+        "add": "Cheie API adăugată cu succes",
+        "update": "Detaliile cheii API au fost actualizate cu succes",
+        "delete": "Detaliile cheii API au fost șterse cu succes",
+        "details": "Detaliile cheii API au fost încărcate cu succes",
+        "not_found": "Detaliile cheii API nu au fost găsite",
+        "already_exists": "Există deja detalii ale cheii API cu același nume",
+        "list": "Chei API încărcate cu succes"
+    },
+    "wallet_phrase": {
+        "add": "Fraza portofelului adăugată cu succes",
+        "update": "Detaliile frazei portofelului au fost actualizate cu succes",
+        "delete": "Detaliile frazei portofelului au fost șterse cu succes",
+        "details": "Detaliile frazei portofelului au fost încărcate cu succes",
+        "not_found": "Detaliile frazei portofelului nu au fost găsite",
+        "already_exists": "Există deja detalii ale frazei portofelului cu același nume",
+        "list": "Frază portofel încărcată cu succes"
+    },
+    "wifi": {
+        "add": "WiFi adăugat cu succes",
+        "update": "Detaliile WiFi au fost actualizate cu succes",
+        "delete": "Detaliile WiFi au fost șterse cu succes",
+        "details": "Detaliile WiFi au fost încărcate cu succes",
+        "not_found": "Detaliile WiFi nu au fost găsite",
+        "already_exists": "Există deja detalii WiFi cu același nume",
+        "list": "Detalii WiFi încărcate cu succes"
+    },
+    "license": {
+        "add": "Licență adăugată cu succes",
+        "update": "Detaliile licenței au fost actualizate cu succes",
+        "delete": "Detaliile licenței au fost șterse cu succes",
+        "details": "Detaliile licenței au fost încărcate cu succes",
+        "not_found": "Detaliile licenței nu au fost găsite",
+        "already_exists": "Există deja detalii ale licenței cu același nume",
+        "list": "Licențe încărcate cu succes"
+    },
+    "login": {
+        "add": "Cont adăugat cu succes",
+        "update": "Detaliile contului au fost actualizate cu succes",
+        "delete": "Detaliile contului au fost șterse cu succes",
+        "details": "Detaliile contului au fost încărcate cu succes",
+        "not_found": "Detaliile contului nu au fost găsite",
+        "already_exists": "Există deja detalii ale contului cu același nume",
+        "list": "Conturi încărcate cu succes"
+    },
+    "identity": {
+        "add": "Identitate adăugată cu succes",
+        "update": "Detaliile identității au fost actualizate cu succes",
+        "delete": "Detaliile identității au fost șterse cu succes",
+        "details": "Detaliile identității au fost încărcate cu succes",
+        "not_found": "Detaliile identității nu au fost găsite",
+        "already_exists": "Există deja detalii ale identității cu același nume",
+        "list": "Identități încărcate cu succes"
+    },
+    "email": {
+        "add": "E-mail adăugat cu succes",
+        "update": "Detaliile e-mailului au fost actualizate cu succes",
+        "delete": "Detaliile e-mailului au fost șterse cu succes",
+        "details": "Detaliile e-mailului au fost încărcate cu succes",
+        "not_found": "Detaliile e-mailului nu au fost găsite",
+        "already_exists": "Există deja detalii ale e-mailului cu același nume",
+        "list": "E-mailuri încărcate cu succes"
+    },
+    "ssh_key": {
+        "add": "Cheie SSH adăugată cu succes",
+        "update": "Detaliile cheii SSH au fost actualizate cu succes",
+        "delete": "Detaliile cheii SSH au fost șterse cu succes",
+        "details": "Detaliile cheii SSH au fost încărcate cu succes",
+        "not_found": "Detaliile cheii SSH nu au fost găsite",
+        "already_exists": "Există deja detalii ale cheii SSH cu același nume",
+        "list": "Chei SSH încărcate cu succes"
+    },
+    "note": {
+        "add": "Notă adăugată cu succes",
+        "update": "Detaliile notei au fost actualizate cu succes",
+        "delete": "Detaliile notei au fost șterse cu succes",
+        "details": "Detaliile notei au fost încărcate cu succes",
+        "not_found": "Detaliile notei nu au fost găsite",
+        "already_exists": "Există deja detalii ale notei cu același nume",
+        "list": "Note încărcate cu succes"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Detaliile spațiului de lucru au fost încărcate cu succes",
+        "tags": "Etichete încărcate cu succes",
+        "initial_data": "Date inițiale încărcate cu succes"
+    },
+    "project":{
+        "details": "Detaliile proiectului au fost încărcate cu succes",
+        "list": "Proiecte încărcate cu succes",
+        "already_exists": "Proiectul există deja",
+        "added": "Proiect adăugat cu succes",
+        "updated": "Proiect actualizat cu succes",
+        "keys": "Chei ale proiectului încărcate cu succes",
+        "deleted": "Proiect șters cu succes",
+        "not_found": "Detaliile proiectului nu au fost găsite",
+        "tags": "Etichete încărcate cu succes"
+    },
+    "user": {
+        "favorite_tags_list": "Etichete favorite obținute cu succes",
+        "favorite_tags_updated": "Etichete favorite actualizate cu succes",
+        "profile_details": "Detaliile profilului au fost încărcate cu succes",
+        "login_history": "Istoricul autentificărilor încărcat cu succes",
+        "profile_updated": "Profil actualizat cu succes",
+        "no_changes_to_update": "Nicio modificare de actualizat",
+        "user_details_not_found": "Detaliile utilizatorului nu au fost găsite"
+    },
+    "auth":{
+        "user_signed_up": "Utilizator înregistrat cu succes",
+        "user_logged_in": "Utilizator autentificat cu succes",
+        "invalid_code": "Cod invalid, vă rugăm să încercați din nou",
+        "two_factor_auth_verified": "Autentificare cu doi factori verificată cu succes",
+        "keys_fetched": "Chei obținute cu succes",
+        "keys_already_exist": "Cheile există deja",
+        "keys_updated": "Chei actualizate cu succes",
+        "user_details_not_found": "Detaliile utilizatorului nu au fost găsite",
+        "user_logged_out": "Utilizator deconectat cu succes",
+        "authentication_failed": "Autentificare eșuată, vă rugăm să încercați din nou",
+        "invalid_credentials": "Date de autentificare invalide, vă rugăm să încercați din nou",
+        "invalid_totp_code": "Cod TOTP invalid, vă rugăm să încercați din nou",
+        "invalid_totp_secret": "Secret TOTP invalid, vă rugăm să încercați din nou",
+        "something_went_wrong": "Ceva nu a mers bine, vă rugăm să încercați din nou",
+        "invalid_header": "Antet invalid, vă rugăm să încercați din nou"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Jurnale de audit încărcate cu succes",
+        "audit_log_actions": "Acțiuni ale jurnalului de audit încărcate cu succes"
+    },
+    "password_history":{
+        "list": "Istoric de parole încărcat cu succes",
+        "add": "Istoric de parole adăugat cu succes"
+    },
+    "dashboard":{
+        "overview": "Prezentare generală a panoului încărcată cu succes",
+        "recent_activity": "Activitate recentă încărcată cu succes"
+    }
+} 
