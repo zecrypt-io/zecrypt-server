@@ -29,6 +29,7 @@ import { useIdentityManagement } from "@/hooks/use-identity-management";
 import { AddIdentityDialog } from "./add-identity-dialog";
 import { EditIdentityDialog } from "./edit-identity-dialog";
 import { SortButton } from "@/components/ui/sort-button";
+import { Identity } from "@/hooks/use-identity-management";
 
 export function IdentityContent() {
   const { translate } = useTranslator();
@@ -37,7 +38,7 @@ export function IdentityContent() {
 
   const [showAddIdentity, setShowAddIdentity] = useState(false);
   const [showEditIdentity, setShowEditIdentity] = useState(false);
-  const [selectedIdentity, setSelectedIdentity] = useState<any | null>(null);
+  const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(null);
   const [copiedField, setCopiedField] = useState<{ id: string; field: string } | null>(null);
   const [viewSensitiveData, setViewSensitiveData] = useState<string | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -76,7 +77,7 @@ export function IdentityContent() {
     setShowAddIdentity(true);
   };
 
-  const handleEditIdentity = (identity: any) => {
+  const handleEditIdentity = (identity: Identity) => {
     setSelectedIdentity(identity);
     setShowEditIdentity(true);
   };
@@ -215,134 +216,97 @@ export function IdentityContent() {
         </Button>
       </div>
 
-      {/* Identities Table */}
+      {/* Identity Table */}
       <div className="border rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">{translate("loading_identities", "identity", { default: "Loading identities..." })}</p>
-          </div>
-        ) : identitiesToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery || selectedTag !== 'all'
-                ? translate("no_matching_identities", "identity", { default: "No matching identities found" })
-                : translate("no_identities_found", "identity", { default: "No identities found" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddIdentity}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_identity", "identity", { default: "Add Identity" })}
-            </Button>
+            <p className="text-muted-foreground">{translate("loading_identities", "identity")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[150px]">{translate("identity_type", "identity", { default: "Identity Type" })}</TableHead>
-                  <TableHead className="w-[200px]">{translate("full_name", "identity", { default: "Full Name" })}</TableHead>
-                  <TableHead>{translate("national_id", "identity", { default: "National ID" })}</TableHead>
-                  <TableHead>{translate("contact", "identity", { default: "Contact" })}</TableHead>
-                  <TableHead>{translate("address", "identity", { default: "Address" })}</TableHead>
-                  <TableHead>{translate("tags", "identity", { default: "Tags" })}</TableHead>
-                  <TableHead className="text-right">{translate("actions", "identity", { default: "Actions" })}</TableHead>
+                  <TableHead className="w-[200px]">
+                    {translate("name", "identity")}
+                  </TableHead>
+                  <TableHead>{translate("email", "identity")}</TableHead>
+                  <TableHead>{translate("phone", "identity")}</TableHead>
+                  <TableHead>{translate("country", "identity")}</TableHead>
+                  <TableHead>{translate("tags", "identity")}</TableHead>
+                  <TableHead>{translate("last_modified", "identity")}</TableHead>
+                  <TableHead className="text-right">{translate("actions", "identity")}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {identitiesToDisplay.map((identity) => (
-                  <TableRow key={identity.doc_id}>
-                    <TableCell className="font-medium">
-                      {identity.title}
-                    </TableCell>
-                    <TableCell>
-                      {identity.first_name} {identity.last_name}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        <span>{maskSensitiveData(identity.doc_id, identity.national_id)}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => toggleDataVisibility(identity.doc_id)}
-                              >
-                                {viewSensitiveData === identity.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {viewSensitiveData === identity.doc_id
-                                ? translate("hide_sensitive_data", "identity", { default: "Hide sensitive data" })
-                                : translate("show_sensitive_data", "identity", { default: "Show sensitive data" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(identity.doc_id, "national_id", identity.national_id)}
-                              >
-                                {copiedField?.id === identity.doc_id && copiedField?.field === "national_id" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {translate("copy_national_id", "identity", { default: "Copy national ID" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span>{identity.email}</span>
-                        <span className="text-sm text-muted-foreground">{identity.phone}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell title={identity.address}>
-                      {identity.address}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {identity.tags?.map((tag: string) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditIdentity(identity)}>
-                            {translate("edit", "identity", { default: "Edit" })}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => confirmDelete(identity.doc_id)} className="text-red-500">
-                            {translate("delete", "identity", { default: "Delete" })}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              {identitiesToDisplay.length > 0 ? (
+                <TableBody>
+                  {identitiesToDisplay.map((identity: Identity) => (
+                    <TableRow key={identity.doc_id}>
+                      <TableCell className="font-medium">
+                        {identity.title}
+                      </TableCell>
+                      <TableCell>
+                        {identity.email}
+                      </TableCell>
+                      <TableCell>
+                        {identity.phone}
+                      </TableCell>
+                      <TableCell>
+                        {identity.country}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {identity.tags?.map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {formatDate(identity.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditIdentity(identity)}>
+                              {translate("edit", "identity", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => confirmDelete(identity.doc_id)} className="text-red-500">
+                              {translate("delete", "identity", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery || selectedTag !== 'all'
+                          ? translate("no_matching_identities", "identity", { default: "No matching identities found" })
+                          : translate("no_identities_found", "identity", { default: "No identities found" })}
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={handleAddIdentity}
+                        className="mt-4"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {translate("add_identity", "identity", { default: "Add Identity" })}
+                      </Button>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              )}
             </Table>
           </div>
         )}
@@ -350,41 +314,49 @@ export function IdentityContent() {
 
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "identity", {
-              default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
-              startIdx: (currentPage - 1) * itemsPerPage + 1,
-              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
-              totalCount
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "identity", {
+                default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
+                startIdx: (currentPage - 1) * itemsPerPage + 1,
+                endIdx: Math.min(currentPage * itemsPerPage, totalCount),
+                totalCount
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={prevPage} 
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, index) => (
+                  typeof page === 'number' ? (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        onClick={() => goToPage(page)}
+                        isActive={page === currentPage}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={nextPage} 
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious onClick={prevPage} disabled={currentPage === 1} />
-              </PaginationItem>
-              {getPaginationRange().map((page, index) => (
-                typeof page === 'number' ? (
-                  <PaginationItem key={index}>
-                    <PaginationLink
-                      onClick={() => goToPage(page)}
-                      isActive={page === currentPage}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              ))}
-              <PaginationItem>
-                <PaginationNext onClick={nextPage} disabled={currentPage === totalPages} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

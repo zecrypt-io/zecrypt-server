@@ -874,7 +874,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
-      <KeyboardShortcutsHelp />
+      {/* <KeyboardShortcutsHelp /> */}
     </div>
   );
 }

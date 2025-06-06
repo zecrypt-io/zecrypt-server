@@ -250,22 +250,6 @@ export function LicensesContent() {
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_licenses", "licenses", { default: "Loading licenses..." })}</p>
           </div>
-        ) : licensesToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery || selectedTag !== 'all'
-                ? translate("no_matching_licenses", "licenses", { default: "No matching licenses found" })
-                : translate("no_licenses_found", "licenses", { default: "No licenses found" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddLicense}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_license", "licenses", { default: "Add License" })}
-            </Button>
-          </div>
         ) : (
           <div className="rounded-md border">
             <Table>
@@ -278,96 +262,118 @@ export function LicensesContent() {
                   <TableHead className="text-right">{translate("actions", "licenses", { default: "Actions" })}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {licensesToDisplay.map((license) => {
-                  return (
-                    <TableRow key={license.doc_id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Key className="h-4 w-4 text-muted-foreground" />
-                          <span>{license.title || 'N/A'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {viewLicenseKey === license.doc_id ? license.license_key : "••••-••••-••••-••••"}
-                          </span>
-                          {license.license_key && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
-                              >
-                                {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(license.doc_id, "license_key", license.license_key)}
-                              >
-                                {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {license.expires_at && (
+              {licensesToDisplay.length > 0 ? (
+                <TableBody>
+                  {licensesToDisplay.map((license) => {
+                    return (
+                      <TableRow key={license.doc_id}>
+                        <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            <span className={`${isExpired(license.expires_at) ? 'text-red-500' : (daysUntilExpiry(license.expires_at) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
-                              {formatDate(license.expires_at)}
-                            </span>
-                            {isExpired(license.expires_at) ? (
-                              <Badge variant="destructive" className="text-xs">
-                                {translate("expired", "licenses", { default: "Expired" })}
-                              </Badge>
-                            ) : daysUntilExpiry(license.expires_at) < 30 ? (
-                              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500">
-                                {translate("expiring_soon", "licenses", { default: "Expiring soon" })}
-                              </Badge>
-                            ) : null}
+                            <Key className="h-4 w-4 text-muted-foreground" />
+                            <span>{license.title || 'N/A'}</span>
                           </div>
-                        )}
-                        {!license.expires_at && '-'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {license.tags?.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditLicense(license)}>
-                              {translate("edit", "licenses", { default: "Edit" })}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => confirmDelete(license.doc_id)} className="text-red-500">
-                              {translate("delete", "licenses", { default: "Delete" })}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {viewLicenseKey === license.doc_id ? license.license_key : "••••-••••-••••-••••"}
+                            </span>
+                            {license.license_key && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
+                                >
+                                  {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyToClipboard(license.doc_id, "license_key", license.license_key)}
+                                >
+                                  {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
+                                    <Check className="h-3 w-3" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {license.expires_at && (
+                            <div className="flex items-center gap-2">
+                              <span className={`${isExpired(license.expires_at) ? 'text-red-500' : (daysUntilExpiry(license.expires_at) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
+                                {formatDate(license.expires_at)}
+                              </span>
+                              {isExpired(license.expires_at) ? (
+                                <Badge variant="destructive" className="text-xs">
+                                  {translate("expired", "licenses", { default: "Expired" })}
+                                </Badge>
+                              ) : daysUntilExpiry(license.expires_at) < 30 ? (
+                                <Badge variant="outline" className="text-xs text-amber-500 border-amber-500">
+                                  {translate("expiring_soon", "licenses", { default: "Expiring soon" })}
+                                </Badge>
+                              ) : null}
+                            </div>
+                          )}
+                          {!license.expires_at && '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {license.tags?.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditLicense(license)}>
+                                {translate("edit", "licenses", { default: "Edit" })}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => confirmDelete(license.doc_id)} className="text-red-500">
+                                {translate("delete", "licenses", { default: "Delete" })}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery || selectedTag !== 'all'
+                          ? translate("no_matching_licenses", "licenses", { default: "No matching licenses found" })
+                          : translate("no_licenses_found", "licenses", { default: "No licenses found" })}
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={handleAddLicense}
+                        className="mt-4"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {translate("add_license", "licenses", { default: "Add License" })}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
             </Table>
           </div>
         )}
@@ -375,56 +381,58 @@ export function LicensesContent() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "licenses", {
-              default: `Showing ${Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
-              startIdx: Math.min((currentPage - 1) * itemsPerPage + 1, totalCount),
-              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
-              totalCount
-            })}
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1 mr-4">
-              <span className="text-sm text-muted-foreground">{translate("rows_per_page", "licenses", { default: "Rows per page" })}</span>
-              <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue placeholder={itemsPerPage.toString()} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "licenses", {
+                default: `Showing ${Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
+                startIdx: Math.min((currentPage - 1) * itemsPerPage + 1, totalCount),
+                endIdx: Math.min(currentPage * itemsPerPage, totalCount),
+                totalCount
+              })}
             </div>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage === 1}>
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevPage} disabled={currentPage === 1}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-1">
-              {getPaginationRange().map((pageNum, index) => (
-                <Button
-                  key={`${pageNum}-${index}`}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => typeof pageNum === "number" && goToPage(pageNum)}
-                  disabled={pageNum === "..." || currentPage === pageNum}
-                >
-                  {pageNum}
-                </Button>
-              ))}
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 mr-4">
+                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "licenses", { default: "Rows per page" })}</span>
+                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue placeholder={itemsPerPage.toString()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage === 1}>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevPage} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {getPaginationRange().map((pageNum, index) => (
+                  <Button
+                    key={`${pageNum}-${index}`}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => typeof pageNum === "number" && goToPage(pageNum)}
+                    disabled={pageNum === "..." || currentPage === pageNum}
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
+              </div>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextPage} disabled={currentPage >= totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextPage} disabled={currentPage >= totalPages}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages}>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       )}

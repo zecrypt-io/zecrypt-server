@@ -363,25 +363,7 @@ export function ApiKeysContent() {
       <div className="border rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {translate("loading_api_keys", "api_keys", { default: "Loading API keys..." })}
-            </p>
-          </div>
-        ) : apiKeysToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery || selectedEnv !== "all"
-                ? translate("try_adjusting_search_or_filter", "api_keys", { default: "Try adjusting your search or filter criteria" })
-                : translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddApiKey}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_api_key", "api_keys", { default: "Add API Key" })}
-            </Button>
+            <p className="text-muted-foreground">{translate("loading_api_keys", "api_keys")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
@@ -389,118 +371,139 @@ export function ApiKeysContent() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[150px]">
-                    {translate("name", "api_keys", { default: "Name" })}
+                    {translate("name", "api_keys")}
                   </TableHead>
-                  <TableHead>{translate("key", "api_keys", { default: "Key" })}</TableHead>
-                  <TableHead>{translate("env", "api_keys", { default: "Environment" })}</TableHead>
-                  <TableHead>{translate("tags", "api_keys", { default: "Tags" })}</TableHead>
-                  <TableHead>{translate("last_modified", "api_keys", { default: "Last Modified" })}</TableHead>
-                  <TableHead className="text-right">
-                    {translate("actions", "api_keys", { default: "Actions" })}
-                  </TableHead>
+                  <TableHead>{translate("api_key", "api_keys")}</TableHead>
+                  <TableHead>{translate("last_used", "api_keys")}</TableHead>
+                  <TableHead>{translate("tags", "api_keys")}</TableHead>
+                  <TableHead className="text-right">{translate("actions", "api_keys")}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {apiKeysToDisplay.map((apiKey) => (
-                  <TableRow key={apiKey.doc_id}>
-                    <TableCell className="font-medium">{apiKey.title}</TableCell>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        <span>
-                          {viewKey === apiKey.doc_id ? (decryptedKeys[apiKey.doc_id] || "••••••••") : "••••••••"}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => toggleKeyVisibility(apiKey.doc_id)}
-                              >
-                                {viewKey === apiKey.doc_id ? (
-                                  <EyeOff className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {viewKey === apiKey.doc_id
-                                ? translate("hide_key", "api_keys", { default: "Hide key" })
-                                : translate("show_key", "api_keys", { default: "Show key" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(apiKey.doc_id, "key", apiKey.data)}
-                              >
-                                {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {translate("copy_key", "api_keys", { default: "Copy key" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-xs">
-                        {apiKey.env}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {apiKey.tags?.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {apiKey.updated_at
-                        ? format.dateTime(new Date(apiKey.updated_at), {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditApiKey(apiKey)}>
-                            {translate("edit", "api_keys", { default: "Edit" })}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => confirmDelete(apiKey.doc_id)}
-                            className="text-red-500"
-                          >
-                            {translate("delete", "api_keys", { default: "Delete" })}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              {apiKeysToDisplay.length > 0 ? (
+                <TableBody>
+                  {apiKeysToDisplay.map((apiKey) => (
+                    <TableRow key={apiKey.doc_id}>
+                      <TableCell className="font-medium">{apiKey.title}</TableCell>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {viewKey === apiKey.doc_id ? (decryptedKeys[apiKey.doc_id] || "••••••••") : "••••••••"}
+                          </span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => toggleKeyVisibility(apiKey.doc_id)}
+                                >
+                                  {viewKey === apiKey.doc_id ? (
+                                    <EyeOff className="h-3 w-3" />
+                                  ) : (
+                                    <Eye className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {viewKey === apiKey.doc_id
+                                  ? translate("hide_key", "api_keys", { default: "Hide key" })
+                                  : translate("show_key", "api_keys", { default: "Show key" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyToClipboard(apiKey.doc_id, "key", apiKey.data)}
+                                >
+                                  {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
+                                    <Check className="h-3 w-3" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {translate("copy_key", "api_keys", { default: "Copy key" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {apiKey.env}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {apiKey.tags?.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {apiKey.updated_at
+                          ? format.dateTime(new Date(apiKey.updated_at), {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditApiKey(apiKey)}>
+                              {translate("edit", "api_keys", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => confirmDelete(apiKey.doc_id)}
+                              className="text-red-500"
+                            >
+                              {translate("delete", "api_keys", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      {searchQuery || selectedEnv !== "all"
+                        ? translate("try_adjusting_search_or_filter", "api_keys", { default: "Try adjusting your search or filter criteria" })
+                        : translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      <Button
+                        variant="outline"
+                        onClick={handleAddApiKey}
+                        className="mt-4"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {translate("add_api_key", "api_keys", { default: "Add API Key" })}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
             </Table>
           </div>
         )}
@@ -508,47 +511,49 @@ export function ApiKeysContent() {
 
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "api_keys", {
-              default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
-                currentPage * itemsPerPage,
-                totalCount
-              )} of ${totalCount} results`,
-              startIdx: (currentPage - 1) * itemsPerPage + 1,
-              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
-              totalCount,
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "api_keys", {
+                default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
+                  currentPage * itemsPerPage,
+                  totalCount
+                )} of ${totalCount} results`,
+                startIdx: (currentPage - 1) * itemsPerPage + 1,
+                endIdx: Math.min(currentPage * itemsPerPage, totalCount),
+                totalCount,
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={currentPage === 1 ? () => {} : prevPage}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, index) =>
+                  typeof page === "number" ? (
+                    <PaginationItem key={index}>
+                      <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={currentPage === totalPages ? () => {} : nextPage}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={currentPage === 1 ? () => {} : prevPage}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {getPaginationRange().map((page, index) =>
-                typeof page === "number" ? (
-                  <PaginationItem key={index}>
-                    <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={currentPage === totalPages ? () => {} : nextPage}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

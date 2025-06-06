@@ -277,315 +277,199 @@ export function EmailsContent() {
         </Button>
       </div>
 
-      {/* Email accounts table */}
+      {/* Emails Table */}
       <div className="border rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {translate("loading", "emails", { default: "Loading..." })}
-            </p>
-          </div>
-        ) : emailsToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery
-                ? translate("no_results_found", "emails", { default: "No results found" })
-                : translate("no_email_accounts", "emails", { default: "No email accounts" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddEmail}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_email", "emails", { default: "Add Email" })}
-            </Button>
+            <p className="text-muted-foreground">{translate("loading_emails", "emails")}</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">
-                  {translate("title", "emails", { default: "Title" })}
-                </TableHead>
-                <TableHead className="w-[250px]">
-                  {translate("email_address", "emails", { default: "Email Address" })}
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  {translate("servers", "emails", { default: "Servers" })}
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  {translate("username", "emails", { default: "Username" })}
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  {translate("password", "emails", { default: "Password" })}
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  {translate("tags", "emails", { default: "Tags" })}
-                </TableHead>
-                <TableHead>
-                  <span className="sr-only">{translate("actions", "emails", { default: "Actions" })}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {emailsToDisplay.map((email) => (
-                <TableRow key={email.doc_id}>
-                  <TableCell className="font-medium overflow-hidden text-ellipsis">
-                    {email.title}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <span className="truncate max-w-[120px] md:max-w-[200px]">
-                        {email.email_address}
-                      </span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => copyToClipboard(email.doc_id, "email_address", email.email_address)}
-                            >
-                              {copiedField?.doc_id === email.doc_id && copiedField?.field === "email_address" ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">{translate("copy", "emails", { default: "Copy" })}</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs text-muted-foreground">IMAP:</span>
-                        <span className="text-xs truncate max-w-[100px]">{email.imap_server}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(email.doc_id, "imap_server", email.imap_server)}
-                              >
-                                {copiedField?.doc_id === email.doc_id && copiedField?.field === "imap_server" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs text-muted-foreground">SMTP:</span>
-                        <span className="text-xs truncate max-w-[100px]">{email.smtp_server}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(email.doc_id, "smtp_server", email.smtp_server)}
-                              >
-                                {copiedField?.doc_id === email.doc_id && copiedField?.field === "smtp_server" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex items-center space-x-2">
-                      <span className="truncate max-w-[100px]">{email.username}</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => copyToClipboard(email.doc_id, "username", email.username)}
-                            >
-                              {copiedField?.doc_id === email.doc_id && copiedField?.field === "username" ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-mono truncate max-w-[100px]">
-                        {viewPassword === email.doc_id ? email.password : "••••••••"}
-                      </span>
-                      <div className="flex space-x-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => togglePasswordVisibility(email.doc_id)}
-                              >
-                                {viewPassword === email.doc_id ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {viewPassword === email.doc_id
-                                  ? translate("hide_password", "emails", { default: "Hide password" })
-                                  : translate("show_password", "emails", { default: "Show password" })}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => copyToClipboard(email.doc_id, "password", email.password)}
-                              >
-                                {copiedField?.doc_id === email.doc_id && copiedField?.field === "password" ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {email.tags && email.tags.length > 0 ? (
-                        email.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">{translate("open_menu", "emails", { default: "Open menu" })}</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditEmail(email)}>
-                          {translate("edit", "emails", { default: "Edit" })}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => confirmDelete(email.doc_id)}
-                        >
-                          {translate("delete", "emails", { default: "Delete" })}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader className="emails-table-header">
+                <TableRow>
+                  <TableHead className="w-[200px]">
+                    {translate("email_address", "emails")}
+                  </TableHead>
+                  <TableHead>{translate("password", "emails")}</TableHead>
+                  <TableHead>{translate("tags", "emails")}</TableHead>
+                  <TableHead>
+                    {translate("last_modified", "emails")}
+                  </TableHead>
+                  <TableHead className="text-right">{translate("actions", "emails")}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              {emailsToDisplay.length > 0 ? (
+                <TableBody>
+                  {emailsToDisplay.map((email) => (
+                    <TableRow key={email.doc_id}>
+                      <TableCell className="font-medium overflow-hidden text-ellipsis">
+                        {email.email_address}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono truncate max-w-[100px]">
+                            {viewPassword === email.doc_id ? email.password : "••••••••"}
+                          </span>
+                          <div className="flex space-x-1">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => togglePasswordVisibility(email.doc_id)}
+                                  >
+                                    {viewPassword === email.doc_id ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {viewPassword === email.doc_id
+                                      ? translate("hide_password", "emails", { default: "Hide password" })
+                                      : translate("show_password", "emails", { default: "Show password" })}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => copyToClipboard(email.doc_id, "password", email.password)}
+                                  >
+                                    {copiedField?.doc_id === email.doc_id && copiedField?.field === "password" ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{translate("copy_to_clipboard", "emails", { default: "Copy to clipboard" })}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {email.tags && email.tags.length > 0 ? (
+                            email.tags.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {email.updated_at ? format.dateTime(new Date(email.updated_at), {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">{translate("open_menu", "emails", { default: "Open menu" })}</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditEmail(email)}>
+                              {translate("edit", "emails", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => confirmDelete(email.doc_id)}
+                            >
+                              {translate("delete", "emails", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      {searchQuery
+                        ? translate("no_results_found", "emails", { default: "No results found" })
+                        : translate("no_email_accounts", "emails", { default: "No email accounts" })}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
+            </Table>
+          </div>
         )}
       </div>
 
       {/* Pagination - only show if more than 1 page */}
       {!isLoading && emailsToDisplay.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "emails", {
-              default: "Showing {start} to {end} of {total} results",
-              start: Math.min(1 + (currentPage - 1) * itemsPerPage, totalCount),
-              end: Math.min(currentPage * itemsPerPage, totalCount),
-              total: totalCount,
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "emails", {
+                default: "Showing {start} to {end} of {total} results",
+                start: Math.min(1 + (currentPage - 1) * itemsPerPage, totalCount),
+                end: Math.min(currentPage * itemsPerPage, totalCount),
+                total: totalCount,
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={prevPage}
+                    aria-disabled={currentPage === 1}
+                    tabIndex={currentPage === 1 ? -1 : 0}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, i) => (
+                  typeof page === 'number' ? (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={i}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={nextPage}
+                    aria-disabled={currentPage === totalPages}
+                    tabIndex={currentPage === totalPages ? -1 : 0}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={prevPage}
-                  aria-disabled={currentPage === 1}
-                  tabIndex={currentPage === 1 ? -1 : 0}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {getPaginationRange().map((page, i) => (
-                typeof page === 'number' ? (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      isActive={page === currentPage}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={i}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={nextPage}
-                  aria-disabled={currentPage === totalPages}
-                  tabIndex={currentPage === totalPages ? -1 : 0}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 
