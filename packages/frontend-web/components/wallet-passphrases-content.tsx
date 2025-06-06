@@ -427,10 +427,22 @@ export function WalletPassphrasesContent() {
               ) : (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
-                      {searchQuery || selectedWalletType !== "all"
-                        ? translate("no_passphrases_found_search", "wallet_passphrases", { default: "No passphrases match your search criteria" })
-                        : translate("no_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center w-full mx-auto">
+                        <p className="text-muted-foreground">
+                          {searchQuery
+                            ? translate("no_matching_wallet_passphrases", "wallet_passphrases", { default: "No matching wallet passphrases found" })
+                            : translate("no_wallet_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={handleAddPassphrase}
+                          className="mt-4"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 </TableBody>

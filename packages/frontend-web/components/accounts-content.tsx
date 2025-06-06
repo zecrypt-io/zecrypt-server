@@ -266,22 +266,6 @@ export function AccountsContent() {
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>
           </div>
-        ) : accountsToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery || selectedCategory !== "all"
-                ? translate("no_matching_accounts", "accounts", { default: "No matching accounts" })
-                : translate("no_accounts", "accounts", { default: "No accounts" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setShowAddAccount(true)}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_account", "accounts")}
-            </Button>
-          </div>
         ) : (
           <Table>
             <TableHeader className="accounts-table-header">
@@ -301,172 +285,196 @@ export function AccountsContent() {
                 <TableHead className="text-right">{translate("actions", "accounts")}</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {accountsToDisplay.map((account) => (
-                <TableRow key={account.doc_id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
-                        {getWebsiteIcon((account.url || account.website || '') as string, "h-4 w-4")}
+            {accountsToDisplay.length > 0 ? (
+              <TableBody>
+                {accountsToDisplay.map((account) => (
+                  <TableRow key={account.doc_id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+                          {getWebsiteIcon((account.url || account.website || '') as string, "h-4 w-4")}
+                        </div>
+                        <span>{account.title || account.name}</span>
                       </div>
-                      <span>{account.title || account.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="relative max-w-[120px] truncate">
-                        {account.username}
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => copyToClipboard(account.doc_id, "username", account.username)}
-                            >
-                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {copiedField?.doc_id === account.doc_id && copiedField?.field === "username"
-                              ? translate("copied", "accounts")
-                              : translate("copy_username", "accounts")}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="relative max-w-[120px] truncate font-mono">
-                        {viewPassword === account.doc_id ? account.password : "••••••••"}
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => togglePasswordVisibility(account.doc_id)}
-                            >
-                              {viewPassword === account.doc_id ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {viewPassword === account.doc_id
-                              ? translate("hide_password", "accounts")
-                              : translate("show_password", "accounts")}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => copyToClipboard(account.doc_id, "password", account.password)}
-                            >
-                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {copiedField?.doc_id === account.doc_id && copiedField?.field === "password"
-                              ? translate("copied", "accounts")
-                              : translate("copy_password", "accounts")}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {account.website || account.url ? (
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="max-w-[120px] truncate">
-                          {account.website || account.url}
-                        </span>
-                        {(account.website || account.url) && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => {
-                                    const url = account.website || account.url;
-                                    if (url) window.open(url, "_blank");
-                                  }}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{translate("open_website", "accounts")}</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
+                        <div className="relative max-w-[120px] truncate">
+                          {account.username}
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => copyToClipboard(account.doc_id, "username", account.username)}
+                              >
+                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "username"
+                                ? translate("copied", "accounts")
+                                : translate("copy_username", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {account.tags && account.tags.length > 0 ? (
-                        account.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="capitalize">
-                            {tag}
-                          </Badge>
-                        ))
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="relative max-w-[120px] truncate font-mono">
+                          {viewPassword === account.doc_id ? account.password : "••••••••"}
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => togglePasswordVisibility(account.doc_id)}
+                              >
+                                {viewPassword === account.doc_id ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {viewPassword === account.doc_id
+                                ? translate("hide_password", "accounts")
+                                : translate("show_password", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => copyToClipboard(account.doc_id, "password", account.password)}
+                              >
+                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "password"
+                                ? translate("copied", "accounts")
+                                : translate("copy_password", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {account.website || account.url ? (
+                        <div className="flex items-center gap-2">
+                          <span className="max-w-[120px] truncate">
+                            {account.website || account.url}
+                          </span>
+                          {(account.website || account.url) && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => {
+                                      const url = account.website || account.url;
+                                      if (url) window.open(url, "_blank");
+                                    }}
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{translate("open_website", "accounts")}</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {account.tags && account.tags.length > 0 ? (
+                          account.tags.map((tag) => (
+                            <Badge key={tag} variant="outline" className="capitalize">
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {account.updated_at
+                        ? format.dateTime(new Date(account.updated_at), {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenEditDialog(account)}>
+                            {translate("edit", "accounts")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => confirmDelete(account.doc_id)}>
+                            {translate("delete", "accounts")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery || selectedCategory !== "all"
+                          ? translate("no_matching_accounts", "accounts", { default: "No matching accounts" })
+                          : translate("no_accounts", "accounts", { default: "No accounts" })}
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddAccount(true)}
+                        className="mt-4"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {translate("add_account", "accounts")}
+                      </Button>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    {account.updated_at
-                      ? format.dateTime(new Date(account.updated_at), {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenEditDialog(account)}>
-                          {translate("edit", "accounts")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => confirmDelete(account.doc_id)}>
-                          {translate("delete", "accounts")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
+              </TableBody>
+            )}
           </Table>
         )}
       </div>

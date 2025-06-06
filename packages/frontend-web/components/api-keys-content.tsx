@@ -484,14 +484,12 @@ export function ApiKeysContent() {
               ) : (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                      {searchQuery || selectedEnv !== "all"
-                        ? translate("try_adjusting_search_or_filter", "api_keys", { default: "Try adjusting your search or filter criteria" })
-                        : translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery || selectedEnv !== "all"
+                          ? translate("try_adjusting_search_or_filter", "api_keys", { default: "Try adjusting your search or filter criteria" })
+                          : translate("no_api_keys_found", "api_keys", { default: "No API keys found" })}
+                      </p>
                       <Button
                         variant="outline"
                         onClick={handleAddApiKey}

@@ -371,18 +371,31 @@ export function SSHKeysContent() {
               ) : (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      {searchQuery ? (
-                        <>
-                          <AlertTriangle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                          {translate("no_results_found", "ssh_keys", { default: "No results found" })}
-                        </>
-                      ) : (
-                        <>
-                          <Key className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                          {translate("no_ssh_keys", "ssh_keys", { default: "No SSH keys" })}
-                        </>
-                      )}
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        {searchQuery ? (
+                          <>
+                            <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                            <p className="text-muted-foreground">
+                              {translate("no_results_found", "ssh_keys", { default: "No results found" })}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <Key className="h-5 w-5 text-muted-foreground" />
+                            <p className="text-muted-foreground">
+                              {translate("no_ssh_keys", "ssh_keys", { default: "No SSH keys" })}
+                            </p>
+                            <Button
+                              variant="outline"
+                              onClick={handleAddSSHKey}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              {translate("add_ssh_key", "ssh_keys", { default: "Add SSH Key" })}
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 </TableBody>

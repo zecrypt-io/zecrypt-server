@@ -292,6 +292,8 @@ export function EmailsContent() {
                     {translate("email_address", "emails")}
                   </TableHead>
                   <TableHead>{translate("password", "emails")}</TableHead>
+                  <TableHead>{translate("imap_server", "emails", { default: "IMAP Server" })}</TableHead>
+                  <TableHead>{translate("smtp_server", "emails", { default: "SMTP Server" })}</TableHead>
                   <TableHead>{translate("tags", "emails")}</TableHead>
                   <TableHead>
                     {translate("last_modified", "emails")}
@@ -361,6 +363,8 @@ export function EmailsContent() {
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell>{email.imap_server}</TableCell>
+                      <TableCell>{email.smtp_server}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {email.tags && email.tags.length > 0 ? (
@@ -408,10 +412,22 @@ export function EmailsContent() {
               ) : (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                      {searchQuery
-                        ? translate("no_results_found", "emails", { default: "No results found" })
-                        : translate("no_email_accounts", "emails", { default: "No email accounts" })}
+                    <TableCell colSpan={7} className="text-center h-24">
+                      <div className="flex flex-col items-center justify-center w-full mx-auto">
+                        <p className="text-muted-foreground">
+                          {searchQuery
+                            ? translate("no_results_found", "emails", { default: "No results found" })
+                            : translate("no_email_accounts", "emails", { default: "No email accounts" })}
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={handleAddEmail}
+                          className="mt-4"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          {translate("add_email", "emails", { default: "Add Email" })}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 </TableBody>

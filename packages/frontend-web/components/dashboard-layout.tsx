@@ -830,10 +830,10 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </Tooltip>
           </TooltipProvider>
 
-          <div className="flex items-center gap-2 px-3 py-1.5">
+          {/* <div className="flex items-center gap-2 px-3 py-1.5">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">{workspaceName}</span>
-          </div>
+          </div> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
