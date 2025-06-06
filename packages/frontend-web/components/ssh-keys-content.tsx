@@ -242,201 +242,205 @@ export function SSHKeysContent() {
         </Button>
       </div>
 
-      {/* SSH keys table */}
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[250px]">
-                {translate("name", "ssh_keys", { default: "Name" })}
-              </TableHead>
-              <TableHead>
-                {translate("ssh_key", "ssh_keys", { default: "SSH Key" })}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                {translate("tags", "ssh_keys", { default: "Tags" })}
-              </TableHead>
-              <TableHead>
-                <span className="sr-only">{translate("actions", "ssh_keys", { default: "Actions" })}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  {translate("loading", "ssh_keys", { default: "Loading..." })}
-                </TableCell>
-              </TableRow>
-            ) : sshKeysToDisplay.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  {searchQuery ? (
-                    <>
-                      <AlertTriangle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                      {translate("no_results_found", "ssh_keys", { default: "No results found" })}
-                    </>
-                  ) : (
-                    <>
-                      <Key className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                      {translate("no_ssh_keys", "ssh_keys", { default: "No SSH keys" })}
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ) : (
-              sshKeysToDisplay.map((sshKey) => (
-                <TableRow key={sshKey.doc_id}>
-                  <TableCell className="font-medium overflow-hidden text-ellipsis">
-                    {sshKey.name}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-full max-w-[500px]">
-                        <div className="font-mono text-xs bg-muted p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
-                          {viewSSHKey === sshKey.doc_id 
-                            ? sshKey.ssh_key 
-                            : `${sshKey.ssh_key.substring(0, 30)}...`}
-                        </div>
-                      </div>
-                      <div className="flex space-x-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => toggleSSHKeyVisibility(sshKey.doc_id)}
-                              >
-                                {viewSSHKey === sshKey.doc_id ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {viewSSHKey === sshKey.doc_id
-                                  ? translate("hide_ssh_key", "ssh_keys", { default: "Hide SSH key" })
-                                  : translate("show_ssh_key", "ssh_keys", { default: "Show full SSH key" })}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => copyToClipboard(sshKey.doc_id, "ssh_key", sshKey.ssh_key)}
-                              >
-                                {copiedField?.doc_id === sshKey.doc_id && copiedField?.field === "ssh_key" ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{translate("copy_to_clipboard", "ssh_keys", { default: "Copy to clipboard" })}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {sshKey.tags && sshKey.tags.length > 0 ? (
-                        sshKey.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">{translate("open_menu", "ssh_keys", { default: "Open menu" })}</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditSSHKey(sshKey)}>
-                          {translate("edit", "ssh_keys", { default: "Edit" })}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => confirmDelete(sshKey.doc_id)}
-                        >
-                          {translate("delete", "ssh_keys", { default: "Delete" })}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+      {/* SSH Keys Table */}
+      <div className="border rounded-md">
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">{translate("loading_ssh_keys", "ssh_keys")}</p>
+          </div>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px]">
+                    {translate("name", "ssh_keys")}
+                  </TableHead>
+                  <TableHead>{translate("fingerprint", "ssh_keys")}</TableHead>
+                  <TableHead>{translate("tags", "ssh_keys")}</TableHead>
+                  <TableHead>{translate("last_modified", "ssh_keys")}</TableHead>
+                  <TableHead className="text-right">{translate("actions", "ssh_keys")}</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              {sshKeysToDisplay.length > 0 ? (
+                <TableBody>
+                  {sshKeysToDisplay.map((key) => (
+                    <TableRow key={key.doc_id}>
+                      <TableCell className="font-medium overflow-hidden text-ellipsis">
+                        {key.name}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-full max-w-[500px]">
+                            <div className="font-mono text-xs bg-muted p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
+                              {viewSSHKey === key.doc_id 
+                                ? key.ssh_key 
+                                : `${key.ssh_key.substring(0, 30)}...`}
+                            </div>
+                          </div>
+                          <div className="flex space-x-1">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => toggleSSHKeyVisibility(key.doc_id)}
+                                  >
+                                    {viewSSHKey === key.doc_id ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {viewSSHKey === key.doc_id
+                                      ? translate("hide_ssh_key", "ssh_keys", { default: "Hide SSH key" })
+                                      : translate("show_ssh_key", "ssh_keys", { default: "Show full SSH key" })}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => copyToClipboard(key.doc_id, "ssh_key", key.ssh_key)}
+                                  >
+                                    {copiedField?.doc_id === key.doc_id && copiedField?.field === "ssh_key" ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{translate("copy_to_clipboard", "ssh_keys", { default: "Copy to clipboard" })}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {key.tags && key.tags.length > 0 ? (
+                            key.tags.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {key.updated_at ? format.dateTime(new Date(key.updated_at)) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">{translate("open_menu", "ssh_keys", { default: "Open menu" })}</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditSSHKey(key)}>
+                              {translate("edit", "ssh_keys", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => confirmDelete(key.doc_id)}
+                            >
+                              {translate("delete", "ssh_keys", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      {searchQuery ? (
+                        <>
+                          <AlertTriangle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                          {translate("no_results_found", "ssh_keys", { default: "No results found" })}
+                        </>
+                      ) : (
+                        <>
+                          <Key className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                          {translate("no_ssh_keys", "ssh_keys", { default: "No SSH keys" })}
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
+            </Table>
+          </div>
+        )}
       </div>
 
       {/* Pagination - only show if more than 1 page */}
       {!isLoading && sshKeysToDisplay.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "ssh_keys", {
-              default: "Showing {start} to {end} of {total} results",
-              start: Math.min(1 + (currentPage - 1) * itemsPerPage, totalCount),
-              end: Math.min(currentPage * itemsPerPage, totalCount),
-              total: totalCount,
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "ssh_keys", {
+                default: "Showing {start} to {end} of {total} results",
+                start: Math.min(1 + (currentPage - 1) * itemsPerPage, totalCount),
+                end: Math.min(currentPage * itemsPerPage, totalCount),
+                total: totalCount,
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={prevPage}
+                    aria-disabled={currentPage === 1}
+                    tabIndex={currentPage === 1 ? -1 : 0}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, i) => (
+                  typeof page === 'number' ? (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={i}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={nextPage}
+                    aria-disabled={currentPage === totalPages}
+                    tabIndex={currentPage === totalPages ? -1 : 0}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={prevPage}
-                  aria-disabled={currentPage === 1}
-                  tabIndex={currentPage === 1 ? -1 : 0}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {getPaginationRange().map((page, i) => (
-                typeof page === 'number' ? (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      isActive={page === currentPage}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={i}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={nextPage}
-                  aria-disabled={currentPage === totalPages}
-                  tabIndex={currentPage === totalPages ? -1 : 0}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

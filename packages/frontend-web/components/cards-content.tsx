@@ -224,155 +224,84 @@ export function CardsContent() {
       <div className="border rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">{translate("loading_cards", "cards", { default: "Loading cards..." })}</p>
-          </div>
-        ) : cardsToDisplay.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">
-              {searchQuery || selectedBrand !== 'all' || selectedTag !== 'all'
-                ? translate("no_matching_cards", "cards", { default: "No matching cards found" })
-                : translate("no_cards_found", "cards", { default: "No cards found" })}
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddCard}
-              className="mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {translate("add_card", "cards", { default: "Add Card" })}
-            </Button>
+            <p className="text-muted-foreground">{translate("loading_cards", "cards")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">{translate("title", "cards", { default: "Title" })}</TableHead>
-                  <TableHead>{translate("card_holder", "cards", { default: "Card Holder" })}</TableHead>
-                  <TableHead>{translate("brand", "cards", { default: "Brand" })}</TableHead>
+                  <TableHead className="w-[150px]">{translate("name", "cards", { default: "Name" })}</TableHead>
                   <TableHead>{translate("card_number", "cards", { default: "Card Number" })}</TableHead>
                   <TableHead>{translate("expiry", "cards", { default: "Expiry" })}</TableHead>
-                  <TableHead>{translate("cvv", "cards", { default: "CVV" })}</TableHead>
                   <TableHead>{translate("tags", "cards", { default: "Tags" })}</TableHead>
                   <TableHead className="text-right">{translate("actions", "cards", { default: "Actions" })}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {cardsToDisplay.map((card) => (
-                  <TableRow key={card.doc_id}>
-                    <TableCell className="font-medium">{card.title}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <span>{card.card_holder_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{card.brand}</TableCell>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        <span>
-                          {viewSensitiveData === card.doc_id
-                            ? formatCardNumber(card.number)
-                            : "•••• •••• •••• " + card.number.slice(-4)}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+              {cardsToDisplay.length > 0 ? (
+                <TableBody>
+                  {cardsToDisplay.map((card) => (
+                    <TableRow key={card.doc_id}>
+                      <TableCell className="font-medium">{card.title}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-muted-foreground" />
+                          <span>{card.card_holder_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatExpiryDate(card.expiry_month, card.expiry_year)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {card.tags?.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditCard(card)}>
+                              {translate("edit", "cards", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => confirmDelete(card.doc_id)} className="text-red-500">
+                              {translate("delete", "cards", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <p className="text-muted-foreground">
+                          {searchQuery
+                            ? translate("no_matching_cards", "cards", { default: "No matching cards found" })
+                            : translate("no_cards_found", "cards", { default: "No cards found" })}
+                        </p>
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                                onClick={() => toggleDataVisibility(card.doc_id)}
+                          variant="outline"
+                          onClick={handleAddCard}
+                          className="mt-4"
                         >
-                                {viewSensitiveData === card.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                          <Plus className="mr-2 h-4 w-4" />
+                          {translate("add_card", "cards", { default: "Add Card" })}
                         </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {viewSensitiveData === card.doc_id
-                                ? translate("hide_card_number", "cards", { default: "Hide card number" })
-                                : translate("show_card_number", "cards", { default: "Show card number" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                                onClick={() => copyToClipboard(card.doc_id, "number", card.number)}
-                        >
-                                {copiedField?.id === card.doc_id && copiedField?.field === "number" ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                       </div>
-                    </TableCell>
-                    <TableCell>{formatExpiryDate(card.expiry_month, card.expiry_year)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span>{viewSensitiveData === card.doc_id ? card.cvv : "•••"}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                                onClick={() => copyToClipboard(card.doc_id, "cvv", card.cvv)}
-                        >
-                                {copiedField?.id === card.doc_id && copiedField?.field === "cvv" ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {translate("copy_to_clipboard", "cards", { default: "Copy to clipboard" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {card.tags?.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditCard(card)}>
-                            {translate("edit", "cards", { default: "Edit" })}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => confirmDelete(card.doc_id)} className="text-red-500">
-                            {translate("delete", "cards", { default: "Delete" })}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              )}
             </Table>
           </div>
         )}
@@ -380,41 +309,49 @@ export function CardsContent() {
 
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "cards", {
-              default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
-              startIdx: (currentPage - 1) * itemsPerPage + 1,
-              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
-              totalCount
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "cards", {
+                default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} results`,
+                startIdx: (currentPage - 1) * itemsPerPage + 1,
+                endIdx: Math.min(currentPage * itemsPerPage, totalCount),
+                totalCount
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={prevPage} 
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, index) => (
+                  typeof page === 'number' ? (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        onClick={() => goToPage(page)}
+                        isActive={page === currentPage}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={nextPage} 
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious onClick={prevPage} disabled={currentPage === 1} />
-              </PaginationItem>
-              {getPaginationRange().map((page, index) => (
-                typeof page === 'number' ? (
-                  <PaginationItem key={index}>
-                    <PaginationLink
-                      onClick={() => goToPage(page)}
-                      isActive={page === currentPage}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              ))}
-              <PaginationItem>
-                <PaginationNext onClick={nextPage} disabled={currentPage === totalPages} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

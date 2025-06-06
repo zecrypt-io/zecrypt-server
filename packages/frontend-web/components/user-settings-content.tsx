@@ -512,32 +512,34 @@ export function UserSettingsContent() {
                   
                   {/* Pagination */}
                   {loginHistory.length > 0 && (
-                    <div className="mt-6 flex items-center justify-center space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={goToPreviousPage}
-                        disabled={currentPage === 1}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        {translate("previous", "user_settings")}
-                      </Button>
-                      
-                      <div className="flex items-center px-4">
-                        <span className="text-sm text-muted-foreground">
-                          {translate("page", "user_settings")} {currentPage} {translate("of", "user_settings")} {totalPages}
-                        </span>
+                    <div className="mt-6 flex items-center justify-end">
+                      <div className="flex items-center gap-4 ml-auto">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={goToPreviousPage}
+                          disabled={currentPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-1" />
+                          {translate("previous", "user_settings")}
+                        </Button>
+                        
+                        <div className="flex items-center px-4">
+                          <span className="text-sm text-muted-foreground">
+                            {translate("page", "user_settings")} {currentPage} {translate("of", "user_settings")} {totalPages}
+                          </span>
+                        </div>
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={goToNextPage}
+                          disabled={currentPage === totalPages}
+                        >
+                          {translate("next", "user_settings")}
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
                       </div>
-                      
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={goToNextPage}
-                        disabled={currentPage === totalPages}
-                      >
-                        {translate("next", "user_settings")}
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
                     </div>
                   )}
                 </div>
