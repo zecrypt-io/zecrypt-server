@@ -24,7 +24,9 @@ import {
   Eye,
   EyeOff,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Copy,
+  Check
 } from "lucide-react";
 import { getWebsiteIcon } from "@/libs/icon-mappings";
 import { useTranslator } from "@/hooks/use-translations";
@@ -43,6 +45,8 @@ import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
 import { WelcomeModal } from "./welcom-modal";
 import axios from "axios";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
 
 interface DashboardData {
   [key: string]: number;
@@ -130,6 +134,7 @@ export function LocalizedOverviewContent() {
   const { translate } = useTranslator();
   const format = useFormatter();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
   const userId = useSelector((state: RootState) => state.user.userData?.user_id);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -144,6 +149,7 @@ export function LocalizedOverviewContent() {
   const [recentAccounts, setRecentAccounts] = useState<Account[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
   const [showAllActivities, setShowAllActivities] = useState(false);
+  const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
   const ACTIVITIES_DISPLAY_COUNT = 5;
   const ACCOUNTS_DISPLAY_COUNT = 5;
 
@@ -408,6 +414,20 @@ export function LocalizedOverviewContent() {
     }));
   };
 
+  // Add navigation mapping for data types
+  const getDataTypePath = (dataType: string) => {
+    const pathMap: Record<string, string> = {
+      login: "/dashboard/accounts",
+      api_key: "/dashboard/api-keys",
+      wallet_address: "/dashboard/wallet-passphrases",
+      wifi: "/dashboard/wifi",
+      identity: "/dashboard/identity",
+      card: "/dashboard/cards",
+      email: "/dashboard/emails",
+    };
+    return pathMap[dataType] || "/dashboard";
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -430,7 +450,11 @@ export function LocalizedOverviewContent() {
           ))
         ) : (
           dashboardData && Object.entries(dashboardData).slice(0, 10).map(([key, value]) => (
-            <Card key={key} className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
+            <Card 
+              key={key} 
+              className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/20 cursor-pointer hover:shadow-xl transition-all duration-200"
+              onClick={() => router.push(getDataTypePath(key))}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10"></div>
               <CardHeader className="relative pb-1 px-3 pt-3">
                 <div className="flex items-center justify-between">
@@ -444,11 +468,6 @@ export function LocalizedOverviewContent() {
               </CardHeader>
               <CardContent className="relative px-3 pb-3">
                 <div className="text-2xl font-bold text-foreground">{value.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground mt-1 flex items-center">
-                  <TrendingUp className="h-2.5 w-2.5 mr-1 text-green-500" />
-                  <span className="text-green-500 font-medium">+0%</span>{" "}
-                  {translate("from_last_month", "dashboard")}
-                </div>
               </CardContent>
             </Card>
           ))
@@ -465,13 +484,10 @@ export function LocalizedOverviewContent() {
                 <Activity className="h-5 w-5 text-primary" />
                 {translate("recent_activity", "dashboard")}
               </CardTitle>
-              <div className="text-xs text-muted-foreground">
-                {translate("last_24_hours", "dashboard") || "Last 24 hours"}
-              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[320px] overflow-y-auto pr-2">
+            <div className={`pr-2 ${showAllActivities ? 'h-[320px] overflow-y-auto' : ''}`}>
               {isLoading ? (
                 Array(5).fill(0).map((_, index) => (
                   <div key={index} className="flex items-center gap-4 p-3 animate-pulse">
@@ -594,9 +610,7 @@ export function LocalizedOverviewContent() {
                     className="relative p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-200 group"
                   >
                     {/* Main Account Info */}
-                    <div className={`flex items-center justify-between gap-2 transition-all duration-300 ${
-                      revealedPasswords[account.doc_id] ? 'blur-sm opacity-50' : ''
-                    }`}>
+                    <div className={`flex items-center justify-between gap-2 transition-all duration-300 ${revealedPasswords[account.doc_id] ? 'blur-sm opacity-50' : ''}`}>
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <div className="p-2 rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow">
                           {getWebsiteIcon(account.url || account.website || '', "h-4 w-4 text-slate-700")}
@@ -625,12 +639,36 @@ export function LocalizedOverviewContent() {
                     {/* Password Modal/Projection */}
                     {revealedPasswords[account.doc_id] && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <div className="bg-background/95 backdrop-blur-sm border border-primary/10 rounded-lg shadow-sm px-3 py-2 max-w-[60%] animate-in fade-in-0 zoom-in-95 duration-200">
+                        <div className="bg-background/95 backdrop-blur-sm border border-primary/10 rounded-lg shadow-lg shadow-primary/30 px-3 py-2 max-w-[90%] animate-in fade-in-0 zoom-in-95 duration-200">
                           <div className="flex items-center gap-2">
-                            <Lock className="h-3.5 w-3.5 text-primary/70" />
-                            <div className="font-mono text-sm bg-primary/5 text-primary px-2.5 py-0.5 rounded border border-primary/10">
+                            <div className="font-mono text-sm bg-primary/5 text-primary px-2.5 py-0.5 rounded border border-primary/10 truncate">
                               {account.password}
                             </div>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-primary/70 hover:text-primary pointer-events-auto"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(account.password || '');
+                                      setCopiedAccountId(account.doc_id);
+                                      setTimeout(() => setCopiedAccountId(null), 2000);
+                                    }}
+                                  >
+                                    {copiedAccountId === account.doc_id ? (
+                                      <Check className="h-3.5 w-3.5 text-green-500" />
+                                    ) : (
+                                      <Copy className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{copiedAccountId === account.doc_id ? translate("copied", "accounts") : translate("copy_password", "accounts")}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         </div>
                       </div>

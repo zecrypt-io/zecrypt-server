@@ -231,9 +231,11 @@ export function CardsContent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[150px]">{translate("name", "cards", { default: "Name" })}</TableHead>
+                  <TableHead className="w-[200px]">{translate("name", "cards", { default: "Name" })}</TableHead>
                   <TableHead>{translate("card_number", "cards", { default: "Card Number" })}</TableHead>
+                  <TableHead>{translate("card_holder", "cards", { default: "Card Holder" })}</TableHead>
                   <TableHead>{translate("expiry", "cards", { default: "Expiry" })}</TableHead>
+                  <TableHead>{translate("cvv", "cards", { default: "CVV" })}</TableHead>
                   <TableHead>{translate("tags", "cards", { default: "Tags" })}</TableHead>
                   <TableHead className="text-right">{translate("actions", "cards", { default: "Actions" })}</TableHead>
                 </TableRow>
@@ -242,14 +244,128 @@ export function CardsContent() {
                 <TableBody>
                   {cardsToDisplay.map((card) => (
                     <TableRow key={card.doc_id}>
-                      <TableCell className="font-medium">{card.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+                            <CreditCard className="h-4 w-4" />
+                          </div>
+                          <span>{card.title}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <CreditCard className="h-4 w-4 text-muted-foreground" />
-                          <span>{card.card_holder_name}</span>
+                          <div className="relative max-w-[120px] truncate font-mono">
+                            {viewSensitiveData === card.doc_id ? formatCardNumber(card.number) : "•••• •••• •••• ••••"}
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => toggleDataVisibility(card.doc_id)}
+                                >
+                                  {viewSensitiveData === card.doc_id ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {viewSensitiveData === card.doc_id
+                                  ? translate("hide_card_number", "cards")
+                                  : translate("show_card_number", "cards")}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => copyToClipboard(card.doc_id, "number", card.number)}
+                                >
+                                  {copiedField?.id === card.doc_id && copiedField?.field === "number" ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {copiedField?.id === card.doc_id && copiedField?.field === "number"
+                                  ? translate("copied", "cards")
+                                  : translate("copy_card_number", "cards")}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="relative max-w-[120px] truncate">
+                            {card.card_holder_name}
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => copyToClipboard(card.doc_id, "card_holder", card.card_holder_name)}
+                                >
+                                  {copiedField?.id === card.doc_id && copiedField?.field === "card_holder" ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {copiedField?.id === card.doc_id && copiedField?.field === "card_holder"
+                                  ? translate("copied", "cards")
+                                  : translate("copy_card_holder", "cards")}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </TableCell>
                       <TableCell>{formatExpiryDate(card.expiry_month, card.expiry_year)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="relative max-w-[120px] truncate font-mono">
+                            {viewSensitiveData === card.doc_id ? card.cvv : "•••"}
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => copyToClipboard(card.doc_id, "cvv", card.cvv)}
+                                >
+                                  {copiedField?.id === card.doc_id && copiedField?.field === "cvv" ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {copiedField?.id === card.doc_id && copiedField?.field === "cvv"
+                                  ? translate("copied", "cards")
+                                  : translate("copy_cvv", "cards")}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {card.tags?.map((tag) => (
@@ -282,8 +398,8 @@ export function CardsContent() {
               ) : (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      <div className="flex flex-col items-center justify-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center w-full mx-auto">
                         <p className="text-muted-foreground">
                           {searchQuery
                             ? translate("no_matching_cards", "cards", { default: "No matching cards found" })
