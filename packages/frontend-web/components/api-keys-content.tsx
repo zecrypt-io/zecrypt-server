@@ -360,13 +360,13 @@ export function ApiKeysContent() {
       </div>
 
       {/* API Keys Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_api_keys", "api_keys")}</p>
           </div>
         ) : (
-          <div className="rounded-md border">
+          <div className="rounded-md border border-border/30">
             <Table>
               <TableHeader>
                 <TableRow>

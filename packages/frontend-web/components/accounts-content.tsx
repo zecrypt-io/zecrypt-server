@@ -261,7 +261,7 @@ export function AccountsContent() {
       </div>
 
       {/* Accounts Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>

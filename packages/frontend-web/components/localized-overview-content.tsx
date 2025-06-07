@@ -61,6 +61,7 @@ interface Activity {
   action: string;
   created_at: string;
   updated_at: string;
+  title?: string;
 }
 
 interface Account {
@@ -539,7 +540,18 @@ export function LocalizedOverviewContent() {
                                   {actionText}
                                 </span>
                                 {" "}
-                                <span className="text-muted-foreground">a</span>
+                                {activity.title ? (
+                                  <>
+                                    <span className="text-foreground font-medium">
+                                      {activity.title}
+                                    </span>
+                                    {" "}
+                                    <span className="text-muted-foreground">in</span>
+                                    {" "}
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">a</span>
+                                )}
                                 {" "}
                                 <span className="text-foreground font-medium">
                                   {dataTypeName}
