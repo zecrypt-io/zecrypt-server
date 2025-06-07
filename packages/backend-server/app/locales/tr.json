@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kart başarıyla eklendi",
+        "update": "Kart detayları başarıyla güncellendi",
+        "delete": "Kart detayları başarıyla silindi",
+        "details": "Kart detayları başarıyla yüklendi",
+        "not_found": "Kart detayları bulunamadı",
+        "already_exists": "Aynı isimde kart detayları zaten mevcut",
+        "list": "Kartlar başarıyla yüklendi"
+    },
+    "api_key": {
+        "add": "API anahtarı başarıyla eklendi",
+        "update": "API anahtarı detayları başarıyla güncellendi",
+        "delete": "API anahtarı detayları başarıyla silindi",
+        "details": "API anahtarı detayları başarıyla yüklendi",
+        "not_found": "API anahtarı detayları bulunamadı",
+        "already_exists": "Aynı isimde API anahtarı detayları zaten mevcut",
+        "list": "API anahtarları başarıyla yüklendi"
+    },
+    "wallet_phrase": {
+        "add": "Cüzdan ifadesi başarıyla eklendi",
+        "update": "Cüzdan ifadesi detayları başarıyla güncellendi",
+        "delete": "Cüzdan ifadesi detayları başarıyla silindi",
+        "details": "Cüzdan ifadesi detayları başarıyla yüklendi",
+        "not_found": "Cüzdan ifadesi detayları bulunamadı",
+        "already_exists": "Aynı isimde cüzdan ifadesi detayları zaten mevcut",
+        "list": "Cüzdan ifadeleri başarıyla yüklendi"
+    },
+    "wifi": {
+        "add": "WiFi başarıyla eklendi",
+        "update": "WiFi detayları başarıyla güncellendi",
+        "delete": "WiFi detayları başarıyla silindi",
+        "details": "WiFi detayları başarıyla yüklendi",
+        "not_found": "WiFi detayları bulunamadı",
+        "already_exists": "Aynı isimde WiFi detayları zaten mevcut",
+        "list": "WiFi detayları başarıyla yüklendi"
+    },
+    "license": {
+        "add": "Lisans başarıyla eklendi",
+        "update": "Lisans detayları başarıyla güncellendi",
+        "delete": "Lisans detayları başarıyla silindi",
+        "details": "Lisans detayları başarıyla yüklendi",
+        "not_found": "Lisans detayları bulunamadı",
+        "already_exists": "Aynı isimde lisans detayları zaten mevcut",
+        "list": "Lisanslar başarıyla yüklendi"
+    },
+    "login": {
+        "add": "Hesap başarıyla eklendi",
+        "update": "Hesap detayları başarıyla güncellendi",
+        "delete": "Hesap detayları başarıyla silindi",
+        "details": "Hesap detayları başarıyla yüklendi",
+        "not_found": "Hesap detayları bulunamadı",
+        "already_exists": "Aynı isimde hesap detayları zaten mevcut",
+        "list": "Hesaplar başarıyla yüklendi"
+    },
+    "identity": {
+        "add": "Kimlik başarıyla eklendi",
+        "update": "Kimlik detayları başarıyla güncellendi",
+        "delete": "Kimlik detayları başarıyla silindi",
+        "details": "Kimlik detayları başarıyla yüklendi",
+        "not_found": "Kimlik detayları bulunamadı",
+        "already_exists": "Aynı isimde kimlik detayları zaten mevcut",
+        "list": "Kimlikler başarıyla yüklendi"
+    },
+    "email": {
+        "add": "E-posta başarıyla eklendi",
+        "update": "E-posta detayları başarıyla güncellendi",
+        "delete": "E-posta detayları başarıyla silindi",
+        "details": "E-posta detayları başarıyla yüklendi",
+        "not_found": "E-posta detayları bulunamadı",
+        "already_exists": "Aynı isimde e-posta detayları zaten mevcut",
+        "list": "E-postalar başarıyla yüklendi"
+    },
+    "ssh_key": {
+        "add": "SSH anahtarı başarıyla eklendi",
+        "update": "SSH anahtarı detayları başarıyla güncellendi",
+        "delete": "SSH anahtarı detayları başarıyla silindi",
+        "details": "SSH anahtarı detayları başarıyla yüklendi",
+        "not_found": "SSH anahtarı detayları bulunamadı",
+        "already_exists": "Aynı isimde SSH anahtarı detayları zaten mevcut",
+        "list": "SSH anahtarları başarıyla yüklendi"
+    },
+    "note": {
+        "add": "Not başarıyla eklendi",
+        "update": "Not detayları başarıyla güncellendi",
+        "delete": "Not detayları başarıyla silindi",
+        "details": "Not detayları başarıyla yüklendi",
+        "not_found": "Not detayları bulunamadı",
+        "already_exists": "Aynı isimde not detayları zaten mevcut",
+        "list": "Notlar başarıyla yüklendi"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Çalışma alanı detayları başarıyla yüklendi",
+        "tags": "Etiketler başarıyla yüklendi",
+        "initial_data": "İlk veriler başarıyla yüklendi"
+    },
+    "project":{
+        "details": "Proje detayları başarıyla yüklendi",
+        "list": "Projeler başarıyla yüklendi",
+        "already_exists": "Proje zaten mevcut",
+        "added": "Proje başarıyla eklendi",
+        "updated": "Proje başarıyla güncellendi",
+        "keys": "Proje anahtarları başarıyla yüklendi",
+        "deleted": "Proje başarıyla silindi",
+        "not_found": "Proje detayları bulunamadı",
+        "tags": "Etiketler başarıyla yüklendi"
+    },
+    "user": {
+        "favorite_tags_list": "Favori etiketler başarıyla alındı",
+        "favorite_tags_updated": "Favori etiketler başarıyla güncellendi",
+        "profile_details": "Profil detayları başarıyla yüklendi",
+        "login_history": "Giriş geçmişi başarıyla yüklendi",
+        "profile_updated": "Profil başarıyla güncellendi",
+        "no_changes_to_update": "Güncellenecek değişiklik yok",
+        "user_details_not_found": "Kullanıcı detayları bulunamadı"
+    },
+    "auth":{
+        "user_signed_up": "Kullanıcı başarıyla kaydedildi",
+        "user_logged_in": "Kullanıcı başarıyla giriş yaptı",
+        "invalid_code": "Geçersiz kod, lütfen tekrar deneyin",
+        "two_factor_auth_verified": "İki faktörlü kimlik doğrulama başarıyla doğrulandı",
+        "keys_fetched": "Anahtarlar başarıyla alındı",
+        "keys_already_exist": "Anahtarlar zaten mevcut",
+        "keys_updated": "Anahtarlar başarıyla güncellendi",
+        "user_details_not_found": "Kullanıcı detayları bulunamadı",
+        "user_logged_out": "Kullanıcı başarıyla çıkış yaptı",
+        "authentication_failed": "Kimlik doğrulama başarısız oldu, lütfen tekrar deneyin",
+        "invalid_credentials": "Geçersiz kimlik bilgileri, lütfen tekrar deneyin",
+        "invalid_totp_code": "Geçersiz TOTP kodu, lütfen tekrar deneyin",
+        "invalid_totp_secret": "Geçersiz TOTP anahtarı, lütfen tekrar deneyin",
+        "something_went_wrong": "Bir şeyler yanlış gitti, lütfen tekrar deneyin",
+        "invalid_header": "Geçersiz başlık, lütfen tekrar deneyin"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Denetim günlükleri başarıyla yüklendi",
+        "audit_log_actions": "Denetim günlüğü eylemleri başarıyla yüklendi"
+    },
+    "password_history":{
+        "list": "Şifre geçmişi başarıyla yüklendi",
+        "add": "Şifre geçmişi başarıyla eklendi"
+    },
+    "dashboard":{
+        "overview": "Gösterge tablosu genel görünümü başarıyla yüklendi",
+        "recent_activity": "Son etkinlik başarıyla yüklendi"
+    }
+} 

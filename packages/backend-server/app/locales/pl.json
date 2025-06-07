@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Karta została pomyślnie dodana",
+        "update": "Szczegóły karty zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły karty zostały pomyślnie usunięte",
+        "details": "Szczegóły karty zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów karty",
+        "already_exists": "Szczegóły karty o tej samej nazwie już istnieją",
+        "list": "Karty zostały pomyślnie załadowane"
+    },
+    "api_key": {
+        "add": "Klucz API został pomyślnie dodany",
+        "update": "Szczegóły klucza API zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły klucza API zostały pomyślnie usunięte",
+        "details": "Szczegóły klucza API zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów klucza API",
+        "already_exists": "Szczegóły klucza API o tej samej nazwie już istnieją",
+        "list": "Klucze API zostały pomyślnie załadowane"
+    },
+    "wallet_phrase": {
+        "add": "Fraza portfela została pomyślnie dodana",
+        "update": "Szczegóły frazy portfela zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły frazy portfela zostały pomyślnie usunięte",
+        "details": "Szczegóły frazy portfela zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów frazy portfela",
+        "already_exists": "Szczegóły frazy portfela o tej samej nazwie już istnieją",
+        "list": "Frazy portfela zostały pomyślnie załadowane"
+    },
+    "wifi": {
+        "add": "WiFi zostało pomyślnie dodane",
+        "update": "Szczegóły WiFi zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły WiFi zostały pomyślnie usunięte",
+        "details": "Szczegóły WiFi zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów WiFi",
+        "already_exists": "Szczegóły WiFi o tej samej nazwie już istnieją",
+        "list": "Szczegóły WiFi zostały pomyślnie załadowane"
+    },
+    "license": {
+        "add": "Licencja została pomyślnie dodana",
+        "update": "Szczegóły licencji zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły licencji zostały pomyślnie usunięte",
+        "details": "Szczegóły licencji zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów licencji",
+        "already_exists": "Szczegóły licencji o tej samej nazwie już istnieją",
+        "list": "Licencje zostały pomyślnie załadowane"
+    },
+    "login": {
+        "add": "Konto zostało pomyślnie dodane",
+        "update": "Szczegóły konta zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły konta zostały pomyślnie usunięte",
+        "details": "Szczegóły konta zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów konta",
+        "already_exists": "Szczegóły konta o tej samej nazwie już istnieją",
+        "list": "Konta zostały pomyślnie załadowane"
+    },
+    "identity": {
+        "add": "Tożsamość została pomyślnie dodana",
+        "update": "Szczegóły tożsamości zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły tożsamości zostały pomyślnie usunięte",
+        "details": "Szczegóły tożsamości zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów tożsamości",
+        "already_exists": "Szczegóły tożsamości o tej samej nazwie już istnieją",
+        "list": "Tożsamości zostały pomyślnie załadowane"
+    },
+    "email": {
+        "add": "E-mail został pomyślnie dodany",
+        "update": "Szczegóły e-maila zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły e-maila zostały pomyślnie usunięte",
+        "details": "Szczegóły e-maila zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów e-maila",
+        "already_exists": "Szczegóły e-maila o tej samej nazwie już istnieją",
+        "list": "E-maile zostały pomyślnie załadowane"
+    },
+    "ssh_key": {
+        "add": "Klucz SSH został pomyślnie dodany",
+        "update": "Szczegóły klucza SSH zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły klucza SSH zostały pomyślnie usunięte",
+        "details": "Szczegóły klucza SSH zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów klucza SSH",
+        "already_exists": "Szczegóły klucza SSH o tej samej nazwie już istnieją",
+        "list": "Klucze SSH zostały pomyślnie załadowane"
+    },
+    "note": {
+        "add": "Notatka została pomyślnie dodana",
+        "update": "Szczegóły notatki zostały pomyślnie zaktualizowane",
+        "delete": "Szczegóły notatki zostały pomyślnie usunięte",
+        "details": "Szczegóły notatki zostały pomyślnie załadowane",
+        "not_found": "Nie znaleziono szczegółów notatki",
+        "already_exists": "Szczegóły notatki o tej samej nazwie już istnieją",
+        "list": "Notatki zostały pomyślnie załadowane"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Szczegóły przestrzeni roboczej zostały pomyślnie załadowane",
+        "tags": "Tagi zostały pomyślnie załadowane",
+        "initial_data": "Dane początkowe zostały pomyślnie załadowane"
+    },
+    "project":{
+        "details": "Szczegóły projektu zostały pomyślnie załadowane",
+        "list": "Projekty zostały pomyślnie załadowane",
+        "already_exists": "Projekt już istnieje",
+        "added": "Projekt został pomyślnie dodany",
+        "updated": "Projekt został pomyślnie zaktualizowany",
+        "keys": "Klucze projektu zostały pomyślnie załadowane",
+        "deleted": "Projekt został pomyślnie usunięty",
+        "not_found": "Nie znaleziono szczegółów projektu",
+        "tags": "Tagi zostały pomyślnie załadowane"
+    },
+    "user": {
+        "favorite_tags_list": "Ulubione tagi zostały pomyślnie pobrane",
+        "favorite_tags_updated": "Ulubione tagi zostały pomyślnie zaktualizowane",
+        "profile_details": "Szczegóły profilu zostały pomyślnie załadowane",
+        "login_history": "Historia logowania została pomyślnie załadowana",
+        "profile_updated": "Profil został pomyślnie zaktualizowany",
+        "no_changes_to_update": "Brak zmian do zaktualizowania",
+        "user_details_not_found": "Nie znaleziono szczegółów użytkownika"
+    },
+    "auth":{
+        "user_signed_up": "Użytkownik został pomyślnie zarejestrowany",
+        "user_logged_in": "Użytkownik został pomyślnie zalogowany",
+        "invalid_code": "Nieprawidłowy kod, spróbuj ponownie",
+        "two_factor_auth_verified": "Uwierzytelnianie dwuskładnikowe zostało pomyślnie zweryfikowane",
+        "keys_fetched": "Klucze zostały pomyślnie pobrane",
+        "keys_already_exist": "Klucze już istnieją",
+        "keys_updated": "Klucze zostały pomyślnie zaktualizowane",
+        "user_details_not_found": "Nie znaleziono szczegółów użytkownika",
+        "user_logged_out": "Użytkownik został pomyślnie wylogowany",
+        "authentication_failed": "Uwierzytelnianie nie powiodło się, spróbuj ponownie",
+        "invalid_credentials": "Nieprawidłowe dane logowania, spróbuj ponownie",
+        "invalid_totp_code": "Nieprawidłowy kod TOTP, spróbuj ponownie",
+        "invalid_totp_secret": "Nieprawidłowy sekret TOTP, spróbuj ponownie",
+        "something_went_wrong": "Coś poszło nie tak, spróbuj ponownie",
+        "invalid_header": "Nieprawidłowy nagłówek, spróbuj ponownie"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Dzienniki audytu zostały pomyślnie załadowane",
+        "audit_log_actions": "Akcje dziennika audytu zostały pomyślnie załadowane"
+    },
+    "password_history":{
+        "list": "Historia haseł została pomyślnie załadowana",
+        "add": "Historia haseł została pomyślnie dodana"
+    },
+    "dashboard":{
+        "overview": "Przegląd panelu został pomyślnie załadowany",
+        "recent_activity": "Ostatnia aktywność została pomyślnie załadowana"
+    }
+} 

@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kort har lagts till",
+        "update": "Kortdetaljer har uppdaterats",
+        "delete": "Kortdetaljer har tagits bort",
+        "details": "Kortdetaljer har hämtats",
+        "not_found": "Kortdetaljer hittades inte",
+        "already_exists": "Kortdetaljer med samma namn finns redan",
+        "list": "Kort har hämtats"
+    },
+    "api_key": {
+        "add": "API-nyckel har lagts till",
+        "update": "API-nyckeldetaljer har uppdaterats",
+        "delete": "API-nyckeldetaljer har tagits bort",
+        "details": "API-nyckeldetaljer har hämtats",
+        "not_found": "API-nyckeldetaljer hittades inte",
+        "already_exists": "API-nyckeldetaljer med samma namn finns redan",
+        "list": "API-nycklar har hämtats"
+    },
+    "wallet_phrase": {
+        "add": "Plånboksfras har lagts till",
+        "update": "Plånboksfrasdetaljer har uppdaterats",
+        "delete": "Plånboksfrasdetaljer har tagits bort",
+        "details": "Plånboksfrasdetaljer har hämtats",
+        "not_found": "Plånboksfrasdetaljer hittades inte",
+        "already_exists": "Plånboksfrasdetaljer med samma namn finns redan",
+        "list": "Plånboksfraser har hämtats"
+    },
+    "wifi": {
+        "add": "WiFi har lagts till",
+        "update": "WiFi-detaljer har uppdaterats",
+        "delete": "WiFi-detaljer har tagits bort",
+        "details": "WiFi-detaljer har hämtats",
+        "not_found": "WiFi-detaljer hittades inte",
+        "already_exists": "WiFi-detaljer med samma namn finns redan",
+        "list": "WiFi-detaljer har hämtats"
+    },
+    "license": {
+        "add": "Licens har lagts till",
+        "update": "Licensdetaljer har uppdaterats",
+        "delete": "Licensdetaljer har tagits bort",
+        "details": "Licensdetaljer har hämtats",
+        "not_found": "Licensdetaljer hittades inte",
+        "already_exists": "Licensdetaljer med samma namn finns redan",
+        "list": "Licenser har hämtats"
+    },
+    "login": {
+        "add": "Konto har lagts till",
+        "update": "Kontodetaljer har uppdaterats",
+        "delete": "Kontodetaljer har tagits bort",
+        "details": "Kontodetaljer har hämtats",
+        "not_found": "Kontodetaljer hittades inte",
+        "already_exists": "Kontodetaljer med samma namn finns redan",
+        "list": "Konton har hämtats"
+    },
+    "identity": {
+        "add": "Identitet har lagts till",
+        "update": "Identitetsdetaljer har uppdaterats",
+        "delete": "Identitetsdetaljer har tagits bort",
+        "details": "Identitetsdetaljer har hämtats",
+        "not_found": "Identitetsdetaljer hittades inte",
+        "already_exists": "Identitetsdetaljer med samma namn finns redan",
+        "list": "Identiteter har hämtats"
+    },
+    "email": {
+        "add": "E-post har lagts till",
+        "update": "E-postdetaljer har uppdaterats",
+        "delete": "E-postdetaljer har tagits bort",
+        "details": "E-postdetaljer har hämtats",
+        "not_found": "E-postdetaljer hittades inte",
+        "already_exists": "E-postdetaljer med samma namn finns redan",
+        "list": "E-postmeddelanden har hämtats"
+    },
+    "ssh_key": {
+        "add": "SSH-nyckel har lagts till",
+        "update": "SSH-nyckeldetaljer har uppdaterats",
+        "delete": "SSH-nyckeldetaljer har tagits bort",
+        "details": "SSH-nyckeldetaljer har hämtats",
+        "not_found": "SSH-nyckeldetaljer hittades inte",
+        "already_exists": "SSH-nyckeldetaljer med samma namn finns redan",
+        "list": "SSH-nycklar har hämtats"
+    },
+    "note": {
+        "add": "Anteckning har lagts till",
+        "update": "Anteckningsdetaljer har uppdaterats",
+        "delete": "Anteckningsdetaljer har tagits bort",
+        "details": "Anteckningsdetaljer har hämtats",
+        "not_found": "Anteckningsdetaljer hittades inte",
+        "already_exists": "Anteckningsdetaljer med samma namn finns redan",
+        "list": "Anteckningar har hämtats"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Arbetsytdetaljer har hämtats",
+        "tags": "Taggar har hämtats",
+        "initial_data": "Initiala data har hämtats"
+    },
+    "project":{
+        "details": "Projektdetaljer har hämtats",
+        "list": "Projekt har hämtats",
+        "already_exists": "Projektet finns redan",
+        "added": "Projekt har lagts till",
+        "updated": "Projekt har uppdaterats",
+        "keys": "Projektets nycklar har hämtats",
+        "deleted": "Projekt har tagits bort",
+        "not_found": "Projektdetaljer hittades inte",
+        "tags": "Taggar har hämtats"
+    },
+    "user": {
+        "favorite_tags_list": "Favorittaggar har hämtats",
+        "favorite_tags_updated": "Favorittaggar har uppdaterats",
+        "profile_details": "Profildetaljer har hämtats",
+        "login_history": "Inloggningshistorik har hämtats",
+        "profile_updated": "Profil har uppdaterats",
+        "no_changes_to_update": "Inga ändringar att uppdatera",
+        "user_details_not_found": "Användardetaljer hittades inte"
+    },
+    "auth":{
+        "user_signed_up": "Användare har registrerats",
+        "user_logged_in": "Användare har loggat in",
+        "invalid_code": "Ogiltig kod, försök igen",
+        "two_factor_auth_verified": "Tvåfaktorsautentisering har verifierats",
+        "keys_fetched": "Nycklar har hämtats",
+        "keys_already_exist": "Nycklar finns redan",
+        "keys_updated": "Nycklar har uppdaterats",
+        "user_details_not_found": "Användardetaljer hittades inte",
+        "user_logged_out": "Användare har loggat ut",
+        "authentication_failed": "Autentisering misslyckades, försök igen",
+        "invalid_credentials": "Ogiltiga inloggningsuppgifter, försök igen",
+        "invalid_totp_code": "Ogiltig TOTP-kod, försök igen",
+        "invalid_totp_secret": "Ogiltig TOTP-hemlighet, försök igen",
+        "something_went_wrong": "Något gick fel, försök igen",
+        "invalid_header": "Ogiltig rubrik, försök igen"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Revisionsloggar har hämtats",
+        "audit_log_actions": "Revisionsloggåtgärder har hämtats"
+    },
+    "password_history":{
+        "list": "Lösenordshistorik har hämtats",
+        "add": "Lösenordshistorik har lagts till"
+    },
+    "dashboard":{
+        "overview": "Översikt över instrumentpanelen har hämtats",
+        "recent_activity": "Senaste aktivitet har hämtats"
+    }
+} 

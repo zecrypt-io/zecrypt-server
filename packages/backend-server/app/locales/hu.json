@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kártya sikeresen hozzáadva",
+        "update": "A kártya adatai sikeresen frissítve",
+        "delete": "A kártya adatai sikeresen törölve",
+        "details": "A kártya adatai sikeresen betöltve",
+        "not_found": "A kártya adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű kártyaadat",
+        "list": "Kártyák sikeresen betöltve"
+    },
+    "api_key": {
+        "add": "API kulcs sikeresen hozzáadva",
+        "update": "Az API kulcs adatai sikeresen frissítve",
+        "delete": "Az API kulcs adatai sikeresen törölve",
+        "details": "Az API kulcs adatai sikeresen betöltve",
+        "not_found": "Az API kulcs adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű API kulcs adat",
+        "list": "API kulcsok sikeresen betöltve"
+    },
+    "wallet_phrase": {
+        "add": "Tárca kifejezés sikeresen hozzáadva",
+        "update": "A tárca kifejezés adatai sikeresen frissítve",
+        "delete": "A tárca kifejezés adatai sikeresen törölve",
+        "details": "A tárca kifejezés adatai sikeresen betöltve",
+        "not_found": "A tárca kifejezés adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű tárca kifejezés adat",
+        "list": "Tárca kifejezések sikeresen betöltve"
+    },
+    "wifi": {
+        "add": "WiFi sikeresen hozzáadva",
+        "update": "A WiFi adatai sikeresen frissítve",
+        "delete": "A WiFi adatai sikeresen törölve",
+        "details": "A WiFi adatai sikeresen betöltve",
+        "not_found": "A WiFi adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű WiFi adat",
+        "list": "WiFi adatok sikeresen betöltve"
+    },
+    "license": {
+        "add": "Licenc sikeresen hozzáadva",
+        "update": "A licenc adatai sikeresen frissítve",
+        "delete": "A licenc adatai sikeresen törölve",
+        "details": "A licenc adatai sikeresen betöltve",
+        "not_found": "A licenc adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű licenc adat",
+        "list": "Licencek sikeresen betöltve"
+    },
+    "login": {
+        "add": "Fiók sikeresen hozzáadva",
+        "update": "A fiók adatai sikeresen frissítve",
+        "delete": "A fiók adatai sikeresen törölve",
+        "details": "A fiók adatai sikeresen betöltve",
+        "not_found": "A fiók adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű fiók adat",
+        "list": "Fiókok sikeresen betöltve"
+    },
+    "identity": {
+        "add": "Azonosító sikeresen hozzáadva",
+        "update": "Az azonosító adatai sikeresen frissítve",
+        "delete": "Az azonosító adatai sikeresen törölve",
+        "details": "Az azonosító adatai sikeresen betöltve",
+        "not_found": "Az azonosító adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű azonosító adat",
+        "list": "Azonosítók sikeresen betöltve"
+    },
+    "email": {
+        "add": "E-mail sikeresen hozzáadva",
+        "update": "Az e-mail adatai sikeresen frissítve",
+        "delete": "Az e-mail adatai sikeresen törölve",
+        "details": "Az e-mail adatai sikeresen betöltve",
+        "not_found": "Az e-mail adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű e-mail adat",
+        "list": "E-mailek sikeresen betöltve"
+    },
+    "ssh_key": {
+        "add": "SSH kulcs sikeresen hozzáadva",
+        "update": "Az SSH kulcs adatai sikeresen frissítve",
+        "delete": "Az SSH kulcs adatai sikeresen törölve",
+        "details": "Az SSH kulcs adatai sikeresen betöltve",
+        "not_found": "Az SSH kulcs adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű SSH kulcs adat",
+        "list": "SSH kulcsok sikeresen betöltve"
+    },
+    "note": {
+        "add": "Jegyzet sikeresen hozzáadva",
+        "update": "A jegyzet adatai sikeresen frissítve",
+        "delete": "A jegyzet adatai sikeresen törölve",
+        "details": "A jegyzet adatai sikeresen betöltve",
+        "not_found": "A jegyzet adatai nem találhatók",
+        "already_exists": "Már létezik ilyen nevű jegyzet adat",
+        "list": "Jegyzetek sikeresen betöltve"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "A munkaterület adatai sikeresen betöltve",
+        "tags": "Címkék sikeresen betöltve",
+        "initial_data": "Kezdeti adatok sikeresen betöltve"
+    },
+    "project":{
+        "details": "A projekt adatai sikeresen betöltve",
+        "list": "Projektek sikeresen betöltve",
+        "already_exists": "A projekt már létezik",
+        "added": "Projekt sikeresen hozzáadva",
+        "updated": "Projekt sikeresen frissítve",
+        "keys": "A projekt kulcsai sikeresen betöltve",
+        "deleted": "Projekt sikeresen törölve",
+        "not_found": "A projekt adatai nem találhatók",
+        "tags": "Címkék sikeresen betöltve"
+    },
+    "user": {
+        "favorite_tags_list": "Kedvenc címkék sikeresen lekérve",
+        "favorite_tags_updated": "Kedvenc címkék sikeresen frissítve",
+        "profile_details": "Profil adatok sikeresen betöltve",
+        "login_history": "Bejelentkezési előzmények sikeresen betöltve",
+        "profile_updated": "Profil sikeresen frissítve",
+        "no_changes_to_update": "Nincs frissítendő változás",
+        "user_details_not_found": "Felhasználói adatok nem találhatók"
+    },
+    "auth":{
+        "user_signed_up": "Felhasználó sikeresen regisztrált",
+        "user_logged_in": "Felhasználó sikeresen bejelentkezett",
+        "invalid_code": "Érvénytelen kód, próbáld újra",
+        "two_factor_auth_verified": "Kétfaktoros hitelesítés sikeresen ellenőrizve",
+        "keys_fetched": "Kulcsok sikeresen lekérve",
+        "keys_already_exist": "A kulcsok már léteznek",
+        "keys_updated": "Kulcsok sikeresen frissítve",
+        "user_details_not_found": "Felhasználói adatok nem találhatók",
+        "user_logged_out": "Felhasználó sikeresen kijelentkezett",
+        "authentication_failed": "Hitelesítés sikertelen, próbáld újra",
+        "invalid_credentials": "Érvénytelen hitelesítő adatok, próbáld újra",
+        "invalid_totp_code": "Érvénytelen TOTP kód, próbáld újra",
+        "invalid_totp_secret": "Érvénytelen TOTP titok, próbáld újra",
+        "something_went_wrong": "Valami hiba történt, próbáld újra",
+        "invalid_header": "Érvénytelen fejléc, próbáld újra"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Audit naplók sikeresen betöltve",
+        "audit_log_actions": "Audit napló műveletek sikeresen betöltve"
+    },
+    "password_history":{
+        "list": "Jelszóelőzmények sikeresen betöltve",
+        "add": "Jelszóelőzmények sikeresen hozzáadva"
+    },
+    "dashboard":{
+        "overview": "Vezérlőpult áttekintése sikeresen betöltve",
+        "recent_activity": "Legutóbbi tevékenységek sikeresen betöltve"
+    }
+} 

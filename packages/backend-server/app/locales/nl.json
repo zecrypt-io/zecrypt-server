@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kaart succesvol toegevoegd",
+        "update": "Kaartgegevens succesvol bijgewerkt",
+        "delete": "Kaartgegevens succesvol verwijderd",
+        "details": "Kaartgegevens succesvol geladen",
+        "not_found": "Kaartgegevens niet gevonden",
+        "already_exists": "Kaartgegevens met dezelfde naam bestaan al",
+        "list": "Kaarten succesvol geladen"
+    },
+    "api_key": {
+        "add": "API-sleutel succesvol toegevoegd",
+        "update": "API-sleutelgegevens succesvol bijgewerkt",
+        "delete": "API-sleutelgegevens succesvol verwijderd",
+        "details": "API-sleutelgegevens succesvol geladen",
+        "not_found": "API-sleutelgegevens niet gevonden",
+        "already_exists": "API-sleutelgegevens met dezelfde naam bestaan al",
+        "list": "API-sleutels succesvol geladen"
+    },
+    "wallet_phrase": {
+        "add": "Walletzin succesvol toegevoegd",
+        "update": "Walletzingegevens succesvol bijgewerkt",
+        "delete": "Walletzingegevens succesvol verwijderd",
+        "details": "Walletzingegevens succesvol geladen",
+        "not_found": "Walletzingegevens niet gevonden",
+        "already_exists": "Walletzingegevens met dezelfde naam bestaan al",
+        "list": "Walletzinnen succesvol geladen"
+    },
+    "wifi": {
+        "add": "WiFi succesvol toegevoegd",
+        "update": "WiFi-gegevens succesvol bijgewerkt",
+        "delete": "WiFi-gegevens succesvol verwijderd",
+        "details": "WiFi-gegevens succesvol geladen",
+        "not_found": "WiFi-gegevens niet gevonden",
+        "already_exists": "WiFi-gegevens met dezelfde naam bestaan al",
+        "list": "WiFi-gegevens succesvol geladen"
+    },
+    "license": {
+        "add": "Licentie succesvol toegevoegd",
+        "update": "Licentiegegevens succesvol bijgewerkt",
+        "delete": "Licentiegegevens succesvol verwijderd",
+        "details": "Licentiegegevens succesvol geladen",
+        "not_found": "Licentiegegevens niet gevonden",
+        "already_exists": "Licentiegegevens met dezelfde naam bestaan al",
+        "list": "Licenties succesvol geladen"
+    },
+    "login": {
+        "add": "Account succesvol toegevoegd",
+        "update": "Accountgegevens succesvol bijgewerkt",
+        "delete": "Accountgegevens succesvol verwijderd",
+        "details": "Accountgegevens succesvol geladen",
+        "not_found": "Accountgegevens niet gevonden",
+        "already_exists": "Accountgegevens met dezelfde naam bestaan al",
+        "list": "Accounts succesvol geladen"
+    },
+    "identity": {
+        "add": "Identiteit succesvol toegevoegd",
+        "update": "Identiteitsgegevens succesvol bijgewerkt",
+        "delete": "Identiteitsgegevens succesvol verwijderd",
+        "details": "Identiteitsgegevens succesvol geladen",
+        "not_found": "Identiteitsgegevens niet gevonden",
+        "already_exists": "Identiteitsgegevens met dezelfde naam bestaan al",
+        "list": "Identiteiten succesvol geladen"
+    },
+    "email": {
+        "add": "E-mail succesvol toegevoegd",
+        "update": "E-mailgegevens succesvol bijgewerkt",
+        "delete": "E-mailgegevens succesvol verwijderd",
+        "details": "E-mailgegevens succesvol geladen",
+        "not_found": "E-mailgegevens niet gevonden",
+        "already_exists": "E-mailgegevens met dezelfde naam bestaan al",
+        "list": "E-mails succesvol geladen"
+    },
+    "ssh_key": {
+        "add": "SSH-sleutel succesvol toegevoegd",
+        "update": "SSH-sleutelgegevens succesvol bijgewerkt",
+        "delete": "SSH-sleutelgegevens succesvol verwijderd",
+        "details": "SSH-sleutelgegevens succesvol geladen",
+        "not_found": "SSH-sleutelgegevens niet gevonden",
+        "already_exists": "SSH-sleutelgegevens met dezelfde naam bestaan al",
+        "list": "SSH-sleutels succesvol geladen"
+    },
+    "note": {
+        "add": "Notitie succesvol toegevoegd",
+        "update": "Notitiegegevens succesvol bijgewerkt",
+        "delete": "Notitiegegevens succesvol verwijderd",
+        "details": "Notitiegegevens succesvol geladen",
+        "not_found": "Notitiegegevens niet gevonden",
+        "already_exists": "Notitiegegevens met dezelfde naam bestaan al",
+        "list": "Notities succesvol geladen"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Werkruimtegegevens succesvol geladen",
+        "tags": "Tags succesvol geladen",
+        "initial_data": "Initiële gegevens succesvol geladen"
+    },
+    "project":{
+        "details": "Projectgegevens succesvol geladen",
+        "list": "Projecten succesvol geladen",
+        "already_exists": "Project bestaat al",
+        "added": "Project succesvol toegevoegd",
+        "updated": "Project succesvol bijgewerkt",
+        "keys": "Projectsleutels succesvol geladen",
+        "deleted": "Project succesvol verwijderd",
+        "not_found": "Projectgegevens niet gevonden",
+        "tags": "Tags succesvol geladen"
+    },
+    "user": {
+        "favorite_tags_list": "Favoriete tags succesvol opgehaald",
+        "favorite_tags_updated": "Favoriete tags succesvol bijgewerkt",
+        "profile_details": "Profielgegevens succesvol geladen",
+        "login_history": "Inloggeschiedenis succesvol geladen",
+        "profile_updated": "Profiel succesvol bijgewerkt",
+        "no_changes_to_update": "Geen wijzigingen om bij te werken",
+        "user_details_not_found": "Gebruikersgegevens niet gevonden"
+    },
+    "auth":{
+        "user_signed_up": "Gebruiker succesvol geregistreerd",
+        "user_logged_in": "Gebruiker succesvol ingelogd",
+        "invalid_code": "Ongeldige code, probeer het opnieuw",
+        "two_factor_auth_verified": "Twee-factor-authenticatie succesvol geverifieerd",
+        "keys_fetched": "Sleutels succesvol opgehaald",
+        "keys_already_exist": "Sleutels bestaan al",
+        "keys_updated": "Sleutels succesvol bijgewerkt",
+        "user_details_not_found": "Gebruikersgegevens niet gevonden",
+        "user_logged_out": "Gebruiker succesvol uitgelogd",
+        "authentication_failed": "Authenticatie mislukt, probeer het opnieuw",
+        "invalid_credentials": "Ongeldige inloggegevens, probeer het opnieuw",
+        "invalid_totp_code": "Ongeldige TOTP-code, probeer het opnieuw",
+        "invalid_totp_secret": "Ongeldig TOTP-geheim, probeer het opnieuw",
+        "something_went_wrong": "Er is iets misgegaan, probeer het opnieuw",
+        "invalid_header": "Ongeldige header, probeer het opnieuw"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Auditlogs succesvol geladen",
+        "audit_log_actions": "Auditlogacties succesvol geladen"
+    },
+    "password_history":{
+        "list": "Wachtwoordgeschiedenis succesvol geladen",
+        "add": "Wachtwoordgeschiedenis succesvol toegevoegd"
+    },
+    "dashboard":{
+        "overview": "Dashboardoverzicht succesvol geladen",
+        "recent_activity": "Recente activiteit succesvol geladen"
+    }
+} 

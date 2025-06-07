@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Carta aggiunta con successo",
+        "update": "Dettagli della carta aggiornati con successo",
+        "delete": "Dettagli della carta eliminati con successo",
+        "details": "Dettagli della carta caricati con successo",
+        "not_found": "Dettagli della carta non trovati",
+        "already_exists": "Esistono già dettagli della carta con lo stesso nome",
+        "list": "Carte caricate con successo"
+    },
+    "api_key": {
+        "add": "Chiave API aggiunta con successo",
+        "update": "Dettagli della chiave API aggiornati con successo",
+        "delete": "Dettagli della chiave API eliminati con successo",
+        "details": "Dettagli della chiave API caricati con successo",
+        "not_found": "Dettagli della chiave API non trovati",
+        "already_exists": "Esistono già dettagli della chiave API con lo stesso nome",
+        "list": "Chiavi API caricate con successo"
+    },
+    "wallet_phrase": {
+        "add": "Frase del portafoglio aggiunta con successo",
+        "update": "Dettagli della frase del portafoglio aggiornati con successo",
+        "delete": "Dettagli della frase del portafoglio eliminati con successo",
+        "details": "Dettagli della frase del portafoglio caricati con successo",
+        "not_found": "Dettagli della frase del portafoglio non trovati",
+        "already_exists": "Esistono già dettagli della frase del portafoglio con lo stesso nome",
+        "list": "Frasi del portafoglio caricate con successo"
+    },
+    "wifi": {
+        "add": "WiFi aggiunto con successo",
+        "update": "Dettagli WiFi aggiornati con successo",
+        "delete": "Dettagli WiFi eliminati con successo",
+        "details": "Dettagli WiFi caricati con successo",
+        "not_found": "Dettagli WiFi non trovati",
+        "already_exists": "Esistono già dettagli WiFi con lo stesso nome",
+        "list": "Dettagli WiFi caricati con successo"
+    },
+    "license": {
+        "add": "Licenza aggiunta con successo",
+        "update": "Dettagli della licenza aggiornati con successo",
+        "delete": "Dettagli della licenza eliminati con successo",
+        "details": "Dettagli della licenza caricati con successo",
+        "not_found": "Dettagli della licenza non trovati",
+        "already_exists": "Esistono già dettagli della licenza con lo stesso nome",
+        "list": "Licenze caricate con successo"
+    },
+    "login": {
+        "add": "Account aggiunto con successo",
+        "update": "Dettagli dell'account aggiornati con successo",
+        "delete": "Dettagli dell'account eliminati con successo",
+        "details": "Dettagli dell'account caricati con successo",
+        "not_found": "Dettagli dell'account non trovati",
+        "already_exists": "Esistono già dettagli dell'account con lo stesso nome",
+        "list": "Account caricati con successo"
+    },
+    "identity": {
+        "add": "Identità aggiunta con successo",
+        "update": "Dettagli dell'identità aggiornati con successo",
+        "delete": "Dettagli dell'identità eliminati con successo",
+        "details": "Dettagli dell'identità caricati con successo",
+        "not_found": "Dettagli dell'identità non trovati",
+        "already_exists": "Esistono già dettagli dell'identità con lo stesso nome",
+        "list": "Identità caricate con successo"
+    },
+    "email": {
+        "add": "E-mail aggiunta con successo",
+        "update": "Dettagli dell'e-mail aggiornati con successo",
+        "delete": "Dettagli dell'e-mail eliminati con successo",
+        "details": "Dettagli dell'e-mail caricati con successo",
+        "not_found": "Dettagli dell'e-mail non trovati",
+        "already_exists": "Esistono già dettagli dell'e-mail con lo stesso nome",
+        "list": "E-mail caricate con successo"
+    },
+    "ssh_key": {
+        "add": "Chiave SSH aggiunta con successo",
+        "update": "Dettagli della chiave SSH aggiornati con successo",
+        "delete": "Dettagli della chiave SSH eliminati con successo",
+        "details": "Dettagli della chiave SSH caricati con successo",
+        "not_found": "Dettagli della chiave SSH non trovati",
+        "already_exists": "Esistono già dettagli della chiave SSH con lo stesso nome",
+        "list": "Chiavi SSH caricate con successo"
+    },
+    "note": {
+        "add": "Nota aggiunta con successo",
+        "update": "Dettagli della nota aggiornati con successo",
+        "delete": "Dettagli della nota eliminati con successo",
+        "details": "Dettagli della nota caricati con successo",
+        "not_found": "Dettagli della nota non trovati",
+        "already_exists": "Esistono già dettagli della nota con lo stesso nome",
+        "list": "Note caricate con successo"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Dettagli dello spazio di lavoro caricati con successo",
+        "tags": "Tag caricati con successo",
+        "initial_data": "Dati iniziali caricati con successo"
+    },
+    "project":{
+        "details": "Dettagli del progetto caricati con successo",
+        "list": "Progetti caricati con successo",
+        "already_exists": "Il progetto esiste già",
+        "added": "Progetto aggiunto con successo",
+        "updated": "Progetto aggiornato con successo",
+        "keys": "Chiavi del progetto caricate con successo",
+        "deleted": "Progetto eliminato con successo",
+        "not_found": "Dettagli del progetto non trovati",
+        "tags": "Tag caricati con successo"
+    },
+    "user": {
+        "favorite_tags_list": "Tag preferiti recuperati con successo",
+        "favorite_tags_updated": "Tag preferiti aggiornati con successo",
+        "profile_details": "Dettagli del profilo caricati con successo",
+        "login_history": "Cronologia accessi caricata con successo",
+        "profile_updated": "Profilo aggiornato con successo",
+        "no_changes_to_update": "Nessuna modifica da aggiornare",
+        "user_details_not_found": "Dettagli utente non trovati"
+    },
+    "auth":{
+        "user_signed_up": "Utente registrato con successo",
+        "user_logged_in": "Utente loggato con successo",
+        "invalid_code": "Codice non valido, riprova",
+        "two_factor_auth_verified": "Autenticazione a due fattori verificata con successo",
+        "keys_fetched": "Chiavi recuperate con successo",
+        "keys_already_exist": "Le chiavi esistono già",
+        "keys_updated": "Chiavi aggiornate con successo",
+        "user_details_not_found": "Dettagli utente non trovati",
+        "user_logged_out": "Utente disconnesso con successo",
+        "authentication_failed": "Autenticazione fallita, riprova",
+        "invalid_credentials": "Credenziali non valide, riprova",
+        "invalid_totp_code": "Codice TOTP non valido, riprova",
+        "invalid_totp_secret": "Segreto TOTP non valido, riprova",
+        "something_went_wrong": "Qualcosa è andato storto, riprova",
+        "invalid_header": "Header non valido, riprova"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Log di audit caricati con successo",
+        "audit_log_actions": "Azioni del log di audit caricate con successo"
+    },
+    "password_history":{
+        "list": "Cronologia password caricata con successo",
+        "add": "Cronologia password aggiunta con successo"
+    },
+    "dashboard":{
+        "overview": "Panoramica della dashboard caricata con successo",
+        "recent_activity": "Attività recente caricata con successo"
+    }
+} 

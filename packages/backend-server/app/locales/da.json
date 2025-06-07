@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Kort tilføjet med succes",
+        "update": "Kortoplysninger opdateret med succes",
+        "delete": "Kortoplysninger slettet med succes",
+        "details": "Kortoplysninger indlæst med succes",
+        "not_found": "Kortoplysninger ikke fundet",
+        "already_exists": "Kortoplysninger med samme navn findes allerede",
+        "list": "Kort indlæst med succes"
+    },
+    "api_key": {
+        "add": "API-nøgle tilføjet med succes",
+        "update": "API-nøgleoplysninger opdateret med succes",
+        "delete": "API-nøgleoplysninger slettet med succes",
+        "details": "API-nøgleoplysninger indlæst med succes",
+        "not_found": "API-nøgleoplysninger ikke fundet",
+        "already_exists": "API-nøgleoplysninger med samme navn findes allerede",
+        "list": "API-nøgler indlæst med succes"
+    },
+    "wallet_phrase": {
+        "add": "Pungfrase tilføjet med succes",
+        "update": "Pungfraseoplysninger opdateret med succes",
+        "delete": "Pungfraseoplysninger slettet med succes",
+        "details": "Pungfraseoplysninger indlæst med succes",
+        "not_found": "Pungfraseoplysninger ikke fundet",
+        "already_exists": "Pungfraseoplysninger med samme navn findes allerede",
+        "list": "Pungfraser indlæst med succes"
+    },
+    "wifi": {
+        "add": "WiFi tilføjet med succes",
+        "update": "WiFi-oplysninger opdateret med succes",
+        "delete": "WiFi-oplysninger slettet med succes",
+        "details": "WiFi-oplysninger indlæst med succes",
+        "not_found": "WiFi-oplysninger ikke fundet",
+        "already_exists": "WiFi-oplysninger med samme navn findes allerede",
+        "list": "WiFi-oplysninger indlæst med succes"
+    },
+    "license": {
+        "add": "Licens tilføjet med succes",
+        "update": "Licensoplysninger opdateret med succes",
+        "delete": "Licensoplysninger slettet med succes",
+        "details": "Licensoplysninger indlæst med succes",
+        "not_found": "Licensoplysninger ikke fundet",
+        "already_exists": "Licensoplysninger med samme navn findes allerede",
+        "list": "Licenser indlæst med succes"
+    },
+    "login": {
+        "add": "Konto tilføjet med succes",
+        "update": "Kontooplysninger opdateret med succes",
+        "delete": "Kontooplysninger slettet med succes",
+        "details": "Kontooplysninger indlæst med succes",
+        "not_found": "Kontooplysninger ikke fundet",
+        "already_exists": "Kontooplysninger med samme navn findes allerede",
+        "list": "Konti indlæst med succes"
+    },
+    "identity": {
+        "add": "Identitet tilføjet med succes",
+        "update": "Identitetsoplysninger opdateret med succes",
+        "delete": "Identitetsoplysninger slettet med succes",
+        "details": "Identitetsoplysninger indlæst med succes",
+        "not_found": "Identitetsoplysninger ikke fundet",
+        "already_exists": "Identitetsoplysninger med samme navn findes allerede",
+        "list": "Identiteter indlæst med succes"
+    },
+    "email": {
+        "add": "E-mail tilføjet med succes",
+        "update": "E-mailoplysninger opdateret med succes",
+        "delete": "E-mailoplysninger slettet med succes",
+        "details": "E-mailoplysninger indlæst med succes",
+        "not_found": "E-mailoplysninger ikke fundet",
+        "already_exists": "E-mailoplysninger med samme navn findes allerede",
+        "list": "E-mails indlæst med succes"
+    },
+    "ssh_key": {
+        "add": "SSH-nøgle tilføjet med succes",
+        "update": "SSH-nøgleoplysninger opdateret med succes",
+        "delete": "SSH-nøgleoplysninger slettet med succes",
+        "details": "SSH-nøgleoplysninger indlæst med succes",
+        "not_found": "SSH-nøgleoplysninger ikke fundet",
+        "already_exists": "SSH-nøgleoplysninger med samme navn findes allerede",
+        "list": "SSH-nøgler indlæst med succes"
+    },
+    "note": {
+        "add": "Note tilføjet med succes",
+        "update": "Noteoplysninger opdateret med succes",
+        "delete": "Noteoplysninger slettet med succes",
+        "details": "Noteoplysninger indlæst med succes",
+        "not_found": "Noteoplysninger ikke fundet",
+        "already_exists": "Noteoplysninger med samme navn findes allerede",
+        "list": "Noter indlæst med succes"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Arbejdsområdets oplysninger indlæst med succes",
+        "tags": "Tags indlæst med succes",
+        "initial_data": "Initiale data indlæst med succes"
+    },
+    "project":{
+        "details": "Projektoplysninger indlæst med succes",
+        "list": "Projekter indlæst med succes",
+        "already_exists": "Projektet findes allerede",
+        "added": "Projekt tilføjet med succes",
+        "updated": "Projekt opdateret med succes",
+        "keys": "Projektets nøgler indlæst med succes",
+        "deleted": "Projekt slettet med succes",
+        "not_found": "Projektoplysninger ikke fundet",
+        "tags": "Tags indlæst med succes"
+    },
+    "user": {
+        "favorite_tags_list": "Favorittags hentet med succes",
+        "favorite_tags_updated": "Favorittags opdateret med succes",
+        "profile_details": "Profildetaljer indlæst med succes",
+        "login_history": "Loginhistorik indlæst med succes",
+        "profile_updated": "Profil opdateret med succes",
+        "no_changes_to_update": "Ingen ændringer at opdatere",
+        "user_details_not_found": "Brugeroplysninger ikke fundet"
+    },
+    "auth":{
+        "user_signed_up": "Bruger tilmeldt med succes",
+        "user_logged_in": "Bruger logget ind med succes",
+        "invalid_code": "Ugyldig kode, prøv igen",
+        "two_factor_auth_verified": "Tofaktorgodkendelse bekræftet med succes",
+        "keys_fetched": "Nøgler hentet med succes",
+        "keys_already_exist": "Nøgler findes allerede",
+        "keys_updated": "Nøgler opdateret med succes",
+        "user_details_not_found": "Brugeroplysninger ikke fundet",
+        "user_logged_out": "Bruger logget ud med succes",
+        "authentication_failed": "Godkendelse mislykkedes, prøv igen",
+        "invalid_credentials": "Ugyldige legitimationsoplysninger, prøv igen",
+        "invalid_totp_code": "Ugyldig TOTP-kode, prøv igen",
+        "invalid_totp_secret": "Ugyldigt TOTP-hemmelighed, prøv igen",
+        "something_went_wrong": "Noget gik galt, prøv igen",
+        "invalid_header": "Ugyldig header, prøv igen"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Revisionslogfiler indlæst med succes",
+        "audit_log_actions": "Revisionsloghandlinger indlæst med succes"
+    },
+    "password_history":{
+        "list": "Adgangskodehistorik indlæst med succes",
+        "add": "Adgangskodehistorik tilføjet med succes"
+    },
+    "dashboard":{
+        "overview": "Dashboardoversigt indlæst med succes",
+        "recent_activity": "Seneste aktivitet indlæst med succes"
+    }
+} 

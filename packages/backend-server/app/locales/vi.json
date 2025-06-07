@@ -1,0 +1,149 @@
+{
+    "card": {
+        "add": "Thêm thẻ thành công",
+        "update": "Cập nhật chi tiết thẻ thành công",
+        "delete": "Xóa chi tiết thẻ thành công",
+        "details": "Tải chi tiết thẻ thành công",
+        "not_found": "Không tìm thấy chi tiết thẻ",
+        "already_exists": "Đã tồn tại chi tiết thẻ với cùng tên",
+        "list": "Tải các thẻ thành công"
+    },
+    "api_key": {
+        "add": "Thêm khóa API thành công",
+        "update": "Cập nhật chi tiết khóa API thành công",
+        "delete": "Xóa chi tiết khóa API thành công",
+        "details": "Tải chi tiết khóa API thành công",
+        "not_found": "Không tìm thấy chi tiết khóa API",
+        "already_exists": "Đã tồn tại chi tiết khóa API với cùng tên",
+        "list": "Tải các khóa API thành công"
+    },
+    "wallet_phrase": {
+        "add": "Thêm cụm từ ví thành công",
+        "update": "Cập nhật chi tiết cụm từ ví thành công",
+        "delete": "Xóa chi tiết cụm từ ví thành công",
+        "details": "Tải chi tiết cụm từ ví thành công",
+        "not_found": "Không tìm thấy chi tiết cụm từ ví",
+        "already_exists": "Đã tồn tại chi tiết cụm từ ví với cùng tên",
+        "list": "Tải các cụm từ ví thành công"
+    },
+    "wifi": {
+        "add": "Thêm WiFi thành công",
+        "update": "Cập nhật chi tiết WiFi thành công",
+        "delete": "Xóa chi tiết WiFi thành công",
+        "details": "Tải chi tiết WiFi thành công",
+        "not_found": "Không tìm thấy chi tiết WiFi",
+        "already_exists": "Đã tồn tại chi tiết WiFi với cùng tên",
+        "list": "Tải chi tiết WiFi thành công"
+    },
+    "license": {
+        "add": "Thêm giấy phép thành công",
+        "update": "Cập nhật chi tiết giấy phép thành công",
+        "delete": "Xóa chi tiết giấy phép thành công",
+        "details": "Tải chi tiết giấy phép thành công",
+        "not_found": "Không tìm thấy chi tiết giấy phép",
+        "already_exists": "Đã tồn tại chi tiết giấy phép với cùng tên",
+        "list": "Tải các giấy phép thành công"
+    },
+    "login": {
+        "add": "Thêm tài khoản thành công",
+        "update": "Cập nhật chi tiết tài khoản thành công",
+        "delete": "Xóa chi tiết tài khoản thành công",
+        "details": "Tải chi tiết tài khoản thành công",
+        "not_found": "Không tìm thấy chi tiết tài khoản",
+        "already_exists": "Đã tồn tại chi tiết tài khoản với cùng tên",
+        "list": "Tải các tài khoản thành công"
+    },
+    "identity": {
+        "add": "Thêm danh tính thành công",
+        "update": "Cập nhật chi tiết danh tính thành công",
+        "delete": "Xóa chi tiết danh tính thành công",
+        "details": "Tải chi tiết danh tính thành công",
+        "not_found": "Không tìm thấy chi tiết danh tính",
+        "already_exists": "Đã tồn tại chi tiết danh tính với cùng tên",
+        "list": "Tải các danh tính thành công"
+    },
+    "email": {
+        "add": "Thêm email thành công",
+        "update": "Cập nhật chi tiết email thành công",
+        "delete": "Xóa chi tiết email thành công",
+        "details": "Tải chi tiết email thành công",
+        "not_found": "Không tìm thấy chi tiết email",
+        "already_exists": "Đã tồn tại chi tiết email với cùng tên",
+        "list": "Tải các email thành công"
+    },
+    "ssh_key": {
+        "add": "Thêm khóa SSH thành công",
+        "update": "Cập nhật chi tiết khóa SSH thành công",
+        "delete": "Xóa chi tiết khóa SSH thành công",
+        "details": "Tải chi tiết khóa SSH thành công",
+        "not_found": "Không tìm thấy chi tiết khóa SSH",
+        "already_exists": "Đã tồn tại chi tiết khóa SSH với cùng tên",
+        "list": "Tải các khóa SSH thành công"
+    },
+    "note": {
+        "add": "Thêm ghi chú thành công",
+        "update": "Cập nhật chi tiết ghi chú thành công",
+        "delete": "Xóa chi tiết ghi chú thành công",
+        "details": "Tải chi tiết ghi chú thành công",
+        "not_found": "Không tìm thấy chi tiết ghi chú",
+        "already_exists": "Đã tồn tại chi tiết ghi chú với cùng tên",
+        "list": "Tải các ghi chú thành công"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Tải chi tiết không gian làm việc thành công",
+        "tags": "Tải các thẻ thành công",
+        "initial_data": "Tải dữ liệu ban đầu thành công"
+    },
+    "project":{
+        "details": "Tải chi tiết dự án thành công",
+        "list": "Tải các dự án thành công",
+        "already_exists": "Dự án đã tồn tại",
+        "added": "Thêm dự án thành công",
+        "updated": "Cập nhật dự án thành công",
+        "keys": "Tải các khóa dự án thành công",
+        "deleted": "Xóa dự án thành công",
+        "not_found": "Không tìm thấy chi tiết dự án",
+        "tags": "Tải các thẻ thành công"
+    },
+    "user": {
+        "favorite_tags_list": "Tải danh sách thẻ yêu thích thành công",
+        "favorite_tags_updated": "Cập nhật thẻ yêu thích thành công",
+        "profile_details": "Tải chi tiết hồ sơ thành công",
+        "login_history": "Tải lịch sử đăng nhập thành công",
+        "profile_updated": "Cập nhật hồ sơ thành công",
+        "no_changes_to_update": "Không có thay đổi nào để cập nhật",
+        "user_details_not_found": "Không tìm thấy chi tiết người dùng"
+    },
+    "auth":{
+        "user_signed_up": "Đăng ký người dùng thành công",
+        "user_logged_in": "Đăng nhập người dùng thành công",
+        "invalid_code": "Mã không hợp lệ, vui lòng thử lại",
+        "two_factor_auth_verified": "Xác thực hai yếu tố thành công",
+        "keys_fetched": "Tải các khóa thành công",
+        "keys_already_exist": "Các khóa đã tồn tại",
+        "keys_updated": "Cập nhật các khóa thành công",
+        "user_details_not_found": "Không tìm thấy chi tiết người dùng",
+        "user_logged_out": "Đăng xuất người dùng thành công",
+        "authentication_failed": "Xác thực thất bại, vui lòng thử lại",
+        "invalid_credentials": "Thông tin đăng nhập không hợp lệ, vui lòng thử lại",
+        "invalid_totp_code": "Mã TOTP không hợp lệ, vui lòng thử lại",
+        "invalid_totp_secret": "Mã bí mật TOTP không hợp lệ, vui lòng thử lại",
+        "something_went_wrong": "Đã xảy ra lỗi, vui lòng thử lại",
+        "invalid_header": "Tiêu đề không hợp lệ, vui lòng thử lại"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Tải nhật ký kiểm tra thành công",
+        "audit_log_actions": "Tải các hành động nhật ký kiểm tra thành công"
+    },
+    "password_history":{
+        "list": "Tải lịch sử mật khẩu thành công",
+        "add": "Thêm lịch sử mật khẩu thành công"
+    },
+    "dashboard":{
+        "overview": "Tải tổng quan bảng điều khiển thành công",
+        "recent_activity": "Tải hoạt động gần đây thành công"
+    }
+} 

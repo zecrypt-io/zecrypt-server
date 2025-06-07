@@ -1,0 +1,156 @@
+{
+    "card": {
+        "add": "Kaart suksesvol bygevoeg",
+        "update": "Kaartbesonderhede suksesvol opgedateer",
+        "delete": "Kaartbesonderhede suksesvol verwyder",
+        "details": "Kaartbesonderhede suksesvol gelaai",
+        "not_found": "Kaartbesonderhede nie gevind nie",
+        "already_exists": "Kaartbesonderhede met dieselfde naam bestaan reeds",
+        "list": "Kaart suksesvol gelaai"
+    },
+    "api_key": {
+        "add": "API-sleutel suksesvol bygevoeg",
+        "update": "API-sleutelbesonderhede suksesvol opgedateer",
+        "delete": "API-sleutelbesonderhede suksesvol verwyder",
+        "details": "API-sleutelbesonderhede suksesvol gelaai",
+        "not_found": "API-sleutelbesonderhede nie gevind nie",
+        "already_exists": "API-sleutelbesonderhede met dieselfde naam bestaan reeds",
+        "list": "API-sleutels suksesvol gelaai"
+    },
+    "wallet_phrase": {
+        "add": "Beursiefrase suksesvol bygevoeg",
+        "update": "Beursiefrasebesonderhede suksesvol opgedateer",
+        "delete": "Beursiefrasebesonderhede suksesvol verwyder",
+        "details": "Beursiefrasebesonderhede suksesvol gelaai",
+        "not_found": "Beursiefrasebesonderhede nie gevind nie",
+        "already_exists": "Beursiefrasebesonderhede met dieselfde naam bestaan reeds",
+        "list": "Beursiefrases suksesvol gelaai"
+    },
+    "wifi": {
+        "add": "WiFi suksesvol bygevoeg",
+        "update": "WiFi-besonderhede suksesvol opgedateer",
+        "delete": "WiFi-besonderhede suksesvol verwyder",
+        "details": "WiFi-besonderhede suksesvol gelaai",
+        "not_found": "WiFi-besonderhede nie gevind nie",
+        "already_exists": "WiFi-besonderhede met dieselfde naam bestaan reeds",
+        "list": "WiFi-besonderhede suksesvol gelaai"
+    },
+    "license": {
+        "add": "Lisensie suksesvol bygevoeg",
+        "update": "Lisensiebesonderhede suksesvol opgedateer",
+        "delete": "Lisensiebesonderhede suksesvol verwyder",
+        "details": "Lisensiebesonderhede suksesvol gelaai",
+        "not_found": "Lisensiebesonderhede nie gevind nie",
+        "already_exists": "Lisensiebesonderhede met dieselfde naam bestaan reeds",
+        "list": "Lisensies suksesvol gelaai"
+    },
+    "login": {
+        "add": "Rekening suksesvol bygevoeg",
+        "update": "Rekeningbesonderhede suksesvol opgedateer",
+        "delete": "Rekeningbesonderhede suksesvol verwyder",
+        "details": "Rekeningbesonderhede suksesvol gelaai",
+        "not_found": "Rekeningbesonderhede nie gevind nie",
+        "already_exists": "Rekeningbesonderhede met dieselfde naam bestaan reeds",
+        "list": "Rekeninge suksesvol gelaai"
+    },
+    "identity": {
+        "add": "Identiteit suksesvol bygevoeg",
+        "update": "Identiteitsbesonderhede suksesvol opgedateer",
+        "delete": "Identiteitsbesonderhede suksesvol verwyder",
+        "details": "Identiteitsbesonderhede suksesvol gelaai",
+        "not_found": "Identiteitsbesonderhede nie gevind nie",
+        "already_exists": "Identiteitsbesonderhede met dieselfde naam bestaan reeds",
+        "list": "Identiteite suksesvol gelaai"
+    },
+    "email": {
+        "add": "E-pos suksesvol bygevoeg",
+        "update": "E-posbesonderhede suksesvol opgedateer",
+        "delete": "E-posbesonderhede suksesvol verwyder",
+        "details": "E-posbesonderhede suksesvol gelaai",
+        "not_found": "E-posbesonderhede nie gevind nie",
+        "already_exists": "E-posbesonderhede met dieselfde naam bestaan reeds",
+        "list": "E-posse suksesvol gelaai"
+    },
+    "ssh_key": {
+        "add": "SSH-sleutel suksesvol bygevoeg",
+        "update": "SSH-sleutelbesonderhede suksesvol opgedateer",
+        "delete": "SSH-sleutelbesonderhede suksesvol verwyder",
+        "details": "SSH-sleutelbesonderhede suksesvol gelaai",
+        "not_found": "SSH-sleutelbesonderhede nie gevind nie",
+        "already_exists": "SSH-sleutelbesonderhede met dieselfde naam bestaan reeds",
+        "list": "SSH-sleutels suksesvol gelaai"
+    },
+    "note": {
+        "add": "Nota suksesvol bygevoeg",
+        "update": "Notabesonderhede suksesvol opgedateer",
+        "delete": "Notabesonderhede suksesvol verwyder",
+        "details": "Notabesonderhede suksesvol gelaai",
+        "not_found": "Notabesonderhede nie gevind nie",
+        "already_exists": "Notabesonderhede met dieselfde naam bestaan reeds",
+        "list": "Notas suksesvol gelaai"
+    },
+    "health": {
+        "status": "OK"
+    },
+    "workspace": {
+        "details": "Werksruimtebesonderhede suksesvol gelaai",
+        "tags": "Etikette suksesvol gelaai",
+        "initial_data": "Aanvanklike data suksesvol gelaai"
+    },
+    "project":{
+        "details": "Projekbesonderhede suksesvol gelaai",
+        "list": "Projekte suksesvol gelaai",
+        "already_exists": "Projek bestaan reeds",
+        "added": "Projek suksesvol bygevoeg",
+        "updated": "Projek suksesvol opgedateer",
+        "keys": "Projek se sleutels suksesvol gelaai",
+        "deleted": "Projek suksesvol verwyder",
+        "not_found": "Projekbesonderhede nie gevind nie",
+        "tags": "Etikette suksesvol gelaai"
+    },
+    "user": {
+        "favorite_tags_list": "Gunstelingetikette suksesvol opgehaal",
+        "favorite_tags_updated": "Gunstelingetikette suksesvol opgedateer",
+        "profile_details": "Profielbesonderhede suksesvol gelaai",
+        "login_history": "Aanteken geskiedenis suksesvol gelaai",
+        "profile_updated": "Profiel suksesvol opgedateer",
+        "no_changes_to_update": "Geen veranderinge om op te dateer nie",
+        "user_details_not_found": "Gebruikerbesonderhede nie gevind nie"
+    },
+    "auth":{
+        "user_signed_up": "Gebruiker suksesvol geregistreer",
+        "user_logged_in": "Gebruiker suksesvol aangemeld",
+        "invalid_code": "Ongeldige kode, probeer asseblief weer",
+        "two_factor_auth_verified": "Twee-faktor verifikasie suksesvol bevestig",
+        "keys_fetched": "Sleutels suksesvol opgehaal",
+        "keys_already_exist": "Sleutels bestaan reeds",
+        "keys_updated": "Sleutels suksesvol opgedateer",
+        "user_details_not_found": "Gebruikerbesonderhede nie gevind nie",
+        "user_logged_out": "Gebruiker suksesvol afgemeld",
+        "authentication_failed": "Verifikasie het misluk, probeer asseblief weer",
+        "invalid_credentials": "Ongeldige geloofsbriewe, probeer asseblief weer",
+        "invalid_totp_code": "Ongeldige TOTP-kode, probeer asseblief weer",
+        "invalid_totp_secret": "Ongeldige TOTP-geheim, probeer asseblief weer",
+        "something_went_wrong": "Iets het verkeerd geloop, probeer asseblief weer",
+        "invalid_header": "Ongeldige opskrif, probeer asseblief weer"
+    },
+    "audit_logs":{
+        "audit_logs_fetched": "Ouditlogboeke suksesvol gelaai",
+        "audit_log_actions": "Ouditlogboekaksies suksesvol gelaai"
+    },
+    "password_history":{
+        "list": "Wagwoordgeskiedenis suksesvol gelaai",
+        "add": "Wagwoordgeskiedenis suksesvol bygevoeg"
+    },
+    "dashboard":{
+        "overview": "Dashboard-oorsig suksesvol gelaai",
+        "recent_activity": "Onlangse aktiwiteit suksesvol gelaai"
+    }
+}
+
+
+
+
+
+
+
