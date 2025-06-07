@@ -33,4 +33,6 @@ async def get_dashboard_recent_activity(request, user):
         return response_helper(404, "Project not found")
 
     data = project_activity_manager.find(db, {"project_id": project_id})
+    for item in data:
+        item["title"] = secret_manager.get_title(db, item.get("record_id"))
     return response_helper(200, translate("dashboard.recent_activity"), data)
