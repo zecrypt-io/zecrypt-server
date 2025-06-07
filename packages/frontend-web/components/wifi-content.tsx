@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   QrCode,
   Plus,
+  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -39,9 +40,10 @@ import {
 } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { useWifi } from "@/hooks/useWifi"; // Import the new hook
+import { useWifi } from "@/hooks/useWifi";
 import { AddWifi } from "./add-wifi";
 import { EditWifi } from "./edit-wifi";
+import { SortButton } from "@/components/ui/sort-button";
 
 interface WifiNetwork {
   doc_id: string;
@@ -72,25 +74,31 @@ export function WifiContent() {
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
   const {
+    allWifiNetworks,
+    filteredWifiNetworks,
     paginatedWifiNetworks,
     isLoading,
-    totalCount,
-    currentPage,
-    totalPages,
-    getPaginationRange,
-    itemsPerPage,
-    setItemsPerPage,
     searchQuery,
-    setSearchQuery,
-    selectedSecurityType,
-    setSelectedSecurityType,
+    selectedTag,
+    uniqueTags,
+    currentPage,
+    itemsPerPage,
+    totalCount,
+    totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
+    setSearchQuery,
+    setSelectedTag,
+    setCurrentPage,
+    setItemsPerPage,
     copyToClipboard,
     togglePasswordVisibility,
     clearFilters,
     refreshWifiNetworks,
     handleDeleteWifi: handleDeleteWifiFromHook,
+    getPaginationRange,
     nextPage,
     prevPage,
     goToPage,
@@ -146,90 +154,97 @@ export function WifiContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{translate("wifi_networks", "wifi")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_wifi_networks", "wifi", { default: "Manage your WiFi network credentials and connection details" })}</p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_wifi", "wifi")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "wifi", { default: "Filter by tag" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_tags", "wifi", { default: "All Tags" })}</SelectItem>
+              {uniqueTags.map(tag => (
+                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="wifi"
+              options={[
+                { field: "title", label: translate("ssid", "wifi", { default: "SSID" }) },
+                { field: "created_at", label: translate("date_created", "wifi", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedTag !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "wifi")}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={() => setShowAddWifi(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_wifi", "wifi")}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_wifi", "wifi")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedSecurityType} onValueChange={setSelectedSecurityType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_security", "wifi")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{translate("all_security_types", "wifi")}</SelectItem>
-            <SelectItem value="wpa2">WPA2</SelectItem>
-            <SelectItem value="wpa3">WPA3</SelectItem>
-            <SelectItem value="wep">WEP</SelectItem>
-            <SelectItem value="none">{translate("none", "wifi")}</SelectItem>
-          </SelectContent>
-        </Select>
-        {(searchQuery || selectedSecurityType !== "all") && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear", "wifi")}
-          </Button>
-        )}
-      </div>
-
       {/* Wi-Fi Networks Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{translate("loading_wifi", "wifi")}</p>
-          </div>
-        ) : paginatedWifiNetworks.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              {selectedSecurityType !== "all"
-                ? translate("no_wifi_for_security_type", "wifi").replace("{security_type}", selectedSecurityType)
-                : searchQuery
-                ? translate("no_wifi_match_search", "wifi").replace("{search}", searchQuery)
-                : translate("no_wifi_found", "wifi")}
-            </p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "wifi")}
-            </Button>
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">{translate("loading_wifi_networks", "wifi")}</p>
           </div>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[150px]">{translate("ssid", "wifi")}</TableHead>
-                  <TableHead>{translate("security", "wifi")}</TableHead>
-                  <TableHead>{translate("notes", "wifi")}</TableHead>
-                  <TableHead>{translate("password", "wifi")}</TableHead>
-                  <TableHead>{translate("tags", "wifi")}</TableHead>
-                  <TableHead>{translate("last_modified", "wifi")}</TableHead>
-                  <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
-                </TableRow>
-              </TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">
+                  {translate("name", "wifi")}
+                </TableHead>
+                <TableHead>{translate("ssid", "wifi")}</TableHead>
+                <TableHead>{translate("password", "wifi")}</TableHead>
+                <TableHead>{translate("security_type", "wifi")}</TableHead>
+                <TableHead>{translate("tags", "wifi")}</TableHead>
+                <TableHead>{translate("last_modified", "wifi")}</TableHead>
+                <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            {paginatedWifiNetworks.length > 0 ? (
               <TableBody>
                 {paginatedWifiNetworks.map((network) => (
                   <TableRow key={network.doc_id}>
@@ -368,48 +383,70 @@ export function WifiContent() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <p className="text-muted-foreground">
+                      {searchQuery || selectedTag !== 'all'
+                        ? translate("no_matching_wifi_networks", "wifi")
+                        : translate("no_wifi_networks_found", "wifi")}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddWifi(true)}
+                      className="mt-4"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {translate("add_wifi_network", "wifi")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
+          </Table>
         )}
       </div>
 
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing", "wifi")} {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "wifi")} {totalCount}{" "}
-            {translate("wifi_networks", "wifi")}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing", "wifi")} {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "wifi")} {totalCount}{" "}
+              {translate("wifi_networks", "wifi")}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={currentPage === 1 ? () => {} : prevPage}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, index) =>
+                  typeof page === "number" ? (
+                    <PaginationItem key={index}>
+                      <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={currentPage === totalPages ? () => {} : nextPage}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={currentPage === 1 ? () => {} : prevPage}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {getPaginationRange().map((page, index) =>
-                typeof page === "number" ? (
-                  <PaginationItem key={index}>
-                    <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={currentPage === totalPages ? () => {} : nextPage}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

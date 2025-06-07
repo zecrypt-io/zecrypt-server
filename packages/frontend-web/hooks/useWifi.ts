@@ -9,6 +9,7 @@ import axiosInstance from "../libs/Middleware/axiosInstace";
 import { decryptDataField } from "../libs/encryption";
 import { secureGetItem } from "../libs/session-storage-utils";
 import React from "react";
+import { sortItems, SortConfig } from "@/libs/utils";
 
 interface WifiNetwork {
   doc_id: string;
@@ -36,15 +37,18 @@ interface UseWifiReturn {
   paginatedWifiNetworks: WifiNetwork[];
   isLoading: boolean;
   searchQuery: string;
-  selectedSecurityType: string;
+  selectedTag: string;
+  uniqueTags: string[];
   currentPage: number;
   itemsPerPage: number;
   totalCount: number;
   totalPages: number;
   copiedField: { doc_id: string; field: string } | null;
   viewPassword: string | null;
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   setSearchQuery: (query: string) => void;
-  setSelectedSecurityType: (type: string) => void;
+  setSelectedTag: (tag: string) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
   copyToClipboard: (doc_id: string, field: string, value: string) => Promise<void>;
@@ -66,12 +70,13 @@ export function useWifi({
   const { translate } = useTranslator();
   const [allWifiNetworks, setAllWifiNetworks] = useState<WifiNetwork[]>([]);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [selectedSecurityType, setSelectedSecurityTypeState] = useState("all");
+  const [selectedTag, setSelectedTagState] = useState("all");
   const [currentPage, setCurrentPageState] = useState(1);
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
   const [viewPassword, setViewPassword] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -199,6 +204,17 @@ export function useWifi({
     }
   }, [fetchWifiNetworks, selectedWorkspaceId, selectedProjectId]);
 
+  // Add useMemo to get unique tags from all wifi networks for the dropdown
+  const uniqueTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allWifiNetworks.forEach(network => {
+      if (network.tags && Array.isArray(network.tags)) {
+        network.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allWifiNetworks]);
+
   const filteredWifiNetworks = useMemo(() => {
     let result = allWifiNetworks;
 
@@ -207,18 +223,25 @@ export function useWifi({
       result = result.filter(
         (network) =>
           network.title.toLowerCase().includes(query) ||
-          network.notes?.toLowerCase().includes(query)
+          network.notes?.toLowerCase().includes(query) ||
+          network.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+          false
       );
     }
-
-    if (selectedSecurityType !== "all") {
+    
+    if (selectedTag !== "all") {
       result = result.filter(
-        (network) => network.security_type.toLowerCase() === selectedSecurityType.toLowerCase()
+        (network) => network.tags && Array.isArray(network.tags) && network.tags.includes(selectedTag)
       );
+    }
+    
+    // Apply sorting if sortConfig is set
+    if (sortConfig) {
+      result = sortItems(result, sortConfig);
     }
 
     return result;
-  }, [allWifiNetworks, searchQuery, selectedSecurityType]);
+  }, [allWifiNetworks, searchQuery, selectedTag, sortConfig]);
 
   const totalCount = filteredWifiNetworks.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
@@ -257,7 +280,8 @@ export function useWifi({
 
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
-    setSelectedSecurityTypeState("all");
+    setSelectedTagState("all");
+    setSortConfig(null);
     setCurrentPageState(1);
   }, []);
 
@@ -341,13 +365,10 @@ export function useWifi({
     };
   }, []);
 
-  const setSelectedSecurityType = useCallback(
-    (type: string) => {
-      setSelectedSecurityTypeState(type);
-      setCurrentPageState(1);
-    },
-    []
-  );
+  const setSelectedTag = useCallback((tag: string) => {
+    setSelectedTagState(tag);
+    setCurrentPage(1); // Reset to first page when tag changes
+  }, []);
 
   const setItemsPerPage = useCallback(
     (items: number) => {
@@ -385,15 +406,18 @@ export function useWifi({
     paginatedWifiNetworks,
     isLoading,
     searchQuery,
-    selectedSecurityType,
+    selectedTag,
+    uniqueTags,
     currentPage,
     itemsPerPage,
     totalCount,
     totalPages,
     copiedField,
     viewPassword,
+    sortConfig,
+    setSortConfig,
     setSearchQuery,
-    setSelectedSecurityType,
+    setSelectedTag,
     setCurrentPage,
     setItemsPerPage,
     copyToClipboard,

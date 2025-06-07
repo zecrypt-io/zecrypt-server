@@ -42,7 +42,7 @@ interface UseSSHKeyManagementReturn {
   totalPages: number;
   getPaginationRange: () => (number | string)[];
   itemsPerPage: number;
-  setItemsPerPage: (items: number) => void;
+  setItemsPerPage?: (items: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   uniqueTags: string[];
@@ -59,14 +59,14 @@ interface UseSSHKeyManagementReturn {
 export function useSSHKeyManagement({
   selectedWorkspaceId,
   selectedProjectId,
-  initialItemsPerPage = 5,
+  initialItemsPerPage = 10,
 }: UseSSHKeyManagementProps): UseSSHKeyManagementReturn {
   const { translate } = useTranslator();
   const [allSSHKeys, setAllSSHKeys] = useState<SSHKey[]>([]);
   const [filteredSSHKeys, setFilteredSSHKeys] = useState<SSHKey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
-  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [itemsPerPage] = useState(initialItemsPerPage);
   const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   const [projectKey, setProjectKey] = useState<string | null>(null);
   const [fetchTrigger, setFetchTrigger] = useState(0);
@@ -289,7 +289,7 @@ export function useSSHKeyManagement({
   
   // Handle items per page changes
   const setItemsPerPage = useCallback((items: number) => {
-    setItemsPerPageState(items);
+    // This function is now a placeholder as itemsPerPage is managed by the useState
   }, []);
   
   // Clear all filters
