@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { useWifi } from "@/hooks/useWifi"; // Import the new hook
+import { useWifi } from "@/hooks/useWifi";
 import { AddWifi } from "./add-wifi";
 import { EditWifi } from "./edit-wifi";
 import { SortButton } from "@/components/ui/sort-button";
@@ -224,189 +224,187 @@ export function WifiContent() {
       </div>
 
       {/* Wi-Fi Networks Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_wifi_networks", "wifi")}</p>
           </div>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px]">
-                    {translate("name", "wifi")}
-                  </TableHead>
-                  <TableHead>{translate("ssid", "wifi")}</TableHead>
-                  <TableHead>{translate("password", "wifi")}</TableHead>
-                  <TableHead>{translate("security_type", "wifi")}</TableHead>
-                  <TableHead>{translate("tags", "wifi")}</TableHead>
-                  <TableHead>{translate("last_modified", "wifi")}</TableHead>
-                  <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              {paginatedWifiNetworks.length > 0 ? (
-                <TableBody>
-                  {paginatedWifiNetworks.map((network) => (
-                    <TableRow key={network.doc_id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                            <Wifi className="h-4 w-4" />
-                          </div>
-                          {network.title}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">
+                  {translate("name", "wifi")}
+                </TableHead>
+                <TableHead>{translate("ssid", "wifi")}</TableHead>
+                <TableHead>{translate("password", "wifi")}</TableHead>
+                <TableHead>{translate("security_type", "wifi")}</TableHead>
+                <TableHead>{translate("tags", "wifi")}</TableHead>
+                <TableHead>{translate("last_modified", "wifi")}</TableHead>
+                <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            {paginatedWifiNetworks.length > 0 ? (
+              <TableBody>
+                {paginatedWifiNetworks.map((network) => (
+                  <TableRow key={network.doc_id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium">
+                          <Wifi className="h-4 w-4" />
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-xs">
-                          {network.security_type || "None"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{network.notes || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono">
-                            {viewPassword === network.doc_id ? network.data : "••••••••"}
-                          </span>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => togglePasswordVisibility(network.doc_id)}
-                                >
-                                  {viewPassword === network.doc_id ? (
-                                    <EyeOff className="h-3 w-3" />
-                                  ) : (
-                                    <Eye className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {viewPassword === network.doc_id
-                                  ? translate("hide_password", "wifi")
-                                  : translate("show_password", "wifi")}
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => copyToClipboard(network.doc_id, "password", network.data)}
-                                >
-                                  {copiedField?.doc_id === network.doc_id && copiedField?.field === "password" ? (
-                                    <Check className="h-3 w-3" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {copiedField?.doc_id === network.doc_id && copiedField?.field === "password"
-                                  ? translate("copied", "wifi")
-                                  : translate("copy_password", "wifi")}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {network.tags?.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {network.updated_at
-                          ? format.dateTime(new Date(network.updated_at), {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => handleShowQrCode(network)}
-                                >
-                                  <QrCode className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{translate("show_qr_code", "wifi")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditWifi(network)}>
-                                {translate("edit", "wifi")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => copyToClipboard(network.doc_id, "ssid", network.title)}
+                        {network.title}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">
+                        {network.security_type || "None"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{network.notes || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">
+                          {viewPassword === network.doc_id ? network.data : "••••••••"}
+                        </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => togglePasswordVisibility(network.doc_id)}
                               >
-                                {copiedField?.doc_id === network.doc_id && copiedField?.field === "ssid" ? (
-                                  <Check className="h-4 w-4 mr-2" />
+                                {viewPassword === network.doc_id ? (
+                                  <EyeOff className="h-3 w-3" />
                                 ) : (
-                                  <Copy className="h-4 w-4 mr-2" />
+                                  <Eye className="h-3 w-3" />
                                 )}
-                                {translate("copy_ssid", "wifi")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-500"
-                                onClick={() => confirmDelete(network.doc_id)}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {viewPassword === network.doc_id
+                                ? translate("hide_password", "wifi")
+                                : translate("show_password", "wifi")}
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => copyToClipboard(network.doc_id, "password", network.data)}
                               >
-                                {translate("delete", "wifi")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              ) : (
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                      <p className="text-muted-foreground">
-                        {searchQuery || selectedTag !== 'all'
-                          ? translate("no_matching_wifi_networks", "wifi")
-                          : translate("no_wifi_networks_found", "wifi")}
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAddWifi(true)}
-                        className="mt-4"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        {translate("add_wifi_network", "wifi")}
-                      </Button>
+                                {copiedField?.doc_id === network.doc_id && copiedField?.field === "password" ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {copiedField?.doc_id === network.doc_id && copiedField?.field === "password"
+                                ? translate("copied", "wifi")
+                                : translate("copy_password", "wifi")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {network.tags?.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {network.updated_at
+                        ? format.dateTime(new Date(network.updated_at), {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleShowQrCode(network)}
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{translate("show_qr_code", "wifi")}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditWifi(network)}>
+                              {translate("edit", "wifi")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => copyToClipboard(network.doc_id, "ssid", network.title)}
+                            >
+                              {copiedField?.doc_id === network.doc_id && copiedField?.field === "ssid" ? (
+                                <Check className="h-4 w-4 mr-2" />
+                              ) : (
+                                <Copy className="h-4 w-4 mr-2" />
+                              )}
+                              {translate("copy_ssid", "wifi")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-500"
+                              onClick={() => confirmDelete(network.doc_id)}
+                            >
+                              {translate("delete", "wifi")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
-                </TableBody>
-              )}
-            </Table>
-          </div>
+                ))}
+              </TableBody>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <p className="text-muted-foreground">
+                      {searchQuery || selectedTag !== 'all'
+                        ? translate("no_matching_wifi_networks", "wifi")
+                        : translate("no_wifi_networks_found", "wifi")}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddWifi(true)}
+                      className="mt-4"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {translate("add_wifi_network", "wifi")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
+          </Table>
         )}
       </div>
 

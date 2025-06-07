@@ -132,8 +132,6 @@ export function LicensesContent() {
   };
 
   const handleSearch = () => {
-    // Search is handled through the hook with the debounced search query
-    // This function is here for explicit search button click
     fetchLicenses();
   };
 
@@ -245,137 +243,135 @@ export function LicensesContent() {
       </div>
 
       {/* Licenses Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{translate("loading_licenses", "licenses", { default: "Loading licenses..." })}</p>
           </div>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px]">{translate("software_name", "licenses", { default: "Software" })}</TableHead>
-                  <TableHead>{translate("license_key", "licenses", { default: "License Key" })}</TableHead>
-                  <TableHead>{translate("expiry_date", "licenses", { default: "Expiry Date" })}</TableHead>
-                  <TableHead>{translate("tags", "licenses", { default: "Tags" })}</TableHead>
-                  <TableHead className="text-right">{translate("actions", "licenses", { default: "Actions" })}</TableHead>
-                </TableRow>
-              </TableHeader>
-              {licensesToDisplay.length > 0 ? (
-                <TableBody>
-                  {licensesToDisplay.map((license) => {
-                    return (
-                      <TableRow key={license.doc_id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <Key className="h-4 w-4 text-muted-foreground" />
-                            <span>{license.title || 'N/A'}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          <div className="flex items-center gap-2">
-                            <span>
-                              {viewLicenseKey === license.doc_id ? license.license_key : "••••-••••-••••-••••"}
-                            </span>
-                            {license.license_key && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
-                                >
-                                  {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => copyToClipboard(license.doc_id, "license_key", license.license_key)}
-                                >
-                                  {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
-                                    <Check className="h-3 w-3" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {license.expires_at && (
-                            <div className="flex items-center gap-2">
-                              <span className={`${isExpired(license.expires_at) ? 'text-red-500' : (daysUntilExpiry(license.expires_at) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
-                                {formatDate(license.expires_at)}
-                              </span>
-                              {isExpired(license.expires_at) ? (
-                                <Badge variant="destructive" className="text-xs">
-                                  {translate("expired", "licenses", { default: "Expired" })}
-                                </Badge>
-                              ) : daysUntilExpiry(license.expires_at) < 30 ? (
-                                <Badge variant="outline" className="text-xs text-amber-500 border-amber-500">
-                                  {translate("expiring_soon", "licenses", { default: "Expiring soon" })}
-                                </Badge>
-                              ) : null}
-                            </div>
-                          )}
-                          {!license.expires_at && '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {license.tags?.map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">{translate("software_name", "licenses", { default: "Software" })}</TableHead>
+                <TableHead>{translate("license_key", "licenses", { default: "License Key" })}</TableHead>
+                <TableHead>{translate("expiry_date", "licenses", { default: "Expiry Date" })}</TableHead>
+                <TableHead>{translate("tags", "licenses", { default: "Tags" })}</TableHead>
+                <TableHead className="text-right">{translate("actions", "licenses", { default: "Actions" })}</TableHead>
+              </TableRow>
+            </TableHeader>
+            {licensesToDisplay.length > 0 ? (
+              <TableBody>
+                {licensesToDisplay.map((license) => {
+                  return (
+                    <TableRow key={license.doc_id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4 text-muted-foreground" />
+                          <span>{license.title || 'N/A'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {viewLicenseKey === license.doc_id ? license.license_key : "••••-••••-••••-••••"}
+                          </span>
+                          {license.license_key && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => toggleLicenseKeyVisibility(license.doc_id)}
+                              >
+                                {viewLicenseKey === license.doc_id ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditLicense(license)}>
-                                {translate("edit", "licenses", { default: "Edit" })}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => confirmDelete(license.doc_id)} className="text-red-500">
-                                {translate("delete", "licenses", { default: "Delete" })}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              ) : (
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      <p className="text-muted-foreground">
-                        {searchQuery || selectedTag !== 'all'
-                          ? translate("no_matching_licenses", "licenses", { default: "No matching licenses found" })
-                          : translate("no_licenses_found", "licenses", { default: "No licenses found" })}
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={handleAddLicense}
-                        className="mt-4"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        {translate("add_license", "licenses", { default: "Add License" })}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              )}
-            </Table>
-          </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => copyToClipboard(license.doc_id, "license_key", license.license_key)}
+                              >
+                                {copiedField?.id === license.doc_id && copiedField?.field === "license_key" ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {license.expires_at && (
+                          <div className="flex items-center gap-2">
+                            <span className={`${isExpired(license.expires_at) ? 'text-red-500' : (daysUntilExpiry(license.expires_at) < 30 ? 'text-amber-500' : 'text-green-500')}`}>
+                              {formatDate(license.expires_at)}
+                            </span>
+                            {isExpired(license.expires_at) ? (
+                              <Badge variant="destructive" className="text-xs">
+                                {translate("expired", "licenses", { default: "Expired" })}
+                              </Badge>
+                            ) : daysUntilExpiry(license.expires_at) < 30 ? (
+                              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500">
+                                {translate("expiring_soon", "licenses", { default: "Expiring soon" })}
+                              </Badge>
+                            ) : null}
+                          </div>
+                        )}
+                        {!license.expires_at && '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {license.tags?.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditLicense(license)}>
+                              {translate("edit", "licenses", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => confirmDelete(license.doc_id)} className="text-red-500">
+                              {translate("delete", "licenses", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    <p className="text-muted-foreground">
+                      {searchQuery || selectedTag !== 'all'
+                        ? translate("no_matching_licenses", "licenses", { default: "No matching licenses found" })
+                        : translate("no_licenses_found", "licenses", { default: "No licenses found" })}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={handleAddLicense}
+                      className="mt-4"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {translate("add_license", "licenses", { default: "Add License" })}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
+          </Table>
         )}
       </div>
 
@@ -451,7 +447,7 @@ export function LicensesContent() {
           license={{
             doc_id: selectedLicense.doc_id,
             title: selectedLicense.title,
-            data: "", // We need to add this required field - it will be populated with encrypted data
+            data: "",
             license_key: selectedLicense.license_key,
             notes: selectedLicense.notes || "",
             expires_at: selectedLicense.expires_at || undefined,
@@ -486,4 +482,4 @@ export function LicensesContent() {
       </Dialog>
     </div>
   );
-} 
+}
