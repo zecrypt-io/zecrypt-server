@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Plus, Search, Copy, Check, Eye, EyeOff, ExternalLink, MoreHorizontal,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Star, AlertTriangle, Trash, Filter
 } from "lucide-react";
 import { AddAccountDialog } from "@/components/add-account-dialog";
-import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +20,15 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { useFormatter } from "next-intl";
 import { toast } from "@/components/ui/use-toast";
+import { getWebsiteIcon } from "@/libs/icon-mappings";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +37,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useAccountManagement } from "@/hooks/use-account-management";
+import { SortButton, SortButton2 } from "@/components/ui/sort-button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Account {
   doc_id: string;
@@ -72,6 +83,9 @@ export function AccountsContent() {
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteAccount: handleDeleteAccountFromHook,
     fetchAccounts,
     clearFilters,
@@ -85,7 +99,6 @@ export function AccountsContent() {
   });
 
   const [showAddAccount, setShowAddAccount] = useState(false);
-  const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showEditAccount, setShowEditAccount] = useState(false);
   const [selectedAccountForEdit, setSelectedAccountForEdit] = useState<Account | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -118,9 +131,19 @@ export function AccountsContent() {
       await navigator.clipboard.writeText(value);
       setCopiedField({ doc_id, field });
       setTimeout(() => setCopiedField(null), 2000);
+      toast({
+        title: translate("copied", "accounts", { default: "Copied" }),
+        description: translate("field_copied", "accounts", {
+          default: "Value copied to clipboard",
+        }),
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
-      toast({ title: translate("error", "common"), description: translate("copy_failed", "accounts"), variant: "destructive" });
+      toast({ 
+        title: translate("error", "common"), 
+        description: translate("copy_failed", "accounts"), 
+        variant: "destructive" 
+      });
     }
   }, [translate]);
 
@@ -158,211 +181,258 @@ export function AccountsContent() {
     setIsProcessingDelete(false);
   };
 
-  if (isLoading && accountsToDisplay.length === 0) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
-        <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{translate("accounts", "accounts")}</h1>
+          <p className="text-muted-foreground">{translate("manage_your_saved_accounts_and_passwords", "accounts")}</p>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex flex-1 gap-4 w-full md:w-auto">
-          <div className="relative w-full md:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              type="search"
-              placeholder={translate("search", "accounts")}
-              className="pl-8 w-full"
+              placeholder={translate("search_accounts", "accounts")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
             />
-          </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder={translate("all_accounts", "accounts")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{translate("all_accounts", "accounts")}</SelectItem>
-                <SelectItem value="personal">{translate("personal", "accounts")}</SelectItem>
-                <SelectItem value="work">{translate("work", "accounts")}</SelectItem>
-                <SelectItem value="finance">{translate("finance", "accounts")}</SelectItem>
-                <SelectItem value="favorite">{translate("favorite", "accounts")}</SelectItem>
-              </SelectContent>
-            </Select>
-            {(searchQuery || selectedCategory !== "all") && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-10">
-                <X className="h-4 w-4 mr-2" />
-                {translate("clear", "accounts")}
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>
+          
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_tag", "accounts", { default: "Filter by tag" })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{translate("all_accounts", "accounts")}</SelectItem>
+              <SelectItem value="personal">{translate("personal", "accounts")}</SelectItem>
+              <SelectItem value="work">{translate("work", "accounts")}</SelectItem>
+              <SelectItem value="finance">{translate("finance", "accounts")}</SelectItem>
+              <SelectItem value="favorite">{translate("favorite", "accounts")}</SelectItem>
+              {uniqueTags
+                .filter(tag => !["personal", "work", "finance", "favorite"].includes(tag.toLowerCase()))
+                .map(tag => (
+                  <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                ))
+              }
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
+              namespace="accounts"
+              options={[
+                { field: "title", label: translate("account", "accounts") },
+                { field: "created_at", label: translate("date_created", "accounts", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedCategory !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "accounts")}
+            </Button>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => setShowAddAccount(true)}>
-            <Plus className="h-4 w-4" />
-            {translate("add_account", "accounts")}
-          </Button>
-        </div>
+        
+        <Button onClick={() => setShowAddAccount(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          {translate("add_account", "accounts")}
+        </Button>
       </div>
 
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-muted/50">
-                <th className="text-left p-3 font-medium text-sm">{translate("account", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("username", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("password", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("website", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("tags", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("last_modified", "accounts")}</th>
-                <th className="text-left p-3 font-medium text-sm">{translate("actions", "accounts")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && accountsToDisplay.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-10 text-muted-foreground">
-                    {translate("loading_accounts", "accounts")}
-                  </td>
-                </tr>
-              ) : accountsToDisplay.length > 0 ? (
-                accountsToDisplay.map((account) => (
-                  <tr key={account.doc_id} className="border-t border-border hover:bg-muted/20 transition-colors">
-                    <td className="p-3">
+      {/* Accounts Table */}
+      <div className="border border-border/30 rounded-md">
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">{translate("loading_accounts", "accounts")}</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader className="accounts-table-header">
+              <TableRow>
+                <TableHead className="w-[200px]">
+                  {translate("account", "accounts")}
+                </TableHead>
+                <TableHead>
+                  {translate("username", "accounts")}
+                </TableHead>
+                <TableHead>{translate("password", "accounts")}</TableHead>
+                <TableHead>{translate("website", "accounts")}</TableHead>
+                <TableHead>{translate("tags", "accounts")}</TableHead>
+                <TableHead>
+                  {translate("last_modified", "accounts")}
+                </TableHead>
+                <TableHead className="text-right">{translate("actions", "accounts")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            {accountsToDisplay.length > 0 ? (
+              <TableBody>
+                {accountsToDisplay.map((account) => (
+                  <TableRow key={account.doc_id}>
+                    <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-medium">
-                          {(account.title || account.name || "A").charAt(0).toUpperCase()}
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+                          {getWebsiteIcon((account.url || account.website || '') as string, "h-4 w-4")}
                         </div>
-                        <div>
-                          <p className="font-medium">{account.title || account.name}</p>
+                        <span>{account.title || account.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="relative max-w-[120px] truncate">
+                          {account.username}
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => copyToClipboard(account.doc_id, "username", account.username)}
+                              >
+                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "username"
+                                ? translate("copied", "accounts")
+                                : translate("copy_username", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="relative max-w-[120px] truncate font-mono">
+                          {viewPassword === account.doc_id ? account.password : "••••••••"}
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => togglePasswordVisibility(account.doc_id)}
+                              >
+                                {viewPassword === account.doc_id ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {viewPassword === account.doc_id
+                                ? translate("hide_password", "accounts")
+                                : translate("show_password", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => copyToClipboard(account.doc_id, "password", account.password)}
+                              >
+                                {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {copiedField?.doc_id === account.doc_id && copiedField?.field === "password"
+                                ? translate("copied", "accounts")
+                                : translate("copy_password", "accounts")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {account.website || account.url ? (
+                        <div className="flex items-center gap-2">
+                          <span className="max-w-[120px] truncate">
+                            {account.website || account.url}
+                          </span>
                           {(account.website || account.url) && (
-                            <a
-                              href={((account.website || account.url || "").startsWith("http") ? (account.website || account.url || "") : `https://${account.website || account.url || ""}`)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
-                            >
-                              {(account.website || account.url || "").replace(/^https?:\/\//, "")}
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => {
+                                      const url = account.website || account.url;
+                                      if (url) window.open(url, "_blank");
+                                    }}
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{translate("open_website", "accounts")}</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono">
-                          {account.username && account.username.length > 0 && viewUsername === account.doc_id
-                            ? account.username
-                            : account.username && account.username.length > 0
-                            ? "••••••••"
-                            : "-"}
-                        </span>
-                        {account.username && account.username.length > 0 && (
-                          <div className="flex items-center">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleUsernameVisibility(account.doc_id)}>
-                                    {viewUsername === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{viewUsername === account.doc_id ? translate("hide_username", "accounts") : translate("show_username", "accounts")}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => account.username && copyToClipboard(account.doc_id, "username", account.username)}>
-                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "username" ? translate("copied", "accounts") : translate("copy_username", "accounts")}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono">
-                          {account.password && account.password !== "Error processing data" && viewPassword === account.doc_id
-                            ? account.password
-                            : account.password && account.password !== "Error processing data"
-                            ? "••••••••"
-                            : account.password}
-                        </span>
-                        {account.password && account.password !== "-" && account.password !== "Error processing data" && (
-                          <div className="flex items-center">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePasswordVisibility(account.doc_id)}>
-                                    {viewPassword === account.doc_id ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{viewPassword === account.doc_id ? translate("hide_password", "accounts") : translate("show_password", "accounts")}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => account.password && copyToClipboard(account.doc_id, "password", account.password)}>
-                                    {copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{copiedField?.doc_id === account.doc_id && copiedField?.field === "password" ? translate("copied", "accounts") : translate("copy_password", "accounts")}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      {(account.website || account.url) && (
-                        <a
-                          href={((account.website || account.url || "").startsWith("http") ? (account.website || account.url || "") : `https://${account.website || account.url || ""}`)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
-                        >
-                          {(account.website || account.url || "").replace(/^https?:\/\//, "")}
-                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
                       )}
-                    </td>
-                    <td className="p-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {account.tags?.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {account.tags?.some(tag => tag.toLowerCase() === 'favorite') && (
-                          <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
-                            <Star className="h-3 w-3 text-amber-500 mr-1" />
-                            {translate("favorite", "accounts")}
-                          </Badge>
+                        {account.tags && account.tags.length > 0 ? (
+                          account.tags.map((tag) => (
+                            <Badge key={tag} variant="outline" className="capitalize">
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </div>
-                    </td>
-                    <td className="p-3 text-sm text-muted-foreground">
-                      {format.dateTime(new Date(account.updated_at), { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </td>
-                    <td className="p-3">
+                    </TableCell>
+                    <TableCell>
+                      {account.updated_at
+                        ? format.dateTime(new Date(account.updated_at), {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -373,118 +443,146 @@ export function AccountsContent() {
                           <DropdownMenuItem onClick={() => handleOpenEditDialog(account)}>
                             {translate("edit", "accounts")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-500" onClick={() => confirmDelete(account.doc_id)}>
+                          <DropdownMenuItem onClick={() => confirmDelete(account.doc_id)}>
                             {translate("delete", "accounts")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="text-center py-10 text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2">
-                      <Search className="h-10 w-10 text-muted-foreground/50" />
-                      <h3 className="font-medium">{translate("no_accounts_found", "accounts")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedCategory !== "all"
-                          ? translate("no_accounts_tag_specific", "accounts", { category: selectedCategory })
-                          : searchQuery
-                          ? translate("no_accounts_search_specific", "accounts", { searchQuery: searchQuery })
-                          : translate("no_accounts_create", "accounts")
-                        }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery || selectedCategory !== "all"
+                          ? translate("no_matching_accounts", "accounts", { default: "No matching accounts" })
+                          : translate("no_accounts", "accounts", { default: "No accounts" })}
                       </p>
-                      <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                        {translate("clear_filters", "accounts")}
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddAccount(true)}
+                        className="mt-4"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {translate("add_account", "accounts")}
                       </Button>
                     </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-4 border-t">
-            <div className="text-sm text-muted-foreground">
-              {translate("showing", "accounts")}{' '}
-              {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-{Math.min(currentPage * itemsPerPage, totalCount)}{' '}
-              {translate("of", "accounts")} {totalCount} {translate("accounts", "accounts")}
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1 mr-4">
-                <span className="text-sm text-muted-foreground">{translate("rows_per_page", "accounts")}</span>
-                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                  <SelectTrigger className="h-8 w-[70px]">
-                    <SelectValue placeholder={itemsPerPage.toString()} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={currentPage === 1}>
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevPage} disabled={currentPage === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {getPaginationRange().map((pageNum, index) => (
-                  <Button
-                    key={`${pageNum}-${index}`}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => typeof pageNum === "number" && goToPage(pageNum)}
-                    disabled={pageNum === "..." || currentPage === pageNum}
-                  >
-                    {pageNum}
-                  </Button>
-                ))}
-              </div>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextPage} disabled={currentPage >= totalPages}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages}>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
+          </Table>
         )}
       </div>
 
-      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{translate("confirm_deletion", "accounts")}</DialogTitle>
-            <DialogDescription>{translate("confirm_delete_account_description", "accounts")}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)} disabled={isProcessingDelete}>
-              {translate("cancel", "accounts")}
-            </Button>
-            <Button variant="destructive" onClick={executeDeleteAccount} disabled={isProcessingDelete}>
-              {isProcessingDelete ? `${translate("deleting", "accounts")}...` : translate("delete", "accounts")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing", "accounts")} {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, totalCount)} {translate("of", "accounts")} {totalCount}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      prevPage();
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page, i) => (
+                  <PaginationItem key={i}>
+                    {page === "..." ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToPage(page as number);
+                        }}
+                        isActive={currentPage === page}
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      nextPage();
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
+      )}
 
-      {showAddAccount && <AddAccountDialog onClose={() => setShowAddAccount(false)} onAccountAdded={fetchAccounts} />}
-      {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
+      {/* Dialogs */}
+      {showAddAccount && (
+        <AddAccountDialog
+          open={showAddAccount}
+          onOpenChange={setShowAddAccount}
+          onClose={() => setShowAddAccount(false)}
+          onAccountAdded={() => {
+            fetchAccounts();
+            toast({ title: translate("success", "common"), description: translate("account_added_successfully", "accounts") });
+          }}
+        />
+      )}
+
       {showEditAccount && selectedAccountForEdit && (
         <EditAccountDialog
           account={selectedAccountForEdit}
-          onClose={() => { setShowEditAccount(false); setSelectedAccountForEdit(null); }}
+          onClose={() => setShowEditAccount(false)}
           onAccountUpdated={handleAccountUpdated}
         />
       )}
+
+      <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{translate("confirm_delete", "accounts")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {translate("delete_account_confirmation", "accounts")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessingDelete}>
+              {translate("cancel", "accounts")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeDeleteAccount}
+              disabled={isProcessingDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isProcessingDelete ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {translate("deleting", "accounts")}
+                </div>
+              ) : (
+                translate("delete", "accounts")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

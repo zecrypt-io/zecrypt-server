@@ -24,7 +24,7 @@ interface IdentityFromAPI {
 }
 
 // Processed identity structure for the component
-interface Identity {
+export interface Identity {
   doc_id: string;
   title: string;
   lower_name: string;
@@ -35,6 +35,7 @@ interface Identity {
   address: string; // Extracted from data
   date_of_birth: string; // Extracted from data
   national_id: string; // Extracted from data
+  country?: string; // Add missing country property
   notes?: string | null;
   tags?: string[];
   created_at: string;
