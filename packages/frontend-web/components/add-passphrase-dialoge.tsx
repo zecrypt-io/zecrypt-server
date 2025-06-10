@@ -15,7 +15,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -26,6 +26,7 @@ interface WalletPassphrase {
   wallet_type: string;
   data: string;
   passphrase: string;
+  wallet_address: string;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -62,6 +63,7 @@ export function AddPassphraseDialog({
   const { translate } = useTranslator();
   const [title, setTitle] = useState("");
   const [data, setData] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [walletType, setWalletType] = useState<string>("Bitcoin");
   const [tags, setTags] = useState<string[]>([]);
@@ -103,6 +105,24 @@ export function AddPassphraseDialog({
     
     loadProjectKey();
   }, [open, selectedProjectName]);
+
+  // Add cleanup effect when dialog closes
+  useEffect(() => {
+    if (!open) {
+      // Reset all form fields when dialog closes
+      setTitle("");
+      setData("");
+      setWalletAddress("");
+      setNotes("");
+      setWalletType("Bitcoin");
+      setTags([]);
+      setNewTag("");
+      setError("");
+      setPassphraseError(null);
+      setPassphraseExistsError(null);
+      setNameExistsError(null);
+    }
+  }, [open]);
 
   const predefinedTags = ["main", "trading", "defi", "staking"];
 
@@ -182,7 +202,7 @@ export function AddPassphraseDialog({
   };
 
   const handleSubmit = async () => {
-    if (!title || !data) {
+    if (!title || !data || !walletAddress) {
       setError(translate("please_fill_all_required_fields", "wallet_passphrases", {
         default: "Please fill all required fields",
       }));
@@ -211,12 +231,12 @@ export function AddPassphraseDialog({
       if (!effectiveProjectKey && selectedProjectName) {
         try {
           console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
           
           // Try to decrypt it if found
           if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
             console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
           }
         } catch (error) {
@@ -228,8 +248,11 @@ export function AddPassphraseDialog({
       let processedData = data;
       if (effectiveProjectKey) {
         try {
-          // Create a simple JSON object with only the passphrase
-          const passphraseObject = { passphrase: data };
+          // Create a JSON object with both passphrase and wallet address
+          const passphraseObject = { 
+            passphrase: data,
+            wallet_address: walletAddress 
+          };
           const passphraseJson = JSON.stringify(passphraseObject);
           console.log("Passphrase JSON prepared:", passphraseJson);
           
@@ -380,6 +403,27 @@ export function AddPassphraseDialog({
                 })}
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="walletAddress">
+              {translate("wallet_address", "wallet_passphrases", { default: "Wallet Address" })}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="walletAddress"
+              placeholder={translate("enter_wallet_address", "wallet_passphrases", {
+                default: "Enter wallet address",
+              })}
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              className={error && !walletAddress ? "border-red-500" : ""}
+            />
+            <p className="text-xs text-muted-foreground">
+              {translate("wallet_address_encryption_note", "wallet_passphrases", {
+                default: "The wallet address will be encrypted and securely stored.",
+              })}
+            </p>
           </div>
 
           <div className="space-y-2">

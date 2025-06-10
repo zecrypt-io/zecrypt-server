@@ -6,7 +6,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { decryptAccountData } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/session-storage-utils';
+import { secureGetItem } from '@/libs/local-storage-utils';
+import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 interface Account {
   doc_id: string;
@@ -48,6 +49,9 @@ interface UseAccountManagementReturn {
   setSearchQuery: (query: string) => void;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
+  uniqueTags: string[];
+  sortConfig: SortConfig | null;
+  setSortConfig: (config: SortConfig | null) => void;
   handleDeleteAccount: (doc_id: string) => Promise<void>;
   fetchAccounts: () => Promise<void>;
   clearFilters: () => void;
@@ -64,10 +68,12 @@ export function useAccountManagement({
   const { translate } = useTranslator();
   const [allRawAccounts, setAllRawAccounts] = useState<Account[]>([]); // Stores raw fetched data
   const [processedAccounts, setProcessedAccounts] = useState<Account[]>([]); // Stores data after processing username/password
+  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // Stores filtered accounts based on search/category
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedCategory, setSelectedCategoryState] = useState("all");
   const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
+  const [sortConfig, setSortConfigState] = useState<SortConfig | null>(null);
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -167,6 +173,17 @@ export function useAccountManagement({
     }
   }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
+  // Get all unique tags from accounts
+  const uniqueTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    processedAccounts.forEach(account => {
+      if (account.tags && Array.isArray(account.tags)) {
+        account.tags.forEach(tag => tagsSet.add(tag));
+      }
+    });
+    return Array.from(tagsSet).sort();
+  }, [processedAccounts]);
+
   const getCategoryTag = useCallback((category: string): string => {
     switch (category.toLowerCase()) {
       case 'personal': return 'personal';
@@ -177,10 +194,36 @@ export function useAccountManagement({
     }
   }, []);
 
+  // Apply filters and sorting to accounts
+  useEffect(() => {
+    let result = [...processedAccounts];
+    
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      const categoryTag = getCategoryTag(selectedCategory);
+      result = result.filter(account => 
+        account.tags?.includes(categoryTag)
+      );
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
+      result = searchItemsMultiField(result, searchQuery, ['title', 'name', 'username', 'website', 'url']);
+    }
+    
+    // Apply sorting
+    if (sortConfig) {
+      result = sortItems(result, sortConfig);
+    }
+    
+    setFilteredAccounts(result);
+  }, [processedAccounts, selectedCategory, searchQuery, getCategoryTag, sortConfig]);
+
   const fetchAccounts = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
       setAllRawAccounts([]);
       setProcessedAccounts([]);
+      setFilteredAccounts([]);
       setIsLoading(false);
       return;
     }
@@ -238,7 +281,7 @@ export function useAccountManagement({
     goToPage,
     getPaginationRange 
   } = useClientPagination<Account>({
-    data: processedAccounts, // Use processed accounts for pagination
+    data: filteredAccounts, // Use filtered accounts for pagination
     itemsPerPage,
   });
 
@@ -248,54 +291,51 @@ export function useAccountManagement({
       return;
     }
     try {
-      await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
-      toast({ title: translate("success", "actions"), description: translate("account_deleted_successfully", "accounts") });
-      fetchAccounts();
-    } catch (error: any) {
-      let errorMessage = translate("error_deleting_account", "accounts");
-      if (error.response?.data?.message) {
-        errorMessage = `${errorMessage}: ${error.response.data.message}`;
+      const response = await axiosInstance.delete(`/${selectedWorkspaceId}/${selectedProjectId}/accounts/${doc_id}`);
+      if (response.status === 200) {
+        // Update the state by removing the deleted account
+        setAllRawAccounts(prev => prev.filter(acc => acc.doc_id !== doc_id));
+        setProcessedAccounts(prev => prev.filter(acc => acc.doc_id !== doc_id));
+        toast({ title: translate("success", "actions"), description: translate("account_deleted", "accounts") });
+      } else {
+        console.error("Error deleting account:", response);
+        toast({ title: translate("error", "actions"), description: translate("error_deleting_account", "accounts"), variant: "destructive" });
       }
-      toast({ title: translate("error", "actions"), description: errorMessage, variant: "destructive" });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({ title: translate("error", "actions"), description: translate("error_deleting_account", "accounts"), variant: "destructive" });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWorkspaceId, selectedProjectId, fetchAccounts]);
+  }, [selectedWorkspaceId, selectedProjectId, translate]);
+
+  const setSearchQuery = useCallback((query: string) => {
+    setSearchQueryState(query);
+  }, []);
+
+  const setSelectedCategory = useCallback((category: string) => {
+    setSelectedCategoryState(category);
+  }, []);
+
+  const setItemsPerPage = useCallback((items: number) => {
+    setItemsPerPageState(items);
+  }, []);
+
+  const setSortConfig = useCallback((config: SortConfig | null) => {
+    setSortConfigState(config);
+  }, []);
 
   const clearFilters = useCallback(() => {
     setSearchQueryState("");
     setSelectedCategoryState("all");
-    setCurrentPage(1); // Reset pagination to the first page
-  }, [setCurrentPage]);
-
-  // Debounced search query setter
-  const setSearchQuery = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    return (value: string) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setSearchQueryState(value);
-        setCurrentPage(1); // Reset to first page on search
-      }, 300);
-    };
-  }, [setCurrentPage]);
-
-  const setSelectedCategory = useCallback((category: string) => {
-    setSelectedCategoryState(category);
-    setCurrentPage(1); // Reset to first page on category change
-  }, [setCurrentPage]);
-
-  const setItemsPerPage = useCallback((items: number) => {
-      setItemsPerPageState(items);
-      setCurrentPage(1);
-  }, [setCurrentPage]);
+    setSortConfigState(null);
+  }, []);
 
   return {
     accountsToDisplay,
     allRawAccounts,
     isLoading,
-    totalCount: processedAccounts.length, // Total count is based on all processed accounts
+    totalCount: filteredAccounts.length,
     currentPage,
-    setCurrentPage, // This is goToPage from useClientPagination
+    setCurrentPage,
     totalPages,
     getPaginationRange,
     itemsPerPage,
@@ -304,11 +344,14 @@ export function useAccountManagement({
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    uniqueTags,
+    sortConfig,
+    setSortConfig,
     handleDeleteAccount,
-    fetchAccounts, // Expose fetchAccounts if manual refresh is needed
+    fetchAccounts,
     clearFilters,
     nextPage,
     prevPage,
-    goToPage
+    goToPage,
   };
 } 

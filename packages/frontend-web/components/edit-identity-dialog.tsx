@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface Identity {
   doc_id: string;
@@ -234,102 +234,104 @@ export function EditIdentityDialog({
             {translate("edit_identity_description", "identity", { default: "Update your identity details" })}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">{translate("title", "identity", { default: "Title" })}</Label>
+        <div className="space-y-2 py-2">
+          <div className="space-y-1">
+            <Label htmlFor="title" className="text-sm">{translate("title", "identity", { default: "Title" })}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={translate("title_placeholder", "identity", { default: "Personal Identity" })}
-              className={validationErrors.title ? "border-red-500" : ""}
+              className={`h-8 ${validationErrors.title ? "border-red-500" : ""}`}
             />
             {validationErrors.title && (
-              <p className="text-red-500 text-sm">{validationErrors.title}</p>
+              <p className="text-red-500 text-xs">{validationErrors.title}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="first_name">{translate("first_name", "identity", { default: "First Name" })}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="first_name" className="text-sm">{translate("first_name", "identity", { default: "First Name" })}</Label>
               <Input
                 id="first_name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder={translate("first_name_placeholder", "identity", { default: "John" })}
-                className={validationErrors.firstName ? "border-red-500" : ""}
+                className={`h-8 ${validationErrors.firstName ? "border-red-500" : ""}`}
               />
               {validationErrors.firstName && (
-                <p className="text-red-500 text-sm">{validationErrors.firstName}</p>
+                <p className="text-red-500 text-xs">{validationErrors.firstName}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="last_name">{translate("last_name", "identity", { default: "Last Name" })}</Label>
+            <div className="space-y-1">
+              <Label htmlFor="last_name" className="text-sm">{translate("last_name", "identity", { default: "Last Name" })}</Label>
               <Input
                 id="last_name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder={translate("last_name_placeholder", "identity", { default: "Doe" })}
-                className={validationErrors.lastName ? "border-red-500" : ""}
+                className={`h-8 ${validationErrors.lastName ? "border-red-500" : ""}`}
               />
               {validationErrors.lastName && (
-                <p className="text-red-500 text-sm">{validationErrors.lastName}</p>
+                <p className="text-red-500 text-xs">{validationErrors.lastName}</p>
               )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">{translate("email", "identity", { default: "Email" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="email" className="text-sm">{translate("email", "identity", { default: "Email" })}</Label>
             <Input
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={translate("email_placeholder", "identity", { default: "john.doe@example.com" })}
-              className={validationErrors.email ? "border-red-500" : ""}
+              className={`h-8 ${validationErrors.email ? "border-red-500" : ""}`}
             />
             {validationErrors.email && (
-              <p className="text-red-500 text-sm">{validationErrors.email}</p>
+              <p className="text-red-500 text-xs">{validationErrors.email}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">{translate("phone", "identity", { default: "Phone" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="phone" className="text-sm">{translate("phone", "identity", { default: "Phone" })}</Label>
             <Input
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={translate("phone_placeholder", "identity", { default: "+1 (555) 123-4567" })}
+              className="h-8"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">{translate("address", "identity", { default: "Address" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="address" className="text-sm">{translate("address", "identity", { default: "Address" })}</Label>
             <Textarea
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder={translate("address_placeholder", "identity", { default: "123 Main St, Anytown, CA 94001" })}
               rows={2}
+              className="min-h-[60px]"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="date_of_birth">{translate("date_of_birth", "identity", { default: "Date of Birth" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="date_of_birth" className="text-sm">{translate("date_of_birth", "identity", { default: "Date of Birth" })}</Label>
             <Input
               id="date_of_birth"
               type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
-              className={validationErrors.dateOfBirth ? "border-red-500" : ""}
+              className={`h-8 ${validationErrors.dateOfBirth ? "border-red-500" : ""}`}
             />
             {validationErrors.dateOfBirth && (
-              <p className="text-red-500 text-sm">{validationErrors.dateOfBirth}</p>
+              <p className="text-red-500 text-xs">{validationErrors.dateOfBirth}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="national_id" className="flex items-center gap-1">
+          <div className="space-y-1">
+            <Label htmlFor="national_id" className="flex items-center gap-1 text-sm">
               {translate("national_id", "identity", { default: "National ID" })}
               <span className="text-red-500">*</span>
             </Label>
@@ -338,26 +340,27 @@ export function EditIdentityDialog({
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
               placeholder={translate("national_id_placeholder", "identity", { default: "123-45-6789" })}
-              className={validationErrors.nationalId ? "border-red-500" : ""}
+              className={`h-8 ${validationErrors.nationalId ? "border-red-500" : ""}`}
             />
             {validationErrors.nationalId && (
-              <p className="text-red-500 text-sm">{validationErrors.nationalId}</p>
+              <p className="text-red-500 text-xs">{validationErrors.nationalId}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">{translate("notes", "identity", { default: "Notes" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="notes" className="text-sm">{translate("notes", "identity", { default: "Notes" })}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={translate("notes_placeholder", "identity", { default: "Additional information" })}
-              rows={3}
+              rows={2}
+              className="min-h-[60px]"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tags">{translate("tags", "identity", { default: "Tags" })}</Label>
+          <div className="space-y-1">
+            <Label htmlFor="tags" className="text-sm">{translate("tags", "identity", { default: "Tags" })}</Label>
             <div className="flex gap-2">
               <Input
                 id="tags"
@@ -365,15 +368,16 @@ export function EditIdentityDialog({
                 onChange={(e) => setCurrentTag(e.target.value)}
                 placeholder={translate("tags_placeholder", "identity", { default: "Add tags" })}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+                className="h-8"
               />
-              <Button type="button" onClick={handleAddTag}>
+              <Button type="button" onClick={handleAddTag} className="h-8">
                 {translate("add", "identity", { default: "Add" })}
               </Button>
             </div>
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-1 mt-1">
                 {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1 text-xs">
                     {tag}
                     <X
                       className="h-3 w-3 cursor-pointer"
@@ -385,16 +389,17 @@ export function EditIdentityDialog({
             )}
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-2">
           <Button
             type="button"
             variant="secondary"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
+            className="h-8"
           >
             {translate("cancel", "identity", { default: "Cancel" })}
           </Button>
-          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting} className="h-8">
             {isSubmitting
               ? translate("updating", "identity", { default: "Updating..." })
               : translate("update", "identity", { default: "Update" })}

@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   X,
   AlertTriangle,
+  Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -53,6 +54,7 @@ interface WalletPassphrase {
   updated_at: string | null;
   created_by: string;
   project_id: string;
+  wallet_address: string;
 }
 
 const walletTypes = [
@@ -184,85 +186,98 @@ export function WalletPassphrasesContent() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {translate("wallet_passphrases", "wallet_passphrases", { default: "Wallet Passphrases" })}
+          </h1>
+          <p className="text-muted-foreground">
+            {translate("securely_store_and_manage_your_wallet_recovery_phrases", "wallet_passphrases", { 
+              default: "Securely store and manage your wallet recovery phrases" 
+            })}
+          </p>
+        </div>
+      </div>
+
+      {/* Search, Filter, Sort and Add */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={translate("search_across_all_fields", "wallet_passphrases", {
+                default: "Search across all fields...",
+              })}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <Select value={selectedWalletType} onValueChange={setSelectedWalletType}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={translate("filter_by_wallet_type", "wallet_passphrases", {
+                default: "Filter by wallet type",
+              })} />
+            </SelectTrigger>
+            <SelectContent>
+              {walletTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type === "all"
+                    ? translate("all_wallet_types", "wallet_passphrases", { default: "All Wallet Types" })
+                    : type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <div className="w-40">
+            <SortButton 
+              sortConfig={sortConfig} 
+              onSortChange={setSortConfig} 
+              namespace="wallet_passphrases"
+              options={[
+                { field: "title", label: translate("name", "wallet_passphrases", { default: "Name" }) },
+                { field: "created_at", label: translate("date_created", "wallet_passphrases", { default: "Date Created" }) }
+              ]}
+            />
+          </div>
+          
+          {(searchQuery || selectedWalletType !== "all" || sortConfig) && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <X className="h-3 w-3 mr-1" />
+              {translate("clear_filters", "wallet_passphrases", { default: "Clear Filters" })}
+            </Button>
+          )}
+        </div>
+        
         <Button onClick={handleAddPassphrase} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
         </Button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="relative col-span-1 md:col-span-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={translate("search_across_all_fields", "wallet_passphrases", {
-              default: "Search across all fields...",
-            })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearchQuery("")}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Select value={selectedWalletType} onValueChange={setSelectedWalletType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={translate("filter_by_wallet_type", "wallet_passphrases", {
-              default: "Filter by wallet type",
-            })} />
-          </SelectTrigger>
-          <SelectContent>
-            {walletTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type === "all"
-                  ? translate("all_wallet_types", "wallet_passphrases", { default: "All Wallet Types" })
-                  : type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SortButton sortConfig={sortConfig} onSortChange={setSortConfig} namespace="wallet_passphrases" />
-        {(searchQuery || selectedWalletType !== "all" || sortConfig) && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="h-3 w-3 mr-1" />
-            {translate("clear_filters", "wallet_passphrases", { default: "Clear Filters" })}
-          </Button>
-        )}
-      </div>
-
       {/* Wallet Passphrases Table */}
-      <div className="border rounded-md">
+      <div className="border border-border/30 rounded-md">
         {isLoading ? (
-          <div className="p-10 text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
+          <div className="p-8 text-center">
             <p className="text-muted-foreground">
               {translate("loading_passphrases", "wallet_passphrases", { default: "Loading wallet passphrases..." })}
             </p>
           </div>
-        ) : walletPassphrasesToDisplay.length === 0 ? (
-          <div className="p-10 text-center">
-            <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              {translate("no_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
-            </p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              {translate("clear_filters", "wallet_passphrases", { default: "Clear filters" })}
-            </Button>
-          </div>
         ) : (
-          <div className="rounded-md border">
+          <div className="rounded-md border border-border/30">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -271,6 +286,7 @@ export function WalletPassphrasesContent() {
                   </TableHead>
                   <TableHead>{translate("wallet_type", "wallet_passphrases", { default: "Wallet Type" })}</TableHead>
                   <TableHead>{translate("passphrase", "wallet_passphrases", { default: "Passphrase" })}</TableHead>
+                  <TableHead>{translate("wallet_address", "wallet_passphrases", { default: "Wallet Address" })}</TableHead>
                   <TableHead>{translate("tags", "wallet_passphrases", { default: "Tags" })}</TableHead>
                   <TableHead>{translate("last_modified", "wallet_passphrases", { default: "Last Modified" })}</TableHead>
                   <TableHead className="text-right">
@@ -278,107 +294,159 @@ export function WalletPassphrasesContent() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {walletPassphrasesToDisplay.map((passphrase: WalletPassphrase) => (
-                  <TableRow key={passphrase.doc_id}>
-                    <TableCell className="font-medium">{passphrase.title}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-xs">
-                        {passphrase.wallet_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        <span className="max-w-[200px] truncate">
-                          {viewPassphrase === passphrase.doc_id ? passphrase.passphrase : "••••••••"}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => togglePassphraseVisibility(passphrase.doc_id)}
-                              >
-                                {viewPassphrase === passphrase.doc_id ? (
-                                  <EyeOff className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {viewPassphrase === passphrase.doc_id
-                                ? translate("hide_passphrase", "wallet_passphrases", { default: "Hide passphrase" })
-                                : translate("show_passphrase", "wallet_passphrases", { default: "Show passphrase" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(passphrase.doc_id, "passphrase", passphrase.passphrase)}
-                              >
-                                {copiedField?.doc_id === passphrase.doc_id && copiedField?.field === "passphrase" ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {translate("copy_passphrase", "wallet_passphrases", { default: "Copy passphrase" })}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+              {walletPassphrasesToDisplay.length > 0 ? (
+                <TableBody>
+                  {walletPassphrasesToDisplay.map((passphrase: WalletPassphrase) => (
+                    <TableRow key={passphrase.doc_id}>
+                      <TableCell className="font-medium">{passphrase.title}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {passphrase.wallet_type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          <span className="max-w-[200px] truncate">
+                            {viewPassphrase === passphrase.doc_id ? passphrase.passphrase : "••••••••"}
+                          </span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => togglePassphraseVisibility(passphrase.doc_id)}
+                                >
+                                  {viewPassphrase === passphrase.doc_id ? (
+                                    <EyeOff className="h-3 w-3" />
+                                  ) : (
+                                    <Eye className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {viewPassphrase === passphrase.doc_id
+                                  ? translate("hide_passphrase", "wallet_passphrases", { default: "Hide passphrase" })
+                                  : translate("show_passphrase", "wallet_passphrases", { default: "Show passphrase" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyToClipboard(passphrase.doc_id, "passphrase", passphrase.passphrase)}
+                                >
+                                  {copiedField?.doc_id === passphrase.doc_id && copiedField?.field === "passphrase" ? (
+                                    <Check className="h-3 w-3" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {translate("copy_passphrase", "wallet_passphrases", { default: "Copy passphrase" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          <span className="max-w-[200px] truncate">
+                            {passphrase.wallet_address}
+                          </span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => copyToClipboard(passphrase.doc_id, "wallet_address", passphrase.wallet_address)}
+                                >
+                                  {copiedField?.doc_id === passphrase.doc_id && copiedField?.field === "wallet_address" ? (
+                                    <Check className="h-3 w-3" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {translate("copy_wallet_address", "wallet_passphrases", { default: "Copy wallet address" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {passphrase.tags?.map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {passphrase.updated_at
+                          ? format.dateTime(new Date(passphrase.updated_at), {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditPassphrase(passphrase)}>
+                              {translate("edit", "wallet_passphrases", { default: "Edit" })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => confirmDelete(passphrase.doc_id)}
+                              className="text-red-500"
+                            >
+                              {translate("delete", "wallet_passphrases", { default: "Delete" })}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center w-full mx-auto">
+                        <p className="text-muted-foreground">
+                          {searchQuery
+                            ? translate("no_matching_wallet_passphrases", "wallet_passphrases", { default: "No matching wallet passphrases found" })
+                            : translate("no_wallet_passphrases_found", "wallet_passphrases", { default: "No wallet passphrases found" })}
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={handleAddPassphrase}
+                          className="mt-4"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          {translate("add_passphrase", "wallet_passphrases", { default: "Add Passphrase" })}
+                        </Button>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {passphrase.tags?.map((tag: string) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {passphrase.updated_at
-                        ? format.dateTime(new Date(passphrase.updated_at), {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditPassphrase(passphrase)}>
-                            {translate("edit", "wallet_passphrases", { default: "Edit" })}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => confirmDelete(passphrase.doc_id)}
-                            className="text-red-500"
-                          >
-                            {translate("delete", "wallet_passphrases", { default: "Delete" })}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              )}
             </Table>
           </div>
         )}
@@ -386,47 +454,49 @@ export function WalletPassphrasesContent() {
 
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {translate("showing_results", "wallet_passphrases", {
-              default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
-                currentPage * itemsPerPage,
-                totalCount
-              )} of ${totalCount} results`,
-              startIdx: (currentPage - 1) * itemsPerPage + 1,
-              endIdx: Math.min(currentPage * itemsPerPage, totalCount),
-              totalCount,
-            })}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {translate("showing_results", "wallet_passphrases", {
+                default: `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
+                  currentPage * itemsPerPage,
+                  totalCount
+                )} of ${totalCount} results`,
+                startIdx: (currentPage - 1) * itemsPerPage + 1,
+                endIdx: Math.min(currentPage * itemsPerPage, totalCount),
+                totalCount,
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={currentPage === 1 ? () => {} : prevPage}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPaginationRange().map((page: number | string, index: number) =>
+                  typeof page === "number" ? (
+                    <PaginationItem key={index}>
+                      <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={index}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={currentPage === totalPages ? () => {} : nextPage}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={currentPage === 1 ? () => {} : prevPage}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {getPaginationRange().map((page: number | string, index: number) =>
-                typeof page === "number" ? (
-                  <PaginationItem key={index}>
-                    <PaginationLink onClick={() => goToPage(page)} isActive={page === currentPage}>
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={index}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={currentPage === totalPages ? () => {} : nextPage}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </div>
       )}
 

@@ -33,8 +33,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
 import { generateEncryptedProjectKey } from "@/libs/encryption";
 import { useToast } from "@/hooks/use-toast";
-import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import axiosInstance from "../libs/Middleware/axiosInstace";
+import { Switch } from "@/components/ui/switch";
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -315,14 +316,16 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{translate("projects", "dashboard")}</DialogTitle>
-          <DialogDescription>{translate("select_or_create_project", "dashboard")}</DialogDescription>
+      <DialogContent className="sm:max-w-[650px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+        <DialogHeader className="space-y-1 pb-4">
+          <DialogTitle className="text-2xl font-semibold">{translate("projects", "dashboard")}</DialogTitle>
+          <DialogDescription className="text-base text-muted-foreground">{translate("select_or_create_project", "dashboard")}</DialogDescription>
         </DialogHeader>
+
         {error && (
-          <p className="text-sm text-red-500 mb-4">{error}</p>
+          <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">{error}</div>
         )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {!(forceCreate && projects.length === 0) && (
             <TabsList className="grid w-full grid-cols-2">
@@ -331,27 +334,27 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
             </TabsList>
           )}
 
-          <TabsContent value="select" className="space-y-4 py-4">
+          <TabsContent value="select" className="space-y-2 py-2">
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2 py-6 border-dashed"
+              className="w-full flex items-center justify-center gap-2 py-6 border-dashed h-12 rounded-md"
               onClick={() => {
                 setActiveTab("manage");
                 setShowCreateDialog(true);
               }}
             >
               <Plus className="h-5 w-5" />
-              <span>{translate("create_new_project", "dashboard")}</span>
+              <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
             </Button>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {projects.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center">{translate("no_projects_available", "dashboard")}</p>
               ) : (
                 projects.map((project) => (
                   <div
                     key={project.id}
-                    className="flex items-center gap-3 p-3 rounded-md border border-border hover:border-primary cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 p-1 rounded-lg border border-border/50 hover:border-primary cursor-pointer transition-colors"
                     onClick={() => handleSelectProject(project.id)}
                   >
                     <div
@@ -361,8 +364,8 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
                       <div className="h-5 w-5 rounded-full" style={{ backgroundColor: project.color }}></div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{project.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-medium truncate text-sm">{project.name}</p>
                         {project.isDefault && <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{translate("default", "dashboard")}</span>}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
@@ -376,15 +379,15 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
             </div>
           </TabsContent>
 
-          <TabsContent value="manage" className="space-y-4 py-4">
-            <div className="space-y-2">
+          <TabsContent value="manage" className="space-y-2 py-2">
+            <div className="space-y-1.5">
               {projects.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center">{translate("no_projects_available", "dashboard")}</p>
               ) : (
                 projects.map((project) => (
                   <div
                     key={project.id}
-                    className="flex items-center gap-3 p-3 rounded-md border border-border hover:border-primary transition-colors"
+                    className="flex items-center gap-1.5 p-1 rounded-lg border border-border/50 hover:border-primary transition-colors"
                   >
                     <div
                       className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -393,8 +396,8 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
                       <div className="h-5 w-5 rounded-full" style={{ backgroundColor: project.color }}></div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{project.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-medium truncate text-sm">{project.name}</p>
                         {project.isDefault && <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{translate("default", "dashboard")}</span>}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
@@ -423,11 +426,11 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
 
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-1.5 h-8 rounded-md"
               onClick={() => setShowCreateDialog(true)}
             >
               <Plus className="h-4 w-4" />
-              <span>{translate("create_new_project", "dashboard")}</span>
+              <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
             </Button>
           </TabsContent>
         </Tabs>
@@ -574,6 +577,8 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
         }
       }
 
+      // Dispatch project updated event
+      document.dispatchEvent(new CustomEvent("project-updated"));
       onClose();
     } catch (err: any) {
       console.error("EditProject error:", err);
@@ -585,46 +590,50 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader className="relative">
-          <DialogTitle>{translate("edit_project", "dashboard")}</DialogTitle>
-          <DialogDescription>{translate("update_project_details", "dashboard")}</DialogDescription>
-          <div className="absolute top-1 right-1 flex items-center gap-2">
-            <Checkbox
-              id="default-project"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(!!checked)}
-              className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <Label htmlFor="default-project" className="cursor-pointer text-sm">
-              {translate("set_as_default_project", "dashboard")}
-            </Label>
-          </div>
+      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+        <DialogHeader className="space-y-1 pb-5 text-center">
+          <DialogTitle className="text-2xl font-semibold">{translate("edit_project", "dashboard")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-5">
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <div className="text-sm text-destructive bg-destructive/10 p-1.5 rounded-md">{error}</div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="project-name">{translate("project_name", "dashboard")}</Label>
-            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
+          <div>
+            <Input 
+              id="project-name" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)}
+              className="h-10 rounded-md"
+              placeholder={translate("project_name", "dashboard")}
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="project-description">{translate("description", "dashboard")} ({translate("optional", "dashboard")})</Label>
+          <div>
             <Textarea
               id="project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={1}
+              className="rounded-md"
               placeholder={translate("describe_project_purpose", "dashboard")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>{translate("project_color", "dashboard")}</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">{translate("project_color", "dashboard")}</Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="default-project"
+                  checked={isDefault}
+                  onCheckedChange={(checked) => setIsDefault(!!checked)}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label htmlFor="default-project" className="cursor-pointer text-sm">{translate("set_as_default_project", "dashboard")}</Label>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
               {colors.map((c) => (
                 <button
                   key={c.value}
@@ -642,35 +651,58 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label>{translate("enabled_modules", "dashboard")}</Label>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2 mt-4">
+            <Label className="text-base font-medium">{translate("enabled_modules", "dashboard")}</Label>
+            <div className="grid grid-cols-2 gap-3">
               {featureMenuItems.map((option) => (
-                <div key={option.key} className="flex items-center gap-3">
-                  <Checkbox
-                    id={`feature-${option.key}`}
-                    checked={features[option.key]?.enabled || false}
-                    onCheckedChange={() => handleFeatureToggle(option.key)}
-                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <div className="flex items-center gap-3">
-                    <span className="scale-125">{option.icon}</span>
-                    <Label htmlFor={`feature-${option.key}`} className="cursor-pointer text-base">
-                      {translate(option.labelKey, "dashboard")}
-                    </Label>
+                <div 
+                  key={option.key} 
+                  onClick={() => handleFeatureToggle(option.key)}
+                  className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all duration-200 ${
+                    features[option.key]?.enabled 
+                      ? "border-primary/40 bg-primary/5 hover:bg-primary/10" 
+                      : "border-border/50 hover:border-border/80 hover:bg-muted/50"
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                    features[option.key]?.enabled 
+                      ? "bg-primary/10 text-primary" 
+                      : "bg-muted/50 text-muted-foreground/70"
+                  }`}>
+                    {option.icon}
                   </div>
+                  <Label 
+                    htmlFor={`feature-${option.key}`} 
+                    className="cursor-pointer text-base font-medium flex-1"
+                  >
+                    {translate(option.labelKey, "dashboard")}
+                  </Label>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+        <DialogFooter className="pt-4 flex justify-end gap-3">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            disabled={isLoading}
+            className="h-10 px-5 text-base rounded-md"
+          >
             {translate("cancel", "dashboard")}
           </Button>
-          <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
-            {isLoading ? translate("saving", "dashboard") : translate("save_changes", "dashboard")}
+          <Button 
+            onClick={handleSave} 
+            disabled={isLoading || !name.trim()}
+            className="h-10 px-5 text-base rounded-md"
+          >
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                {translate("saving", "dashboard")}
+              </div>
+            ) : translate("save_changes", "dashboard")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -692,8 +724,6 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
   const [features, setFeatures] = useState(defaultFeatures);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-  // const [features, setFeatures] = useState({ ...defaultFeatures });
 
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
@@ -723,7 +753,6 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
   ] as const;
 
   type FeatureKey = typeof featureOptions[number]["key"];
-  // const { translate } = useTranslator();
 
   const handleFeatureToggle = (featureKey: FeatureKey) => {
     setFeatures((prev) => ({
@@ -798,8 +827,6 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       if (!response.ok) {
         throw new Error(result.message || "Failed to create project");
       }
-      // const response = await axiosInstance.post(`/${workspaceId}/projects`, payload);
-      // const result = response.data;
 
       const newProject = {
         project_id: result.data.doc_id,
@@ -841,6 +868,9 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       }
 
       dispatch(setSelectedProject({ projectId: newProject.project_id }));
+      
+      // Dispatch project updated event
+      document.dispatchEvent(new CustomEvent("project-updated"));
       onClose();
     } catch (err: any) {
       console.error("CreateProject error:", err);
@@ -864,46 +894,44 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader className="relative">
-          <DialogTitle>{translate("create_new_project", "dashboard")}</DialogTitle>
-          {/* <DialogDescription>{translate("create_project_details", "dashboard")}</DialogDescription> */}
-          <div className="absolute top-1 right-1 flex items-center gap-2">
-            <Checkbox
-              id="default-project"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(!!checked)}
-              className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <Label htmlFor="default-project" className="cursor-pointer text-sm">
-              {translate("set_as_default_project", "dashboard")}
-            </Label>
-          </div>
+      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+        <DialogHeader className="space-y-1 pb-5 text-center">
+          <DialogTitle className="text-2xl font-semibold">{translate("create_new_project", "dashboard")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-5">
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <div className="text-sm text-destructive bg-destructive/10 p-1.5 rounded-md">{error}</div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="project-name">{translate("project_name", "dashboard")}</Label>
-            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
+          <div>
+            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} className="h-10 rounded-md" placeholder={translate("project_name", "dashboard")}/>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="project-description">{translate("description", "dashboard")} ({translate("optional", "dashboard")})</Label>
+          <div>
             <Textarea
               id="project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={1}
+              className="rounded-md"
               placeholder={translate("describe_project_purpose", "dashboard")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>{translate("project_color", "dashboard")}</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">{translate("project_color", "dashboard")}</Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="default-project"
+                  checked={isDefault}
+                  onCheckedChange={(checked) => setIsDefault(!!checked)}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label htmlFor="default-project" className="cursor-pointer text-sm">{translate("set_as_default_project", "dashboard")}</Label>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
               {colors.map((c) => (
                 <button
                   key={c.value}
@@ -921,37 +949,51 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label>{translate("enabled_modules", "dashboard")}</Label>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2 mt-4">
+            <Label className="text-base font-medium">{translate("enabled_modules", "dashboard")}</Label>
+            <div className="grid grid-cols-2 gap-3">
               {featureMenuItems.map((option) => (
-                <div key={option.key} className="flex items-center gap-3">
-                  <Checkbox
-                    id={`feature-${option.key}`}
-                    checked={features[option.key]?.enabled || false}
-                    onCheckedChange={() => handleFeatureToggle(option.key)}
-                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <div className="flex items-center gap-3">
-                    <span className="scale-125">{option.icon}</span>
-                    <Label htmlFor={`feature-${option.key}`} className="cursor-pointer text-base">
-                      {translate(option.labelKey, "dashboard")}
-                    </Label>
+                <div 
+                  key={option.key} 
+                  onClick={() => handleFeatureToggle(option.key)}
+                  className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all duration-200 ${
+                    features[option.key]?.enabled 
+                      ? "border-primary/40 bg-primary/5 hover:bg-primary/10" 
+                      : "border-border/50 hover:border-border/80 hover:bg-muted/50"
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                    features[option.key]?.enabled 
+                      ? "bg-primary/10 text-primary" 
+                      : "bg-muted/50 text-muted-foreground/70"
+                  }`}>
+                    {option.icon}
                   </div>
+                  <Label 
+                    htmlFor={`feature-${option.key}`} 
+                    className="cursor-pointer text-base font-medium flex-1"
+                  >
+                    {translate(option.labelKey, "dashboard")}
+                  </Label>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-4 flex justify-end gap-3">
           { !forceCreate && (
-            <Button variant="outline" onClick={handleDialogClose} disabled={isLoading}>
+            <Button variant="outline" onClick={handleDialogClose} disabled={isLoading} className="h-10 px-5 text-base rounded-md">
               {translate("cancel", "dashboard")}
             </Button>
           )}
-          <Button onClick={handleCreate} disabled={isLoading || !name.trim()}>
-            {isLoading ? translate("creating", "dashboard") : translate("create_project", "dashboard")}
+          <Button onClick={handleCreate} disabled={isLoading || !name.trim()} className="h-10 px-5 text-base rounded-md">
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                {translate("creating", "dashboard")}
+              </div>
+            ) : translate("create_project", "dashboard")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -60,3 +60,9 @@ def get_project_secrets_count(db, data_type, project_id):
         db,
         {"project_id": project_id, "secret_type": data_type, "access": {"$ne": False}},
     )
+
+def get_title(db, record_id):
+    secret = find_one(db, {"doc_id": record_id})
+    if not secret:
+        return None
+    return secret.get("title")

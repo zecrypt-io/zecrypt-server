@@ -15,7 +15,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -26,6 +26,7 @@ interface WalletPassphrase {
   wallet_type: string;
   data: string;
   passphrase: string;
+  wallet_address: string;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -64,6 +65,7 @@ export function EditPassphraseDialog({
   const { translate } = useTranslator();
   const [title, setTitle] = useState(passphrase.title);
   const [data, setData] = useState(passphrase.passphrase);
+  const [walletAddress, setWalletAddress] = useState(passphrase.wallet_address || "");
   const [originalData, setOriginalData] = useState(passphrase.passphrase);
   const [notes, setNotes] = useState(passphrase.notes || "");
   const [walletType, setWalletType] = useState<string>(passphrase.wallet_type || "Bitcoin");
@@ -112,6 +114,7 @@ export function EditPassphraseDialog({
     if (passphrase) {
       setTitle(passphrase.title);
       setData(passphrase.passphrase);
+      setWalletAddress(passphrase.wallet_address || "");
       setOriginalData(passphrase.passphrase);
       setNotes(passphrase.notes || "");
       setWalletType(passphrase.wallet_type || "Bitcoin");
@@ -235,11 +238,11 @@ export function EditPassphraseDialog({
       if (!effectiveProjectKey && selectedProjectName) {
         try {
           console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
           
           if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
             console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
           }
         } catch (error) {
@@ -254,10 +257,13 @@ export function EditPassphraseDialog({
         tags,
       };
 
-      if (data !== originalData) {
+      if (data !== originalData || walletAddress !== passphrase.wallet_address) {
         if (effectiveProjectKey) {
           try {
-            const passphraseObject = { passphrase: data };
+            const passphraseObject = { 
+              passphrase: data,
+              wallet_address: walletAddress 
+            };
             const passphraseJson = JSON.stringify(passphraseObject);
             console.log("Passphrase JSON prepared:", passphraseJson);
             
@@ -378,6 +384,25 @@ export function EditPassphraseDialog({
                 })}
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="walletAddress">
+              {translate("wallet_address", "wallet_passphrases", { default: "Wallet Address" })}
+            </Label>
+            <Input
+              id="walletAddress"
+              placeholder={translate("enter_wallet_address", "wallet_passphrases", {
+                default: "Enter wallet address",
+              })}
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              {translate("wallet_address_encryption_note", "wallet_passphrases", {
+                default: "The wallet address will be encrypted and securely stored.",
+              })}
+            </p>
           </div>
 
           <div className="space-y-2">

@@ -7,7 +7,7 @@ import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 import { decryptDataField } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/session-storage-utils';
+import { secureGetItem } from '@/libs/local-storage-utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {
@@ -24,7 +24,7 @@ interface IdentityFromAPI {
 }
 
 // Processed identity structure for the component
-interface Identity {
+export interface Identity {
   doc_id: string;
   title: string;
   lower_name: string;
@@ -35,6 +35,7 @@ interface Identity {
   address: string; // Extracted from data
   date_of_birth: string; // Extracted from data
   national_id: string; // Extracted from data
+  country?: string; // Add missing country property
   notes?: string | null;
   tags?: string[];
   created_at: string;

@@ -9,7 +9,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
 import { decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 
 interface WalletPassphrase {
   doc_id: string;
@@ -19,6 +19,7 @@ interface WalletPassphrase {
   wallet_type: string;
   data: string;
   passphrase: string;
+  wallet_address: string;
   notes?: string | null;
   tags?: string[];
   created_at: string;
@@ -143,6 +144,7 @@ export function useWalletPassphraseManagement({
     
     for (const item of rawPassphrases) {
       let decryptedData = '';
+      let walletAddress = '';
       
       // Check if data exists
       if (item.data) {
@@ -154,14 +156,15 @@ export function useWalletPassphraseManagement({
             try {
               // Try to parse as JSON
               const passphraseObj = JSON.parse(decrypted);
-              // Use the passphrase field from the JSON object
-              if (passphraseObj && passphraseObj.passphrase) {
-                decryptedData = passphraseObj.passphrase;
-                console.log("Successfully decrypted JSON passphrase");
+              // Use the passphrase and wallet_address fields from the JSON object
+              if (passphraseObj) {
+                decryptedData = passphraseObj.passphrase || '';
+                walletAddress = passphraseObj.wallet_address || '';
+                console.log("Successfully decrypted JSON passphrase and wallet address");
               } else {
-                // If for some reason the JSON doesn't have passphrase field
+                // If for some reason the JSON doesn't have required fields
                 decryptedData = decrypted;
-                console.log("Decrypted but found no passphrase field in JSON");
+                console.log("Decrypted but found no passphrase/wallet_address fields in JSON");
               }
             } catch (parseError) {
               // If not valid JSON, use the decrypted string directly
@@ -188,6 +191,7 @@ export function useWalletPassphraseManagement({
         wallet_type: item.wallet_type || "Other",
         data: item.data || "", 
         passphrase: decryptedData,
+        wallet_address: walletAddress,
         notes: item.notes || null,
         tags: item.tags || [],
         created_at: item.created_at || "",
@@ -376,7 +380,7 @@ export function useWalletPassphraseManagement({
   }, [filteredWalletPassphrases]);
 
   // Wrapper function to allow external components to trigger fetch
-  const manualFetchWalletPassphrases = useCallback(() => {
+  const manualFetchWalletPassphrases = useCallback(async () => {
     setFetchTrigger(prev => prev + 1);
   }, []);
 

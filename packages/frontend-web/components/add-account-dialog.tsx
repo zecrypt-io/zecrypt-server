@@ -10,14 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { encryptAccountData } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface AddAccountDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onClose: () => void;
   onAccountAdded: () => void;
+  onGeneratePasswordRequest?: () => void;
 }
 
-export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogProps) {
+export function AddAccountDialog({ open, onOpenChange, onClose, onAccountAdded, onGeneratePasswordRequest }: AddAccountDialogProps) {
   const { translate } = useTranslator();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -105,7 +108,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
 
       if (response.status === 200 || response.status === 201 || (response.data && response.data.status_code === 201)) {
         onAccountAdded();
-        onClose();
+        onOpenChange(false);
       } else {
         throw new Error(response.data?.message || translate("failed_to_add_account", "accounts"));
       }
@@ -259,7 +262,7 @@ export function AddAccountDialog({ onClose, onAccountAdded }: AddAccountDialogPr
           </div>
 
           <div className="flex items-center justify-between gap-2 pt-4">
-            <Button variant="outline" className="w-full" onClick={onClose} disabled={isSubmitting}>
+            <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               {translate("cancel", "accounts")}
             </Button>
             <Button

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface Card {
   doc_id: string;
