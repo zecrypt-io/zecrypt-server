@@ -1205,7 +1205,7 @@
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
     "save_changes": "Save Changes",
-    "search_licenses": "Search"
+    "search_licenses": "Search",
     "manage_your_ssh_keys": "Manage your SSH keys securely",
     "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",
