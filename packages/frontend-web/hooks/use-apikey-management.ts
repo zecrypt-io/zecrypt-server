@@ -9,7 +9,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
 import { decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 
 interface ApiKeyFromAPI {
   doc_id: string;
@@ -130,9 +130,9 @@ export function useApiKeyManagement({
         let effectiveProjectKey = projectKey;
         if (!effectiveProjectKey && selectedProjectName) {
           try {
-            const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+            const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
             if (rawProjectKey) {
-              effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+              effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
             }
           } catch (error) {
             console.error("Failed to get project key directly:", error);

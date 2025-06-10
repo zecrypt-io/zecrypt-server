@@ -33,7 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslator } from "@/hooks/use-translations";
 import { generateEncryptedProjectKey } from "@/libs/encryption";
 import { useToast } from "@/hooks/use-toast";
-import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { Switch } from "@/components/ui/switch";
 

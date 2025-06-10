@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { encryptAccountData } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface AddAccountDialogProps {
   open: boolean;

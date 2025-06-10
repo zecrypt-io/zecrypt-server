@@ -9,7 +9,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
 import { decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 
 interface Email {
   doc_id: string;
