@@ -394,7 +394,8 @@
     "good": "Good",
     "strong_strength": "Strong",
     "strength": "{strength}% Strength",
-    "current_session": "Current Session"
+    "current_session": "Current Session",
+    "create_secure_passwords": "Create secure passwords for your accounts"
   },
   "user_settings": {
     "title": "User Settings",
