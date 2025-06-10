@@ -97,8 +97,10 @@
     "descending": "Descending",
     "clear_sort": "Clear Sort",
     "search_across_all_fields": "Search",
-    "update_api_key": "Update API Key"
-
+    "update_api_key": "Update API Key",
+    "manage_your_software_licenses": "Manage your software licenses securely",
+    "date_created": "Date Created",
+    "add_a_tag": "Add a tag"
   },
   "navigation": {
     "home": "Home",
