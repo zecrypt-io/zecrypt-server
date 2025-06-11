@@ -17,8 +17,22 @@ interface GeneratePasswordDialogProps {
   onClose: () => void
 }
 
+interface PasswordHistoryItem {
+  doc_id: string
+  data: string
+  created_at: string | number
+}
+
+interface PasswordHistoryDialogProps {
+  onClose: () => void
+  passwordHistory: PasswordHistoryItem[]
+  isLoading: boolean
+  handleClearHistory: () => void
+  translate: (key: string, namespace?: string, options?: any) => string
+}
+
 // New History Dialog Component
-function PasswordHistoryDialog({ onClose, passwordHistory, isLoading, handleClearHistory, translate }) {
+function PasswordHistoryDialog({ onClose, passwordHistory, isLoading, handleClearHistory, translate }: PasswordHistoryDialogProps) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden">
       <div className="relative w-full max-w-md rounded-lg bg-card border border-border shadow-lg flex flex-col max-h-[90vh]">
@@ -54,7 +68,7 @@ function PasswordHistoryDialog({ onClose, passwordHistory, isLoading, handleClea
           ) : (
             <div className="space-y-2">
               {passwordHistory && passwordHistory.length > 0 ? 
-                passwordHistory.map((item) => (
+                passwordHistory.map((item: PasswordHistoryItem) => (
                   <div 
                     key={item.doc_id}
                     className="flex items-center justify-between p-2 bg-muted/30 rounded group"
@@ -362,7 +376,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden">
-        <div className="relative w-full max-w-md rounded-lg bg-card border border-border shadow-lg flex flex-col max-h-[90vh]">
+        <div className="relative w-full max-w-xl rounded-lg bg-card border border-border shadow-lg flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="p-4 border-b border-border sticky top-0 bg-card z-10 flex items-center justify-between">
             <h2 className="text-lg font-bold">{translate("title", "password_generator")}</h2>
@@ -372,7 +386,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-6">
             <p className="text-sm text-muted-foreground mb-4 text-center">
               {translate("create_secure_passwords", "password_generator", { default: "Create secure passwords for your accounts" })}
             </p>
@@ -482,10 +496,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
 
             {/* Generated Password */}
             <div className="mb-6">
-              <div className="relative">
-                <span className="absolute right-3 top-3 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                  {strengthInfo.label}
-                </span>
+              <div>
                 <div className="relative mt-1">
                   <div className="flex items-center">
                     <div className="bg-muted p-3 rounded-md font-mono text-base flex-1 break-all mr-2">
@@ -503,8 +514,14 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
                     </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Progress value={passwordStrength} className="h-2 flex-1" />
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${strengthInfo.bgColor} ${strengthInfo.color}`}>
+                    <StrengthIcon className="h-3 w-3" />
+                    {strengthInfo.label}
+                  </span>
+                </div>
               </div>
-              <Progress value={passwordStrength} className="h-2 mt-2" />
             </div>
 
             {/* Action Buttons */}
