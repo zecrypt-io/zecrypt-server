@@ -97,8 +97,10 @@
     "descending": "Descending",
     "clear_sort": "Clear Sort",
     "search_across_all_fields": "Search",
-    "update_api_key": "Update API Key"
-
+    "update_api_key": "Update API Key",
+    "manage_your_software_licenses": "Manage your software licenses securely",
+    "date_created": "Date Created",
+    "add_a_tag": "Add a tag"
   },
   "navigation": {
     "home": "Home",
@@ -1205,7 +1207,7 @@
     "edit_ssh_key": "Edit SSH Key",
     "edit_ssh_key_description": "Update your SSH key details",
     "save_changes": "Save Changes",
-    "search_licenses": "Search"
+    "search_licenses": "Search",
     "manage_your_ssh_keys": "Manage your SSH keys securely",
     "filter_by_tag": "Filter by tag",
     "all_tags": "All Tags",

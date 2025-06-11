@@ -41,7 +41,7 @@ import { useUser } from "@stackframe/stack";
 import { loadInitialData, fetchProjects, fetchProjectKeys, fetchDashboardOverview, fetchRecentActivity, fetchRecentAccounts } from "@/libs/getWorkspace";
 import { importRSAPrivateKey, decryptAESKeyWithRSA, decryptAccountData } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
-import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import { WelcomeModal } from "./welcom-modal";
 import axios from "axios";
 import axiosInstance from "@/libs/Middleware/axiosInstace";

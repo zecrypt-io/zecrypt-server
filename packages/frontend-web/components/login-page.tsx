@@ -38,7 +38,7 @@ import { getUserKeys } from "@/libs/api-client";
 import { EncryptionSetupModal } from "./encryption-setup-modal";
 import { EncryptionUnlockModal } from "./encryption-unlock-modal";
 import { exportKeyToString } from "@/libs/crypto-utils";
-import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import { logout } from "@/libs/utils";
 
 export interface LoginPageProps {

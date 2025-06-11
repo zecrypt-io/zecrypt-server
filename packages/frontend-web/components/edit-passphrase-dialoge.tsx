@@ -15,7 +15,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -238,11 +238,11 @@ export function EditPassphraseDialog({
       if (!effectiveProjectKey && selectedProjectName) {
         try {
           console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
           
           if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
             console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
           }
         } catch (error) {

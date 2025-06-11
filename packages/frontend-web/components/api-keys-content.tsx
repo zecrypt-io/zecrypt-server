@@ -39,7 +39,7 @@ import { useApiKeyManagement } from "@/hooks/use-apikey-management";
 import { AddApiKey } from "./add-apikey";
 import { EditApiKey } from "./edit-apikey";
 import { SortButton } from "@/components/ui/sort-button";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { decryptDataField } from "@/libs/encryption";
 
 interface ApiKey {
@@ -176,9 +176,9 @@ export function ApiKeysContent() {
     let effectiveProjectKey = projectKey;
     if (!effectiveProjectKey && selectedProjectName) {
       try {
-        const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
         if (rawProjectKey) {
-          effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
         }
       } catch (error) {
         console.error("Failed to get project key directly:", error);
@@ -221,9 +221,9 @@ export function ApiKeysContent() {
           let effectiveProjectKey = projectKey;
           if (!effectiveProjectKey && selectedProjectName) {
             try {
-              const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
+              const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
               if (rawProjectKey) {
-                effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+                effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
               }
             } catch (error) {
               console.error("Failed to get project key directly:", error);

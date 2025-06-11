@@ -24,7 +24,7 @@ import {
 } from "@/libs/crypto-utils";
 import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
-import { secureSetItem } from '@/libs/session-storage-utils';
+import { secureSetItem } from '@/libs/local-storage-utils';
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;

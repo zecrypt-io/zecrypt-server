@@ -14,7 +14,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ApiKey {
@@ -169,12 +169,12 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
         let effectiveProjectKey = projectKey;
         if (!effectiveProjectKey && selectedProjectName) {
           console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
           
           // Try to decrypt it if found
           if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
             console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
           }
         }

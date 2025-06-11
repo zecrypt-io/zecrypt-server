@@ -14,7 +14,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromSessionStorage } from "@/libs/session-storage-utils";
+import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface AddApiKeyProps {
@@ -106,18 +106,18 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
       console.log("API key JSON prepared:", apiKeyJson);
       
       // Get the current project keys from storage
-      console.log("All sessionStorage keys:", Object.keys(sessionStorage));
+      console.log("All localStorage keys:", Object.keys(localStorage));
       
-      // Direct access to session storage key - using project name
+      // Direct access to localStorage key - using project name
       let effectiveProjectKey = projectKey;
       if (!effectiveProjectKey && selectedProjectName) {
         console.log("Project key not found in state, trying to load directly");
-        const rawProjectKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-        console.log("Raw project key from session storage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
+        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+        console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
         
         // Try to decrypt it if found
         if (rawProjectKey) {
-          effectiveProjectKey = await decryptFromSessionStorage(rawProjectKey);
+          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
           console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
         }
       }
