@@ -127,8 +127,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
     passwordHistory, 
     isLoading: isHistoryLoading,
     fetchPasswordHistory, 
-    savePasswordToHistory,
-    isProjectKeyLoading
+    savePasswordToHistory
   } = usePasswordHistory()
   const [selectedMode, setSelectedMode] = useState("strong")
   const [showHistory, setShowHistory] = useState(false)
