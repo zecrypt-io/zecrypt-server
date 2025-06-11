@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Copy, RefreshCw, X, Check, Shield, ShieldCheck, ShieldAlert, Save, Clock, Sparkles } from "lucide-react"
+import { Copy, RefreshCw, X, Check, Shield, ShieldCheck, ShieldAlert, Save, Clock, Sparkles, ChevronDown, ChevronUp } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -132,6 +132,7 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   } = usePasswordHistory()
   const [selectedMode, setSelectedMode] = useState("strong")
   const [showHistory, setShowHistory] = useState(false)
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(true)
   const [options, setOptions] = useState({
     uppercase: true,
     lowercase: true,
@@ -366,20 +367,13 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
   const strengthInfo = getStrengthLabel()
   const StrengthIcon = strengthInfo.icon
 
-  // Generate a password on initial load if none exists
-  useEffect(() => {
-    if (!password) {
-      generatePasswordAndUpdateDisplay()
-    }
-  }, []);
-
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden">
         <div className="relative w-full max-w-xl rounded-lg bg-card border border-border shadow-lg flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="p-4 border-b border-border sticky top-0 bg-card z-10 flex items-center justify-between">
-            <h2 className="text-lg font-bold">{translate("title", "password_generator")}</h2>
+            <h2 className="text-lg font-bold text-center flex-1">{translate("title", "password_generator")}</h2>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-5 w-5" />
             </Button>
@@ -431,98 +425,120 @@ export function GeneratePasswordDialog({ onClose }: GeneratePasswordDialogProps)
               </button>
             </div>
 
-            {/* Password Length */}
+            {/* Advanced Options */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium">{translate("password_length", "password_generator")}: {length}</label>
-                <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{length}</span>
-              </div>
-              <Slider
-                value={[length]}
-                min={4}
-                max={32}
-                step={1}
-                onValueChange={(value) => setLength(value[0])}
-                className="w-full"
-              />
-            </div>
-
-            {/* Character Sets */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="uppercase"
-                  checked={options.uppercase}
-                  onCheckedChange={() => handleOptionChange("uppercase")}
-                />
-                <Label htmlFor="uppercase" className="cursor-pointer text-sm">
-                  {translate("uppercase", "password_generator", { default: "Uppercase (A-Z)" })}
-                </Label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="lowercase"
-                  checked={options.lowercase}
-                  onCheckedChange={() => handleOptionChange("lowercase")}
-                />
-                <Label htmlFor="lowercase" className="cursor-pointer text-sm">
-                  {translate("lowercase", "password_generator", { default: "Lowercase (a-z)" })}
-                </Label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="numbers"
-                  checked={options.numbers}
-                  onCheckedChange={() => handleOptionChange("numbers")}
-                />
-                <Label htmlFor="numbers" className="cursor-pointer text-sm">
-                  {translate("numbers", "password_generator", { default: "Numbers (0-9)" })}
-                </Label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="symbols"
-                  checked={options.symbols}
-                  onCheckedChange={() => handleOptionChange("symbols")}
-                />
-                <Label htmlFor="symbols" className="cursor-pointer text-sm">
-                  {translate("symbols", "password_generator", { default: "Symbols (!@#$)" })}
-                </Label>
-              </div>
-            </div>
-
-            {/* Generated Password */}
-            <div className="mb-6">
-              <div>
-                <div className="relative mt-1">
-                  <div className="flex items-center">
-                    <div className="bg-muted p-3 rounded-md font-mono text-base flex-1 break-all mr-2">
-                      {password}
+              <button 
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                className="flex w-full items-center justify-between p-2 bg-muted/50 rounded text-sm font-medium"
+              >
+                {translate("advanced_options", "password_generator", { default: "Advanced Options" })}
+                {showAdvancedOptions ? 
+                  <ChevronUp className="h-4 w-4" /> : 
+                  <ChevronDown className="h-4 w-4" />
+                }
+              </button>
+              
+              {showAdvancedOptions && (
+                <div className="mt-3 p-3 border border-border rounded-md">
+                  {/* Password Length */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium">{translate("password_length", "password_generator")}: {length}</label>
+                      <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{length}</span>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={copyToClipboard}
-                        className="h-9 w-9"
-                      >
-                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
+                    <Slider
+                      value={[length]}
+                      min={4}
+                      max={32}
+                      step={1}
+                      onValueChange={(value) => setLength(value[0])}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Character Sets */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="uppercase"
+                        checked={options.uppercase}
+                        onCheckedChange={() => handleOptionChange("uppercase")}
+                      />
+                      <Label htmlFor="uppercase" className="cursor-pointer text-sm">
+                        {translate("uppercase", "password_generator", { default: "Uppercase (A-Z)" })}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="lowercase"
+                        checked={options.lowercase}
+                        onCheckedChange={() => handleOptionChange("lowercase")}
+                      />
+                      <Label htmlFor="lowercase" className="cursor-pointer text-sm">
+                        {translate("lowercase", "password_generator", { default: "Lowercase (a-z)" })}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="numbers"
+                        checked={options.numbers}
+                        onCheckedChange={() => handleOptionChange("numbers")}
+                      />
+                      <Label htmlFor="numbers" className="cursor-pointer text-sm">
+                        {translate("numbers", "password_generator", { default: "Numbers (0-9)" })}
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="symbols"
+                        checked={options.symbols}
+                        onCheckedChange={() => handleOptionChange("symbols")}
+                      />
+                      <Label htmlFor="symbols" className="cursor-pointer text-sm">
+                        {translate("symbols", "password_generator", { default: "Symbols (!@#$)" })}
+                      </Label>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Progress value={passwordStrength} className="h-2 flex-1" />
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${strengthInfo.bgColor} ${strengthInfo.color}`}>
-                    <StrengthIcon className="h-3 w-3" />
-                    {strengthInfo.label}
-                  </span>
+              )}
+            </div>
+
+            {/* Generated Password - Only show when password exists */}
+            {password && (
+              <div className="mb-6">
+                <div>
+                  <div className="relative mt-1">
+                    <div className="flex items-center">
+                      <div className="bg-muted p-3 rounded-md font-mono text-base flex-1 break-all mr-2">
+                        {password}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={copyToClipboard}
+                          className="h-9 w-9"
+                        >
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  {password && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Progress value={passwordStrength} className="h-2 flex-1" />
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${strengthInfo.bgColor} ${strengthInfo.color}`}>
+                        <StrengthIcon className="h-3 w-3" />
+                        {strengthInfo.label}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-between gap-2 mb-4">
