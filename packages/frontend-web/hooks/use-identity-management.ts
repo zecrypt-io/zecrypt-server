@@ -7,7 +7,7 @@ import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 import { decryptDataField } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/session-storage-utils';
+import { secureGetItem } from '@/libs/local-storage-utils';
 
 // Raw data structure from API GET /identity
 interface IdentityFromAPI {

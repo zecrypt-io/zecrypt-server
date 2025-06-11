@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { decryptAccountData } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/session-storage-utils';
+import { secureGetItem } from '@/libs/local-storage-utils';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 interface Account {

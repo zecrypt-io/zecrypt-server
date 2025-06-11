@@ -13,7 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { encryptAccountData, decryptAccountData } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface Account {
   doc_id: string;

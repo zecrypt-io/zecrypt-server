@@ -13,7 +13,7 @@ import { Workspace, Project } from "../libs/Redux/workspaceSlice";
 import { log } from "node:console";
 import { ProjectDialog } from "./project-dialog";
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "../libs/encryption";
-import { secureSetItem, secureGetItem } from '@/libs/session-storage-utils';
+import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 
 export function OverviewContent() {
   const user = useUser();

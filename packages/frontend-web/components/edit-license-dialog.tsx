@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface License {
   doc_id: string;

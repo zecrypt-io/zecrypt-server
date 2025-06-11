@@ -14,7 +14,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { hashData } from "@/libs/crypto";
 import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/session-storage-utils";
+import { secureGetItem } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Email {
