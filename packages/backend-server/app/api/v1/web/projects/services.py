@@ -133,7 +133,6 @@ def get_tags(db, project_id):
 
 
 def add_project_key(db, user_id, project_id, workspace_id, project_key):
-   
     project_keys_manager.insert_one(
         db,
         {

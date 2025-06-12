@@ -7,7 +7,6 @@ from app.core.config import settings
 valkey_client = valkey.Valkey.from_url(url=settings.VALKEY_URL)
 
 
-
 class ValkeyClient:
     def __init__(self):
         """
@@ -15,7 +14,6 @@ class ValkeyClient:
         """
         self.client = valkey_client
 
-   
     def add_key_to_hash(self, name, key, value):
         """
         Add a new key-value pair to a hash
@@ -40,7 +38,6 @@ class ValkeyClient:
         except Exception:
             pass
 
-
     def get_from_hash(self, name, key):
         """
         Get a value from a hash
@@ -62,7 +59,6 @@ class ValkeyClient:
         """
         return self.client.hexists(name, key)
 
-
     def get_all_keys_from_hash(self, name):
         """
         Get all keys from a hash
@@ -71,8 +67,6 @@ class ValkeyClient:
         """
         keys = list(self.client.hkeys(name))
         return [key.decode("utf-8") for key in keys]
-
-   
 
     def delete_hash(self, hash):
         try:

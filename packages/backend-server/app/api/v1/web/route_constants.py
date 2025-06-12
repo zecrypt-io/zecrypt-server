@@ -43,6 +43,10 @@ SSH_KEY_DETAILS = BASE_URL + "/ssh-keys/{doc_id}"
 NOTES = BASE_URL + "/notes"
 NOTE_DETAILS = BASE_URL + "/notes/{doc_id}"
 
+# ENV
+ENV = BASE_URL + "/env"
+ENV_DETAILS = BASE_URL + "/env/{doc_id}"
+
 # Dashboard
 DASHBOARD_OVERVIEW = "/{workspace_id}/{project_id}/dashboard/overview"
 DASHBOARD_RECENT_ACTIVITY = "/{workspace_id}/{project_id}/dashboard/recent-activity"

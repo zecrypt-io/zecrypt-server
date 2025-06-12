@@ -5,6 +5,7 @@ from starlette.responses import JSONResponse
 import hashlib
 import json
 
+
 def response_helper(
     status_code: int,
     message: any,
@@ -44,6 +45,7 @@ def get_origins(env):
     }
     return data.get(env, ["*"])
 
+
 def generate_query_hash(query, projection=None):
     """Generate a unique hash for a given query."""
     query_string = json.dumps(query, sort_keys=True)
@@ -54,4 +56,3 @@ def generate_query_hash(query, projection=None):
     combined_str = query_string + projection_str
 
     return hashlib.md5(combined_str.encode()).hexdigest()
-
