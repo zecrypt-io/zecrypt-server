@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 
-from app.api.v1.web.secrets.env.schema import UpdateEnv, AddEnv
+from app.api.v1.web.secrets.environment.schema import UpdateEnv, AddEnv
 from app.api.v1.web.secrets.services import (
     delete_secret,
     update_secret,
