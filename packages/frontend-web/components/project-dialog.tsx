@@ -950,7 +950,7 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
           </div>
 
           <div className="space-y-2 mt-4">
-            <Label className="text-base font-medium">{translate("enabled_modules", "dashboard")}</Label>
+            <Label className="text-base font-medium">{translate("available_features", "dashboard")}</Label>
             <div className="grid grid-cols-2 gap-3">
               {featureMenuItems.map((option) => (
                 <div 

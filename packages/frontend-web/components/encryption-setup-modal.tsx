@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, KeyRound, Eye, EyeOff, Lock } from "lucide-react";
+import { AlertTriangle, KeyRound, Eye, EyeOff, Lock, Download, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { 
   generateRsaKeyPair, 
@@ -25,6 +25,7 @@ import {
 import { updateUserKeys } from "@/libs/api-client";
 import { toast } from "@/components/ui/use-toast";
 import { secureSetItem } from '@/libs/local-storage-utils';
+import { generateStrongPassword } from "@/libs/password-utils";
 
 interface EncryptionSetupModalProps {
   isOpen: boolean;
@@ -46,6 +47,22 @@ export function EncryptionSetupModal({
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   
+  const handleGeneratePassword = () => {
+    const generatedPassword = generateStrongPassword();
+    setPassword(generatedPassword);
+    setConfirmPassword(generatedPassword);
+  };
+
+  const handleDownloadPassword = () => {
+    const element = document.createElement("a");
+    const file = new Blob([`Your Zecrypt Encryption Password:\n\n${password}\n\nIMPORTANT: Keep this password safe. You will need it to access your encrypted data.`], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "zecrypt-encryption-password.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   const handleSubmit = async () => {
     // Validate password
     if (password.length < 8) {
@@ -152,9 +169,21 @@ export function EncryptionSetupModal({
           </Alert>
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">
-              {tAuth("encryption_password")}
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-sm font-medium">
+                {tAuth("encryption_password")}
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 gap-2"
+                onClick={handleGeneratePassword}
+              >
+                <RefreshCw className="h-4 w-4" />
+                {tAuth("generate_password")}
+              </Button>
+            </div>
             <div className="relative">
               <Input
                 id="password"
@@ -205,9 +234,23 @@ export function EncryptionSetupModal({
             <p className="text-sm font-medium text-destructive">{error}</p>
           )}
           
-          <p className="text-sm text-muted-foreground">
-            {tAuth("encryption_password_requirements")}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {tAuth("encryption_password_requirements")}
+            </p>
+            {password && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 gap-2"
+                onClick={handleDownloadPassword}
+              >
+                <Download className="h-4 w-4" />
+                {tAuth("download_password")}
+              </Button>
+            )}
+          </div>
         </div>
         
         <DialogFooter>

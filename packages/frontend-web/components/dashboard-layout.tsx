@@ -50,6 +50,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import { secureSetItem } from '@/libs/local-storage-utils';
 import { SearchModal } from "@/components/search-modal";
 import { logout } from "@/libs/utils";
+import { SidebarNav } from "@/components/sidebar-nav";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -345,14 +346,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
   const [showSearchModal, setShowSearchModal] = useState(false);
-
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({
-    overview: false,
-    general: false,
-    security: false,
-    business: false,
-    licenses: false
-  });
+  const [currentLocale, setCurrentLocale] = useState(locale);
 
   const languageLabels: Record<string, string> = {
     af: "Afrikaans",
@@ -388,45 +382,11 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     "zh-Hant": "Chinese Traditional (繁體中文)",
   };
 
-  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const selectedProject = useSelector((state: RootState) =>
-    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId && selectedProjectId
-      ? state.workspace.workspaces
-          .find((ws) => ws.workspaceId === selectedWorkspaceId)
-          ?.projects.find((p) => p.project_id === selectedProjectId)
-      : null
-  );
-  const defaultProject = useSelector((state: RootState) =>
-    Array.isArray(state.workspace.workspaces) && selectedWorkspaceId
-      ? state.workspace.workspaces
-          .find((ws) => ws.workspaceId === selectedWorkspaceId)
-          ?.projects.find((p) => p.is_default)
-      : null
-  );
-  const displayProject = selectedProject || defaultProject;
-
-  const normalizedFeatures = displayProject
-    ? { ...defaultFeatures, ...(displayProject.features || {}) }
-    : defaultFeatures;
-
-  const selectedWorkspace = useSelector((state: RootState) =>
-    Array.isArray(state.workspace.workspaces)
-      ? state.workspace.workspaces.find((ws) => ws.workspaceId === selectedWorkspaceId)
-      : null
-  );
-  const workspaceName = selectedWorkspace?.name || "Personal Workspace";
-
-  const toggleCategory = (categoryId: string) => {
-    setCollapsedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setFavoriteTags(favoriteTags.filter((tag) => tag !== tagToRemove));
-  };
+  const sortedLocales = [...locales].sort((a, b) => {
+    const nameA = languageLabels[a] || a;
+    const nameB = languageLabels[b] || b;
+    return nameA.localeCompare(nameB);
+  });
 
   const handleLogout = async () => {
     await logout({
@@ -449,8 +409,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     router.push(newPath);
     setCurrentLocale(newLocale);
   };
-
-  const [currentLocale, setCurrentLocale] = useState(locale);
 
   useEffect(() => {
     if (locale) {
@@ -607,185 +565,26 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     };
   }, [currentLocale, router]);
 
-  const sortedLocales = [...locales].sort((a, b) => {
-    const nameA = languageLabels[a] || a;
-    const nameB = languageLabels[b] || b;
-    return nameA.localeCompare(nameB);
-  });
-
-  const enabledMenuItems: SearchModule[] = displayProject
-    ? navigationCategories.flatMap(category =>
-        category.items.filter(item =>
-          'always_visible' in item ? item.always_visible :
-          'feature_key' in item && item.feature_key && normalizedFeatures[item.feature_key as keyof typeof defaultFeatures]?.enabled
-        ).map(item => ({
-          key: 'feature_key' in item && item.feature_key ? item.feature_key : item.key,
-          labelKey: item.labelKey,
-          path: item.path,
-          icon: item.icon
-        }))
-      )
-    : [];
-
-  const getVisibleCategories = () => {
-    return navigationCategories.map(category => ({
-      ...category,
-      items: category.items.filter(item =>
-        'always_visible' in item ? item.always_visible :
-        'feature_key' in item && item.feature_key && normalizedFeatures[item.feature_key as keyof typeof defaultFeatures]?.enabled
-      )
-    })).filter(category => category.items.length > 0);
-  };
-
-  const visibleCategories = getVisibleCategories();
-
   return (
     <div className="flex min-h-screen bg-background">
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
-        modules={enabledMenuItems}
+        modules={[]}
         locale={currentLocale}
         onSelectModule={(path) => router.push(`/${currentLocale}${path}`)}
       />
 
-      <div className="hidden md:flex w-64 flex-col border-r border-border">
-        <div className="flex h-14 items-center border-b border-border px-4">
-          <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
-            <Lock className="h-5 w-5" />
-            <span>Zecrypt</span>
-          </Link>
-          <div className="ml-auto flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-            >
-              <Command className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto py-2 flex flex-col">
-          <div className="px-3 py-2">
-            <div className="mb-4">
-              <label className="px-2 text-xs font-semibold text-muted-foreground mb-2 block">{translate("project", "dashboard")}</label>
-              <Button
-                variant="outline"
-                className="w-full justify-between hover:bg-accent/50 transition-colors"
-                onClick={() => setShowProjectDialog(true)}
-                disabled={!selectedWorkspaceId}
-              >
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div
-                    className="h-4 w-4 rounded-full"
-                    style={{ backgroundColor: displayProject?.color || "#4f46e5" }}
-                  ></div>
-                  <span className="truncate">{displayProject?.name || translate("no_project_selected", "dashboard")}</span>
-                </div>
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <Link
-                href={`/${currentLocale}/dashboard`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                  pathname === `/${currentLocale}/dashboard`
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <Home className="h-4 w-4" />
-                {translate("overview", "dashboard")}
-              </Link>
-
-              {visibleCategories.map((category) => (
-                <div key={category.id}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {translate(category.labelKey, "dashboard")}
-                    </h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0 hover:bg-accent/50 transition-colors"
-                      onClick={() => toggleCategory(category.id)}
-                    >
-                      {collapsedCategories[category.id] ? (
-                        <ChevronRight className="h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
-                  <div className={cn(
-                    "space-y-1 transition-all duration-200 ease-in-out overflow-hidden",
-                    !collapsedCategories[category.id]
-                      ? "opacity-100 max-h-96"
-                      : "opacity-0 max-h-0"
-                  )}>
-                    {category.items.map((item) => (
-                      <Link
-                        key={item.key}
-                        href={`/${currentLocale}${item.path}`}
-                        className={cn(
-                          "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                          pathname === `/${currentLocale}${item.path}`
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        )}
-                      >
-                        {item.icon}
-                        {translate(item.labelKey, "dashboard")}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="p-3 border-t border-border mt-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 rounded-md px-2 py-1.5 cursor-pointer hover:bg-accent">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || "/placeholder.svg?height=32&width=32"} alt={user?.displayName || "User"} />
-                    <AvatarFallback>
-                      {user?.displayName
-                        ? user.displayName.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
-                        : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">{user?.displayName || "User"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.primaryEmail || "user@example.com"}</p>
-                  </div>
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={`/${currentLocale}/dashboard/user-settings`}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>{translate("settings", "dashboard")}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{translate("logout", "dashboard")}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
+      <SidebarNav
+        currentLocale={currentLocale}
+        onGeneratePassword={() => setShowGeneratePassword(true)}
+        onProjectDialog={() => setShowProjectDialog(true)}
+        onLogout={handleLogout}
+        onLanguageChange={switchLanguage}
+        languageLabels={languageLabels}
+        sortedLocales={sortedLocales}
+        user={user}
+      />
 
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center gap-4 border-b border-border px-4 lg:px-6">
@@ -830,11 +629,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </Tooltip>
           </TooltipProvider>
 
-          {/* <div className="flex items-center gap-2 px-3 py-1.5">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{workspaceName}</span>
-          </div> */}
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
@@ -874,7 +668,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
-      {/* <KeyboardShortcutsHelp /> */}
     </div>
   );
 }
