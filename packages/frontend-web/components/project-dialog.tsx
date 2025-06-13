@@ -51,7 +51,8 @@ const defaultFeatures = {
   card: { enabled: false, is_client_side_encryption: false },
   software_license: { enabled: false, is_client_side_encryption: false },
   email: { enabled: false, is_client_side_encryption: false },
-  ssh_key: { enabled: false, is_client_side_encryption: false }
+  ssh_key: { enabled: false, is_client_side_encryption: false },
+  env: { enabled: false, is_client_side_encryption: false }
 };
 
 // Define featureMenuItems to include icons for each module
@@ -244,6 +245,31 @@ const featureMenuItems: {
         <path d="M10.5 8h9.5" />
         <path d="M15 12V8" />
         <path d="M17 12V8" />
+      </svg>
+    ),
+  },
+  {
+    key: "env",
+    labelKey: "env",
+    path: "/dashboard/env",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <path d="M2 12h20" />
+        <path d="M2 4h20" />
+        <path d="M2 20h20" />
+        <path d="M6 8v8" />
+        <path d="M18 8v8" />
       </svg>
     ),
   },
@@ -590,7 +616,7 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-1 pb-5 text-center">
           <DialogTitle className="text-2xl font-semibold">{translate("edit_project", "dashboard")}</DialogTitle>
         </DialogHeader>
@@ -749,7 +775,8 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
     { key: "card", label: "Cards" },
     { key: "software_license", label: "Software Licenses" },
     { key: "email", label: "Email Accounts" },
-    { key: "ssh_key", label: "SSH Keys" }
+    { key: "ssh_key", label: "SSH Keys" },
+    { key: "env", label: "Environment Variables" }
   ] as const;
 
   type FeatureKey = typeof featureOptions[number]["key"];
@@ -894,7 +921,7 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
-      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10">
+      <DialogContent className="sm:max-w-[800px] p-8 border border-blue-500/20 shadow-lg shadow-blue-500/10 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-1 pb-5 text-center">
           <DialogTitle className="text-2xl font-semibold">{translate("create_new_project", "dashboard")}</DialogTitle>
         </DialogHeader>
