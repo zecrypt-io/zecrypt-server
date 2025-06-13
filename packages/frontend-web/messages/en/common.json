@@ -82,7 +82,13 @@
     "decrypting": "Decrypting environment variables...",
     "env_updated_description": "The environment variables have been updated.",
     "env_added_description": "The environment variables have been added.",
-    "env_already_exists": "Environment variables with this name already exists."
+    "env_already_exists": "Environment variables with this name already exists.",
+    "date_created": "Date Created",
+    "sort": "Sort",
+    "sort_options": "Sort Options",
+    "sort_by_name": "Sort by Name",
+    "sort_by_created": "Sort by Created Date",
+    "sort_by_updated": "Sort by Updated Date"
   },
   "licenses": {
     "software_licenses": "Software Licenses",
@@ -265,6 +271,7 @@
     "yes": "Yes",
     "no": "No",
     "confirm": "Confirm",
+    "confirm_delete": "Confirm Delete",
     "continue": "Continue",
     "back": "Back",
     "next": "Next",
@@ -1237,7 +1244,7 @@
     "tags": "Tags",
     "loading_ssh_keys": "Loading SSH Keys",
     "actions": "Actions",
-    "loading": "Loading...", 
+    "loading": "Loading...",  
     "no_results_found": "No results found",
     "no_ssh_keys": "No SSH keys",
     "hide_ssh_key": "Hide SSH key",
