@@ -63,45 +63,35 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
   useEffect(() => {
     let isMounted = true;
     
-    console.log("[AddEnvDialog] Component mounted, loading project key");
-    
     const loadProjectKey = async () => {
       if (!open || !selectedProjectName || keyLoadAttemptedRef.current) {
-        console.log("[AddEnvDialog] Dialog not open, no project selected, or key loading already attempted. Skipping key load");
         return;
       }
       
       keyLoadAttemptedRef.current = true;
-      console.log("[AddEnvDialog] Loading project key for:", selectedProjectName);
       
       try {
         // Try session storage first (faster)
-        console.log("[AddEnvDialog] Trying to get key from session storage");
         const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
         let key = null;
         
         if (sessionKey) {
-          console.log("[AddEnvDialog] Found key in session storage");
           key = sessionKey;
         } else {
-          console.log("[AddEnvDialog] Key not in session storage, trying secure storage");
           // If not in session storage, try secure storage
           key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("[AddEnvDialog] Secure storage key result:", key ? "Found" : "Not found");
           
           // Cache in session storage for faster access
           if (key) {
-            console.log("[AddEnvDialog] Caching key in session storage");
             sessionStorage.setItem(`projectKey_${selectedProjectName}`, key);
           }
         }
         
         if (isMounted) {
-          console.log("[AddEnvDialog] Setting project key in state");
           setProjectKey(key);
         }
       } catch (error) {
-        console.error("[AddEnvDialog] Error loading project key:", error);
+        console.error("Error loading project key:", error);
         if (isMounted) {
           setProjectKey(null);
         }
@@ -111,7 +101,6 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
     loadProjectKey();
     
     return () => {
-      console.log("[AddEnvDialog] Component unmounting, cleaning up");
       isMounted = false;
     };
   }, [open, selectedProjectName]);
@@ -121,7 +110,6 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
     try {
       return translate(key, namespace, options);
     } catch (error) {
-      console.warn(`[AddEnvDialog] Missing translation: ${namespace}.${key}`);
       return options?.default || key;
     }
   };
@@ -151,7 +139,6 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
 
     setIsSubmitting(true);
     setError("");
-    console.log("[AddEnvDialog] Submitting form");
 
     try {
       // Use the project key we already have in state if available
@@ -159,27 +146,22 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
       
       // If not in state, try session storage (faster)
       if (!effectiveProjectKey && selectedProjectName) {
-        console.log("[AddEnvDialog] No key in state, trying session storage");
         const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
         if (sessionKey) {
-          console.log("[AddEnvDialog] Found key in session storage");
           effectiveProjectKey = sessionKey;
         } else {
           // Last resort: try localStorage
-          console.log("[AddEnvDialog] Key not in session storage, trying localStorage");
           try {
             const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
             if (rawProjectKey) {
               effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-              console.log("[AddEnvDialog] LocalStorage key result:", effectiveProjectKey ? "Found" : "Not found");
               // Cache for future use
               if (effectiveProjectKey) {
-                console.log("[AddEnvDialog] Caching key in session storage");
                 sessionStorage.setItem(`projectKey_${selectedProjectName}`, effectiveProjectKey);
               }
             }
           } catch (error) {
-            console.error("[AddEnvDialog] Failed to get project key:", error);
+            console.error("Failed to get project key:", error);
           }
         }
       }
@@ -187,16 +169,12 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
       let processedData = data;
       if (effectiveProjectKey) {
         try {
-          console.log("[AddEnvDialog] Encrypting environment variables data");
           // Encrypt the environment variables data
           processedData = await encryptDataField(data, effectiveProjectKey);
-          console.log("[AddEnvDialog] Encryption successful");
         } catch (encryptError) {
-          console.error("[AddEnvDialog] Encryption failed:", encryptError);
+          console.error("Encryption failed:", encryptError);
           processedData = data; // Fallback to unencrypted data
         }
-      } else {
-        console.log("[AddEnvDialog] No project key available, using unencrypted data");
       }
       
       const payload = {
@@ -206,14 +184,12 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
         tags,
       };
 
-      console.log("[AddEnvDialog] Sending API request");
       const response = await axiosInstance.post(
         `/${selectedWorkspaceId}/${selectedProjectId}/env`,
         payload
       );
 
       if (response.status === 200 || response.status === 201 || (response.data && (response.data.status_code === 200 || response.data.status_code === 201))) {
-        console.log("[AddEnvDialog] API request successful");
         onEnvAdded();
         onOpenChange(false);
         toast({
@@ -232,7 +208,7 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
         throw new Error(response.data?.message || safeTranslate("failed_to_add_env", "env", { default: "Failed to add environment variables" }));
       }
     } catch (error: any) {
-      console.error("[AddEnvDialog] Error adding environment variables:", error);
+      console.error("Error adding environment variables:", error);
       if (error.response?.status === 400 && error.response.data?.message === "Environment variables already exists") {
         setError(safeTranslate("env_already_exists", "env", { default: "Environment variables already exists" }));
       } else if (error.response?.status === 422) {
@@ -241,7 +217,6 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
         setError(error.response?.data?.message || safeTranslate("failed_to_add_env", "env", { default: "Failed to add environment variables" }));
       }
     } finally {
-      console.log("[AddEnvDialog] Form submission completed");
       setIsSubmitting(false);
     }
   };

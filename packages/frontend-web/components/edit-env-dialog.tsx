@@ -78,22 +78,17 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
     let isMounted = true;
     let decryptionTimeout: NodeJS.Timeout | null = null;
     
-    console.log("[EditEnvDialog] Component mounted, starting decryption process");
-    
     const loadProjectKeyAndDecrypt = async () => {
       if (!open || !selectedProjectName || decryptionAttemptedRef.current) {
-        console.log("[EditEnvDialog] Dialog not open, no project selected, or decryption already attempted. Skipping decryption");
         return;
       }
       
       decryptionAttemptedRef.current = true;
       setIsDecrypting(true);
-      console.log("[EditEnvDialog] Starting decryption for project:", selectedProjectName);
       
       // Set a timeout to prevent infinite loading
       decryptionTimeout = setTimeout(() => {
         if (isMounted) {
-          console.log("[EditEnvDialog] Decryption timeout reached, showing raw data");
           setIsDecrypting(false);
           setData(env.data || "");
           toast({
@@ -106,28 +101,22 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
       
       try {
         // Try to get the key from session storage first (faster)
-        console.log("[EditEnvDialog] Trying to get key from session storage");
         const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
         let key = null;
         
         if (sessionKey) {
-          console.log("[EditEnvDialog] Found key in session storage");
           key = sessionKey;
         } else {
-          console.log("[EditEnvDialog] Key not in session storage, trying secure storage");
           // If not in session storage, try secure storage
           key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("[EditEnvDialog] Secure storage key result:", key ? "Found" : "Not found");
           
           // Cache in session storage for faster access
           if (key) {
-            console.log("[EditEnvDialog] Caching key in session storage");
             sessionStorage.setItem(`projectKey_${selectedProjectName}`, key);
           }
         }
         
         if (!isMounted) {
-          console.log("[EditEnvDialog] Component unmounted during key retrieval");
           return;
         }
         
@@ -136,15 +125,13 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
           
           // Only attempt decryption if data appears to be encrypted
           if (env.data && env.data.includes('.')) {
-            console.log("[EditEnvDialog] Data appears to be encrypted, attempting decryption");
             try {
               const decrypted = await decryptDataField(env.data, key);
               if (!isMounted) return;
               
-              console.log("[EditEnvDialog] Decryption successful");
               setData(decrypted);
             } catch (error) {
-              console.error("[EditEnvDialog] Decryption failed:", error);
+              console.error("Failed to decrypt environment variables:", error);
               if (!isMounted) return;
               
               toast({
@@ -155,24 +142,21 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
               setData(env.data);
             }
           } else {
-            console.log("[EditEnvDialog] Data does not appear to be encrypted");
             // Data is not encrypted
             setData(env.data || "");
           }
         } else {
-          console.log("[EditEnvDialog] No key found, showing raw data");
           // No key found
           setData(env.data || "");
         }
       } catch (error) {
-        console.error("[EditEnvDialog] Error loading project key:", error);
+        console.error("Error loading project key:", error);
         if (!isMounted) return;
         
         setProjectKey(null);
         setData(env.data || "");
       } finally {
         if (isMounted) {
-          console.log("[EditEnvDialog] Finishing decryption process");
           setIsDecrypting(false);
           if (decryptionTimeout) {
             clearTimeout(decryptionTimeout);
@@ -184,7 +168,6 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
     loadProjectKeyAndDecrypt();
     
     return () => {
-      console.log("[EditEnvDialog] Component unmounting, cleaning up");
       isMounted = false;
       if (decryptionTimeout) {
         clearTimeout(decryptionTimeout);
@@ -197,7 +180,6 @@ export function EditEnvDialog({ env, open, onOpenChange, onEnvUpdated }: EditEnv
     try {
       return translate(key, namespace, options);
     } catch (error) {
-      console.warn(`[EditEnvDialog] Missing translation: ${namespace}.${key}`);
       return options?.default || key;
     }
   };
