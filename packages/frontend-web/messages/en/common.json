@@ -25,6 +25,17 @@
     "add_item_description": "Enter the details below",
     "edit_item_description": "Update the details"
   },
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "confirm_delete": "Confirm Delete",
+    "copy": "Copy",
+    "deleting": "Deleting...",
+    "saving": "Saving..."
+  },
   "pagination": {
     "showing_x_of_y": "Showing {start} - {end} of {total} items",
     "page_of": "Page {currentPage} of {totalPages}",
@@ -88,7 +99,8 @@
     "sort_options": "Sort Options",
     "sort_by_name": "Sort by Name",
     "sort_by_created": "Sort by Created Date",
-    "sort_by_updated": "Sort by Updated Date"
+    "sort_by_updated": "Sort by Updated Date",
+    "view_env_code": "View in code editor"
   },
   "licenses": {
     "software_licenses": "Software Licenses",
@@ -292,7 +304,8 @@
     "create": "Create",
     "update": "Update",
     "remove": "Remove",
-    "error": "Error"
+    "error": "Error",
+    "view": "View"
   },
   "dashboard": {
     "project_limit_reached": "Project limit reached",

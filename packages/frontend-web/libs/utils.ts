@@ -226,3 +226,21 @@ export async function logout({
     router.replace(`/${locale}/login`);
   }
 }
+
+// Date formatter utility function
+export function formatDate(date: Date | string): string {
+  if (!date) return "-";
+  
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    }).format(dateObj);
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "-";
+  }
+}

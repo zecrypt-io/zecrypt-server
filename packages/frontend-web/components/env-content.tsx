@@ -16,13 +16,13 @@ import {
   X,
   AlertTriangle,
   Filter,
+  Code,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { useFormatter } from "next-intl";
 import {
   Table,
   TableBody,
@@ -39,6 +39,8 @@ import { EditEnvDialog } from "./edit-env-dialog";
 import { SortButton } from "@/components/ui/sort-button";
 import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { decryptDataField } from "@/libs/encryption";
+import { EnvCodeEditor } from "@/components/ui/env-code-editor";
+import { formatDate } from "@/libs/utils";
 
 interface Env {
   doc_id: string;
@@ -55,7 +57,6 @@ interface Env {
 
 export function EnvContent() {
   const { translate } = useTranslator();
-  const format = useFormatter();
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -78,6 +79,8 @@ export function EnvContent() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [envToDelete, setEnvToDelete] = useState<string | null>(null);
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
+  const [codeEditorOpen, setCodeEditorOpen] = useState(false);
+  const [viewingEnv, setViewingEnv] = useState<{ title: string; data: string } | null>(null);
 
   const {
     envsToDisplay,
@@ -110,10 +113,8 @@ export function EnvContent() {
     const loadProjectKey = async () => {
       if (selectedProjectName) {
         try {
-          console.log("Loading project key for project:", selectedProjectName);
           // Use project name to get encryption key
           const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
           setProjectKey(key);
         } catch (error) {
           console.error("Error loading project key:", error);
@@ -152,6 +153,60 @@ export function EnvContent() {
     } finally {
       setIsProcessingDelete(false);
     }
+  };
+
+  const openCodeEditor = async (env: Env) => {
+    // First try to get decrypted data if we have it already
+    if (decryptedEnvs[env.doc_id]) {
+      setViewingEnv({
+        title: env.title,
+        data: decryptedEnvs[env.doc_id]
+      });
+      setCodeEditorOpen(true);
+      return;
+    }
+    
+    // Otherwise decrypt it
+    let effectiveProjectKey = projectKey;
+    if (!effectiveProjectKey && selectedProjectName) {
+      try {
+        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+        if (rawProjectKey) {
+          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
+        }
+      } catch (error) {
+        console.error("Failed to get project key directly:", error);
+      }
+    }
+    
+    if (env.data && env.data.includes('.') && effectiveProjectKey) {
+      try {
+        const decrypted = await decryptDataField(env.data, effectiveProjectKey);
+        setDecryptedEnvs(prev => ({ ...prev, [env.doc_id]: decrypted }));
+        setViewingEnv({
+          title: env.title,
+          data: decrypted
+        });
+      } catch (error) {
+        console.error("Failed to decrypt environment variables:", error);
+        toast({
+          title: translate("error", "actions"),
+          description: translate("failed_to_decrypt", "env", { default: "Failed to decrypt environment variables" }),
+          variant: "destructive",
+        });
+        setViewingEnv({
+          title: env.title,
+          data: env.data
+        });
+      }
+    } else {
+      setViewingEnv({
+        title: env.title,
+        data: env.data
+      });
+    }
+    
+    setCodeEditorOpen(true);
   };
 
   const toggleEnvVisibility = useCallback(async (doc_id: string) => {
@@ -389,6 +444,23 @@ export function EnvContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6"
+                                  onClick={() => openCodeEditor(env)}
+                                >
+                                  <Code className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {translate("view_env_code", "env", { default: "View in code editor" })}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
                                   onClick={() => copyToClipboard(env.doc_id, "data", env.data)}
                                 >
                                   {copiedField?.doc_id === env.doc_id && copiedField?.field === "data" ? (
@@ -415,11 +487,7 @@ export function EnvContent() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {env.created_at ? format.dateTime(new Date(env.created_at), {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric"
-                        }) : "-"}
+                        {env.created_at ? formatDate(env.created_at) : "-"}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -429,6 +497,9 @@ export function EnvContent() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openCodeEditor(env)}>
+                              {translate("view", "actions", { default: "View" })}
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEditEnv(env)}>
                               {translate("edit", "actions", { default: "Edit" })}
                             </DropdownMenuItem>
@@ -486,8 +557,8 @@ export function EnvContent() {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={prevPage}
-                  disabled={currentPage === 1}
+                  onClick={() => prevPage()}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
               {getPaginationRange().map((page, index) =>
@@ -508,8 +579,8 @@ export function EnvContent() {
               )}
               <PaginationItem>
                 <PaginationNext
-                  onClick={nextPage}
-                  disabled={currentPage === totalPages}
+                  onClick={() => nextPage()}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -561,7 +632,26 @@ export function EnvContent() {
           open={showEditEnv}
           onOpenChange={setShowEditEnv}
           onEnvUpdated={fetchEnvs}
-          env={selectedEnv}
+          env={{
+            id: selectedEnv.doc_id,
+            title: selectedEnv.title,
+            data: selectedEnv.data,
+            notes: selectedEnv.notes || null,
+            tags: selectedEnv.tags || [],
+            created_at: selectedEnv.created_at,
+            updated_at: selectedEnv.updated_at || ""
+          }}
+        />
+      )}
+
+      {/* Code Editor Dialog */}
+      {viewingEnv && (
+        <EnvCodeEditor
+          value={viewingEnv.data}
+          open={codeEditorOpen}
+          onOpenChange={setCodeEditorOpen}
+          title={viewingEnv.title}
+          readOnly={true}
         />
       )}
     </div>
