@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/libs/utils";
+import { useTranslator } from "@/hooks/use-translations";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function SearchModal({
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { translate } = useTranslator();
 
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +38,7 @@ export function SearchModal({
   }, [isOpen]);
 
   const filteredModules = modules.filter((module) =>
-    module.labelKey.toLowerCase().includes(query.toLowerCase())
+    translate(`${module.labelKey}`, "dashboard").toLowerCase().includes(query.toLowerCase())
   );
 
   useEffect(() => {
@@ -68,38 +70,40 @@ export function SearchModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 overflow-hidden border-border/50 shadow-lg">
         <div className="flex flex-col">
-          <div className="relative p-4 border-b border-border">
+          <div className="relative p-4 border-b border-border/50 bg-background/50 backdrop-blur-sm">
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Search modules..."
+              placeholder={translate("search_modules", "dashboard")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full border-none focus:ring-0 focus-visible:ring-0"
-              onKeyDown={handleKeyDown} // Add keydown handler to input
+              className="w-full border-none bg-background/50 focus:ring-0 focus-visible:ring-0 text-base"
+              onKeyDown={handleKeyDown}
             />
           </div>
-          <div className="max-h-60 overflow-y-auto p-2">
+          <div className="max-h-[60vh] overflow-y-auto p-2 space-y-1">
             {filteredModules.map((module, index) => (
               <div
                 key={module.key}
                 className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm cursor-pointer",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm cursor-pointer transition-colors duration-150",
                   index === selectedIndex
                     ? "bg-accent text-accent-foreground"
                     : "hover:bg-accent/50"
                 )}
                 onClick={() => handleSelect(module.path)}
               >
-                {module.icon}
-                <span>{module.labelKey}</span> {/* Using labelKey directly for now */}
+                <div className="flex-shrink-0 text-muted-foreground">
+                  {module.icon}
+                </div>
+                <span className="font-medium">{translate(`${module.labelKey}`, "dashboard")}</span>
               </div>
             ))}
             {filteredModules.length === 0 && (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
-                No modules found.
+              <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                {translate("no_modules_found", "dashboard")}
               </div>
             )}
           </div>

@@ -4,24 +4,28 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
+  Bell,
   ChevronDown,
   ChevronRight,
-  Command,
+  Clock,
+  FileText,
+  Globe,
+  HardDrive,
   Home,
   Key,
   Lock,
   LogOut,
-  Menu,
-  Search,
-  Settings,
-  User,
-  Bell,
-  Plus,
-  X,
-  Globe,
-  Users,
+  Mail,
   PanelLeftClose,
   PanelLeftOpen,
+  Plus,
+  Settings,
+  Share,
+  User,
+  Users,
+  Wifi,
+  CreditCard,
+  Wallet,
 } from "lucide-react"
 import { cn } from "@/libs/utils"
 import { useTranslator } from "@/hooks/use-translations"
@@ -37,7 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface NavigationItem {
   key: string
@@ -307,7 +311,7 @@ export function SidebarNav({
   onLanguageChange,
   languageLabels,
   sortedLocales,
-  user
+  user,
 }: SidebarNavProps) {
   const pathname = usePathname()
   const { translate } = useTranslator()
@@ -361,26 +365,29 @@ export function SidebarNav({
 
   const visibleCategories = getVisibleCategories()
 
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setIsCollapsed(prev => !prev)
+    }
+
+    document.addEventListener("toggle-sidebar", handleToggleSidebar)
+    return () => {
+      document.removeEventListener("toggle-sidebar", handleToggleSidebar)
+    }
+  }, [])
+
   return (
-    <div className={cn(
-      "hidden md:flex flex-col border-r border-border transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
-    )}>
+    <div
+      className={cn(
+        "flex flex-col border-r border-border bg-background/50 backdrop-blur-sm transition-all duration-300",
+        isCollapsed ? "w-16" : "w-64"
+      )}
+    >
       <div className="flex h-14 items-center border-b border-border px-4">
-        <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2 font-semibold">
-          <Lock className="h-5 w-5" />
-          {!isCollapsed && <span>Zecrypt</span>}
+        <Link href={`/${currentLocale}/dashboard`} className="flex items-center gap-2">
+          <img src="/favicon.ico" alt="Zecrypt" className="h-6 w-6" />
+          {!isCollapsed && <span className="font-semibold">Zecrypt</span>}
         </Link>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </Button>
-        </div>
       </div>
 
       <div className="flex-1 overflow-auto py-2 flex flex-col">

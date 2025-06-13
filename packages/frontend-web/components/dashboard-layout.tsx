@@ -23,6 +23,13 @@ import {
   X,
   Globe,
   Users,
+  Mail,
+  Wifi,
+  CreditCard,
+  Wallet,
+  FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -51,6 +58,7 @@ import { secureSetItem } from '@/libs/local-storage-utils';
 import { SearchModal } from "@/components/search-modal";
 import { logout } from "@/libs/utils";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { ChatWidget } from "@/components/chat-widget";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -126,73 +134,21 @@ const navigationCategories: NavigationCategory[] = [
         key: "identity",
         labelKey: "identity",
         path: "/dashboard/identity",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
+        icon: <User className="h-4 w-4" />,
         feature_key: "identity"
       },
       {
-        key: "email",
+        key: "emails",
         labelKey: "email",
         path: "/dashboard/emails",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <rect width="20" height="16" x="2" y="4" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
-        ),
+        icon: <Mail className="h-4 w-4" />,
         feature_key: "email"
       },
       {
         key: "wifi",
         labelKey: "wifi",
         path: "/dashboard/wifi",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-            <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-            <line x1="12" y1="20" x2="12.01" y2="20" />
-          </svg>
-        ),
+        icon: <Wifi className="h-4 w-4" />,
         feature_key: "wifi"
       }
     ]
@@ -205,45 +161,14 @@ const navigationCategories: NavigationCategory[] = [
         key: "api_key",
         labelKey: "api_keys",
         path: "/dashboard/api-keys",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-          </svg>
-        ),
+        icon: <Key className="h-4 w-4" />,
         feature_key: "api_key"
       },
       {
         key: "ssh_key",
         labelKey: "ssh_keys",
         path: "/dashboard/ssh-keys",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <circle cx="8" cy="8" r="4" />
-            <path d="M10.5 8h9.5" />
-            <path d="M15 12V8" />
-            <path d="M17 12V8" />
-          </svg>
-        ),
+        icon: <Key className="h-4 w-4" />,
         feature_key: "ssh_key"
       }
     ]
@@ -253,49 +178,17 @@ const navigationCategories: NavigationCategory[] = [
     labelKey: "business_finance",
     items: [
       {
-        key: "card",
+        key: "cards",
         labelKey: "cards",
         path: "/dashboard/cards",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <rect x="2" y="4" width="20" height="16" rx="2" />
-            <path d="M7 15h0M2 9.5h20" />
-          </svg>
-        ),
+        icon: <CreditCard className="h-4 w-4" />,
         feature_key: "card"
       },
       {
-        key: "wallet_address",
+        key: "wallet_passphrases",
         labelKey: "wallet_passphrases",
         path: "/dashboard/wallet-passphrases",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-wallet-icon lucide-wallet"
-          >
-            <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
-            <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-          </svg>
-        ),
+        icon: <Wallet className="h-4 w-4" />,
         feature_key: "wallet_address"
       }
     ]
@@ -308,24 +201,7 @@ const navigationCategories: NavigationCategory[] = [
         key: "software_license",
         labelKey: "software_licenses",
         path: "/dashboard/software-licenses",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M15 3h6v6" />
-            <path d="M10 14 21 3" />
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-          </svg>
-        ),
+        icon: <FileText className="h-4 w-4" />,
         feature_key: "software_license"
       }
     ]
@@ -341,6 +217,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const [showGeneratePassword, setShowGeneratePassword] = useState(false);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
@@ -565,12 +442,133 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
     };
   }, [currentLocale, router]);
 
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setIsSidebarCollapsed(prev => !prev);
+    };
+
+    document.addEventListener("toggle-sidebar", handleToggleSidebar);
+    return () => {
+      document.removeEventListener("toggle-sidebar", handleToggleSidebar);
+    };
+  }, []);
+
+  const selectedProject = useSelector((state: RootState) => 
+    state.workspace.workspaces
+      .find(w => w.workspaceId === state.workspace.selectedWorkspaceId)
+      ?.projects.find(p => p.project_id === state.workspace.selectedProjectId)
+  );
+
+  const getSearchModules = () => {
+    if (!selectedProject) return [];
+
+    const enabledModules = [];
+    
+    enabledModules.push({
+      key: "overview",
+      labelKey: "overview",
+      path: "/dashboard",
+      icon: <Home className="h-4 w-4" />
+    });
+    
+    if (selectedProject.features.login?.enabled) {
+      enabledModules.push({
+        key: "accounts",
+        labelKey: "accounts",
+        path: "/dashboard/accounts",
+        icon: <User className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.identity?.enabled) {
+      enabledModules.push({
+        key: "identity",
+        labelKey: "identity",
+        path: "/dashboard/identity",
+        icon: <User className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.email?.enabled) {
+      enabledModules.push({
+        key: "emails",
+        labelKey: "email",
+        path: "/dashboard/emails",
+        icon: <Mail className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.wifi?.enabled) {
+      enabledModules.push({
+        key: "wifi",
+        labelKey: "wifi",
+        path: "/dashboard/wifi",
+        icon: <Wifi className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.api_key?.enabled) {
+      enabledModules.push({
+        key: "api_keys",
+        labelKey: "api_keys",
+        path: "/dashboard/api-keys",
+        icon: <Key className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.ssh_key?.enabled) {
+      enabledModules.push({
+        key: "ssh_keys",
+        labelKey: "ssh_keys",
+        path: "/dashboard/ssh-keys",
+        icon: <Key className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.card?.enabled) {
+      enabledModules.push({
+        key: "cards",
+        labelKey: "cards",
+        path: "/dashboard/cards",
+        icon: <CreditCard className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.wallet_address?.enabled) {
+      enabledModules.push({
+        key: "wallet_passphrases",
+        labelKey: "wallet_passphrases",
+        path: "/dashboard/wallet-passphrases",
+        icon: <Wallet className="h-4 w-4" />
+      });
+    }
+
+    if (selectedProject.features.software_license?.enabled) {
+      enabledModules.push({
+        key: "software_licenses",
+        labelKey: "software_licenses",
+        path: "/dashboard/software-licenses",
+        icon: <FileText className="h-4 w-4" />
+      });
+    }
+
+    enabledModules.push({
+      key: "profile",
+      labelKey: "profile",
+      path: "/dashboard/user-settings",
+      icon: <User className="h-4 w-4" />
+    });
+
+    return enabledModules;
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
+      <ChatWidget />
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
-        modules={[]}
+        modules={getSearchModules()}
         locale={currentLocale}
         onSelectModule={(path) => router.push(`/${currentLocale}${path}`)}
       />
@@ -588,24 +586,34 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center gap-4 border-b border-border px-4 lg:px-6">
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 rounded-md hover:bg-accent/50"
+            onClick={() => document.dispatchEvent(new CustomEvent("toggle-sidebar"))}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle Sidebar</span>
           </Button>
 
           <div className="w-full flex-1">
             <form>
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   ref={searchInputRef}
                   type="search"
                   placeholder={translate("search", "dashboard")}
-                  className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-lg border border-border bg-background/50 py-2.5 pl-10 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
                   onClick={() => setShowSearchModal(true)}
                   readOnly
                 />
-                <kbd className="pointer-events-none absolute right-2.5 top-2.5 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
-                  ⌘K
+                <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+                  <span className="text-xs">⌘</span>K
                 </kbd>
               </div>
             </form>
