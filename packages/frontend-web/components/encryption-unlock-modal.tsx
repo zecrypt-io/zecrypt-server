@@ -127,7 +127,17 @@ export function EncryptionUnlockModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={() => onCancel?.()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent 
+        className="sm:max-w-md"
+        onInteractOutside={(e: Event) => {
+          // Prevent closing by clicking outside
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e: Event) => {
+          // Prevent closing with escape key
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" />
