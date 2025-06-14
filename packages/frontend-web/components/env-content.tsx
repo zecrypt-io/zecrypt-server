@@ -155,11 +155,14 @@ export function EnvContent() {
   };
 
   const openCodeEditor = async (env: Env) => {
-    // First try to get decrypted data if we have it already
-    if (decryptedEnvs[env.doc_id]) {
+    // Get the latest env data from the current list
+    const latestEnv = envsToDisplay.find(e => e.doc_id === env.doc_id) || env;
+    
+    // First try to get decrypted data if we have it already and the data hasn't changed
+    if (decryptedEnvs[latestEnv.doc_id] && latestEnv.data === env.data) {
       setViewingEnv({
-        title: env.title,
-        data: decryptedEnvs[env.doc_id]
+        title: latestEnv.title,
+        data: decryptedEnvs[latestEnv.doc_id]
       });
       setCodeEditorOpen(true);
       return;
@@ -178,12 +181,12 @@ export function EnvContent() {
       }
     }
     
-    if (env.data && env.data.includes('.') && effectiveProjectKey) {
+    if (latestEnv.data && latestEnv.data.includes('.') && effectiveProjectKey) {
       try {
-        const decrypted = await decryptDataField(env.data, effectiveProjectKey);
-        setDecryptedEnvs(prev => ({ ...prev, [env.doc_id]: decrypted }));
+        const decrypted = await decryptDataField(latestEnv.data, effectiveProjectKey);
+        setDecryptedEnvs(prev => ({ ...prev, [latestEnv.doc_id]: decrypted }));
         setViewingEnv({
-          title: env.title,
+          title: latestEnv.title,
           data: decrypted
         });
       } catch (error) {
@@ -194,14 +197,14 @@ export function EnvContent() {
           variant: "destructive",
         });
         setViewingEnv({
-          title: env.title,
-          data: env.data
+          title: latestEnv.title,
+          data: latestEnv.data
         });
       }
     } else {
       setViewingEnv({
-        title: env.title,
-        data: env.data
+        title: latestEnv.title,
+        data: latestEnv.data
       });
     }
     
@@ -551,15 +554,35 @@ export function EnvContent() {
       {showAddEnv && (
         <AddEnvDialog
           open={showAddEnv}
-          onOpenChange={setShowAddEnv}
-          onEnvAdded={fetchEnvs}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              // When dialog closes, clear the cached decrypted values to force re-decryption
+              setDecryptedEnvs({});
+            }
+            setShowAddEnv(isOpen);
+          }}
+          onEnvAdded={() => {
+            // Clear cached decrypted values when env is added
+            setDecryptedEnvs({});
+            fetchEnvs();
+          }}
         />
       )}
       {showEditEnv && selectedEnv && (
         <EditEnvDialog
           open={showEditEnv}
-          onOpenChange={setShowEditEnv}
-          onEnvUpdated={fetchEnvs}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              // When dialog closes, clear the cached decrypted values to force re-decryption
+              setDecryptedEnvs({});
+            }
+            setShowEditEnv(isOpen);
+          }}
+          onEnvUpdated={() => {
+            // Clear cached decrypted values when env is updated
+            setDecryptedEnvs({});
+            fetchEnvs();
+          }}
           env={{
             id: selectedEnv.doc_id,
             title: selectedEnv.title,
