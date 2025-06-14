@@ -78,6 +78,9 @@ async def get_keys_api(user: UserDetails = Depends(get_current_user)):
 
 @router.post(UPDATE_KEYS)
 async def update_keys_api(
-    request: Request, payload: UpdateKeys, user: UserDetails = Depends(get_current_user)
+    request: Request,
+    payload: UpdateKeys,
+    background_tasks: BackgroundTasks,
+    user: UserDetails = Depends(get_current_user),
 ):
-    return update_keys(db, user, payload.model_dump())
+    return update_keys(db, user, payload.model_dump(), background_tasks)
