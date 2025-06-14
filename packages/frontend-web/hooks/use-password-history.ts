@@ -7,7 +7,6 @@ import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
 
 // Raw data structure from API
 export interface PasswordHistoryItem {
@@ -25,80 +24,56 @@ export interface ProcessedPasswordHistoryItem extends Omit<PasswordHistoryItem, 
   decryptSuccess: boolean; // Whether decryption was successful
 }
 
+/**
+ * Convert a base64 string to hex string
+ * @param base64 Base64 encoded string
+ * @returns Hex string
+ */
+function base64ToHex(base64: string): string {
+  // Decode base64 to binary string
+  const binaryString = window.atob(base64);
+  
+  // Convert binary string to hex
+  let hex = '';
+  for (let i = 0; i < binaryString.length; i++) {
+    const charCode = binaryString.charCodeAt(i);
+    // Convert each character to hex and ensure it's two digits
+    const hexByte = charCode.toString(16).padStart(2, '0');
+    hex += hexByte;
+  }
+  
+  return hex;
+}
+
 export function usePasswordHistory() {
   const { translate } = useTranslator();
   const [isLoading, setIsLoading] = useState(false);
   const [passwordHistory, setPasswordHistory] = useState<ProcessedPasswordHistoryItem[]>([]);
   const userData = useSelector((state: RootState) => state.user.userData);
   
-  // Get workspaces from Redux store for project name lookup (like other hooks)
-  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
-  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
-  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  // Get static encryption key from env and convert it to hex
+  const base64Key = process.env.NEXT_PUBLIC_INDEXED_DB_AES_KEY || "";
+  // Remove any padding characters if present
+  const cleanBase64Key = base64Key.replace(/=+$/, '');
+  const encryptionKey = cleanBase64Key ? base64ToHex(cleanBase64Key) : "";
   
-  const [projectKey, setProjectKey] = useState<string | null>(null);
-  const [isProjectKeyLoading, setIsProjectKeyLoading] = useState(true);
-
-  // Load the project key when component mounts or project changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      setIsProjectKeyLoading(true);
-      if (!workspaces || !selectedWorkspaceId || !selectedProjectId) {
-        console.log("Missing workspace or project information for key loading");
-        setProjectKey(null);
-        setIsProjectKeyLoading(false);
-        return;
-      }
-      
-      try {
-        // Find the current project using workspaces from the component scope (like account management hook)
-        const currentProject = workspaces
-          .find(ws => ws.workspaceId === selectedWorkspaceId)
-          ?.projects.find(p => p.project_id === selectedProjectId);
-          
-        if (!currentProject) {
-          console.log("Project not found in workspaces for key loading");
-          setProjectKey(null);
-          setIsProjectKeyLoading(false);
-          return;
-        }
-
-        // Get the project's AES key from session storage (standard pattern)
-        const projectKeyName = `projectKey_${currentProject.name}`;
-        console.log(`Looking for project key with name: ${projectKeyName}`);
-        const key = await secureGetItem(projectKeyName);
-        
-        console.log("Project key lookup result:", {
-          projectName: currentProject.name,
-          projectId: selectedProjectId,
-          keyFound: !!key
-        });
-        
-        setProjectKey(key);
-      } catch (error) {
-        console.error("Error loading project key:", error);
-        setProjectKey(null);
-      } finally {
-        setIsProjectKeyLoading(false);
-      }
-    };
+  // Helper function to attempt decryption with environment variable key
+  const tryDecrypt = async (encryptedData: string): Promise<{success: boolean; data: string}> => {
+    if (!encryptionKey) {
+      console.log("No encryption key available in environment variables");
+      return { success: false, data: "**No Encryption Key**" };
+    }
     
-    loadProjectKey();
-  }, [workspaces, selectedWorkspaceId, selectedProjectId]);
-
-  // Helper function to attempt decryption with various strategies
-  const tryDecrypt = async (encryptedData: string, projectKey: string): Promise<{success: boolean; data: string}> => {
     try {
       // If it looks like our encrypted format (contains a period separator for IV)
       if (encryptedData.includes('.')) {
-        const decryptedValue = await decryptDataField(encryptedData, projectKey);
+        const decryptedValue = await decryptDataField(encryptedData, encryptionKey);
         return { success: true, data: decryptedValue };
       }
       // If it's not in encrypted format, return as is (plaintext)
       return { success: true, data: encryptedData };
     } catch (error) {
-      // Don't log the error as this is an expected scenario when switching between projects
-      // We're handling it by filtering out passwords that don't belong to the current project
+      console.error("Decryption error:", error);
       return { success: false, data: "**Decryption Error**" };
     }
   };
@@ -120,42 +95,19 @@ export function usePasswordHistory() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         
-        // Process items - decrypt the data field if we have project key
-        let processedItems: ProcessedPasswordHistoryItem[] = [];
-        
-        if (projectKey) {
-          console.log("Project key available, attempting to decrypt items");
-          const decryptResults = await Promise.all(
-            historyItems.map(async (item) => {
-              const decryptResult = await tryDecrypt(item.data, projectKey);
-              
-              return {
-                ...item,
-                data: decryptResult.data,
-                encryptedData: item.data,
-                decryptSuccess: decryptResult.success
-              };
-            })
-          );
-          
-          // Filter to only include successfully decrypted items for this project
-          processedItems = decryptResults.filter(item => item.decryptSuccess);
-          
-          // Only log how many items were filtered (not as an error)
-          const excluded = historyItems.length - processedItems.length;
-          if (excluded > 0) {
-            console.log(`Filtered out ${excluded} password(s) that don't belong to the current project context.`);
-          }
-        } else {
-          console.log("No project key available, marking items as encrypted");
-          // If no project key, just mark data as encrypted
-          processedItems = historyItems.map(item => ({
-            ...item,
-            data: "**Encrypted**",
-            encryptedData: item.data,
-            decryptSuccess: false
-          }));
-        }
+        // Process items - decrypt the data field with env key
+        const processedItems = await Promise.all(
+          historyItems.map(async (item) => {
+            const decryptResult = await tryDecrypt(item.data);
+            
+            return {
+              ...item,
+              data: decryptResult.data,
+              encryptedData: item.data,
+              decryptSuccess: decryptResult.success
+            };
+          })
+        );
         
         // Limit to the last 10 items (they're already sorted by creation date)
         setPasswordHistory(processedItems.slice(0, 10));
@@ -177,7 +129,7 @@ export function usePasswordHistory() {
     } finally {
       setIsLoading(false);
     }
-  }, [translate, projectKey]);
+  }, [translate, encryptionKey]);
 
   // Save password to history
   const savePasswordToHistory = useCallback(async (password: string): Promise<void> => {
@@ -189,11 +141,11 @@ export function usePasswordHistory() {
     try {
       let dataToSave: string;
       
-      if (projectKey) {
-        console.log("Encrypting password before saving (project key available)");
-        dataToSave = await encryptDataField(password, projectKey);
+      if (encryptionKey) {
+        console.log("Encrypting password before saving (using environment variable key)");
+        dataToSave = await encryptDataField(password, encryptionKey);
       } else {
-        console.log("No project key available at save time, saving password without encryption");
+        console.log("No encryption key available in environment variables, saving password without encryption");
         dataToSave = password;
       }
       
@@ -212,13 +164,11 @@ export function usePasswordHistory() {
       });
       throw error;
     }
-  }, [projectKey, translate]);
+  }, [translate, encryptionKey]);
 
   return {
     passwordHistory,
     isLoading,
-    isProjectKeyLoading,
-    projectKey,
     fetchPasswordHistory,
     savePasswordToHistory
   };
