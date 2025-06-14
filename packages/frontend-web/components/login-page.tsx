@@ -32,7 +32,7 @@ import { Check, Shield, Lock, Dices, Bell, Globe } from "lucide-react";
 
 // Services & Utilities
 import { stackAuthHandler } from "@/libs/stack-auth-handler";
-import { setUserData } from "../libs/Redux/userSlice";
+import { setUserData, clearUserData } from "../libs/Redux/userSlice";
 import { AppDispatch } from "../libs/Redux/store";
 import { getUserKeys } from "@/libs/api-client";
 import { EncryptionSetupModal } from "./encryption-setup-modal";
@@ -402,6 +402,36 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     });
   };
 
+  const handle2FACancel = () => {
+    // Clear Redux state
+    dispatch(clearUserData());
+    
+    // Clear localStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+
+    // Reset all states
+    setShow2FAModal(false);
+    setShowLoginForm(true);
+    setIsAuthenticating(false);
+    setIsLoggingIn(false);
+    setError(null);
+    setVerificationCode("");
+    setProvisioningUri(null);
+    setUserId(null);
+    setIsNewUser(false);
+    setIsAuthFlowComplete(false);
+    setIsProcessingAuth(false);
+
+    // Force reload the page to reset Stack auth
+    window.location.href = "/login";
+  };
+
   // Loading state
   if (isAuthenticating || isCheckingKeys || isProcessingAuth || (user && !showLoginForm && !show2FAModal && !isAuthFlowComplete)) {
     return (
@@ -476,8 +506,8 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Dialog open={show2FAModal} onOpenChange={(open) => {
-          if (!open && !isNewUser) {
-            setShow2FAModal(false);
+          if (!open) {
+            handle2FACancel();
           }
         }}>
           <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden [&>button]:hidden">
@@ -539,7 +569,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
               {!isNewUser && (
                 <Button
                   variant="outline"
-                  onClick={() => setShow2FAModal(false)}
+                  onClick={handle2FACancel}
                 >
                   {t("cancel")}
                 </Button>

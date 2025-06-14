@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +23,9 @@ import {
   extractEncryptedComponents
 } from "@/libs/crypto-utils";
 import { toast } from "@/components/ui/use-toast";
+import { clearUserData } from "@/libs/Redux/userSlice";
+import { logout } from "@/libs/utils";
+import { SignIn } from "@stackframe/stack";
 
 interface EncryptionUnlockModalProps {
   isOpen: boolean;
@@ -38,11 +43,30 @@ export function EncryptionUnlockModal({
   onCancel
 }: EncryptionUnlockModalProps) {
   const tAuth = useTranslations("auth");
+  const router = useRouter();
+  const dispatch = useDispatch();
   
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const handleCancel = () => {
+    // Clear Redux state
+    dispatch(clearUserData());
+    
+    // Clear localStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+
+    // Force reload the page to reset Stack auth and show initial login
+    window.location.href = "/login";
+  };
   
   const handleUnlock = async () => {
     console.log("[UnlockModal] Attempting to unlock...");
@@ -126,7 +150,7 @@ export function EncryptionUnlockModal({
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={() => onCancel?.()}>
+    <Dialog open={isOpen} onOpenChange={() => handleCancel()}>
       <DialogContent 
         className="sm:max-w-md [&>button]:hidden"
         onInteractOutside={(e: Event) => {
@@ -186,7 +210,7 @@ export function EncryptionUnlockModal({
         
         <DialogFooter>
           {onCancel && (
-            <Button variant="outline" onClick={onCancel} disabled={isUnlocking}>
+            <Button variant="outline" onClick={handleCancel} disabled={isUnlocking}>
               {tAuth("cancel")}
             </Button>
           )}
