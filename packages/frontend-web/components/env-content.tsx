@@ -74,7 +74,6 @@ export function EnvContent() {
   const [showEditEnv, setShowEditEnv] = useState(false);
   const [selectedEnv, setSelectedEnv] = useState<Env | null>(null);
   const [copiedField, setCopiedField] = useState<{ doc_id: string; field: string } | null>(null);
-  const [viewKey, setViewKey] = useState<string | null>(null);
   const [decryptedEnvs, setDecryptedEnvs] = useState<Record<string, string>>({});
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [envToDelete, setEnvToDelete] = useState<string | null>(null);
@@ -208,52 +207,6 @@ export function EnvContent() {
     
     setCodeEditorOpen(true);
   };
-
-  const toggleEnvVisibility = useCallback(async (doc_id: string) => {
-    if (viewKey === doc_id) {
-      setViewKey(null);
-      return;
-    }
-    
-    const env = envsToDisplay.find(env => env.doc_id === doc_id);
-    if (!env) return;
-    
-    if (decryptedEnvs[doc_id]) {
-      setViewKey(doc_id);
-      return;
-    }
-    
-    let effectiveProjectKey = projectKey;
-    if (!effectiveProjectKey && selectedProjectName) {
-      try {
-        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-        if (rawProjectKey) {
-          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-        }
-      } catch (error) {
-        console.error("Failed to get project key directly:", error);
-      }
-    }
-    
-    if (env.data && env.data.includes('.') && effectiveProjectKey) {
-      try {
-        const decrypted = await decryptDataField(env.data, effectiveProjectKey);
-        setDecryptedEnvs(prev => ({ ...prev, [doc_id]: decrypted }));
-      } catch (error) {
-        console.error("Failed to decrypt environment variables:", error);
-        toast({
-          title: translate("error", "actions"),
-          description: translate("failed_to_decrypt", "env", { default: "Failed to decrypt environment variables" }),
-          variant: "destructive",
-        });
-        setDecryptedEnvs(prev => ({ ...prev, [doc_id]: env.data }));
-      }
-    } else {
-      setDecryptedEnvs(prev => ({ ...prev, [doc_id]: env.data }));
-    }
-    
-    setViewKey(doc_id);
-  }, [envsToDisplay, viewKey, projectKey, selectedProjectName, translate, decryptedEnvs]);
 
   const copyToClipboard = useCallback(
     async (doc_id: string, field: string, value: string) => {
@@ -409,34 +362,9 @@ export function EnvContent() {
                       <TableCell className="font-medium">{env.title}</TableCell>
                       <TableCell className="font-mono">
                         <div className="flex items-center gap-2">
-                          <span className="truncate max-w-[300px]">
-                            {viewKey === env.doc_id ? 
-                              <pre className="whitespace-pre-wrap break-all">{decryptedEnvs[env.doc_id] || "••••••••"}</pre> : 
-                              "••••••••"}
+                          <span className="truncate max-w-[300px] text-muted-foreground">
+                            {translate("env_hidden", "env", { default: "••••••••" })}
                           </span>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => toggleEnvVisibility(env.doc_id)}
-                                >
-                                  {viewKey === env.doc_id ? (
-                                    <EyeOff className="h-3 w-3" />
-                                  ) : (
-                                    <Eye className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {viewKey === env.doc_id
-                                  ? translate("hide_env", "env", { default: "Hide environment variables" })
-                                  : translate("show_env", "env", { default: "Show environment variables" })}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>

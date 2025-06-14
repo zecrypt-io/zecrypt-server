@@ -100,7 +100,10 @@
     "sort_by_name": "Sort by Name",
     "sort_by_created": "Sort by Created Date",
     "sort_by_updated": "Sort by Updated Date",
-    "view_env_code": "View in code editor"
+    "view_env_code": "View in code editor",
+    "click_to_add_env": "Click to add environment variables",
+    "click_to_edit_env": "Click to edit environment variables",
+    "env_hidden": "••••••••"
   },
   "licenses": {
     "software_licenses": "Software Licenses",

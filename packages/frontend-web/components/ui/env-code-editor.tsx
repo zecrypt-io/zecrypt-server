@@ -93,7 +93,7 @@ export function EnvCodeEditor({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-auto border rounded-md bg-background">
-          <div className="relative">
+          <div className="relative code-editor-wrapper">
             <Editor
               value={code}
               onValueChange={handleChange}
@@ -108,6 +108,8 @@ export function EnvCodeEditor({
                 backgroundColor: "transparent"
               }}
               className="env-code-editor"
+              textareaClassName="env-code-editor-textarea"
+              preClassName="env-code-editor-pre"
             />
           </div>
         </div>
@@ -138,6 +140,17 @@ export function EnvCodeEditor({
       <style jsx global>{`
         .env-code-editor {
           counter-reset: line;
+          position: relative;
+        }
+        
+        .env-code-editor-textarea {
+          /* Fix cursor position */
+          caret-color: white;
+          padding-left: 3.5em !important; /* Add padding to account for line numbers */
+        }
+
+        .env-code-editor-pre {
+          z-index: 1;
         }
         
         .line-number {

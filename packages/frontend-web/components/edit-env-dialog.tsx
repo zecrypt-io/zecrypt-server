@@ -37,7 +37,6 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
   const [title, setTitle] = useState(env.title || "");
   const [data, setData] = useState("");
   const [notes, setNotes] = useState(env.notes || "");
-  const [showEnvData, setShowEnvData] = useState(false);
   const [tags, setTags] = useState<string[]>(env.tags || []);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
@@ -302,34 +301,19 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
                   </div>
                 ) : (
                   <div className="relative">
-                    <Textarea
-                      id="data"
-                      placeholder={safeTranslate("enter_env_variables", "env", { default: "KEY=value\nANOTHER_KEY=another_value" })}
-                      value={data}
-                      onChange={(e) => setData(e.target.value)}
-                      className={`min-h-[150px] ${error && !data ? "border-red-500" : ""}`}
+                    <div 
+                      className={`min-h-[150px] border rounded-md p-4 cursor-pointer flex items-center justify-center bg-muted/20 ${error && !data ? "border-red-500" : ""}`}
                       onClick={() => setCodeEditorOpen(true)}
-                      readOnly
-                    />
-                    <div className="absolute top-0 right-0 flex">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 px-3 text-muted-foreground"
-                        onClick={() => setShowEnvData(!showEnvData)}
-                        type="button"
-                      >
-                        {showEnvData ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 px-3 text-muted-foreground"
-                        onClick={() => setCodeEditorOpen(true)}
-                        type="button"
-                      >
-                        <Code className="h-4 w-4" />
-                      </Button>
+                    >
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Code className="h-6 w-6" />
+                        <p>
+                                                {data ? 
+                        safeTranslate("click_to_edit_env", "env", { default: "Click to edit environment variables" }) : 
+                        safeTranslate("click_to_add_env", "env", { default: "Click to add environment variables" })
+                      }
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
