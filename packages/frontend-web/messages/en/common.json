@@ -104,7 +104,8 @@
     "view_env_code": "View in code editor",
     "click_to_add_env": "Click to add environment variables",
     "click_to_edit_env": "Click to edit environment variables",
-    "env_hidden": "••••••••"
+    "env_hidden": "••••••••",
+    "copied": "Copied"
   },
   "licenses": {
     "software_licenses": "Software Licenses",
