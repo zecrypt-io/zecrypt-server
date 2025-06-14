@@ -254,6 +254,7 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const userPlan = useSelector((state: RootState) => state.user.userData?.plan);
   const [activeTab, setActiveTab] = useState(workspaces[0]?.projects.length === 0 ? "manage" : "select");
   const [localSelectedProject, setLocalSelectedProject] = useState<string | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -278,6 +279,9 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
           },
         })) || []
     : [];
+
+  // Check if user can create more projects
+  const canCreateMoreProjects = userPlan !== "free" || projects.length === 0;
 
   useEffect(() => {
     if (forceCreate && projects.length === 0) {
@@ -335,17 +339,23 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
           )}
 
           <TabsContent value="select" className="space-y-2 py-2">
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 py-6 border-dashed h-12 rounded-md"
-              onClick={() => {
-                setActiveTab("manage");
-                setShowCreateDialog(true);
-              }}
-            >
-              <Plus className="h-5 w-5" />
-              <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
-            </Button>
+            {canCreateMoreProjects ? (
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 py-6 border-dashed h-12 rounded-md"
+                onClick={() => {
+                  setActiveTab("manage");
+                  setShowCreateDialog(true);
+                }}
+              >
+                <Plus className="h-5 w-5" />
+                <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
+              </Button>
+            ) : (
+              <div className="text-sm text-muted-foreground bg-muted/50 p-4 rounded-md text-center">
+                {translate("free_plan_limit", "dashboard")}
+              </div>
+            )}
 
             <div className="space-y-1.5">
               {projects.length === 0 ? (
@@ -424,14 +434,16 @@ export function ProjectDialog({ onClose, forceCreate = false }: ProjectDialogPro
               )}
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-1.5 h-8 rounded-md"
-              onClick={() => setShowCreateDialog(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
-            </Button>
+            {canCreateMoreProjects && (
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-md"
+                onClick={() => setShowCreateDialog(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-sm font-medium">{translate("create_new_project", "dashboard")}</span>
+              </Button>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

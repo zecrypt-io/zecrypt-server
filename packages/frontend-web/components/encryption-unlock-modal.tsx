@@ -128,7 +128,7 @@ export function EncryptionUnlockModal({
   return (
     <Dialog open={isOpen} onOpenChange={() => onCancel?.()}>
       <DialogContent 
-        className="sm:max-w-md"
+        className="sm:max-w-md [&>button]:hidden"
         onInteractOutside={(e: Event) => {
           // Prevent closing by clicking outside
           e.preventDefault();

@@ -244,6 +244,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             refresh_token: response.data.refresh_token || null,
             locale: response.data.language || locale || "en",
             is_2fa_enabled: response.data.is_new_user === false,
+            plan: response.data.plan || null,
           })
         );
 
@@ -354,6 +355,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             refresh_token: response.data.refresh_token || null,
             locale: response.data.language || locale || "en",
             is_2fa_enabled: true,
+            plan: response.data.plan || null,
           })
         );
         toast({
@@ -478,7 +480,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
             setShow2FAModal(false);
           }
         }}>
-          <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
+          <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden [&>button]:hidden">
             <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/30">
               <DialogTitle>{isNewUser ? t("2fa_setup") : t("2fa_verify")}</DialogTitle>
               <DialogDescription>

@@ -16,6 +16,7 @@ interface AuthResponse {
     language?: string;
     is_new_user?: boolean;
     provisioning_uri?: string;
+    plan?: string;
   };
 }
 
