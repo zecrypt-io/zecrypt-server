@@ -10,6 +10,7 @@ from app.api.v1.web.secrets.licenses import api as licenses_router
 from app.api.v1.web.secrets.ssh_keys import api as ssh_keys_router
 from app.api.v1.web.secrets.notes import api as notes_router
 from app.api.v1.web.secrets.password_history import api as password_history_router
+from app.api.v1.web.secrets.environment import api as env_router
 
 secrets_router = APIRouter()
 
@@ -29,3 +30,4 @@ secrets_router.include_router(wifi_router.router, tags=["Secrets: Wifi"])
 secrets_router.include_router(
     password_history_router.router, tags=["Secrets: Password History"]
 )
+secrets_router.include_router(env_router.router, tags=["Secrets: Env"])

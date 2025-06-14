@@ -99,6 +99,7 @@ def create_user(request, db, auth_data, back_ground_tasks):
         "profile_url": auth_data.get("profile_image_url"),
         "language": "en",
         "workspace_ids": [workspace_id],
+        "plan": "free",
         "auth": {
             "has_password": auth_data.get("has_password"),
             "otp_auth_enabled": auth_data.get("otp_auth_enabled"),
@@ -191,6 +192,7 @@ def verify_two_factor_auth(request, db, payload, response, back_ground_tasks):
         "language": "en",
         "token": token,
         "refresh_token": refresh_token,
+        "plan":user.get("plan")
     }
     return response_helper(200, translate("auth.two_factor_auth_verified"), data=data)
 
@@ -205,7 +207,7 @@ def get_keys(db, user_id):
     )
 
 
-def update_keys(db, user, payload):
+def update_keys(db, user, payload, background_tasks):
     data = {
         "user_id": user.get("user_id"),
         "public_key": payload.get("public_key"),
@@ -214,4 +216,6 @@ def update_keys(db, user, payload):
     if user_keys_manager.find_one(db, {"user_id": user.get("user_id")}):
         return response_helper(400, translate("auth.keys_already_exist"))
     user_keys_manager.insert_one(db, data)
+    # background_tasks.add_task(send_welcome_email, db, user)
     return response_helper(200, translate("auth.keys_updated"))
+

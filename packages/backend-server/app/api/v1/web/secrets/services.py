@@ -2,10 +2,8 @@ from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
 from app.managers import secrets as secrets_manager
 from app.utils.i8ns import translate
-from fastapi import BackgroundTasks
 from app.api.v1.web.project_activity.services import add_recent_activity
 from app.framework.valkey import services as valkey_services
-
 
 
 async def get_secrets(request, user, data_type):
@@ -19,7 +17,9 @@ async def get_secrets(request, user, data_type):
     }
     if valkey_services.check_secret_exists(project_id, data_type, query):
         data = valkey_services.get_secret(project_id, data_type, query)
-        return response_helper(200, translate(f"{data_type}.list"), data=data, count=len(data))
+        return response_helper(
+            200, translate(f"{data_type}.list"), data=data, count=len(data)
+        )
 
     if page and limit:
         skip = (page - 1) * limit
