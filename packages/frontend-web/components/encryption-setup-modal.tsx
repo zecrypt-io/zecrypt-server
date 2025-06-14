@@ -149,6 +149,10 @@ export function EncryptionSetupModal({
           // Prevent closing by clicking outside
           e.preventDefault();
         }}
+        onEscapeKeyDown={(e: Event) => {
+          // Prevent closing with escape key
+          e.preventDefault();
+        }}
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
