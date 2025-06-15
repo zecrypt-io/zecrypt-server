@@ -251,7 +251,7 @@ const featureMenuItems: {
   {
     key: "env",
     labelKey: "env",
-    path: "/dashboard/env",
+    path: "/dashboard/environments",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
