@@ -9,6 +9,7 @@ interface UserData {
   email: string | null;
   locale: string | null; // Changed from language to locale
   is_2fa_enabled: boolean;
+  plan: string | null; // Added plan field
 }
 
 interface UserState {
@@ -26,6 +27,7 @@ const initialState: UserState = {
     email: null,
     locale: null, // Changed from language to locale
     is_2fa_enabled: false,
+    plan: null, // Initialize plan as null
   },
   authError: false, // Initialize authError to false
 };
