@@ -183,7 +183,7 @@ const navigationCategories: NavigationCategory[] = [
       {
         key: "env",
         labelKey: "env_variables",
-        path: "/dashboard/env",
+        path: "/dashboard/environments",
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
