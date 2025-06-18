@@ -39,6 +39,7 @@ export const APP_ROUTES = {
   HOME: '/',
   SHORTCUTS: '/shortcuts',
   TERMS: '/terms',
+  EXTENSION_LOGIN: '/extension-login',
 };
 
 // API routes
