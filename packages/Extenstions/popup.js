@@ -7,11 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logoutBtn');
   const cardsList = document.getElementById('cardsList');
   const emailsList = document.getElementById('emailsList');
+    // Check authentication status when popup opens
+  chrome.runtime.sendMessage({ type: 'CHECK_AUTH' }, (response) => {
+    if (response && response.isAuthenticated) {
+      showAuthenticatedUI();
+      fetchData();
+    } else {
+      showUnauthenticatedUI();
+    }
+  });
   
-  // Check authentication status when popup opens
-  chrome.runtime.sendMessage({ type: 'CHECK_AUTH' });
-  
-  // Handle auth status updates
+  // Handle auth status updates (for future use)
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'AUTH_STATUS') {
       if (message.isAuthenticated) {
@@ -22,11 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+  // Configuration for development vs production
+  const isDevelopment = true; // Set to false for production
+  const BASE_URL = isDevelopment 
+    ? 'http://localhost:3000' 
+    : 'https://app.zecrypt.com';
   
   // Login button click handler
   loginBtn.addEventListener('click', () => {
-    // Open the extension login page in a new tab
-    chrome.tabs.create({ url: 'https://app.zecrypt.com/extension-login?from=extension' });
+    // Open the extension login page in a new tab (with locale prefix)
+    chrome.tabs.create({ url: `${BASE_URL}/en/extension-login?from=extension` });
   });
   
   // Logout button click handler
@@ -57,35 +68,49 @@ document.addEventListener('DOMContentLoaded', () => {
     cardsList.innerHTML = '';
     emailsList.innerHTML = '';
   }
-  
-  // Fetch cards and emails data
+    // Fetch cards and emails data
   function fetchData() {
     // Show loading indicator
     loadingSection.style.display = 'block';
+    contentSection.style.display = 'none';
     
-    // First fetch cards
-    chrome.runtime.sendMessage({ 
-      type: 'FETCH_DATA',
-      dataType: 'cards'
-    }, (cardsResponse) => {
-      // Then fetch emails
-      chrome.runtime.sendMessage({ 
-        type: 'FETCH_DATA',
-        dataType: 'emails'
-      }, (emailsResponse) => {
-        // Hide loading indicator
-        loadingSection.style.display = 'none';
-        contentSection.style.display = 'block';
-        
-        // Render data
-        if (cardsResponse && cardsResponse.success) {
-          renderCards(cardsResponse.data);
-        }
-        
-        if (emailsResponse && emailsResponse.success) {
-          renderEmails(emailsResponse.data);
-        }
-      });
+    // Fetch cards and emails in parallel
+    Promise.all([
+      new Promise((resolve) => {
+        chrome.runtime.sendMessage({ 
+          type: 'FETCH_DATA',
+          dataType: 'cards'
+        }, (response) => {
+          resolve(response || { success: false, error: 'No response' });
+        });
+      }),
+      new Promise((resolve) => {
+        chrome.runtime.sendMessage({ 
+          type: 'FETCH_DATA',
+          dataType: 'emails'
+        }, (response) => {
+          resolve(response || { success: false, error: 'No response' });
+        });
+      })
+    ]).then(([cardsResponse, emailsResponse]) => {
+      // Hide loading indicator
+      loadingSection.style.display = 'none';
+      contentSection.style.display = 'block';
+      
+      // Render data
+      if (cardsResponse && cardsResponse.success) {
+        renderCards(cardsResponse.data);
+      } else {
+        renderCards([]);
+        console.error('Failed to fetch cards:', cardsResponse?.error);
+      }
+      
+      if (emailsResponse && emailsResponse.success) {
+        renderEmails(emailsResponse.data);
+      } else {
+        renderEmails([]);
+        console.error('Failed to fetch emails:', emailsResponse?.error);
+      }
     });
   }
   

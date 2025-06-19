@@ -1,34 +1,136 @@
-// Import API service
-importScripts('api-service.js');
+// Base API URL
+const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
+
+const ENDPOINTS = {
+  cards: function(workspaceId, projectId) { 
+    return `/${workspaceId}/${projectId}/cards`;
+  },
+  emails: function(workspaceId, projectId) { 
+    return `/${workspaceId}/${projectId}/emails`;
+  }
+};
+
+// Get stored token and user data
+function getAuthData() {
+  return new Promise(function(resolve, reject) {
+    chrome.storage.local.get(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId'], function(result) {
+      if (result.zecryptToken) {
+        resolve({
+          token: result.zecryptToken,
+          workspaceId: result.zecryptWorkspaceId,
+          projectId: result.zecryptProjectId
+        });
+      } else {
+        reject(new Error('No authentication token found'));
+      }
+    });
+  });
+}
+
+// Make authenticated API request
+function apiRequest(endpoint, method, data) {
+  method = method || 'GET';
+  
+  return new Promise(function(resolve, reject) {
+    getAuthData()
+      .then(function(authData) {
+        // Check if we have required workspace and project IDs
+        if (!authData.workspaceId || !authData.projectId) {
+          throw new Error('Missing workspace or project ID. Please log in through the web app.');
+        }
+        
+        // Resolve endpoint if it's a function
+        var resolvedEndpoint = typeof endpoint === 'function' 
+          ? endpoint(authData.workspaceId, authData.projectId)
+          : endpoint;
+        
+        var options = {
+          method: method,
+          headers: {
+            'Authorization': 'Bearer ' + authData.token,
+            'Content-Type': 'application/json'
+          }
+        };
+        
+        if (data && (method === 'POST' || method === 'PUT')) {
+          options.body = JSON.stringify(data);
+        }
+        
+        return fetch(API_BASE_URL + resolvedEndpoint, options);
+      })
+      .then(function(response) {
+        if (!response.ok) {
+          if (response.status === 401) {
+            chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId']);
+            throw new Error('Authentication failed. Please log in again.');
+          }
+          
+          throw new Error('API request failed with status ' + response.status);
+        }
+        
+        return response.json();
+      })
+      .then(function(data) {
+        resolve(data);
+      })
+      .catch(function(error) {
+        console.error('API request error:', error);
+        reject(error);
+      });
+  });
+}
+
+// Fetch all cards
+function getCards() {
+  return new Promise(function(resolve, reject) {
+    apiRequest(ENDPOINTS.cards)
+      .then(function(response) {
+        resolve({
+          success: true,
+          data: response.data || []
+        });
+      })
+      .catch(function(error) {
+        resolve({
+          success: false,
+          error: error.message
+        });
+      });
+  });
+}
+
+// Fetch all emails
+function getEmails() {
+  return new Promise(function(resolve, reject) {
+    apiRequest(ENDPOINTS.emails)
+      .then(function(response) {
+        resolve({
+          success: true,
+          data: response.data || []
+        });
+      })
+      .catch(function(error) {
+        resolve({
+          success: false,
+          error: error.message
+        });
+      });
+  });
+}
 
 // Listen for messages from the web app
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
+    console.log('External message received:', message);
     if (message.type === 'LOGIN' && message.token) {
-      // Store the token securely in chrome.storage.local
+      // Store the token and workspace/project IDs securely in chrome.storage.local
       chrome.storage.local.set({ 
         zecryptToken: message.token,
-        // If workspace and project IDs are provided, store them too
-        ...(message.workspaceId && { zecryptWorkspaceId: message.workspaceId }),
-        ...(message.projectId && { zecryptProjectId: message.projectId })
+        zecryptWorkspaceId: message.workspaceId,
+        zecryptProjectId: message.projectId
       }, () => {
-        console.log('Token stored successfully');
-        
-        // If workspace and project IDs weren't provided, try to fetch them
-        if (!message.workspaceId || !message.projectId) {
-          // Use the imported ApiService to fetch and store user data
-          ApiService.fetchAndStoreUserData(message.token)
-            .then(() => {
-              console.log('User data fetched and stored successfully');
-              sendResponse({ success: true });
-            })
-            .catch(error => {
-              console.error('Error fetching user data:', error);
-              sendResponse({ success: true }); // Still return success as token was saved
-            });
-        } else {
-          sendResponse({ success: true });
-        }
+        console.log('Token and workspace data stored successfully');
+        sendResponse({ success: true });
       });
       
       // Return true to indicate that sendResponse will be called asynchronously
@@ -37,39 +139,43 @@ chrome.runtime.onMessageExternal.addListener(
   }
 );
 
-// Check authentication status and fetch user data if authenticated
+// Check authentication status and return result
 function checkAuth() {
-  chrome.storage.local.get(['zecryptToken'], (result) => {
-    if (result.zecryptToken) {
-      // Token exists, update UI state or notify popup
-      chrome.runtime.sendMessage({ type: 'AUTH_STATUS', isAuthenticated: true });
-    } else {
-      // No token, user needs to log in
-      chrome.runtime.sendMessage({ type: 'AUTH_STATUS', isAuthenticated: false });
-    }
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['zecryptToken'], (result) => {
+      if (result.zecryptToken) {
+        resolve({ isAuthenticated: true });
+      } else {
+        resolve({ isAuthenticated: false });
+      }
+    });
   });
 }
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('Internal message received:', message);
+  
   if (message.type === 'CHECK_AUTH') {
-    checkAuth();
+    checkAuth().then(result => {
+      console.log('Auth check result:', result);
+      sendResponse(result);
+    });
     return true;
   }
   
   // Handle logout request
   if (message.type === 'LOGOUT') {
-    chrome.storage.local.remove('zecryptToken', () => {
-      console.log('Token removed');
+    chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId'], () => {
+      console.log('Tokens removed');
       sendResponse({ success: true });
     });
     return true;
   }
-  
-  // Handle data fetching requests
+    // Handle data fetching requests
   if (message.type === 'FETCH_DATA') {
     if (message.dataType === 'cards') {
-      ApiService.getCards()
+      getCards()
         .then(response => {
           sendResponse(response);
         })
@@ -80,7 +186,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
     if (message.dataType === 'emails') {
-      ApiService.getEmails()
+      getEmails()
         .then(response => {
           sendResponse(response);
         })
@@ -94,7 +200,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Handle form filling requests from popup
   if (message.type === 'GET_DATA') {
     if (message.dataType === 'card') {
-      ApiService.getCards()
+      getCards()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
             // For simplicity, return the first card
@@ -111,7 +217,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
     if (message.dataType === 'email') {
-      ApiService.getEmails()
+      getEmails()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
             // For simplicity, return the first email
@@ -131,5 +237,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Initialize when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
-  checkAuth();
-}); 
+  console.log('Zecrypt extension installed');
+});
