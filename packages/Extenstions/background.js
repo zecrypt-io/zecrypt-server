@@ -47,7 +47,7 @@ function apiRequest(endpoint, method, data) {
         var options = {
           method: method,
           headers: {
-            'Authorization': 'Bearer ' + authData.token,
+            'access-token': authData.token,
             'Content-Type': 'application/json'
           }
         };
