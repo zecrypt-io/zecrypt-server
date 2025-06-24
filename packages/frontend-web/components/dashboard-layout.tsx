@@ -208,6 +208,40 @@ const navigationCategories: NavigationCategory[] = [
   }
 ];
 
+// Replace with your actual extension ID from chrome://extensions
+const EXTENSION_ID = "bbfbjmmofbhcnegicongikfhceadhdek";
+
+function ExtensionMessenger() {
+  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
+  const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
+  const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+
+  useEffect(() => {
+    if (accessToken && selectedWorkspaceId && selectedProjectId) {
+      if ((window as any).chrome && (window as any).chrome.runtime && (window as any).chrome.runtime.sendMessage) {
+        (window as any).chrome.runtime.sendMessage(
+          EXTENSION_ID,
+          {
+            type: "LOGIN",
+            token: accessToken,
+            workspaceId: selectedWorkspaceId,
+            projectId: selectedProjectId,
+          },
+          (response: { success?: boolean }) => {
+            if (response && response.success) {
+              console.log("Zecrypt extension: Login data sent successfully!");
+            } else {
+              console.warn("Zecrypt extension: Failed to send login data.");
+            }
+          }
+        );
+      }
+    }
+  }, [accessToken, selectedWorkspaceId, selectedProjectId]);
+
+  return null;
+}
+
 export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -564,6 +598,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
   return (
     <div className="flex min-h-screen bg-background">
+      <ExtensionMessenger />
       <ChatWidget />
       <SearchModal
         isOpen={showSearchModal}
