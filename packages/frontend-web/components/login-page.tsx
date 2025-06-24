@@ -192,9 +192,22 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       setIsCheckingKeys(false);
     }
   };
-
   // Proceed to dashboard after all checks are complete
   const proceedToDashboard = () => {
+    // Check if there's a returnUrl in the query parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get('returnUrl');
+      
+      if (returnUrl) {
+        // Decode and redirect to the return URL
+        const decodedReturnUrl = decodeURIComponent(returnUrl);
+        router.replace(decodedReturnUrl);
+        return;
+      }
+    }
+    
+    // Default redirect to dashboard
     router.replace(`/${locale}/dashboard`);
   };
 

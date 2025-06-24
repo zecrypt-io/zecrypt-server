@@ -7,20 +7,21 @@ import { RootState } from "@/libs/Redux/store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function ExtensionLogin() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromExtension = searchParams.get("from") === "extension";
-  const [status, setStatus] = useState<"initial" | "sending" | "success" | "error">("initial");
+  const fromExtension = searchParams.get("from") === "extension";  const [status, setStatus] = useState<"initial" | "checking" | "sending" | "success" | "error" | "not_authenticated">("initial");
   const [errorMessage, setErrorMessage] = useState("");
   
-  // Get access token and workspace/project info from Redux store
-  const accessToken = useSelector((state: RootState) => state.user.userData?.access_token);
-  const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
+  // Get user data from Redux store
+  const userData = useSelector((state: RootState) => state.user.userData);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
 
+  // Check if user is authenticated (has access token)
+  const isAuthenticated = userData && userData.access_token;
   useEffect(() => {
     // If not coming from extension, redirect to dashboard
     if (!fromExtension) {
@@ -28,105 +29,183 @@ export default function ExtensionLogin() {
       return;
     }
 
-    // If user is authenticated and we have a token, send it to the extension
-    if (isAuthenticated && accessToken && fromExtension) {
-      sendTokenToExtension();
-    }
-  }, [isAuthenticated, accessToken, fromExtension]);
+    setStatus("checking");
 
-  // Function to send token to extension
+    // Check authentication status
+    if (isAuthenticated && userData?.access_token) {
+      // User is already logged in, send credentials to extension
+      sendTokenToExtension();
+    } else {
+      // User is not authenticated, need to log in
+      setStatus("not_authenticated");
+    }
+  }, [isAuthenticated, userData, fromExtension]);  // Function to send token to extension
   const sendTokenToExtension = async () => {
     try {
       setStatus("sending");
       
-      // The extension ID will need to be updated with your actual extension ID
-      // For development, you can use the ID Chrome assigns temporarily
-      // For production, you'll need to use your published extension ID
-      const EXTENSION_ID = "YOUR_EXTENSION_ID"; // Replace with actual ID
-      
-      // Check if chrome is available (we're in a browser)
-      if (typeof chrome !== "undefined" && chrome.runtime) {
-        chrome.runtime.sendMessage(
-          EXTENSION_ID, 
-          {
-            type: "LOGIN",
-            token: accessToken,
-            workspaceId: selectedWorkspaceId,
-            projectId: selectedProjectId
-          },
-          (response) => {
-            if (response && response.success) {
-              setStatus("success");
-            } else {
-              setStatus("error");
-              setErrorMessage("Extension did not confirm receipt of the token.");
-            }
-          }
-        );
-      } else {
-        // For development environments where chrome.runtime might not be available
-        console.log("Chrome runtime not available. Token would be sent to extension:", accessToken);
-        setStatus("success");
+      if (!userData?.access_token) {
+        throw new Error("No access token available");
       }
+
+      // Method 1: Try to communicate with extension via localStorage
+      // This is the most reliable method for extension communication
+      const authData = {
+        token: userData.access_token,
+        workspaceId: selectedWorkspaceId,
+        projectId: selectedProjectId,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('zecrypt_extension_auth', JSON.stringify(authData));
+      
+      // Method 2: Also try postMessage for immediate communication
+      if (window.opener) {
+        window.opener.postMessage({
+          type: "ZECRYPT_LOGIN",
+          ...authData
+        }, "*");
+      }
+
+      // Method 3: Dispatch a custom event that the extension can listen for
+      window.dispatchEvent(new CustomEvent('zecrypt_extension_login', {
+        detail: authData
+      }));
+
+      setStatus("success");
+      
+      console.log("Authentication data sent to extension:", {
+        hasToken: !!userData.access_token,
+        workspaceId: selectedWorkspaceId,
+        projectId: selectedProjectId
+      });
+
+      // Auto-close after 3 seconds
+      setTimeout(() => {
+        window.close();
+      }, 3000);
+
     } catch (error) {
       console.error("Error sending token to extension:", error);
       setStatus("error");
       setErrorMessage("Failed to communicate with the extension.");
-    }
-  };
+    }  };
 
-  // If not authenticated, redirect to login
-  useEffect(() => {
-    if (!isAuthenticated && fromExtension) {
-      // Store the return URL so we can come back after login
-      const returnUrl = `/extension-login?from=extension`;
-      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-    }
-  }, [isAuthenticated, fromExtension]);
+  const handleLoginRedirect = () => {
+    // Store the return URL so we can come back after login
+    const returnUrl = `/en/extension-login?from=extension`;
+    router.push(`/en/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+  };
 
   const handleClose = () => {
     window.close();
   };
 
+  const handleRetry = () => {
+    if (isAuthenticated && userData?.access_token) {
+      sendTokenToExtension();
+    } else {
+      setStatus("not_authenticated");
+    }
+  };
   return (
-    <div className="container flex items-center justify-center min-h-screen">
-      <Card className="w-[400px] max-w-full">
-        <CardHeader>
-          <CardTitle>Zecrypt Extension Authentication</CardTitle>
+    <div className="container flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="w-[450px] max-w-full">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">Z</span>
+            </div>
+            Zecrypt Extension Login
+          </CardTitle>
           <CardDescription>
-            {status === "initial" && "Preparing to connect your Zecrypt account to the browser extension..."}
+            {status === "initial" && "Initializing..."}
+            {status === "checking" && "Checking authentication status..."}
             {status === "sending" && "Connecting to extension..."}
-            {status === "success" && "Successfully connected to Zecrypt extension!"}
-            {status === "error" && "Connection error"}
+            {status === "success" && "Successfully connected!"}
+            {status === "error" && "Connection failed"}
+            {status === "not_authenticated" && "Please log in to continue"}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {status === "success" && (
-            <Alert className="mb-4">
-              <AlertTitle>Authentication successful</AlertTitle>
-              <AlertDescription>
+            <Alert className="border-green-200 bg-green-50">
+              <AlertTitle className="text-green-800">✓ Authentication successful</AlertTitle>
+              <AlertDescription className="text-green-700">
                 Your Zecrypt account is now connected to the browser extension.
-                You can close this tab and start using the extension.
+                You can close this tab and start using the extension to autofill your cards and emails.
               </AlertDescription>
             </Alert>
           )}
           
           {status === "error" && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive">
               <AlertTitle>Authentication failed</AlertTitle>
               <AlertDescription>
                 {errorMessage || "There was a problem connecting to the Zecrypt extension."}
               </AlertDescription>
             </Alert>
           )}
+
+          {status === "not_authenticated" && (
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertTitle className="text-blue-800">Login Required</AlertTitle>
+              <AlertDescription className="text-blue-700">
+                You need to log in to your Zecrypt account first to connect the extension.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {status === "checking" && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          )}
+
+          {status === "sending" && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-sm text-gray-600">Connecting to extension...</span>
+            </div>
+          )}
           
-          <Button 
-            onClick={handleClose} 
-            className="w-full"
-            disabled={status === "sending" || status === "initial"}
-          >
-            {status === "success" ? "Close Tab" : "Cancel"}
-          </Button>
+          <div className="flex gap-2">
+            {status === "not_authenticated" && (
+              <Button onClick={handleLoginRedirect} className="flex-1">
+                Log in to Zecrypt
+              </Button>
+            )}
+            
+            {status === "error" && (
+              <Button onClick={handleRetry} variant="outline" className="flex-1">
+                Try Again
+              </Button>
+            )}
+            
+            {(status === "success" || status === "error") && (
+              <Button 
+                onClick={handleClose} 
+                variant={status === "success" ? "default" : "outline"}
+                className="flex-1"
+              >
+                Close Tab
+              </Button>
+            )}
+          </div>
+
+          {status === "success" && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">
+                This tab will automatically close in a few seconds.
+              </p>
+              <Link 
+                href="/en/dashboard" 
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

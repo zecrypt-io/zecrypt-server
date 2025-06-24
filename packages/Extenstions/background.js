@@ -1,6 +1,23 @@
 // Base API URL
 const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
 
+// Helper function to check if URL is accessible for script injection
+function isValidUrl(url) {
+  // Exclude chrome:// URLs, chrome-extension:// URLs, and other restricted schemes
+  if (!url) return false;
+  
+  const restrictedProtocols = ['chrome:', 'chrome-extension:', 'moz-extension:', 'about:', 'edge:', 'opera:'];
+  
+  for (const protocol of restrictedProtocols) {
+    if (url.startsWith(protocol)) {
+      return false;
+    }
+  }
+  
+  // Only allow http and https
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
 const ENDPOINTS = {
   cards: function(workspaceId, projectId) { 
     return `/${workspaceId}/${projectId}/cards`;
@@ -129,8 +146,13 @@ chrome.runtime.onMessageExternal.addListener(
         zecryptWorkspaceId: message.workspaceId,
         zecryptProjectId: message.projectId
       }, () => {
-        console.log('Token and workspace data stored successfully');
-        sendResponse({ success: true });
+        if (chrome.runtime.lastError) {
+          console.error('Error storing tokens:', chrome.runtime.lastError);
+          sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+          console.log('Token and workspace data stored successfully');
+          sendResponse({ success: true });
+        }
       });
       
       // Return true to indicate that sendResponse will be called asynchronously
@@ -139,35 +161,214 @@ chrome.runtime.onMessageExternal.addListener(
   }
 );
 
+// Function to check localStorage for auth data (fallback method)
+function checkLocalStorageAuth() {
+  return new Promise((resolve) => {
+    try {
+      // Execute script in the active tab to check localStorage
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0] && tabs[0].url && isValidUrl(tabs[0].url) && (tabs[0].url.includes('localhost') || tabs[0].url.includes('zecrypt'))) {          chrome.scripting.executeScript({
+            target: {tabId: tabs[0].id},
+            func: () => {
+              try {
+                const authData = localStorage.getItem('zecrypt_extension_auth');
+                if (authData) {
+                  try {
+                    const parsed = JSON.parse(authData);
+                    // Remove the auth data after reading it
+                    localStorage.removeItem('zecrypt_extension_auth');
+                    return parsed;
+                  } catch (e) {
+                    console.error('Error parsing auth data:', e);
+                    localStorage.removeItem('zecrypt_extension_auth');
+                    return null;
+                  }
+                }
+                return null;
+              } catch (error) {
+                console.error('Error accessing localStorage:', error);
+                return null;
+              }
+            }
+          }, (results) => {
+            if (chrome.runtime.lastError) {
+              console.log('Script execution failed:', chrome.runtime.lastError.message);
+              resolve({ success: false, error: chrome.runtime.lastError.message });
+              return;
+            }
+            
+            if (results && results[0] && results[0].result) {
+              const authData = results[0].result;
+              // Store in extension storage
+              chrome.storage.local.set({
+                zecryptToken: authData.token,
+                zecryptWorkspaceId: authData.workspaceId,
+                zecryptProjectId: authData.projectId
+              }, () => {
+                if (chrome.runtime.lastError) {
+                  console.error('Error storing auth data:', chrome.runtime.lastError);
+                  resolve({ success: false, error: chrome.runtime.lastError.message });
+                } else {
+                  console.log('Auth data retrieved from localStorage and stored');
+                  resolve({ success: true, authData });
+                }
+              });
+            } else {
+              resolve({ success: false, error: 'No auth data found' });
+            }
+          });        } else {
+          console.log('No valid tab found for localStorage check. Current tab:', tabs[0]?.url || 'No tab');
+          resolve({ success: false, error: 'No accessible tab found' });
+        }
+      });
+    } catch (error) {
+      console.error('Error checking localStorage:', error);
+      resolve({ success: false, error: error.message });
+    }
+  });
+}
+
+// Periodically check for auth data when login is pending
+let authCheckInterval = null;
+let authCheckAttempts = 0;
+const MAX_AUTH_CHECK_ATTEMPTS = 30; // Stop after 1 minute (30 * 2 seconds)
+
+function startAuthCheck() {
+  if (authCheckInterval) {
+    clearInterval(authCheckInterval);
+  }
+  
+  authCheckAttempts = 0;
+  
+  authCheckInterval = setInterval(async () => {
+    authCheckAttempts++;
+    
+    // Stop checking after max attempts
+    if (authCheckAttempts > MAX_AUTH_CHECK_ATTEMPTS) {
+      console.log('Auth check timeout after', MAX_AUTH_CHECK_ATTEMPTS, 'attempts');
+      stopAuthCheck();
+      return;
+    }
+    
+    try {
+      const result = await checkLocalStorageAuth();
+      if (result.success) {
+        clearInterval(authCheckInterval);
+        authCheckInterval = null;
+        console.log('Authentication successful via localStorage polling');
+        
+        // Notify popup if it's open
+        try {
+          chrome.runtime.sendMessage({ type: 'AUTH_SUCCESS' });
+        } catch (e) {
+          // Popup might not be open, that's ok
+          console.log('Could not notify popup:', e.message);
+        }
+      } else if (result.error && result.error.includes('Cannot access')) {
+        // If we get access errors, reduce polling frequency
+        console.log('Access error during auth check, slowing down polling');
+      }
+    } catch (error) {
+      console.error('Error during auth check:', error);
+    }
+  }, 2000); // Check every 2 seconds
+}
+
+function stopAuthCheck() {
+  if (authCheckInterval) {
+    clearInterval(authCheckInterval);
+    authCheckInterval = null;
+  }
+}
+
 // Check authentication status and return result
 function checkAuth() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['zecryptToken'], (result) => {
-      if (result.zecryptToken) {
-        resolve({ isAuthenticated: true });
-      } else {
-        resolve({ isAuthenticated: false });
-      }
-    });
+    try {
+      chrome.storage.local.get(['zecryptToken'], (result) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error accessing storage:', chrome.runtime.lastError);
+          resolve({ isAuthenticated: false, error: chrome.runtime.lastError.message });
+        } else if (result.zecryptToken) {
+          resolve({ isAuthenticated: true });
+        } else {
+          resolve({ isAuthenticated: false });
+        }
+      });
+    } catch (error) {
+      console.error('Error in checkAuth:', error);
+      resolve({ isAuthenticated: false, error: error.message });
+    }
   });
 }
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Internal message received:', message);
-  
-  if (message.type === 'CHECK_AUTH') {
+    if (message.type === 'CHECK_AUTH') {
     checkAuth().then(result => {
       console.log('Auth check result:', result);
-      sendResponse(result);
+      
+      // If not authenticated, try checking localStorage as fallback
+      if (!result.isAuthenticated) {
+        checkLocalStorageAuth().then(localResult => {
+          if (localResult.success) {
+            // Re-check auth after localStorage data is stored
+            checkAuth().then(newResult => {
+              sendResponse(newResult);
+            });
+          } else {
+            sendResponse(result);
+            // Only start periodic checking if we don't have access errors
+            if (!localResult.error || !localResult.error.includes('Cannot access')) {
+              startAuthCheck();
+            } else {
+              console.log('Skipping periodic auth check due to access restrictions');
+            }
+          }
+        });
+      } else {
+        sendResponse(result);
+        // Stop any ongoing auth check
+        stopAuthCheck();
+      }
+    }).catch(error => {
+      console.error('Error in CHECK_AUTH:', error);
+      sendResponse({ isAuthenticated: false, error: error.message });
     });
     return true;
   }
-  
+
+  // Handle start auth check request
+  if (message.type === 'START_AUTH_CHECK') {
+    startAuthCheck();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // Handle stop auth check request  
+  if (message.type === 'STOP_AUTH_CHECK') {
+    stopAuthCheck();
+    sendResponse({ success: true });
+    return true;
+  }
   // Handle logout request
   if (message.type === 'LOGOUT') {
     chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId'], () => {
       console.log('Tokens removed');
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Handle login request from popup (when receiving auth data)
+  if (message.type === 'LOGIN' && message.token) {
+    chrome.storage.local.set({ 
+      zecryptToken: message.token,
+      zecryptWorkspaceId: message.workspaceId,
+      zecryptProjectId: message.projectId
+    }, () => {
+      console.log('Token and workspace data stored successfully from popup');
       sendResponse({ success: true });
     });
     return true;
