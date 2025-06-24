@@ -1164,6 +1164,17 @@
   "key_shortcuts": {
     "title": "Key Shortcuts"
   },
+  "notes": {
+    "add_new_note":"Add New Note",
+    "note_title": "Note Title",
+    "note_content": "Note Content",
+    "tags": "Tags",
+    "update_note": "Update Note",
+    "enter_note_title": "Enter note title",
+    "add_a_tag": "Add a tag",
+    "add_note": "Add Note",
+    "cancel": "Cancel"
+  },
   "emails": {
     "email_accounts": "Email Accounts",
     "add_email": "Add Email",

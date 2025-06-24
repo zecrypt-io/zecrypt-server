@@ -30,6 +30,7 @@ export function NotesContent() {
     prevPage,
     nextPage,
     goToPage,
+    notesToDisplay,
   } = useNoteManagement({ selectedWorkspaceId, selectedProjectId });
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -67,53 +68,64 @@ export function NotesContent() {
             <div className="text-base">Start by adding your first secure note.</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredNotes.map((note) => (
-              <div
-                key={note.doc_id}
-                className="group p-5 border rounded-2xl bg-card cursor-pointer hover:shadow-xl hover:bg-accent/40 transition-all duration-200 relative flex flex-col min-h-[180px]"
-                onClick={() => setViewNote(note)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-bold truncate max-w-[60%]">{note.title}</h2>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">{new Date(note.updated_at || note.created_at).toLocaleDateString()}</span>
-                    <button
-                      className="p-1 rounded-full hover:bg-primary/10 text-primary opacity-70 hover:opacity-100 transition"
-                      onClick={e => { e.stopPropagation(); setEditNote(note); }}
-                      title="Edit Note"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      className="p-1 rounded-full hover:bg-destructive/10 text-destructive opacity-70 hover:opacity-100 transition"
-                      onClick={e => { e.stopPropagation(); setDeleteNote(note); }}
-                      title="Delete Note"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </button>
+          <div className="flex flex-col min-h-[400px]">
+            <div className="flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {notesToDisplay.map((note) => (
+                  <div
+                    key={note.doc_id}
+                    className="group p-5 border rounded-2xl bg-card cursor-pointer hover:shadow-xl hover:bg-accent/40 transition-all duration-200 relative flex flex-col min-h-[180px]"
+                    onClick={() => setViewNote(note)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-lg font-bold truncate max-w-[60%]">{note.title}</h2>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">{new Date(note.updated_at || note.created_at).toLocaleDateString()}</span>
+                        <button
+                          className="p-1 rounded-full hover:bg-primary/10 text-primary opacity-70 hover:opacity-100 transition"
+                          onClick={e => { e.stopPropagation(); setEditNote(note); }}
+                          title="Edit Note"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          className="p-1 rounded-full hover:bg-destructive/10 text-destructive opacity-70 hover:opacity-100 transition"
+                          onClick={e => { e.stopPropagation(); setDeleteNote(note); }}
+                          title="Delete Note"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mb-2 text-sm text-muted-foreground line-clamp-4 prose prose-sm prose-neutral max-w-full overflow-hidden" style={{ minHeight: 60 }}
+                      dangerouslySetInnerHTML={{
+                        __html: (() => {
+                          try {
+                            return generateHTML(JSON.parse(note.data), [StarterKit]);
+                          } catch {
+                            return '';
+                          }
+                        })(),
+                      }}
+                    />
+                    <div className="flex gap-2 flex-wrap mt-auto pt-2">
+                      {note.tags?.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="mb-2 text-sm text-muted-foreground line-clamp-4 prose prose-sm prose-neutral max-w-full overflow-hidden" style={{ minHeight: 60 }}
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      try {
-                        return generateHTML(JSON.parse(note.data), [StarterKit]);
-                      } catch {
-                        return '';
-                      }
-                    })(),
-                  }}
-                />
-                <div className="flex gap-2 flex-wrap mt-auto pt-2">
-                  {note.tags?.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <Button onClick={prevPage} disabled={currentPage === 1} variant="outline">Previous</Button>
+                <span className="text-sm">Page {currentPage} of {totalPages}</span>
+                <Button onClick={nextPage} disabled={currentPage === totalPages} variant="outline">Next</Button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -138,7 +150,7 @@ export function NotesContent() {
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">{viewNote?.title}</DialogTitle>
             </DialogHeader>
-            <div className="prose prose-lg max-w-full mb-4" dangerouslySetInnerHTML={{
+            <div className="prose prose-lg max-w-full mb-4 overflow-y-auto max-h-[60vh]" dangerouslySetInnerHTML={{
               __html: (() => {
                 try {
                   return generateHTML(JSON.parse(viewNote.data), [StarterKit]);
