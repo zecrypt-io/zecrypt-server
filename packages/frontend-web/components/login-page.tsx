@@ -192,10 +192,21 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       setIsCheckingKeys(false);
     }
   };
+
   // Proceed to dashboard after all checks are complete
   const proceedToDashboard = () => {
-    // Check if there's a returnUrl in the query parameters
+    // Check if there's a stored return URL for extension login
     if (typeof window !== 'undefined') {
+      const extensionReturnUrl = localStorage.getItem('zecrypt_extension_return_url');
+      
+      if (extensionReturnUrl) {
+        // Clear the stored URL and redirect back to extension login page
+        localStorage.removeItem('zecrypt_extension_return_url');
+        router.replace(extensionReturnUrl);
+        return;
+      }
+      
+      // Check for query parameter returnUrl (fallback)
       const urlParams = new URLSearchParams(window.location.search);
       const returnUrl = urlParams.get('returnUrl');
       

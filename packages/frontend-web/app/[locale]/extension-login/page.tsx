@@ -92,9 +92,10 @@ export default function ExtensionLogin() {
     }  };
 
   const handleLoginRedirect = () => {
-    // Store the return URL so we can come back after login
-    const returnUrl = `/en/extension-login?from=extension`;
-    router.push(`/en/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+    // Store the current URL as return URL and redirect to login
+    const currentUrl = window.location.href;
+    localStorage.setItem('zecrypt_extension_return_url', currentUrl);
+    router.push(`/en/login`);
   };
 
   const handleClose = () => {
