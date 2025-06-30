@@ -194,6 +194,7 @@
     "sign_in_with_sso": "Sign in with your organization account",
     "login": "Login",
     "signup": "Sign Up",
+    "cancel": "Cancel",
     "logout": "Logout",
     "sign_up": "Sign up",
     "dont_have_account": "Don't have an account?",
@@ -330,6 +331,7 @@
     "generate_password": "Generate Password",
     "favourites": "Favourites",
     "no_description": "No Description",
+    "notes":"Notes",
     "confirm_delete_project": "Confirm Delete Project",
     "create_project": "Create Project",
     "set_as_default_project": "Set as default project",
@@ -1161,6 +1163,17 @@
   },
   "key_shortcuts": {
     "title": "Key Shortcuts"
+  },
+  "notes": {
+    "add_new_note":"Add New Note",
+    "note_title": "Note Title",
+    "note_content": "Note Content",
+    "tags": "Tags",
+    "update_note": "Update Note",
+    "enter_note_title": "Enter note title",
+    "add_a_tag": "Add a tag",
+    "add_note": "Add Note",
+    "cancel": "Cancel"
   },
   "emails": {
     "email_accounts": "Email Accounts",
