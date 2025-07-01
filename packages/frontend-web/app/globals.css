@@ -191,3 +191,25 @@ body {
   }
   
 }
+
+/* TipTap/ProseMirror editor focus and caret styles */
+.ProseMirror {
+  outline: none !important;
+  border: 1.5px solid #e5e7eb;        /* Subtle border (Tailwind border-gray-200) */
+  border-radius: 0.5rem;              /* Rounded corners */
+  min-height: 200px;
+  padding: 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 1rem;
+  background: transparent;
+  caret-color: #60a5fa;               /* Lighter blue (Tailwind blue-400) */
+}
+
+.ProseMirror:focus {
+  border-color: #bae6fd;              /* Very light blue (Tailwind sky-200) */
+  box-shadow: 0 0 0 2px #bae6fd66;    /* Very light blue glow */
+}
+
+.ProseMirror:focus-visible {
+  outline: none !important;
+}
