@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 export default function ExtensionLogin() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function ExtensionLogin() {
   const userData = useSelector((state: RootState) => state.user.userData);
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
+  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   // Check if user is authenticated (has access token)
   const isAuthenticated = userData && userData.access_token;
@@ -48,12 +50,30 @@ export default function ExtensionLogin() {
         throw new Error("No access token available");
       }
 
+      // Get the current project to retrieve the AES key
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error("Current project not found");
+      }
+
+      // Get the decrypted project AES key from localStorage
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectAesKey = await secureGetItem(projectKeyName);
+      
+      if (!projectAesKey) {
+        throw new Error("Project AES key not found. Please make sure you're logged in properly.");
+      }
+
       // Method 1: Try to communicate with extension via localStorage
       // This is the most reliable method for extension communication
       const authData = {
         token: userData.access_token,
         workspaceId: selectedWorkspaceId,
         projectId: selectedProjectId,
+        projectAesKey: projectAesKey, // Add the project AES key
         timestamp: Date.now()
       };
 
@@ -77,7 +97,9 @@ export default function ExtensionLogin() {
       console.log("Authentication data sent to extension:", {
         hasToken: !!userData.access_token,
         workspaceId: selectedWorkspaceId,
-        projectId: selectedProjectId
+        projectId: selectedProjectId,
+        hasProjectAesKey: !!authData.projectAesKey,
+        projectName: currentProject.name
       });
 
       // Auto-close after 3 seconds

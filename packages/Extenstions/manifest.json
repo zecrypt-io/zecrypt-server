@@ -25,7 +25,13 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["crypto-utils.js", "content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["crypto-utils.js"],
+      "matches": ["<all_urls>"]
     }
   ],
   "externally_connectable": {

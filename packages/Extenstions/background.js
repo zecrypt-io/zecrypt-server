@@ -1,6 +1,9 @@
 // Base API URL
 const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
 
+// Import crypto utilities
+importScripts('crypto-utils.js');
+
 // Helper function to check if URL is accessible for script injection
 function isValidUrl(url) {
   // Exclude chrome:// URLs, chrome-extension:// URLs, and other restricted schemes
@@ -30,18 +33,176 @@ const ENDPOINTS = {
 // Get stored token and user data
 function getAuthData() {
   return new Promise(function(resolve, reject) {
-    chrome.storage.local.get(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId'], function(result) {
+    chrome.storage.local.get(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId', 'zecryptProjectAesKey'], function(result) {
       if (result.zecryptToken) {
         resolve({
           token: result.zecryptToken,
           workspaceId: result.zecryptWorkspaceId,
-          projectId: result.zecryptProjectId
+          projectId: result.zecryptProjectId,
+          projectAesKey: result.zecryptProjectAesKey // Add project AES key
         });
       } else {
         reject(new Error('No authentication token found'));
       }
     });
   });
+}
+
+// Enhanced function to store project AES key securely
+async function storeProjectAesKey(projectAesKey) {
+  try {
+    // Encrypt the project AES key before storing using CryptoUtils
+    const encryptedKey = await CryptoUtils.encryptForLocalStorage(projectAesKey);
+    chrome.storage.local.set({ 
+      zecryptProjectAesKey: encryptedKey
+    });
+    console.log('Project AES key stored securely');
+  } catch (error) {
+    console.error('Error storing project AES key:', error);
+  }
+}
+
+// Enhanced function to get decrypted project AES key
+async function getDecryptedProjectAesKey() {
+  return new Promise(async (resolve) => {
+    chrome.storage.local.get(['zecryptProjectAesKey'], async (result) => {
+      if (result.zecryptProjectAesKey) {
+        try {
+          const decryptedKey = await CryptoUtils.decryptFromLocalStorage(result.zecryptProjectAesKey);
+          console.log('Project AES key retrieved and decrypted');
+          resolve(decryptedKey);
+        } catch (error) {
+          console.error('Error decrypting project AES key:', error);
+          resolve(null);
+        }
+      } else {
+        console.warn('No project AES key found in storage');
+        resolve(null);
+      }
+    });
+  });
+}
+
+// Enhanced function to process and decrypt card data
+async function processCardData(cardRaw) {
+  try {
+    const projectAesKey = await getDecryptedProjectAesKey();
+    
+    if (!projectAesKey) {
+      console.error("Project AES key not found for decryption");
+      return {
+        ...cardRaw,
+        cardNumber: 'Key missing',
+        name: 'Key missing',
+        expiry: 'Key missing',
+        cvv: 'Key missing',
+        last4: 'Key missing',
+        expMonth: 'Key missing',
+        expYear: 'Key missing'
+      };
+    }
+
+    if (cardRaw.data && cardRaw.data.includes('.')) {
+      try {
+        const decryptedData = await CryptoUtils.decryptDataField(cardRaw.data, projectAesKey);
+        const parsedData = JSON.parse(decryptedData);
+        
+        console.log('Card data decrypted successfully');
+        return {
+          ...cardRaw,
+          cardNumber: parsedData.number || 'undefined',
+          name: parsedData.card_holder_name || 'undefined',
+          expiry: `${parsedData.expiry_month || ''}/${parsedData.expiry_year || ''}`,
+          cvv: parsedData.cvv || 'undefined',
+          last4: parsedData.number ? parsedData.number.slice(-4) : 'undefined',
+          expMonth: parsedData.expiry_month || 'undefined',
+          expYear: parsedData.expiry_year || 'undefined'
+        };
+      } catch (decryptError) {
+        console.error("Failed to decrypt card data:", decryptError);
+        return {
+          ...cardRaw,
+          cardNumber: 'Decrypt failed',
+          name: 'Decrypt failed',
+          expiry: 'Decrypt failed',
+          cvv: 'Decrypt failed',
+          last4: 'Decrypt failed',
+          expMonth: 'Decrypt failed',
+          expYear: 'Decrypt failed'
+        };
+      }
+    } else {
+      // Data might not be encrypted (legacy format)
+      try {
+        const parsedData = JSON.parse(cardRaw.data);
+        return {
+          ...cardRaw,
+          cardNumber: parsedData.number || 'undefined',
+          name: parsedData.card_holder_name || 'undefined',
+          expiry: `${parsedData.expiry_month || ''}/${parsedData.expiry_year || ''}`,
+          cvv: parsedData.cvv || 'undefined',
+          last4: parsedData.number ? parsedData.number.slice(-4) : 'undefined',
+          expMonth: parsedData.expiry_month || 'undefined',
+          expYear: parsedData.expiry_year || 'undefined'
+        };
+      } catch (parseError) {
+        console.error("Error parsing card data:", parseError);
+        return cardRaw;
+      }
+    }
+  } catch (error) {
+    console.error("Error processing card data:", error);
+    return cardRaw;
+  }
+}
+
+// Enhanced function to process and decrypt email data
+async function processEmailData(emailRaw) {
+  try {
+    const projectAesKey = await getDecryptedProjectAesKey();
+    
+    if (!projectAesKey) {
+      console.error("Project AES key not found for decryption");
+      return {
+        ...emailRaw,
+        email: 'Key missing'
+      };
+    }
+
+    if (emailRaw.data && emailRaw.data.includes('.')) {
+      try {
+        const decryptedData = await CryptoUtils.decryptDataField(emailRaw.data, projectAesKey);
+        const parsedData = JSON.parse(decryptedData);
+        
+        console.log('Email data decrypted successfully');
+        return {
+          ...emailRaw,
+          email: parsedData.email_address || 'undefined'
+        };
+      } catch (decryptError) {
+        console.error("Failed to decrypt email data:", decryptError);
+        return {
+          ...emailRaw,
+          email: 'Decrypt failed'
+        };
+      }
+    } else {
+      // Data might not be encrypted (legacy format)
+      try {
+        const parsedData = JSON.parse(emailRaw.data);
+        return {
+          ...emailRaw,
+          email: parsedData.email_address || 'undefined'
+        };
+      } catch (parseError) {
+        console.error("Error parsing email data:", parseError);
+        return emailRaw;
+      }
+    }
+  } catch (error) {
+    console.error("Error processing email data:", error);
+    return emailRaw;
+  }
 }
 
 // Make authenticated API request
@@ -97,14 +258,18 @@ function apiRequest(endpoint, method, data) {
   });
 }
 
-// Fetch all cards
+// Enhanced getCards function with decryption
 function getCards() {
   return new Promise(function(resolve, reject) {
     apiRequest(ENDPOINTS.cards)
-      .then(function(response) {
+      .then(async function(response) {
+        const cards = response.data || [];
+        console.log(`Processing ${cards.length} cards for decryption`);
+        const processedCards = await Promise.all(cards.map(processCardData));
+        
         resolve({
           success: true,
-          data: response.data || []
+          data: processedCards
         });
       })
       .catch(function(error) {
@@ -116,14 +281,18 @@ function getCards() {
   });
 }
 
-// Fetch all emails
+// Enhanced getEmails function with decryption
 function getEmails() {
   return new Promise(function(resolve, reject) {
     apiRequest(ENDPOINTS.emails)
-      .then(function(response) {
+      .then(async function(response) {
+        const emails = response.data || [];
+        console.log(`Processing ${emails.length} emails for decryption`);
+        const processedEmails = await Promise.all(emails.map(processEmailData));
+        
         resolve({
           success: true,
-          data: response.data || []
+          data: processedEmails
         });
       })
       .catch(function(error) {
@@ -135,7 +304,7 @@ function getEmails() {
   });
 }
 
-// Listen for messages from the web app
+// Enhanced external message listener to handle project AES key
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
     console.log('External message received:', message);
@@ -145,12 +314,19 @@ chrome.runtime.onMessageExternal.addListener(
         zecryptToken: message.token,
         zecryptWorkspaceId: message.workspaceId,
         zecryptProjectId: message.projectId
-      }, () => {
+      }, async () => {
         if (chrome.runtime.lastError) {
           console.error('Error storing tokens:', chrome.runtime.lastError);
           sendResponse({ success: false, error: chrome.runtime.lastError.message });
         } else {
           console.log('Token and workspace data stored successfully');
+          
+          // Store project AES key securely if provided
+          if (message.projectAesKey) {
+            await storeProjectAesKey(message.projectAesKey);
+            console.log('Project AES key stored successfully');
+          }
+          
           sendResponse({ success: true });
         }
       });
@@ -204,12 +380,19 @@ function checkLocalStorageAuth() {
                 zecryptToken: authData.token,
                 zecryptWorkspaceId: authData.workspaceId,
                 zecryptProjectId: authData.projectId
-              }, () => {
+              }, async () => {
                 if (chrome.runtime.lastError) {
                   console.error('Error storing auth data:', chrome.runtime.lastError);
                   resolve({ success: false, error: chrome.runtime.lastError.message });
                 } else {
                   console.log('Auth data retrieved from localStorage and stored');
+                  
+                  // Store project AES key securely if provided
+                  if (authData.projectAesKey) {
+                    await storeProjectAesKey(authData.projectAesKey);
+                    console.log('Project AES key from localStorage stored successfully');
+                  }
+                  
                   resolve({ success: true, authData });
                 }
               });
@@ -354,8 +537,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   // Handle logout request
   if (message.type === 'LOGOUT') {
-    chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId'], () => {
-      console.log('Tokens removed');
+    chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId', 'zecryptProjectAesKey'], () => {
+      console.log('Tokens and project key removed');
       sendResponse({ success: true });
     });
     return true;
@@ -367,8 +550,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       zecryptToken: message.token,
       zecryptWorkspaceId: message.workspaceId,
       zecryptProjectId: message.projectId
-    }, () => {
+    }, async () => {
       console.log('Token and workspace data stored successfully from popup');
+      
+      // Store project AES key securely if provided
+      if (message.projectAesKey) {
+        await storeProjectAesKey(message.projectAesKey);
+        console.log('Project AES key stored successfully from popup');
+      }
+      
       sendResponse({ success: true });
     });
     return true;
