@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cardItem = document.createElement('div');
       cardItem.className = 'item';
       
-      const cardName = card.name || 'Unknown Card';
+      const cardName = card.title || 'Unknown Card';
       const last4 = card.last4 || '****';
       const expiry = (card.expMonth && card.expYear) ? `${card.expMonth}/${card.expYear}` : 'N/A';
       
