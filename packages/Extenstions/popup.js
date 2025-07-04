@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginSection.style.display = 'none';
     loadingSection.style.display = 'block';
     contentSection.style.display = 'none';
-    logoutBtn.style.display = 'block';
+    logoutBtn.style.display = 'flex';
   }
   
   // Show UI for unauthenticated users
@@ -154,29 +154,35 @@ document.addEventListener('DOMContentLoaded', () => {
     cardsList.innerHTML = '';
     
     if (!cards || cards.length === 0) {
-      cardsList.innerHTML = '<p>No cards found</p>';
+      cardsList.innerHTML = '<div class="empty-state">No credit cards found</div>';
       return;
     }
     
     cards.forEach(card => {
       const cardItem = document.createElement('div');
-      cardItem.className = 'card-item';
+      cardItem.className = 'item';
+      
+      const cardName = card.name || 'Unknown Card';
+      const last4 = card.last4 || '****';
+      const expiry = (card.expMonth && card.expYear) ? `${card.expMonth}/${card.expYear}` : 'N/A';
+      
       cardItem.innerHTML = `
-        <div><strong>${card.name || 'Card'}</strong></div>
-        <div>**** **** **** ${card.last4}</div>
-        <div>${card.expMonth}/${card.expYear}</div>
+        <div class="item-primary">${cardName}</div>
+        <div class="item-secondary">•••• •••• •••• ${last4} • ${expiry}</div>
       `;
       
       // Add click handler
       cardItem.addEventListener('click', () => {
         // Send message to active tab to autofill this card
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            type: 'FILL_DATA',
-            dataType: 'card',
-            data: card
-          });
-          window.close(); // Close popup after selection
+          if (tabs[0] && tabs[0].id) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: 'FILL_DATA',
+              dataType: 'card',
+              data: card
+            });
+            window.close(); // Close popup after selection
+          }
         });
       });
       
@@ -189,28 +195,34 @@ document.addEventListener('DOMContentLoaded', () => {
     emailsList.innerHTML = '';
     
     if (!emails || emails.length === 0) {
-      emailsList.innerHTML = '<p>No emails found</p>';
+      emailsList.innerHTML = '<div class="empty-state">No email addresses found</div>';
       return;
     }
     
     emails.forEach(email => {
       const emailItem = document.createElement('div');
-      emailItem.className = 'email-item';
+      emailItem.className = 'item';
+      
+      const emailAddress = email.email || 'Unknown Email';
+      const emailName = email.name || '';
+      
       emailItem.innerHTML = `
-        <div><strong>${email.email}</strong></div>
-        <div>${email.name || ''}</div>
+        <div class="item-primary">${emailAddress}</div>
+        ${emailName ? `<div class="item-secondary">${emailName}</div>` : ''}
       `;
       
       // Add click handler
       emailItem.addEventListener('click', () => {
         // Send message to active tab to autofill this email
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            type: 'FILL_DATA',
-            dataType: 'email',
-            data: email
-          });
-          window.close(); // Close popup after selection
+          if (tabs[0] && tabs[0].id) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: 'FILL_DATA',
+              dataType: 'email',
+              data: email
+            });
+            window.close(); // Close popup after selection
+          }
         });
       });
       

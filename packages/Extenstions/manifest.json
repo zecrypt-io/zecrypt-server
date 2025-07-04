@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Zecrypt Autofill",
+  "name": "Zecrypt",
   "version": "1.0",
-  "description": "Autofill card and email details from your Zecrypt account",
+  "description": "Secure autofill for passwords, cards, and personal data from your Zecrypt vault",
   "permissions": [
     "storage",
     "activeTab",
@@ -13,10 +13,11 @@
   ],
   "action": {
     "default_popup": "popup.html",
+    "default_title": "Zecrypt - Secure Autofill",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/favicon-1.png",
+      "48": "icons/favicon-2.png",
+      "128": "icons/favicon-3.png"
     }
   },
   "background": {
@@ -38,8 +39,8 @@
     "matches": ["*://*.zecrypt.com/*", "*://localhost:*/*"]
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/favicon-1.png",
+    "48": "icons/favicon-2.png",
+    "128": "icons/favicon-3.png"
   }
 } 

@@ -3,106 +3,327 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zecrypt Autofill</title>
+  <title>Zecrypt</title>
   <style>
+    :root {
+      /* Light theme variables (matching web app) */
+      --background: 0 0% 100%;
+      --foreground: 240 10% 3.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 3.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 3.9%;
+      --primary: 240 5.9% 10%;
+      --primary-foreground: 0 0% 98%;
+      --secondary: 240 4.8% 95.9%;
+      --secondary-foreground: 240 5.9% 10%;
+      --muted: 240 4.8% 95.9%;
+      --muted-foreground: 240 3.8% 46.1%;
+      --accent: 240 4.8% 95.9%;
+      --accent-foreground: 240 5.9% 10%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 5.9% 90%;
+      --input: 240 5.9% 90%;
+      --ring: 240 5.9% 10%;
+      --radius: 0.5rem;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      width: 320px;
+      width: 380px;
       margin: 0;
       padding: 0;
-      color: #333;
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      line-height: 1.5;
+      font-feature-settings: "rlig" 1, "calt" 1;
     }
+
     .container {
-      padding: 16px;
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) + 2px);
+      overflow: hidden;
     }
+
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #eaeaea;
+      padding: 16px 20px;
+      border-bottom: 1px solid hsl(var(--border));
+      background-color: hsl(var(--card));
     }
-    .logo {
-      font-size: 18px;
-      font-weight: bold;
-      color: #4f46e5;
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+
+    .logo-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      object-fit: contain;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      letter-spacing: -0.025em;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
     .login-section {
       text-align: center;
-      padding: 20px 0;
+      padding: 24px 0;
     }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin-bottom: 8px;
+    }
+
+    .login-description {
+      font-size: 14px;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
     .login-button {
-      background-color: #4f46e5;
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
       border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 10px 16px;
+      border-radius: var(--radius);
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      min-height: 40px;
     }
+
+    .login-button:hover {
+      background-color: hsl(var(--primary) / 0.9);
+      transform: translateY(-1px);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .logout-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent;
+      color: hsl(var(--muted-foreground));
+      border: 1px solid hsl(var(--border));
+      padding: 6px 12px;
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      min-height: 32px;
+    }
+
+    .logout-button:hover {
+      background-color: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+    }
+
     .content-section {
       display: none;
     }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
     .section-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      margin-bottom: 8px;
+      color: hsl(var(--foreground));
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .card-item, .email-item {
-      padding: 8px;
-      margin-bottom: 8px;
-      border: 1px solid #eaeaea;
-      border-radius: 4px;
+
+    .section-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item {
+      padding: 12px 14px;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
       cursor: pointer;
+      transition: all 0.2s ease;
+      background-color: hsl(var(--card));
     }
-    .card-item:hover, .email-item:hover {
-      background-color: #f5f5f5;
+
+    .item:hover {
+      background-color: hsl(var(--accent));
+      border-color: hsl(var(--border));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px hsl(var(--foreground) / 0.1);
     }
-    .logout-button {
-      background-color: #f1f1f1;
-      color: #333;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
+
+    .item-primary {
+      font-size: 14px;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+      margin-bottom: 4px;
+    }
+
+    .item-secondary {
       font-size: 12px;
+      color: hsl(var(--muted-foreground));
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
+
     .loading {
       text-align: center;
-      padding: 20px;
-      color: #777;
+      padding: 32px 20px;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid hsl(var(--border));
+      border-top: 2px solid hsl(var(--primary));
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 16px;
+      color: hsl(var(--muted-foreground));
+      font-size: 13px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Icon styles */
+    .icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">Zecrypt Autofill</div>
-      <button id="logoutBtn" class="logout-button">Logout</button>
+      <div class="logo-container">
+        <img class="logo-icon" src="icons/favicon-2.png" alt="Zecrypt">
+        <span class="logo-text">Zecrypt</span>
+      </div>
+      <button id="logoutBtn" class="logout-button" style="display: none;">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16,17 21,12 16,7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
     </div>
     
-    <!-- Login section (shown when not authenticated) -->
-    <div id="loginSection" class="login-section">
-      <p>Sign in to your Zecrypt account to use autofill</p>
-      <button id="loginBtn" class="login-button">Login to Zecrypt</button>
-    </div>
-    
-    <!-- Loading indicator -->
-    <div id="loadingSection" class="loading" style="display: none;">
-      <p>Loading your data...</p>
-    </div>
-    
-    <!-- Content section (shown when authenticated) -->
-    <div id="contentSection" class="content-section">
-      <div class="section-title">Credit Cards</div>
-      <div id="cardsList">
-        <!-- Card items will be added here dynamically -->
+    <div class="content">
+      <!-- Login section (shown when not authenticated) -->
+      <div id="loginSection" class="login-section">
+        <div class="login-title">Welcome to Zecrypt</div>
+        <p class="login-description">Sign in to your account to access your secure data and enable autofill</p>
+        <button id="loginBtn" class="login-button">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10,17 15,12 10,7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Sign in to Zecrypt
+        </button>
       </div>
       
-      <div class="section-title" style="margin-top: 16px;">Email Addresses</div>
-      <div id="emailsList">
-        <!-- Email items will be added here dynamically -->
+      <!-- Loading indicator -->
+      <div id="loadingSection" class="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading your data...</div>
+      </div>
+      
+      <!-- Content section (shown when authenticated) -->
+      <div id="contentSection" class="content-section">
+        <div class="section">
+          <div class="section-title">
+            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect width="20" height="14" x="2" y="5" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            Credit Cards
+          </div>
+          <div id="cardsList" class="items-list">
+            <!-- Card items will be added here dynamically -->
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">
+            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email Addresses
+          </div>
+          <div id="emailsList" class="items-list">
+            <!-- Email items will be added here dynamically -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
