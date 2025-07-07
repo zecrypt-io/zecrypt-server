@@ -75,22 +75,22 @@ function fillCardData(input, cardData) {
   // Try to find and fill related fields
   const form = input.closest('form');
   if (form) {
-    // Name on card
-    const nameInputs = form.querySelectorAll('input[name*="name"], input[autocomplete="cc-name"]');
+    // Name on card - enhanced selectors
+    const nameInputs = form.querySelectorAll('input[name*="name"], input[autocomplete="cc-name"], input[id*="card-holder"], input[placeholder*="Name on Card"], input[id*="cardholder"], input[name*="holder"]');
     if (nameInputs.length > 0) {
       nameInputs[0].value = cardData.name;
       triggerInputEvent(nameInputs[0]);
     }
     
-    // Expiry date
-    const expiryInputs = form.querySelectorAll('input[name*="expir"], input[autocomplete="cc-exp"]');
+    // Expiry date - enhanced selectors
+    const expiryInputs = form.querySelectorAll('input[name*="expir"], input[autocomplete="cc-exp"], input[id*="expiry"], input[placeholder*="MM / YY"], input[placeholder*="MM/YY"], input[name*="exp"], input[id*="exp"]');
     if (expiryInputs.length > 0) {
       expiryInputs[0].value = cardData.expiry;
       triggerInputEvent(expiryInputs[0]);
     }
     
-    // CVV
-    const cvvInputs = form.querySelectorAll('input[name*="cvv"], input[name*="cvc"], input[autocomplete="cc-csc"]');
+    // CVV - enhanced selectors
+    const cvvInputs = form.querySelectorAll('input[name*="cvv"], input[name*="cvc"], input[autocomplete="cc-csc"], input[id*="cvc"], input[placeholder*="CVV"], input[placeholder*="CVC"], input[id*="cvv"]');
     if (cvvInputs.length > 0) {
       cvvInputs[0].value = cardData.cvv;
       triggerInputEvent(cvvInputs[0]);
@@ -100,8 +100,19 @@ function fillCardData(input, cardData) {
 
 // Fill email data into form
 function fillEmailData(input, emailData) {
+  // Fill the email address
   input.value = emailData.email;
   triggerInputEvent(input);
+
+  // Find and fill the password field in the same form
+  const form = input.closest('form');
+  if (form) {
+    const passwordInputs = form.querySelectorAll('input[type="password"], input[name*="password"], input[autocomplete="current-password"], input[id*="password"]');
+    if (passwordInputs.length > 0) {
+      passwordInputs[0].value = emailData.password;
+      triggerInputEvent(passwordInputs[0]);
+    }
+  }
 }
 
 // Trigger change and input events to ensure form validation recognizes the change
