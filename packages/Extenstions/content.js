@@ -72,29 +72,28 @@ function fillCardData(input, cardData) {
   input.value = cardData.cardNumber;
   triggerInputEvent(input);
   
-  // Try to find and fill related fields
-  const form = input.closest('form');
-  if (form) {
-    // Name on card - enhanced selectors
-    const nameInputs = form.querySelectorAll('input[name*="name"], input[autocomplete="cc-name"], input[id*="card-holder"], input[placeholder*="Name on Card"], input[id*="cardholder"], input[name*="holder"]');
-    if (nameInputs.length > 0) {
-      nameInputs[0].value = cardData.name;
-      triggerInputEvent(nameInputs[0]);
-    }
+  // Define search scope: the form, or the whole document as a fallback
+  const searchScope = input.closest('form') || document;
     
-    // Expiry date - enhanced selectors
-    const expiryInputs = form.querySelectorAll('input[name*="expir"], input[autocomplete="cc-exp"], input[id*="expiry"], input[placeholder*="MM / YY"], input[placeholder*="MM/YY"], input[name*="exp"], input[id*="exp"]');
-    if (expiryInputs.length > 0) {
-      expiryInputs[0].value = cardData.expiry;
-      triggerInputEvent(expiryInputs[0]);
-    }
-    
-    // CVV - enhanced selectors
-    const cvvInputs = form.querySelectorAll('input[name*="cvv"], input[name*="cvc"], input[autocomplete="cc-csc"], input[id*="cvc"], input[placeholder*="CVV"], input[placeholder*="CVC"], input[id*="cvv"]');
-    if (cvvInputs.length > 0) {
-      cvvInputs[0].value = cardData.cvv;
-      triggerInputEvent(cvvInputs[0]);
-    }
+  // Name on card - enhanced selectors
+  const nameInputs = searchScope.querySelectorAll('input[name*="name" i], input[autocomplete="cc-name"], input[id*="card-holder" i], input[placeholder*="Name on Card" i], input[id*="cardholder" i], input[name*="holder" i]');
+  if (nameInputs.length > 0) {
+    nameInputs[0].value = cardData.name;
+    triggerInputEvent(nameInputs[0]);
+  }
+  
+  // Expiry date - enhanced selectors
+  const expiryInputs = searchScope.querySelectorAll('input[name*="expir" i], input[autocomplete="cc-exp"], input[id*="expiry" i], input[placeholder*="MM / YY" i], input[placeholder*="MM/YY" i], input[name*="exp" i], input[id*="exp" i]');
+  if (expiryInputs.length > 0) {
+    expiryInputs[0].value = cardData.expiry;
+    triggerInputEvent(expiryInputs[0]);
+  }
+  
+  // CVV - enhanced selectors
+  const cvvInputs = searchScope.querySelectorAll('input[name*="cvv" i], input[name*="cvc" i], input[autocomplete="cc-csc"], input[id*="cvc" i], input[placeholder*="CVV" i], input[placeholder*="CVC" i], input[id*="cvv" i]');
+  if (cvvInputs.length > 0) {
+    cvvInputs[0].value = cardData.cvv;
+    triggerInputEvent(cvvInputs[0]);
   }
 }
 
@@ -104,13 +103,17 @@ function fillEmailData(input, emailData) {
   input.value = emailData.email;
   triggerInputEvent(input);
 
-  // Find and fill the password field in the same form
-  const form = input.closest('form');
-  if (form) {
-    const passwordInputs = form.querySelectorAll('input[type="password"], input[name*="password"], input[autocomplete="current-password"], input[id*="password"]');
-    if (passwordInputs.length > 0) {
-      passwordInputs[0].value = emailData.password;
-      triggerInputEvent(passwordInputs[0]);
+  // Define search scope: the form, or the whole document as a fallback
+  const searchScope = input.closest('form') || document;
+  
+  // Find and fill the password field
+  const passwordInputs = searchScope.querySelectorAll('input[type="password"], input[name="Passwd"], input[name*="password" i], input[autocomplete="current-password"], input[id*="password" i]');
+  if (passwordInputs.length > 0) {
+    // Find the first visible password input
+    const visiblePasswordInput = Array.from(passwordInputs).find(el => el.offsetParent !== null);
+    if (visiblePasswordInput) {
+      visiblePasswordInput.value = emailData.password;
+      triggerInputEvent(visiblePasswordInput);
     }
   }
 }
