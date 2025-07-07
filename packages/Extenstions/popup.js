@@ -204,11 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
       emailItem.className = 'item';
       
       const emailAddress = email.email || 'Unknown Email';
-      const emailName = email.name || '';
+      const passwordDisplay = email.password ? '•'.repeat(email.password.length) : 'No password';
       
       emailItem.innerHTML = `
         <div class="item-primary">${emailAddress}</div>
-        ${emailName ? `<div class="item-secondary">${emailName}</div>` : ''}
+        <div class="item-secondary">${passwordDisplay}</div>
       `;
       
       // Add click handler

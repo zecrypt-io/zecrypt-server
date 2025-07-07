@@ -175,9 +175,11 @@ async function processEmailData(emailRaw) {
         const parsedData = JSON.parse(decryptedData);
         
         console.log('Email data decrypted successfully');
+        console.log("[Zecrypt Debug] Decrypted Email Password:", parsedData.password);
         return {
           ...emailRaw,
-          email: parsedData.email_address || 'undefined'
+          email: parsedData.email_address || 'undefined',
+          password: parsedData.password || 'undefined'
         };
       } catch (decryptError) {
         console.error("Failed to decrypt email data:", decryptError);
@@ -190,9 +192,11 @@ async function processEmailData(emailRaw) {
       // Data might not be encrypted (legacy format)
       try {
         const parsedData = JSON.parse(emailRaw.data);
+        console.log("[Zecrypt Debug] Decrypted Email Password (legacy):", parsedData.password);
         return {
           ...emailRaw,
-          email: parsedData.email_address || 'undefined'
+          email: parsedData.email_address || 'undefined',
+          password: parsedData.password || 'undefined'
         };
       } catch (parseError) {
         console.error("Error parsing email data:", parseError);
