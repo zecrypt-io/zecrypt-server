@@ -55,8 +55,13 @@ function fetchAndFillData(type, input) {
   }, (response) => {
     if (response && response.success) {
       if (type === 'card') {
-        // For cards, use the first one (cards don't have selection UI yet)
-        fillCardData(input, response.data[0] || response.data);
+        // Check if there are multiple cards
+        if (response.multiple && response.data.length > 1) {
+          showCardSelector(input, response.data);
+        } else {
+          // Single card, fill directly
+          fillCardData(input, response.data[0] || response.data);
+        }
       } else if (type === 'email') {
         // Check if there are multiple emails
         if (response.multiple && response.data.length > 1) {
@@ -228,6 +233,209 @@ function showEmailSelector(input, emails) {
 // Remove email selector UI
 function removeEmailSelector() {
   const overlay = document.getElementById('zecrypt-email-selector-overlay');
+  if (overlay) {
+    overlay.remove();
+  }
+}
+
+// Show card selector UI when multiple cards are available
+function showCardSelector(input, cards) {
+  // Remove any existing selector
+  removeCardSelector();
+  
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'zecrypt-card-selector-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  `;
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 450px;
+    min-width: 350px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  `;
+  
+  // Create header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+  `;
+  
+  const title = document.createElement('h3');
+  title.textContent = 'Select Payment Card';
+  title.style.cssText = `
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+  `;
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '×';
+  closeBtn.style.cssText = `
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  closeBtn.addEventListener('click', removeCardSelector);
+  
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  
+  // Create card list
+  const cardList = document.createElement('div');
+  cardList.style.cssText = `
+    max-height: 350px;
+    overflow-y: auto;
+  `;
+  
+  cards.forEach((card, index) => {
+    const cardItem = document.createElement('div');
+    cardItem.style.cssText = `
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f9fafb;
+      position: relative;
+    `;
+    
+    cardItem.addEventListener('mouseenter', () => {
+      cardItem.style.backgroundColor = '#f3f4f6';
+      cardItem.style.borderColor = '#4f46e5';
+      cardItem.style.transform = 'translateY(-1px)';
+    });
+    
+    cardItem.addEventListener('mouseleave', () => {
+      cardItem.style.backgroundColor = '#f9fafb';
+      cardItem.style.borderColor = '#e5e7eb';
+      cardItem.style.transform = 'translateY(0)';
+    });
+    
+    cardItem.addEventListener('click', () => {
+      fillCardData(input, card);
+      removeCardSelector();
+    });
+    
+    // Card title
+    const cardTitle = document.createElement('div');
+    cardTitle.textContent = card.title || 'Untitled Card';
+    cardTitle.style.cssText = `
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+      font-size: 16px;
+    `;
+    
+    // Card number (masked)
+    const cardNumber = document.createElement('div');
+    const maskedNumber = card.last4 ? 
+      `•••• •••• •••• ${card.last4}` : 
+      (card.cardNumber ? `•••• •••• •••• ${card.cardNumber.slice(-4)}` : '•••• •••• •••• ••••');
+    cardNumber.textContent = maskedNumber;
+    cardNumber.style.cssText = `
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      color: #374151;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    `;
+    
+    // Card details row
+    const cardDetails = document.createElement('div');
+    cardDetails.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `;
+    
+    // Cardholder name
+    const cardName = document.createElement('div');
+    cardName.textContent = card.name || 'Cardholder Name';
+    cardName.style.cssText = `
+      font-size: 14px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    `;
+    
+    // Expiry date
+    const cardExpiry = document.createElement('div');
+    cardExpiry.textContent = card.expiry || 'MM/YY';
+    cardExpiry.style.cssText = `
+      font-size: 14px;
+      color: #6b7280;
+      font-family: 'Courier New', monospace;
+    `;
+    
+    cardDetails.appendChild(cardName);
+    cardDetails.appendChild(cardExpiry);
+    
+    cardItem.appendChild(cardTitle);
+    cardItem.appendChild(cardNumber);
+    cardItem.appendChild(cardDetails);
+    cardList.appendChild(cardItem);
+  });
+  
+  // Assemble modal
+  modal.appendChild(header);
+  modal.appendChild(cardList);
+  overlay.appendChild(modal);
+  
+  // Add to page
+  document.body.appendChild(overlay);
+  
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      removeCardSelector();
+    }
+  });
+  
+  // Close on escape key
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      removeCardSelector();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+}
+
+// Remove card selector UI
+function removeCardSelector() {
+  const overlay = document.getElementById('zecrypt-card-selector-overlay');
   if (overlay) {
     overlay.remove();
   }
