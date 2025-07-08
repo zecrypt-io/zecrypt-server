@@ -55,15 +55,182 @@ function fetchAndFillData(type, input) {
   }, (response) => {
     if (response && response.success) {
       if (type === 'card') {
-        fillCardData(input, response.data);
+        // For cards, use the first one (cards don't have selection UI yet)
+        fillCardData(input, response.data[0] || response.data);
       } else if (type === 'email') {
-        fillEmailData(input, response.data);
+        // Check if there are multiple emails
+        if (response.multiple && response.data.length > 1) {
+          showEmailSelector(input, response.data);
+        } else {
+          // Single email, fill directly
+          fillEmailData(input, response.data[0] || response.data);
+        }
       }
     } else {
       // Show error or prompt to log in
       console.error('Failed to get data:', response?.error || 'Unknown error');
     }
   });
+}
+
+// Show email selector UI when multiple emails are available
+function showEmailSelector(input, emails) {
+  // Remove any existing selector
+  removeEmailSelector();
+  
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'zecrypt-email-selector-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  `;
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 400px;
+    min-width: 300px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  `;
+  
+  // Create header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+  `;
+  
+  const title = document.createElement('h3');
+  title.textContent = 'Select Email Account';
+  title.style.cssText = `
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+  `;
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '×';
+  closeBtn.style.cssText = `
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  closeBtn.addEventListener('click', removeEmailSelector);
+  
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  
+  // Create email list
+  const emailList = document.createElement('div');
+  emailList.style.cssText = `
+    max-height: 300px;
+    overflow-y: auto;
+  `;
+  
+  emails.forEach((email, index) => {
+    const emailItem = document.createElement('div');
+    emailItem.style.cssText = `
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f9fafb;
+    `;
+    
+    emailItem.addEventListener('mouseenter', () => {
+      emailItem.style.backgroundColor = '#f3f4f6';
+      emailItem.style.borderColor = '#4f46e5';
+    });
+    
+    emailItem.addEventListener('mouseleave', () => {
+      emailItem.style.backgroundColor = '#f9fafb';
+      emailItem.style.borderColor = '#e5e7eb';
+    });
+    
+    emailItem.addEventListener('click', () => {
+      fillEmailData(input, email);
+      removeEmailSelector();
+    });
+    
+    const emailAddress = document.createElement('div');
+    emailAddress.textContent = email.email || 'No email address';
+    emailAddress.style.cssText = `
+      font-weight: 500;
+      color: #1f2937;
+      margin-bottom: 4px;
+    `;
+    
+    const emailTitle = document.createElement('div');
+    emailTitle.textContent = email.title || 'Untitled Email';
+    emailTitle.style.cssText = `
+      font-size: 14px;
+      color: #6b7280;
+    `;
+    
+    emailItem.appendChild(emailAddress);
+    emailItem.appendChild(emailTitle);
+    emailList.appendChild(emailItem);
+  });
+  
+  // Assemble modal
+  modal.appendChild(header);
+  modal.appendChild(emailList);
+  overlay.appendChild(modal);
+  
+  // Add to page
+  document.body.appendChild(overlay);
+  
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      removeEmailSelector();
+    }
+  });
+  
+  // Close on escape key
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      removeEmailSelector();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+}
+
+// Remove email selector UI
+function removeEmailSelector() {
+  const overlay = document.getElementById('zecrypt-email-selector-overlay');
+  if (overlay) {
+    overlay.remove();
+  }
 }
 
 // Fill card data into form
