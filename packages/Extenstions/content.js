@@ -450,23 +450,60 @@ function fillCardData(input, cardData) {
   // Define search scope: the form, or the whole document as a fallback
   const searchScope = input.closest('form') || document;
     
-  // Name on card - enhanced selectors
+  // Name on card - enhanced selectors (optional field)
   const nameInputs = searchScope.querySelectorAll('input[name*="name" i], input[autocomplete="cc-name"], input[id*="card-holder" i], input[placeholder*="Name on Card" i], input[id*="cardholder" i], input[name*="holder" i]');
-  if (nameInputs.length > 0) {
+  if (nameInputs.length > 0 && cardData.name) {
     nameInputs[0].value = cardData.name;
     triggerInputEvent(nameInputs[0]);
   }
   
-  // Expiry date - enhanced selectors
-  const expiryInputs = searchScope.querySelectorAll('input[name*="expir" i], input[autocomplete="cc-exp"], input[id*="expiry" i], input[placeholder*="MM / YY" i], input[placeholder*="MM/YY" i], input[name*="exp" i], input[id*="exp" i]');
-  if (expiryInputs.length > 0) {
-    expiryInputs[0].value = cardData.expiry;
-    triggerInputEvent(expiryInputs[0]);
+  // Handle expiry date - check for separate month/year dropdowns first
+  const monthSelects = searchScope.querySelectorAll('select[name="month" i], select[name*="exp_month" i], select[name*="expiry_month" i], select[id*="month" i], select[autocomplete="cc-exp-month"]');
+  const yearSelects = searchScope.querySelectorAll('select[name="year" i], select[name*="exp_year" i], select[name*="expiry_year" i], select[id*="year" i], select[autocomplete="cc-exp-year"]');
+  
+  if (monthSelects.length > 0 && yearSelects.length > 0 && cardData.expiry) {
+    // Handle separate month/year dropdowns
+    const expiryParts = cardData.expiry.split('/');
+    if (expiryParts.length === 2) {
+      const month = expiryParts[0].trim().padStart(2, '0');
+      const year = expiryParts[1].trim();
+      
+      // Fill month dropdown
+      const monthSelect = monthSelects[0];
+      const monthOption = monthSelect.querySelector(`option[value="${month}"]`);
+      if (monthOption) {
+        monthSelect.value = month;
+        triggerInputEvent(monthSelect);
+      }
+      
+      // Fill year dropdown (try both 2-digit and 4-digit year formats)
+      const yearSelect = yearSelects[0];
+      let yearOption = yearSelect.querySelector(`option[value="${year}"]`);
+      if (!yearOption && year.length === 2) {
+        // Try with 20xx prefix for 2-digit years
+        const fullYear = '20' + year;
+        yearOption = yearSelect.querySelector(`option[value="${fullYear}"]`);
+        if (yearOption) {
+          yearSelect.value = fullYear;
+          triggerInputEvent(yearSelect);
+        }
+      } else if (yearOption) {
+        yearSelect.value = year;
+        triggerInputEvent(yearSelect);
+      }
+    }
+  } else {
+    // Handle single expiry input field (fallback to original logic)
+    const expiryInputs = searchScope.querySelectorAll('input[name*="expir" i], input[autocomplete="cc-exp"], input[id*="expiry" i], input[placeholder*="MM / YY" i], input[placeholder*="MM/YY" i], input[name*="exp" i], input[id*="exp" i]');
+    if (expiryInputs.length > 0 && cardData.expiry) {
+      expiryInputs[0].value = cardData.expiry;
+      triggerInputEvent(expiryInputs[0]);
+    }
   }
   
   // CVV - enhanced selectors
   const cvvInputs = searchScope.querySelectorAll('input[name*="cvv" i], input[name*="cvc" i], input[autocomplete="cc-csc"], input[id*="cvc" i], input[placeholder*="CVV" i], input[placeholder*="CVC" i], input[id*="cvv" i]');
-  if (cvvInputs.length > 0) {
+  if (cvvInputs.length > 0 && cardData.cvv) {
     cvvInputs[0].value = cardData.cvv;
     triggerInputEvent(cvvInputs[0]);
   }
@@ -498,8 +535,19 @@ function triggerInputEvent(element) {
   const inputEvent = new Event('input', { bubbles: true });
   const changeEvent = new Event('change', { bubbles: true });
   
+  // For select elements, focus first to ensure proper state
+  if (element.tagName.toLowerCase() === 'select') {
+    element.focus();
+  }
+  
   element.dispatchEvent(inputEvent);
   element.dispatchEvent(changeEvent);
+  
+  // For select elements, also trigger blur to ensure validation
+  if (element.tagName.toLowerCase() === 'select') {
+    const blurEvent = new Event('blur', { bubbles: true });
+    element.dispatchEvent(blurEvent);
+  }
 }
 
 // Run detection when page loads and on DOM changes
