@@ -171,21 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="item-secondary">•••• •••• •••• ${last4} • ${expiry}</div>
       `;
       
-      // Add click handler
-      cardItem.addEventListener('click', () => {
-        // Send message to active tab to autofill this card
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0] && tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-              type: 'FILL_DATA',
-              dataType: 'card',
-              data: card
-            });
-            window.close(); // Close popup after selection
-          }
-        });
-      });
-      
       cardsList.appendChild(cardItem);
     });
   }
@@ -210,21 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="item-primary">${emailAddress}</div>
         <div class="item-secondary">${passwordDisplay}</div>
       `;
-      
-      // Add click handler
-      emailItem.addEventListener('click', () => {
-        // Send message to active tab to autofill this email
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0] && tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-              type: 'FILL_DATA',
-              dataType: 'email',
-              data: email
-            });
-            window.close(); // Close popup after selection
-          }
-        });
-      });
       
       emailsList.appendChild(emailItem);
     });
