@@ -13,7 +13,9 @@ import { secureGetItem } from "@/libs/local-storage-utils";
 export default function ExtensionLogin() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromExtension = searchParams.get("from") === "extension";  const [status, setStatus] = useState<"initial" | "checking" | "sending" | "success" | "error" | "not_authenticated">("initial");
+  const fromExtension = searchParams.get("from") === "extension";
+
+  const [status, setStatus] = useState<"initial" | "checking" | "sending" | "success" | "error" | "not_authenticated" | "logging_out">("initial");
   const [errorMessage, setErrorMessage] = useState("");
   
   // Get user data from Redux store
@@ -24,6 +26,7 @@ export default function ExtensionLogin() {
 
   // Check if user is authenticated (has access token)
   const isAuthenticated = userData && userData.access_token;
+
   useEffect(() => {
     // If not coming from extension, redirect to dashboard
     if (!fromExtension) {
@@ -41,7 +44,9 @@ export default function ExtensionLogin() {
       // User is not authenticated, need to log in
       setStatus("not_authenticated");
     }
-  }, [isAuthenticated, userData, fromExtension]);  // Function to send token to extension
+  }, [isAuthenticated, userData, fromExtension]);
+
+  // Function to send token to extension
   const sendTokenToExtension = async () => {
     try {
       setStatus("sending");
@@ -111,13 +116,48 @@ export default function ExtensionLogin() {
       console.error("Error sending token to extension:", error);
       setStatus("error");
       setErrorMessage("Failed to communicate with the extension.");
-    }  };
+    }
+  };
 
-  const handleLoginRedirect = () => {
-    // Store the current URL as return URL and redirect to login
-    const currentUrl = window.location.href;
-    localStorage.setItem('zecrypt_extension_return_url', currentUrl);
-    router.push(`/en/login`);
+  const handleLoginRedirect = async () => {
+    try {
+      setStatus("logging_out");
+      
+      // Store the current URL as return URL
+      const currentUrl = window.location.href;
+      localStorage.setItem('zecrypt_extension_return_url', currentUrl);
+      
+      // Force logout to clear any partial Stack Auth sessions
+      // This ensures users go through the complete authentication flow
+      
+      // Clear access token cookie
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
+      
+      // Clear all session storage to remove any cached auth state
+      sessionStorage.clear();
+      
+      // Clear specific auth-related localStorage items that might interfere with full auth flow
+      localStorage.removeItem('zecrypt_device_id');
+      
+      // Clear any Stack Auth related storage
+      // This will force Stack to start fresh authentication
+      const stackAuthKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('stack-') || key.includes('auth') || key.includes('session')
+      );
+      stackAuthKeys.forEach(key => localStorage.removeItem(key));
+      
+      // Add a slight delay to ensure cleanup is complete
+      setTimeout(() => {
+        // Redirect to login with a special parameter indicating this is from extension
+        // and requires full authentication
+        router.push(`/en/login?extension_auth=true&force_full_auth=true`);
+      }, 500);
+      
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // If logout fails, still redirect to login
+      router.push(`/en/login?extension_auth=true&force_full_auth=true`);
+    }
   };
 
   const handleClose = () => {
@@ -131,6 +171,7 @@ export default function ExtensionLogin() {
       setStatus("not_authenticated");
     }
   };
+
   return (
     <div className="container flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-[450px] max-w-full">
@@ -148,6 +189,7 @@ export default function ExtensionLogin() {
             {status === "success" && "Successfully connected!"}
             {status === "error" && "Connection failed"}
             {status === "not_authenticated" && "Please log in to continue"}
+            {status === "logging_out" && "Preparing secure login..."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -175,6 +217,7 @@ export default function ExtensionLogin() {
               <AlertTitle className="text-blue-800">Login Required</AlertTitle>
               <AlertDescription className="text-blue-700">
                 You need to log in to your Zecrypt account first to connect the extension.
+                You will be asked to verify your 2FA code and enter your master password.
               </AlertDescription>
             </Alert>
           )}
@@ -189,6 +232,13 @@ export default function ExtensionLogin() {
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-sm text-gray-600">Connecting to extension...</span>
+            </div>
+          )}
+
+          {status === "logging_out" && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-sm text-gray-600">Preparing secure authentication...</span>
             </div>
           )}
           
