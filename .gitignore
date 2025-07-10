@@ -196,3 +196,6 @@ cursor.rules
 
 .cursor/
 .cursorrules
+.cursorignore
+
+
