@@ -1,0 +1,27 @@
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Node modules (if any build tools are added)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db 

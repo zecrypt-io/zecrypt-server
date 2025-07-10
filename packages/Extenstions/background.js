@@ -1,8 +1,21 @@
 // Base API URL
 const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
 
-// Import crypto utilities
+// Import configuration and crypto utilities
+importScripts('config.js');
 importScripts('crypto-utils.js');
+
+// Initialize configuration when extension starts
+(async function initializeExtension() {
+  try {
+    console.log('Initializing Zecrypt extension configuration...');
+    await ExtensionConfig.initConfig();
+    console.log('Extension configuration loaded successfully');
+  } catch (error) {
+    console.error('Failed to load extension configuration:', error);
+    console.error('Please ensure you have created a .env file in the extensions directory with the required keys');
+  }
+})();
 
 // Helper function to check if URL is accessible for script injection
 function isValidUrl(url) {

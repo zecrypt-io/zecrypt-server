@@ -11,14 +11,26 @@ This Chrome extension allows users to autofill card and email details from their
 
 ## Setup
 
+### Environment Configuration
+
+⚠️ **IMPORTANT**: Before setting up the extension, you must configure the environment variables for security.
+
+**See [SETUP.md](./SETUP.md) for detailed environment configuration instructions.**
+
+Quick setup:
+1. Create a `.env` file in this directory
+2. Add: `INDEXED_DB_AES_KEY="your_key_here"`
+3. Get the key from your team or the frontend-web `.env.local` file
+
 ### Development Setup
 
 1. Clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top-right corner
-4. Click "Load unpacked" and select the `packages/Extenstions` directory
-5. Note the Extension ID assigned by Chrome (you'll need it for the next step)
-6. Update the `EXTENSION_ID` constant in `packages/frontend-web/app/extension-login/page.tsx` with your extension ID
+2. **Configure environment variables** (see SETUP.md)
+3. Open Chrome and navigate to `chrome://extensions/`
+4. Enable "Developer mode" in the top-right corner
+5. Click "Load unpacked" and select the `packages/Extenstions` directory
+6. Note the Extension ID assigned by Chrome (you'll need it for the next step)
+7. Update the `EXTENSION_ID` constant in `packages/frontend-web/app/extension-login/page.tsx` with your extension ID
 
 ### Frontend Setup
 

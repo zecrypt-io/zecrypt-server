@@ -26,12 +26,12 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["crypto-utils.js", "content.js"]
+      "js": ["config.js", "crypto-utils.js", "content.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["crypto-utils.js"],
+      "resources": ["config.js", "crypto-utils.js", ".env"],
       "matches": ["<all_urls>"]
     }
   ],
