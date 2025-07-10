@@ -401,8 +401,7 @@ export default function ExtensionLogin() {
             <Alert className="border-green-200 bg-green-50">
               <AlertTitle className="text-green-800">✓ Authentication successful</AlertTitle>
               <AlertDescription className="text-green-700">
-                Your Zecrypt account is now connected to the browser extension.
-                You can close this tab and start using the extension to autofill your cards and emails.
+                You may now close this tab.
               </AlertDescription>
             </Alert>
           )}
