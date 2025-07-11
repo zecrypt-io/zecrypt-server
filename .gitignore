@@ -190,3 +190,12 @@ packages/*/node_modules
 packages/*/dist
 packages/*/build
 packages/*/.next
+
+# Cursor
+cursor.rules
+
+.cursor/
+.cursorrules
+.cursorignore
+
+

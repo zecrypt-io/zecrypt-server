@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Zecrypt",
+  "version": "1.1",
+  "description": "Secure autofill for passwords, cards, and personal data from your Zecrypt vault",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Zecrypt - Secure Autofill",
+    "default_icon": {
+      "16": "icons/favicon-1.png",
+      "48": "icons/favicon-2.png",
+      "128": "icons/favicon-3.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["config.js", "crypto-utils.js", "content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["config.js", "crypto-utils.js", ".env"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["*://*.zecrypt.io/*"]
+  },
+  "icons": {
+    "16": "icons/favicon-1.png",
+    "48": "icons/favicon-2.png",
+    "128": "icons/favicon-3.png"
+  }
+} 

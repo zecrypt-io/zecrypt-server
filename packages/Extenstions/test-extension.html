@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zecrypt Extension Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .card-form, .email-form {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zecrypt Extension Test Page</h1>
+    <p>This page contains forms to test the Zecrypt autofill extension. Make sure the extension is loaded and you're logged in.</p>
+
+    <div class="card-form">
+        <h2>Credit Card Form</h2>
+        <form>
+            <div class="form-group">
+                <label for="card_number">Card Number:</label>
+                <input type="text" id="card_number" name="card_number" autocomplete="cc-number" placeholder="1234 5678 9012 3456">
+            </div>
+            <div class="form-group">
+                <label for="card_name">Name on Card:</label>
+                <input type="text" id="card_name" name="card_name" autocomplete="cc-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label for="card_expiry">Expiry Date:</label>
+                <input type="text" id="card_expiry" name="card_expiry" autocomplete="cc-exp" placeholder="MM/YY">
+            </div>
+            <div class="form-group">
+                <label for="card_cvv">CVV:</label>
+                <input type="text" id="card_cvv" name="card_cvv" autocomplete="cc-csc" placeholder="123">
+            </div>
+        </form>
+    </div>
+
+    <div class="email-form">
+        <h2>Email Form</h2>
+        <form>
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" placeholder="john.doe@example.com">
+            </div>
+            <div class="form-group">
+                <label for="username">Username (should not be affected):</label>
+                <input type="text" id="username" name="username" placeholder="johndoe">
+            </div>
+        </form>
+    </div>
+
+    <div class="instructions">
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Load the extension in Chrome by going to chrome://extensions/</li>
+            <li>Enable "Developer mode" in the top right</li>
+            <li>Click "Load unpacked" and select the Extensions folder</li>
+            <li>Open this HTML file in your browser</li>
+            <li>You should see "Zecrypt" buttons next to the card number and email inputs</li>
+            <li>Click the extension icon to open the popup and test login functionality</li>
+        </ol>
+    </div>
+</body>
+</html>

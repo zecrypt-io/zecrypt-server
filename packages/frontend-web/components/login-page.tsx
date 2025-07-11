@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useTranslations } from "next-intl";
 import { SignIn, useUser } from "@stackframe/stack";
@@ -47,10 +47,15 @@ export interface LoginPageProps {
 
 export function LoginPage({ locale = "en" }: LoginPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
   const t = useTranslations("auth");
   const features = useTranslations("features");
   const user = useUser();
+  
+  // Check for extension authentication parameters
+  const isExtensionAuth = searchParams.get("extension_auth") === "true";
+  const forceFullAuth = searchParams.get("force_full_auth") === "true";
   
   // State management
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -98,6 +103,41 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Handle force full auth for extension users
+  useEffect(() => {
+    if (forceFullAuth && isExtensionAuth) {
+      console.log("Force full auth requested for extension user");
+      
+      // Clear any existing Stack Auth session data to force fresh authentication
+      // This ensures 2FA and master password are required
+      const clearStackAuthData = async () => {
+        try {
+          // Sign out from Stack Auth if user exists
+          if (user && typeof user.signOut === 'function') {
+            await user.signOut();
+          }
+        } catch (error) {
+          console.error("Error signing out from Stack:", error);
+        }
+        
+        // Clear any cached authentication state
+        sessionStorage.clear();
+        
+        // Clear specific Stack Auth related items
+        const stackAuthKeys = Object.keys(localStorage).filter(key => 
+          key.startsWith('stack-') || key.includes('auth-token') || key.includes('session')
+        );
+        stackAuthKeys.forEach(key => localStorage.removeItem(key));
+        
+        // Force show login form
+        setShowLoginForm(true);
+        setIsProcessingAuth(false);
+      };
+      
+      clearStackAuthData();
+    }
+  }, [forceFullAuth, isExtensionAuth, user]);
 
   // Check for existing keys in session storage
   useEffect(() => {
@@ -195,6 +235,30 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
 
   // Proceed to dashboard after all checks are complete
   const proceedToDashboard = () => {
+    // Check if there's a stored return URL for extension login
+    if (typeof window !== 'undefined') {
+      const extensionReturnUrl = localStorage.getItem('zecrypt_extension_return_url');
+      
+      if (extensionReturnUrl) {
+        // Clear the stored URL and redirect back to extension login page
+        localStorage.removeItem('zecrypt_extension_return_url');
+        router.replace(extensionReturnUrl);
+        return;
+      }
+      
+      // Check for query parameter returnUrl (fallback)
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get('returnUrl');
+      
+      if (returnUrl) {
+        // Decode and redirect to the return URL
+        const decodedReturnUrl = decodeURIComponent(returnUrl);
+        router.replace(decodedReturnUrl);
+        return;
+      }
+    }
+    
+    // Default redirect to dashboard
     router.replace(`/${locale}/dashboard`);
   };
 
@@ -285,6 +349,15 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
       setIsLoggingIn(true);
 
       try {
+        // If force full auth is requested (for extension users), skip automatic authentication
+        // This ensures they go through the complete flow including 2FA and master password
+        if (forceFullAuth && isExtensionAuth) {
+          console.log("Skipping automatic authentication for extension force full auth");
+          setShowLoginForm(true);
+          setIsProcessingAuth(false);
+          return;
+        }
+
         // Check if user is already authenticated
         if (user) {
           setShowLoginForm(false); // Hide the login form while processing
@@ -324,7 +397,7 @@ export function LoginPage({ locale = "en" }: LoginPageProps) {
     } else {
       setIsAuthenticating(false);
     }
-  }, [user, deviceId, t, dispatch, locale]);
+  }, [user, deviceId, t, dispatch, locale, forceFullAuth, isExtensionAuth]);
 
   const handle2FAVerification = async () => {
     if (!userId || verificationCode.length !== 6) {
