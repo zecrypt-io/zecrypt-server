@@ -1,8 +1,19 @@
 // Base API URL
 const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
 
-// Import crypto utilities
+// Import configuration and crypto utilities
+importScripts('config.js');
 importScripts('crypto-utils.js');
+
+// Initialize configuration when extension starts
+(async function initializeExtension() {
+  try {
+    await ExtensionConfig.initConfig();
+  } catch (error) {
+    console.error('Failed to load extension configuration:', error);
+    console.error('Please ensure you have created a .env file in the extensions directory with the required keys');
+  }
+})();
 
 // Helper function to check if URL is accessible for script injection
 function isValidUrl(url) {
@@ -56,7 +67,6 @@ async function storeProjectAesKey(projectAesKey) {
     chrome.storage.local.set({ 
       zecryptProjectAesKey: encryptedKey
     });
-    console.log('Project AES key stored securely');
   } catch (error) {
     console.error('Error storing project AES key:', error);
   }
@@ -69,7 +79,6 @@ async function getDecryptedProjectAesKey() {
       if (result.zecryptProjectAesKey) {
         try {
           const decryptedKey = await CryptoUtils.decryptFromLocalStorage(result.zecryptProjectAesKey);
-          console.log('Project AES key retrieved and decrypted');
           resolve(decryptedKey);
         } catch (error) {
           console.error('Error decrypting project AES key:', error);
@@ -107,7 +116,6 @@ async function processCardData(cardRaw) {
         const decryptedData = await CryptoUtils.decryptDataField(cardRaw.data, projectAesKey);
         const parsedData = JSON.parse(decryptedData);
         
-        console.log('Card data decrypted successfully');
         return {
           ...cardRaw,
           cardNumber: parsedData.number || 'undefined',
@@ -174,8 +182,6 @@ async function processEmailData(emailRaw) {
         const decryptedData = await CryptoUtils.decryptDataField(emailRaw.data, projectAesKey);
         const parsedData = JSON.parse(decryptedData);
         
-        console.log('Email data decrypted successfully');
-        console.log("[Zecrypt Debug] Decrypted Email Password:", parsedData.password);
         return {
           ...emailRaw,
           email: parsedData.email_address || 'undefined',
@@ -192,7 +198,6 @@ async function processEmailData(emailRaw) {
       // Data might not be encrypted (legacy format)
       try {
         const parsedData = JSON.parse(emailRaw.data);
-        console.log("[Zecrypt Debug] Decrypted Email Password (legacy):", parsedData.password);
         return {
           ...emailRaw,
           email: parsedData.email_address || 'undefined',
@@ -268,7 +273,6 @@ function getCards() {
     apiRequest(ENDPOINTS.cards)
       .then(async function(response) {
         const cards = response.data || [];
-        console.log(`Processing ${cards.length} cards for decryption`);
         const processedCards = await Promise.all(cards.map(processCardData));
         
         resolve({
@@ -291,7 +295,6 @@ function getEmails() {
     apiRequest(ENDPOINTS.emails)
       .then(async function(response) {
         const emails = response.data || [];
-        console.log(`Processing ${emails.length} emails for decryption`);
         const processedEmails = await Promise.all(emails.map(processEmailData));
         
         resolve({
@@ -311,7 +314,6 @@ function getEmails() {
 // Enhanced external message listener to handle project AES key
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
-    console.log('External message received:', message);
     if (message.type === 'LOGIN' && message.token) {
       // Store the token and workspace/project IDs securely in chrome.storage.local
       chrome.storage.local.set({ 
@@ -323,12 +325,9 @@ chrome.runtime.onMessageExternal.addListener(
           console.error('Error storing tokens:', chrome.runtime.lastError);
           sendResponse({ success: false, error: chrome.runtime.lastError.message });
         } else {
-          console.log('Token and workspace data stored successfully');
-          
           // Store project AES key securely if provided
           if (message.projectAesKey) {
             await storeProjectAesKey(message.projectAesKey);
-            console.log('Project AES key stored successfully');
           }
           
           sendResponse({ success: true });
@@ -372,7 +371,6 @@ function checkLocalStorageAuth() {
             }
           }, (results) => {
             if (chrome.runtime.lastError) {
-              console.log('Script execution failed:', chrome.runtime.lastError.message);
               resolve({ success: false, error: chrome.runtime.lastError.message });
               return;
             }
@@ -389,12 +387,9 @@ function checkLocalStorageAuth() {
                   console.error('Error storing auth data:', chrome.runtime.lastError);
                   resolve({ success: false, error: chrome.runtime.lastError.message });
                 } else {
-                  console.log('Auth data retrieved from localStorage and stored');
-                  
                   // Store project AES key securely if provided
                   if (authData.projectAesKey) {
                     await storeProjectAesKey(authData.projectAesKey);
-                    console.log('Project AES key from localStorage stored successfully');
                   }
                   
                   resolve({ success: true, authData });
@@ -404,7 +399,6 @@ function checkLocalStorageAuth() {
               resolve({ success: false, error: 'No auth data found' });
             }
           });        } else {
-          console.log('No valid tab found for localStorage check. Current tab:', tabs[0]?.url || 'No tab');
           resolve({ success: false, error: 'No accessible tab found' });
         }
       });
@@ -432,7 +426,6 @@ function startAuthCheck() {
     
     // Stop checking after max attempts
     if (authCheckAttempts > MAX_AUTH_CHECK_ATTEMPTS) {
-      console.log('Auth check timeout after', MAX_AUTH_CHECK_ATTEMPTS, 'attempts');
       stopAuthCheck();
       return;
     }
@@ -442,18 +435,15 @@ function startAuthCheck() {
       if (result.success) {
         clearInterval(authCheckInterval);
         authCheckInterval = null;
-        console.log('Authentication successful via localStorage polling');
         
         // Notify popup if it's open
         try {
           chrome.runtime.sendMessage({ type: 'AUTH_SUCCESS' });
         } catch (e) {
           // Popup might not be open, that's ok
-          console.log('Could not notify popup:', e.message);
         }
       } else if (result.error && result.error.includes('Cannot access')) {
         // If we get access errors, reduce polling frequency
-        console.log('Access error during auth check, slowing down polling');
       }
     } catch (error) {
       console.error('Error during auth check:', error);
@@ -491,10 +481,8 @@ function checkAuth() {
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Internal message received:', message);
     if (message.type === 'CHECK_AUTH') {
     checkAuth().then(result => {
-      console.log('Auth check result:', result);
       
       // If not authenticated, try checking localStorage as fallback
       if (!result.isAuthenticated) {
@@ -509,8 +497,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Only start periodic checking if we don't have access errors
             if (!localResult.error || !localResult.error.includes('Cannot access')) {
               startAuthCheck();
-            } else {
-              console.log('Skipping periodic auth check due to access restrictions');
             }
           }
         });
@@ -541,10 +527,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   // Handle logout request
   if (message.type === 'LOGOUT') {
-    chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId', 'zecryptProjectAesKey'], () => {
-      console.log('Tokens and project key removed');
-      sendResponse({ success: true });
-    });
+          chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId', 'zecryptProjectAesKey'], () => {
+        sendResponse({ success: true });
+      });
     return true;
   }
 
@@ -555,12 +540,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       zecryptWorkspaceId: message.workspaceId,
       zecryptProjectId: message.projectId
     }, async () => {
-      console.log('Token and workspace data stored successfully from popup');
-      
       // Store project AES key securely if provided
       if (message.projectAesKey) {
         await storeProjectAesKey(message.projectAesKey);
-        console.log('Project AES key stored successfully from popup');
       }
       
       sendResponse({ success: true });
@@ -630,5 +612,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Initialize when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Zecrypt extension installed');
+  // Extension installed
 });

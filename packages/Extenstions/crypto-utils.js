@@ -2,10 +2,10 @@
  * Crypto utilities for the browser extension
  * Simplified version of the frontend-web crypto functions
  * Works in both service worker and regular browser contexts
+ * 
+ * SECURITY NOTE: The AES key is now loaded from configuration instead of being hardcoded
+ * Make sure config.js is loaded and initialized before using these functions
  */
-
-// Environment variable equivalent - this should be the same as NEXT_PUBLIC_INDEXED_DB_AES_KEY
-const INDEXED_DB_AES_KEY = "HxmfPmPwqQZ3gHKwfHXi6TmPwVDppr0oDKyPwCdopDI=";
 
 // Get the appropriate global context (self for service workers, window for regular contexts)
 const globalContext = (function() {
@@ -23,6 +23,13 @@ const globalContext = (function() {
  */
 function getStorageEncryptionKey() {
   try {
+    // Get the key from configuration instead of hardcoded value
+    if (!globalContext.ExtensionConfig || !globalContext.ExtensionConfig.isConfigLoaded()) {
+      throw new Error("Extension configuration not loaded. Please ensure config.js is loaded and initConfig() is called.");
+    }
+    
+    const INDEXED_DB_AES_KEY = globalContext.ExtensionConfig.getIndexedDbAesKey();
+    
     const binaryString = atob(INDEXED_DB_AES_KEY);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {

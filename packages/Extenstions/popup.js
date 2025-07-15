@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         projectId: event.data.projectId
       }, (response) => {
         if (response && response.success) {
-          console.log('Authentication successful via postMessage');
           // Refresh the popup UI
           showAuthenticatedUI();
           fetchData();
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen for auth success from background script
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'AUTH_SUCCESS') {
-      console.log('Authentication successful via background polling');
       // Refresh the popup UI
       checkAuthAndUpdateUI();
     }
@@ -59,11 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showUnauthenticatedUI();
       }
     }
-  });// Configuration for development vs production
-  const isDevelopment = true; // Set to false for production
+  });  // Configuration for development vs production
+  const isDevelopment = false; // Set to false for production
   const BASE_URL = isDevelopment 
     ? 'http://localhost:3000' 
-    : 'https://app.zecrypt.com';
+    : 'https://app.zecrypt.io';
     // Login button click handler
   loginBtn.addEventListener('click', () => {
     // Start auth checking in background
