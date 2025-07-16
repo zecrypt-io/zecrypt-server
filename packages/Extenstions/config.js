@@ -12,6 +12,30 @@
 let CONFIG = null;
 
 /**
+ * Default configuration values
+ */
+const DEFAULT_CONFIG = {
+  // Development environment
+  DEVELOPMENT: {
+    API_BASE_URL: 'http://localhost:8000/api/v1/web',
+    WEB_APP_BASE_URL: 'http://localhost:3000',
+    IS_DEVELOPMENT: true
+  },
+  // Production environment  
+  PRODUCTION: {
+    API_BASE_URL: 'https://api.zecrypt.io/api/v1/web',
+    WEB_APP_BASE_URL: 'https://app.zecrypt.io',
+    IS_DEVELOPMENT: false
+  },
+  // Preview environment
+  PREVIEW: {
+    API_BASE_URL: 'https://preview.api.zecrypt.io/api/v1/web',
+    WEB_APP_BASE_URL: 'https://preview.app.zecrypt.io',
+    IS_DEVELOPMENT: false
+  }
+};
+
+/**
  * Load configuration from environment file
  * Note: This is a simplified approach for browser extensions
  * In a real production setup, you'd want to use build-time injection
@@ -57,21 +81,38 @@ async function loadConfigFromEnv() {
  */
 async function initConfig() {
   // Try to load from .env file first
-  CONFIG = await loadConfigFromEnv();
+  let envConfig = await loadConfigFromEnv();
   
   // If no config loaded, check for injected config (build-time injection)
-  if (!CONFIG && typeof window !== 'undefined' && window.INJECTED_CONFIG) {
-    CONFIG = window.INJECTED_CONFIG;
+  if (!envConfig && typeof window !== 'undefined' && window.INJECTED_CONFIG) {
+    envConfig = window.INJECTED_CONFIG;
   }
   
-  // If still no config, throw an error
-  if (!CONFIG || !CONFIG.INDEXED_DB_AES_KEY) {
+  // Determine environment
+  const environment = envConfig?.ENVIRONMENT || 'PRODUCTION';
+  
+  // Merge default config with environment-specific config and .env overrides
+  CONFIG = {
+    ...DEFAULT_CONFIG[environment],
+    ...envConfig
+  };
+  
+  // If still no encryption key, throw an error
+  if (!CONFIG.INDEXED_DB_AES_KEY) {
     throw new Error(
       'Configuration not found! Please create a .env file in the extensions directory with:\n' +
-      'INDEXED_DB_AES_KEY="your_key_here"\n\n' +
+      'INDEXED_DB_AES_KEY="your_key_here"\n' +
+      'ENVIRONMENT="PRODUCTION" # or DEVELOPMENT or PREVIEW\n\n' +
       'See README.md for setup instructions.'
     );
   }
+  
+  console.log('Extension configuration loaded:', {
+    environment,
+    apiBaseUrl: CONFIG.API_BASE_URL,
+    webAppBaseUrl: CONFIG.WEB_APP_BASE_URL,
+    isDevelopment: CONFIG.IS_DEVELOPMENT
+  });
   
   return CONFIG;
 }
@@ -85,7 +126,7 @@ function getConfig(key) {
   }
   
   const value = CONFIG[key];
-  if (!value) {
+  if (value === undefined) {
     throw new Error(`Configuration key '${key}' not found.`);
   }
   
@@ -100,6 +141,27 @@ function getIndexedDbAesKey() {
 }
 
 /**
+ * Get the API base URL
+ */
+function getApiBaseUrl() {
+  return getConfig('API_BASE_URL');
+}
+
+/**
+ * Get the web app base URL
+ */
+function getWebAppBaseUrl() {
+  return getConfig('WEB_APP_BASE_URL');
+}
+
+/**
+ * Check if running in development mode
+ */
+function isDevelopment() {
+  return getConfig('IS_DEVELOPMENT');
+}
+
+/**
  * Check if configuration is loaded
  */
 function isConfigLoaded() {
@@ -111,6 +173,9 @@ const ExtensionConfig = {
   initConfig,
   getConfig,
   getIndexedDbAesKey,
+  getApiBaseUrl,
+  getWebAppBaseUrl,
+  isDevelopment,
   isConfigLoaded
 };
 
@@ -119,7 +184,6 @@ if (typeof globalThis !== 'undefined') {
   globalThis.ExtensionConfig = ExtensionConfig;
 }
 
-// Also support module exports for potential build tools
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ExtensionConfig;
+if (typeof self !== 'undefined') {
+  self.ExtensionConfig = ExtensionConfig;
 } 

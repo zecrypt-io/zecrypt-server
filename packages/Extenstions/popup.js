@@ -7,6 +7,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logoutBtn');
   const cardsList = document.getElementById('cardsList');
   const emailsList = document.getElementById('emailsList');
+  
+  // Configuration will be loaded when needed
+  let BASE_URL = null;
+  
+  // Function to get web app base URL
+  function getWebAppBaseUrl() {
+    if (!BASE_URL) {
+      try {
+        // Try to get from extension config
+        if (chrome.extension.getBackgroundPage() && 
+            chrome.extension.getBackgroundPage().ExtensionConfig && 
+            chrome.extension.getBackgroundPage().ExtensionConfig.isConfigLoaded()) {
+          BASE_URL = chrome.extension.getBackgroundPage().ExtensionConfig.getWebAppBaseUrl();
+        } else {
+          // Fallback to production URL
+          BASE_URL = 'https://app.zecrypt.io';
+        }
+      } catch (error) {
+        console.warn('Could not load config, using fallback URL:', error);
+        BASE_URL = 'https://app.zecrypt.io';
+      }
+    }
+    return BASE_URL;
+  }
   // Listen for messages from the extension login page
   window.addEventListener('message', (event) => {
     // Verify origin for security (in production, be more specific)
@@ -59,16 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });  // Configuration for development vs production
   const isDevelopment = false; // Set to false for production
-  const BASE_URL = isDevelopment 
-    ? 'http://localhost:3000' 
-    : 'https://app.zecrypt.io';
-    // Login button click handler
+  // Login button click handler
   loginBtn.addEventListener('click', () => {
     // Start auth checking in background
     chrome.runtime.sendMessage({ type: 'START_AUTH_CHECK' });
     
     // Open the extension login page in a new tab (with locale prefix)
-    chrome.tabs.create({ url: `${BASE_URL}/en/extension-login?from=extension` });
+    chrome.tabs.create({ url: `${getWebAppBaseUrl()}/en/extension-login?from=extension` });
   });
     // Logout button click handler
   logoutBtn.addEventListener('click', () => {
