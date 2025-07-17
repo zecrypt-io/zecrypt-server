@@ -47,8 +47,8 @@ const ENDPOINTS = {
   cards: function(workspaceId, projectId) { 
     return `/${workspaceId}/${projectId}/cards`;
   },
-  emails: function(workspaceId, projectId) { 
-    return `/${workspaceId}/${projectId}/emails`;
+  accounts: function(workspaceId, projectId) { 
+    return `/${workspaceId}/${projectId}/accounts`;
   }
 };
 
@@ -175,53 +175,59 @@ async function processCardData(cardRaw) {
   }
 }
 
-// Enhanced function to process and decrypt email data
-async function processEmailData(emailRaw) {
+// Enhanced function to process and decrypt account data
+async function processAccountData(accountRaw) {
   try {
     const projectAesKey = await getDecryptedProjectAesKey();
     
     if (!projectAesKey) {
       console.error("Project AES key not found for decryption");
       return {
-        ...emailRaw,
-        email: 'Key missing'
+        ...accountRaw,
+        username: 'Key missing',
+        password: 'Key missing',
+        website: accountRaw.url || accountRaw.website || 'undefined'
       };
     }
 
-    if (emailRaw.data && emailRaw.data.includes('.')) {
+    if (accountRaw.data && accountRaw.data.includes('.')) {
       try {
-        const decryptedData = await CryptoUtils.decryptDataField(emailRaw.data, projectAesKey);
+        const decryptedData = await CryptoUtils.decryptDataField(accountRaw.data, projectAesKey);
         const parsedData = JSON.parse(decryptedData);
         
         return {
-          ...emailRaw,
-          email: parsedData.email_address || 'undefined',
-          password: parsedData.password || 'undefined'
+          ...accountRaw,
+          username: parsedData.username || 'undefined',
+          password: parsedData.password || 'undefined',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       } catch (decryptError) {
-        console.error("Failed to decrypt email data:", decryptError);
+        console.error("Failed to decrypt account data:", decryptError);
         return {
-          ...emailRaw,
-          email: 'Decrypt failed'
+          ...accountRaw,
+          username: 'Decrypt failed',
+          password: 'Decrypt failed',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       }
     } else {
       // Data might not be encrypted (legacy format)
       try {
-        const parsedData = JSON.parse(emailRaw.data);
+        const parsedData = JSON.parse(accountRaw.data);
         return {
-          ...emailRaw,
-          email: parsedData.email_address || 'undefined',
-          password: parsedData.password || 'undefined'
+          ...accountRaw,
+          username: parsedData.username || 'undefined',
+          password: parsedData.password || 'undefined',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       } catch (parseError) {
-        console.error("Error parsing email data:", parseError);
-        return emailRaw;
+        console.error("Error parsing account data:", parseError);
+        return accountRaw;
       }
     }
   } catch (error) {
-    console.error("Error processing email data:", error);
-    return emailRaw;
+    console.error("Error processing account data:", error);
+    return accountRaw;
   }
 }
 
@@ -322,17 +328,17 @@ function getCards() {
   });
 }
 
-// Enhanced getEmails function with decryption
-function getEmails() {
+// Enhanced getAccounts function with decryption
+function getAccounts() {
   return new Promise(function(resolve, reject) {
-    apiRequest(ENDPOINTS.emails)
+    apiRequest(ENDPOINTS.accounts)
       .then(async function(response) {
-        const emails = response.data || [];
-        const processedEmails = await Promise.all(emails.map(processEmailData));
+        const accounts = response.data || [];
+        const processedAccounts = await Promise.all(accounts.map(processAccountData));
         
         resolve({
           success: true,
-          data: processedEmails
+          data: processedAccounts
         });
       })
       .catch(function(error) {
@@ -613,8 +619,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     
-    if (message.dataType === 'emails') {
-      getEmails()
+    if (message.dataType === 'accounts') {
+      getAccounts()
         .then(response => {
           sendResponse(response);
         })
@@ -643,14 +649,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     
-    if (message.dataType === 'email') {
-      getEmails()
+    if (message.dataType === 'account') {
+      getAccounts()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
-            // Return all emails so the content script can show a selector UI
+            // Return all accounts so the content script can show a selector UI
             sendResponse({ success: true, data: response.data, multiple: response.data.length > 1 });
           } else {
-            sendResponse({ success: false, error: 'No emails available' });
+            sendResponse({ success: false, error: 'No accounts available' });
           }
         })
         .catch(error => {

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const cardsList = document.getElementById('cardsList');
-  const emailsList = document.getElementById('emailsList');
+  const accountsList = document.getElementById('accountsList');
   
   // Configuration will be loaded when needed
   let BASE_URL = null;
@@ -120,15 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Clear any existing data
     cardsList.innerHTML = '';
-    emailsList.innerHTML = '';
+    accountsList.innerHTML = '';
   }
-    // Fetch cards and emails data
+    // Fetch cards and accounts data
   function fetchData() {
     // Show loading indicator
     loadingSection.style.display = 'block';
     contentSection.style.display = 'none';
     
-    // Fetch cards and emails in parallel
+    // Fetch cards and accounts in parallel
     Promise.all([
       new Promise((resolve) => {
         chrome.runtime.sendMessage({ 
@@ -141,12 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
       new Promise((resolve) => {
         chrome.runtime.sendMessage({ 
           type: 'FETCH_DATA',
-          dataType: 'emails'
+          dataType: 'accounts'
         }, (response) => {
           resolve(response || { success: false, error: 'No response' });
         });
       })
-    ]).then(([cardsResponse, emailsResponse]) => {
+    ]).then(([cardsResponse, accountsResponse]) => {
       // Hide loading indicator
       loadingSection.style.display = 'none';
       contentSection.style.display = 'block';
@@ -159,11 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Failed to fetch cards:', cardsResponse?.error);
       }
       
-      if (emailsResponse && emailsResponse.success) {
-        renderEmails(emailsResponse.data);
+      if (accountsResponse && accountsResponse.success) {
+        renderAccounts(accountsResponse.data);
       } else {
-        renderEmails([]);
-        console.error('Failed to fetch emails:', emailsResponse?.error);
+        renderAccounts([]);
+        console.error('Failed to fetch accounts:', accountsResponse?.error);
       }
     });
   }
@@ -194,28 +194,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // Render email items
-  function renderEmails(emails) {
-    emailsList.innerHTML = '';
+  // Render account items
+  function renderAccounts(accounts) {
+    accountsList.innerHTML = '';
     
-    if (!emails || emails.length === 0) {
-      emailsList.innerHTML = '<div class="empty-state">No email addresses found</div>';
+    if (!accounts || accounts.length === 0) {
+      accountsList.innerHTML = '<div class="empty-state">No accounts found</div>';
       return;
     }
     
-    emails.forEach(email => {
-      const emailItem = document.createElement('div');
-      emailItem.className = 'item';
+    accounts.forEach(account => {
+      const accountItem = document.createElement('div');
+      accountItem.className = 'item';
       
-      const emailAddress = email.email || 'Unknown Email';
-      const passwordDisplay = email.password ? '•'.repeat(email.password.length) : 'No password';
+      const accountName = account.title || account.name || 'Unknown Account';
+      const username = account.username || 'No username';
+      const website = account.website || account.url || '';
       
-      emailItem.innerHTML = `
-        <div class="item-primary">${emailAddress}</div>
-        <div class="item-secondary">${passwordDisplay}</div>
+      // Show website domain if available
+      let displayText = username;
+      if (website) {
+        try {
+          const domain = new URL(website).hostname.replace('www.', '');
+          displayText = `${username} • ${domain}`;
+        } catch (e) {
+          displayText = `${username} • ${website}`;
+        }
+      }
+      
+      accountItem.innerHTML = `
+        <div class="item-primary">${accountName}</div>
+        <div class="item-secondary">${displayText}</div>
       `;
       
-      emailsList.appendChild(emailItem);
+      accountsList.appendChild(accountItem);
     });
   }
 }); 
