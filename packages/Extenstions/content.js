@@ -55,21 +55,11 @@ function fetchAndFillData(type, input) {
   }, (response) => {
     if (response && response.success) {
       if (type === 'card') {
-        // Check if there are multiple cards
-        if (response.multiple && response.data.length > 1) {
-          showCardSelector(input, response.data);
-        } else {
-          // Single card, fill directly
-          fillCardData(input, response.data[0] || response.data);
-        }
+        // Always show card selector for user confirmation
+        showCardSelector(input, response.data);
       } else if (type === 'account') {
-        // Check if there are multiple accounts
-        if (response.multiple && response.data.length > 1) {
-          showAccountSelector(input, response.data);
-        } else {
-          // Single account, fill directly
-          fillAccountData(input, response.data[0] || response.data);
-        }
+        // Always show account selector for user confirmation
+        showAccountSelector(input, response.data);
       }
     } else {
       // Show error or prompt to log in

@@ -637,8 +637,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       getCards()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
-            // Return all cards - for now use first one, but structure allows for future selector UI
-            sendResponse({ success: true, data: response.data, multiple: response.data.length > 1 });
+            // Always show selector UI for cards, even for single card
+            sendResponse({ success: true, data: response.data, multiple: true });
           } else {
             sendResponse({ success: false, error: 'No cards available' });
           }
@@ -653,8 +653,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       getAccounts()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
-            // Return all accounts so the content script can show a selector UI
-            sendResponse({ success: true, data: response.data, multiple: response.data.length > 1 });
+            // Always show selector UI for accounts, even for single account
+            sendResponse({ success: true, data: response.data, multiple: true });
           } else {
             sendResponse({ success: false, error: 'No accounts available' });
           }
