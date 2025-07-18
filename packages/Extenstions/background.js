@@ -1,19 +1,30 @@
-// Base API URL
-const API_BASE_URL = 'https://preview.api.zecrypt.io/api/v1/web';
-
 // Import configuration and crypto utilities
 importScripts('config.js');
 importScripts('crypto-utils.js');
+
+// API Base URL will be set after configuration is loaded
+let API_BASE_URL = null;
 
 // Initialize configuration when extension starts
 (async function initializeExtension() {
   try {
     await ExtensionConfig.initConfig();
+    API_BASE_URL = ExtensionConfig.getApiBaseUrl();
+    console.log('Extension initialized with API Base URL:', API_BASE_URL);
   } catch (error) {
-    console.error('Failed to load extension configuration:', error);
-    console.error('Please ensure you have created a .env file in the extensions directory with the required keys');
+    console.error('Failed to initialize extension configuration:', error);
+    // Fallback to production URL if config fails
+    API_BASE_URL = 'https://api.zecrypt.io/api/v1/web';
   }
 })();
+
+// Function to ensure configuration is loaded
+function ensureConfigLoaded() {
+  if (!API_BASE_URL) {
+    throw new Error('Extension configuration not loaded. Please reload the extension.');
+  }
+  return API_BASE_URL;
+}
 
 // Helper function to check if URL is accessible for script injection
 function isValidUrl(url) {
@@ -36,8 +47,8 @@ const ENDPOINTS = {
   cards: function(workspaceId, projectId) { 
     return `/${workspaceId}/${projectId}/cards`;
   },
-  emails: function(workspaceId, projectId) { 
-    return `/${workspaceId}/${projectId}/emails`;
+  accounts: function(workspaceId, projectId) { 
+    return `/${workspaceId}/${projectId}/accounts`;
   }
 };
 
@@ -164,53 +175,59 @@ async function processCardData(cardRaw) {
   }
 }
 
-// Enhanced function to process and decrypt email data
-async function processEmailData(emailRaw) {
+// Enhanced function to process and decrypt account data
+async function processAccountData(accountRaw) {
   try {
     const projectAesKey = await getDecryptedProjectAesKey();
     
     if (!projectAesKey) {
       console.error("Project AES key not found for decryption");
       return {
-        ...emailRaw,
-        email: 'Key missing'
+        ...accountRaw,
+        username: 'Key missing',
+        password: 'Key missing',
+        website: accountRaw.url || accountRaw.website || 'undefined'
       };
     }
 
-    if (emailRaw.data && emailRaw.data.includes('.')) {
+    if (accountRaw.data && accountRaw.data.includes('.')) {
       try {
-        const decryptedData = await CryptoUtils.decryptDataField(emailRaw.data, projectAesKey);
+        const decryptedData = await CryptoUtils.decryptDataField(accountRaw.data, projectAesKey);
         const parsedData = JSON.parse(decryptedData);
         
         return {
-          ...emailRaw,
-          email: parsedData.email_address || 'undefined',
-          password: parsedData.password || 'undefined'
+          ...accountRaw,
+          username: parsedData.username || 'undefined',
+          password: parsedData.password || 'undefined',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       } catch (decryptError) {
-        console.error("Failed to decrypt email data:", decryptError);
+        console.error("Failed to decrypt account data:", decryptError);
         return {
-          ...emailRaw,
-          email: 'Decrypt failed'
+          ...accountRaw,
+          username: 'Decrypt failed',
+          password: 'Decrypt failed',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       }
     } else {
       // Data might not be encrypted (legacy format)
       try {
-        const parsedData = JSON.parse(emailRaw.data);
+        const parsedData = JSON.parse(accountRaw.data);
         return {
-          ...emailRaw,
-          email: parsedData.email_address || 'undefined',
-          password: parsedData.password || 'undefined'
+          ...accountRaw,
+          username: parsedData.username || 'undefined',
+          password: parsedData.password || 'undefined',
+          website: accountRaw.url || accountRaw.website || 'undefined'
         };
       } catch (parseError) {
-        console.error("Error parsing email data:", parseError);
-        return emailRaw;
+        console.error("Error parsing account data:", parseError);
+        return accountRaw;
       }
     }
   } catch (error) {
-    console.error("Error processing email data:", error);
-    return emailRaw;
+    console.error("Error processing account data:", error);
+    return accountRaw;
   }
 }
 
@@ -243,21 +260,43 @@ function apiRequest(endpoint, method, data) {
           options.body = JSON.stringify(data);
         }
         
-        return fetch(API_BASE_URL + resolvedEndpoint, options);
+        const apiUrl = ensureConfigLoaded() + resolvedEndpoint;
+        console.log('Making API request:', {
+          url: apiUrl,
+          method: method,
+          hasToken: !!authData.token,
+          tokenPrefix: authData.token ? authData.token.substring(0, 10) + '...' : 'none',
+          workspaceId: authData.workspaceId,
+          projectId: authData.projectId
+        });
+        
+        return fetch(apiUrl, options);
       })
       .then(function(response) {
+        console.log('API response status:', response.status, response.statusText);
+        
         if (!response.ok) {
           if (response.status === 401) {
+            console.error('401 Unauthorized - clearing stored tokens');
             chrome.storage.local.remove(['zecryptToken', 'zecryptWorkspaceId', 'zecryptProjectId']);
             throw new Error('Authentication failed. Please log in again.');
           }
           
-          throw new Error('API request failed with status ' + response.status);
+          // Try to get response text for better error details
+          return response.text().then(errorText => {
+            console.error('API request failed:', {
+              status: response.status,
+              statusText: response.statusText,
+              errorText: errorText
+            });
+            throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+          });
         }
         
         return response.json();
       })
       .then(function(data) {
+        console.log('API request successful');
         resolve(data);
       })
       .catch(function(error) {
@@ -289,17 +328,17 @@ function getCards() {
   });
 }
 
-// Enhanced getEmails function with decryption
-function getEmails() {
+// Enhanced getAccounts function with decryption
+function getAccounts() {
   return new Promise(function(resolve, reject) {
-    apiRequest(ENDPOINTS.emails)
+    apiRequest(ENDPOINTS.accounts)
       .then(async function(response) {
-        const emails = response.data || [];
-        const processedEmails = await Promise.all(emails.map(processEmailData));
+        const accounts = response.data || [];
+        const processedAccounts = await Promise.all(accounts.map(processAccountData));
         
         resolve({
           success: true,
-          data: processedEmails
+          data: processedAccounts
         });
       })
       .catch(function(error) {
@@ -351,32 +390,45 @@ function checkLocalStorageAuth() {
             func: () => {
               try {
                 const authData = localStorage.getItem('zecrypt_extension_auth');
+                console.log('Extension: Checking localStorage for auth data:', !!authData);
+                
                 if (authData) {
                   try {
                     const parsed = JSON.parse(authData);
+                    console.log('Extension: Found auth data:', {
+                      hasToken: !!parsed.token,
+                      hasWorkspaceId: !!parsed.workspaceId,
+                      hasProjectId: !!parsed.projectId,
+                      hasProjectAesKey: !!parsed.projectAesKey,
+                      timestamp: parsed.timestamp
+                    });
+                    
                     // Remove the auth data after reading it
                     localStorage.removeItem('zecrypt_extension_auth');
                     return parsed;
                   } catch (e) {
-                    console.error('Error parsing auth data:', e);
+                    console.error('Extension: Error parsing auth data:', e);
                     localStorage.removeItem('zecrypt_extension_auth');
                     return null;
                   }
                 }
                 return null;
               } catch (error) {
-                console.error('Error accessing localStorage:', error);
+                console.error('Extension: Error accessing localStorage:', error);
                 return null;
               }
             }
           }, (results) => {
             if (chrome.runtime.lastError) {
+              console.error('Extension: Script execution failed:', chrome.runtime.lastError.message);
               resolve({ success: false, error: chrome.runtime.lastError.message });
               return;
             }
             
             if (results && results[0] && results[0].result) {
               const authData = results[0].result;
+              console.log('Extension: Processing auth data from localStorage');
+              
               // Store in extension storage
               chrome.storage.local.set({
                 zecryptToken: authData.token,
@@ -384,26 +436,31 @@ function checkLocalStorageAuth() {
                 zecryptProjectId: authData.projectId
               }, async () => {
                 if (chrome.runtime.lastError) {
-                  console.error('Error storing auth data:', chrome.runtime.lastError);
+                  console.error('Extension: Error storing auth data:', chrome.runtime.lastError);
                   resolve({ success: false, error: chrome.runtime.lastError.message });
                 } else {
+                  console.log('Extension: Successfully stored auth data in chrome.storage.local');
+                  
                   // Store project AES key securely if provided
                   if (authData.projectAesKey) {
                     await storeProjectAesKey(authData.projectAesKey);
+                    console.log('Extension: Successfully stored project AES key');
                   }
                   
                   resolve({ success: true, authData });
                 }
               });
             } else {
+              console.log('Extension: No auth data found in localStorage');
               resolve({ success: false, error: 'No auth data found' });
             }
           });        } else {
+          console.log('Extension: No accessible tab found for localStorage check');
           resolve({ success: false, error: 'No accessible tab found' });
         }
       });
     } catch (error) {
-      console.error('Error checking localStorage:', error);
+      console.error('Extension: Error in checkLocalStorageAuth:', error);
       resolve({ success: false, error: error.message });
     }
   });
@@ -562,8 +619,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     
-    if (message.dataType === 'emails') {
-      getEmails()
+    if (message.dataType === 'accounts') {
+      getAccounts()
         .then(response => {
           sendResponse(response);
         })
@@ -580,8 +637,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       getCards()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
-            // Return all cards - for now use first one, but structure allows for future selector UI
-            sendResponse({ success: true, data: response.data, multiple: response.data.length > 1 });
+            // Always show selector UI for cards, even for single card
+            sendResponse({ success: true, data: response.data, multiple: true });
           } else {
             sendResponse({ success: false, error: 'No cards available' });
           }
@@ -592,14 +649,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
     }
     
-    if (message.dataType === 'email') {
-      getEmails()
+    if (message.dataType === 'account') {
+      getAccounts()
         .then(response => {
           if (response.success && response.data && response.data.length > 0) {
-            // Return all emails so the content script can show a selector UI
-            sendResponse({ success: true, data: response.data, multiple: response.data.length > 1 });
+            // Always show selector UI for accounts, even for single account
+            sendResponse({ success: true, data: response.data, multiple: true });
           } else {
-            sendResponse({ success: false, error: 'No emails available' });
+            sendResponse({ success: false, error: 'No accounts available' });
           }
         })
         .catch(error => {

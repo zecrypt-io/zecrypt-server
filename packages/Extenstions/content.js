@@ -3,17 +3,17 @@ function detectForms() {
   // Look for credit card forms
   const cardNumberInputs = document.querySelectorAll('input[autocomplete="cc-number"], input[name*="card_number"], input[name*="cardNumber"], input[id*="card-number"], input[id*="cardNumber"]');
   
-  // Look for email inputs
-  const emailInputs = document.querySelectorAll('input[type="email"], input[name*="email"], input[id*="email"]');
+  // Look for username/login inputs
+  const usernameInputs = document.querySelectorAll('input[type="email"], input[type="text"][name*="username"], input[type="text"][name*="user"], input[type="text"][name*="login"], input[type="text"][id*="username"], input[type="text"][id*="user"], input[type="text"][id*="login"], input[name*="email"], input[id*="email"]');
   
   // Process card number inputs
   cardNumberInputs.forEach(input => {
     setupAutofillButton(input, 'card');
   });
   
-  // Process email inputs
-  emailInputs.forEach(input => {
-    setupAutofillButton(input, 'email');
+  // Process username inputs
+  usernameInputs.forEach(input => {
+    setupAutofillButton(input, 'account');
   });
 }
 
@@ -55,21 +55,11 @@ function fetchAndFillData(type, input) {
   }, (response) => {
     if (response && response.success) {
       if (type === 'card') {
-        // Check if there are multiple cards
-        if (response.multiple && response.data.length > 1) {
-          showCardSelector(input, response.data);
-        } else {
-          // Single card, fill directly
-          fillCardData(input, response.data[0] || response.data);
-        }
-      } else if (type === 'email') {
-        // Check if there are multiple emails
-        if (response.multiple && response.data.length > 1) {
-          showEmailSelector(input, response.data);
-        } else {
-          // Single email, fill directly
-          fillEmailData(input, response.data[0] || response.data);
-        }
+        // Always show card selector for user confirmation
+        showCardSelector(input, response.data);
+      } else if (type === 'account') {
+        // Always show account selector for user confirmation
+        showAccountSelector(input, response.data);
       }
     } else {
       // Show error or prompt to log in
@@ -78,14 +68,14 @@ function fetchAndFillData(type, input) {
   });
 }
 
-// Show email selector UI when multiple emails are available
-function showEmailSelector(input, emails) {
+// Show account selector UI when multiple accounts are available
+function showAccountSelector(input, accounts) {
   // Remove any existing selector
-  removeEmailSelector();
+  removeAccountSelector();
   
   // Create overlay
   const overlay = document.createElement('div');
-  overlay.id = 'zecrypt-email-selector-overlay';
+  overlay.id = 'zecrypt-account-selector-overlay';
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -123,7 +113,7 @@ function showEmailSelector(input, emails) {
   `;
   
   const title = document.createElement('h3');
-  title.textContent = 'Select Email Account';
+  title.textContent = 'Select Account';
   title.style.cssText = `
     margin: 0;
     font-size: 18px;
@@ -146,21 +136,21 @@ function showEmailSelector(input, emails) {
     align-items: center;
     justify-content: center;
   `;
-  closeBtn.addEventListener('click', removeEmailSelector);
+  closeBtn.addEventListener('click', removeAccountSelector);
   
   header.appendChild(title);
   header.appendChild(closeBtn);
   
-  // Create email list
-  const emailList = document.createElement('div');
-  emailList.style.cssText = `
+  // Create account list
+  const accountList = document.createElement('div');
+  accountList.style.cssText = `
     max-height: 300px;
     overflow-y: auto;
   `;
   
-  emails.forEach((email, index) => {
-    const emailItem = document.createElement('div');
-    emailItem.style.cssText = `
+  accounts.forEach((account, index) => {
+    const accountItem = document.createElement('div');
+    accountItem.style.cssText = `
       padding: 12px;
       border: 1px solid #e5e7eb;
       border-radius: 6px;
@@ -170,44 +160,54 @@ function showEmailSelector(input, emails) {
       background: #f9fafb;
     `;
     
-    emailItem.addEventListener('mouseenter', () => {
-      emailItem.style.backgroundColor = '#f3f4f6';
-      emailItem.style.borderColor = '#4f46e5';
+    accountItem.addEventListener('mouseenter', () => {
+      accountItem.style.backgroundColor = '#f3f4f6';
+      accountItem.style.borderColor = '#4f46e5';
     });
     
-    emailItem.addEventListener('mouseleave', () => {
-      emailItem.style.backgroundColor = '#f9fafb';
-      emailItem.style.borderColor = '#e5e7eb';
+    accountItem.addEventListener('mouseleave', () => {
+      accountItem.style.backgroundColor = '#f9fafb';
+      accountItem.style.borderColor = '#e5e7eb';
     });
     
-    emailItem.addEventListener('click', () => {
-      fillEmailData(input, email);
-      removeEmailSelector();
+    accountItem.addEventListener('click', () => {
+      fillAccountData(input, account);
+      removeAccountSelector();
     });
     
-    const emailAddress = document.createElement('div');
-    emailAddress.textContent = email.email || 'No email address';
-    emailAddress.style.cssText = `
+    const accountUsername = document.createElement('div');
+    accountUsername.textContent = account.username || 'No username';
+    accountUsername.style.cssText = `
       font-weight: 500;
       color: #1f2937;
       margin-bottom: 4px;
     `;
     
-    const emailTitle = document.createElement('div');
-    emailTitle.textContent = email.title || 'Untitled Email';
-    emailTitle.style.cssText = `
+    const accountTitle = document.createElement('div');
+    const website = account.website || account.url || '';
+    let displayText = account.title || account.name || 'Untitled Account';
+    if (website) {
+      try {
+        const domain = new URL(website).hostname.replace('www.', '');
+        displayText += ` • ${domain}`;
+      } catch (e) {
+        displayText += ` • ${website}`;
+      }
+    }
+    accountTitle.textContent = displayText;
+    accountTitle.style.cssText = `
       font-size: 14px;
       color: #6b7280;
     `;
     
-    emailItem.appendChild(emailAddress);
-    emailItem.appendChild(emailTitle);
-    emailList.appendChild(emailItem);
+    accountItem.appendChild(accountUsername);
+    accountItem.appendChild(accountTitle);
+    accountList.appendChild(accountItem);
   });
   
   // Assemble modal
   modal.appendChild(header);
-  modal.appendChild(emailList);
+  modal.appendChild(accountList);
   overlay.appendChild(modal);
   
   // Add to page
@@ -216,23 +216,23 @@ function showEmailSelector(input, emails) {
   // Close on overlay click
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
-      removeEmailSelector();
+      removeAccountSelector();
     }
   });
   
   // Close on escape key
   const escapeHandler = (e) => {
     if (e.key === 'Escape') {
-      removeEmailSelector();
+      removeAccountSelector();
       document.removeEventListener('keydown', escapeHandler);
     }
   };
   document.addEventListener('keydown', escapeHandler);
 }
 
-// Remove email selector UI
-function removeEmailSelector() {
-  const overlay = document.getElementById('zecrypt-email-selector-overlay');
+// Remove account selector UI
+function removeAccountSelector() {
+  const overlay = document.getElementById('zecrypt-account-selector-overlay');
   if (overlay) {
     overlay.remove();
   }
@@ -509,10 +509,10 @@ function fillCardData(input, cardData) {
   }
 }
 
-// Fill email data into form
-function fillEmailData(input, emailData) {
-  // Fill the email address
-  input.value = emailData.email;
+// Fill account data into form
+function fillAccountData(input, accountData) {
+  // Fill the username (could be email or username field)
+  input.value = accountData.username;
   triggerInputEvent(input);
 
   // Define search scope: the form, or the whole document as a fallback
@@ -523,8 +523,8 @@ function fillEmailData(input, emailData) {
   if (passwordInputs.length > 0) {
     // Find the first visible password input
     const visiblePasswordInput = Array.from(passwordInputs).find(el => el.offsetParent !== null);
-    if (visiblePasswordInput) {
-      visiblePasswordInput.value = emailData.password;
+    if (visiblePasswordInput && accountData.password) {
+      visiblePasswordInput.value = accountData.password;
       triggerInputEvent(visiblePasswordInput);
     }
   }
@@ -574,10 +574,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (cardInputs.length > 0) {
         fillCardData(cardInputs[0], message.data);
       }
-    } else if (message.dataType === 'email') {
-      const emailInputs = document.querySelectorAll('input[type="email"], input[name*="email"], input[id*="email"]');
-      if (emailInputs.length > 0) {
-        fillEmailData(emailInputs[0], message.data);
+    } else if (message.dataType === 'account') {
+      const usernameInputs = document.querySelectorAll('input[type="email"], input[type="text"][name*="username"], input[type="text"][name*="user"], input[type="text"][name*="login"], input[type="text"][id*="username"], input[type="text"][id*="user"], input[type="text"][id*="login"], input[name*="email"], input[id*="email"]');
+      if (usernameInputs.length > 0) {
+        fillAccountData(usernameInputs[0], message.data);
       }
     }
     
