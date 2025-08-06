@@ -1,24 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 export default function SimpleLoginPage() {
   const [email, setEmail] = useState('demo@zecrypt.com');
   const [isLoading, setIsLoading] = useState(false);
-  const [useRealAuth, setUseRealAuth] = useState(false);
+  const [authStatus, setAuthStatus] = useState('');
+  const [useRealAuth, setUseRealAuth] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    // Listen for auth callback events from Tauri
+    const setupAuthListener = async () => {
+      try {
+        const unlisten = await listen('auth-callback', (event: any) => {
+          console.log('Auth callback received:', event.payload);
+          const authData = event.payload;
+          
+          if (authData.error) {
+            setAuthStatus(`Authentication failed: ${authData.error}`);
+            setIsLoading(false);
+          } else if (authData.code || authData.access_token) {
+            setAuthStatus('Authentication successful! Redirecting...');
+            setTimeout(() => {
+              router.push('/simple-dashboard');
+            }, 1500);
+          }
+        });
+
+        // Cleanup function
+        return () => {
+          unlisten();
+        };
+      } catch (error) {
+        console.log('Running in web mode, Tauri API not available');
+        setAuthStatus('Running in web mode - browser auth not available');
+      }
+    };
+
+    setupAuthListener();
+  }, [router]);
 
   const handleDemoLogin = () => {
     setIsLoading(true);
+    setAuthStatus('Logging in with demo credentials...');
     // Simulate login
     setTimeout(() => {
       router.push('/simple-dashboard');
     }, 1000);
   };
 
-  const handleBrowserLogin = () => {
-    alert('Browser-based authentication will be implemented next!');
+  const handleBrowserLogin = async () => {
+    try {
+      setIsLoading(true);
+      setAuthStatus('Opening browser for authentication...');
+      
+      await invoke('open_browser_auth');
+      setAuthStatus('Please complete authentication in your browser...');
+    } catch (error) {
+      console.error('Failed to open browser:', error);
+      setAuthStatus('Failed to open browser for authentication');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -28,6 +74,12 @@ export default function SimpleLoginPage() {
           <h1 className="text-3xl font-bold text-gray-900">Zecrypt Desktop</h1>
           <p className="text-gray-600 mt-2">Secure Password Manager</p>
         </div>
+
+        {authStatus && (
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800">{authStatus}</p>
+          </div>
+        )}
 
         <div className="space-y-6">
           <div className="flex items-center space-x-3">
@@ -72,9 +124,10 @@ export default function SimpleLoginPage() {
             <>
               <button
                 onClick={handleBrowserLogin}
-                className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                disabled={isLoading}
+                className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
               >
-                Login with Browser (Stack Auth + 2FA)
+                {isLoading ? 'Opening Browser...' : 'Login with Browser (Stack Auth + 2FA)'}
               </button>
               <p className="text-xs text-gray-500 text-center">
                 Opens browser for complete authentication flow

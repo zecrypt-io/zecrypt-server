@@ -4,20 +4,33 @@
   "version": "0.1.0",
   "identifier": "com.zecrypt.desktop",
   "build": {
-    "frontendDist": "../../frontend-desktop/out"
+    "frontendDist": "../frontend-desktop/out",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "pnpm --prefix ../frontend-desktop dev",
+    "beforeBuildCommand": "pnpm --prefix ../frontend-desktop build"
   },
   "app": {
     "windows": [
       {
         "title": "Zecrypt Desktop",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 800,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "minWidth": 800,
+        "minHeight": 600
       }
     ],
     "security": {
       "csp": null
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["zecrypt"]
+      }
     }
   },
   "bundle": {
