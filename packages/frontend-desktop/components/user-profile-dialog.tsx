@@ -7,7 +7,7 @@ import { X, Camera, Upload, Trash, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useUser } from "@stackframe/stack"; // Only useUser is needed
+import { useUser } from "@/libs/offline-auth-context"; // Only useUser is needed
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../libs/Redux/store";

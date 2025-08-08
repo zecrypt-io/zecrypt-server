@@ -32,8 +32,8 @@ export default function SimpleLoginPage() {
                 setIsLoading(false);
                 
                 setTimeout(() => {
-                  router.push('/simple-dashboard');
-                }, 1000);
+                  router.push('/en/dashboard');
+                }, 800);
               } else {
                 setAuthStatus('Authentication failed. Please try again.');
                 setIsLoading(false);
@@ -62,8 +62,8 @@ export default function SimpleLoginPage() {
     setAuthStatus('Logging in with demo credentials...');
     // Simulate login
     setTimeout(() => {
-      router.push('/simple-dashboard');
-    }, 1000);
+      router.push('/en/dashboard');
+    }, 800);
   };
 
   const handleBrowserLogin = async () => {

@@ -1,36 +1,23 @@
 'use client';
 
-import { useTranslations as useNextIntlTranslations } from 'next-intl';
+// Lightweight i18n shim replacing next-intl in desktop build
+import { useTranslations as shimUseTranslations } from '@/libs/intl-shim';
 
 export function useTranslations(namespace?: string) {
-  return useNextIntlTranslations(namespace);
+  // Namespace ignored in shim; keep signature for compatibility
+  return shimUseTranslations();
 }
 
 export function useTranslator() {
-  const t = useNextIntlTranslations();
+  const t = shimUseTranslations();
   
   return {
-    // Common translations for easy access
     translate: (key: string, namespace?: string, params?: Record<string, any>) => {
-      if (namespace) {
-        return t(`${namespace}.${key}`, params || {});
-      }
-      return t(key, params || {});
+      if (params && typeof params.default === 'string') return params.default;
+      return t(namespace ? `${namespace}.${key}` : key, params || {});
     },
-    
-    // Navigation translations
-    nav: (key: string, params?: Record<string, any>) => {
-      return t(`navigation.${key}`, params || {});
-    },
-    
-    // Auth translations
-    auth: (key: string, params?: Record<string, any>) => {
-      return t(`auth.${key}`, params || {});
-    },
-    
-    // Action translations
-    actions: (key: string, params?: Record<string, any>) => {
-      return t(`actions.${key}`, params || {});
-    },
+    nav: (key: string, params?: Record<string, any>) => t(`navigation.${key}`, params || {}),
+    auth: (key: string, params?: Record<string, any>) => t(`auth.${key}`, params || {}),
+    actions: (key: string, params?: Record<string, any>) => t(`actions.${key}`, params || {}),
   };
-} 
+}

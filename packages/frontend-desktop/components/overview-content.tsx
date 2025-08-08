@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, Lock, FileText, Shield, User } from "lucide-react";
-import { useUser } from "@stackframe/stack";
+import { useUser } from "@/libs/offline-auth-context";
 import { useEffect, useState } from "react";
 import { loadInitialData, fetchProjects, fetchProjectKeys } from "../libs/getWorkspace";
 import { RootState, AppDispatch } from "../libs/Redux/store";

@@ -36,7 +36,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
-import { useFormatter } from "next-intl";
+import { useFormatter } from "@/libs/intl-shim";
 import { useUser } from "@stackframe/stack";
 import { loadInitialData, fetchProjects, fetchProjectKeys, fetchDashboardOverview, fetchRecentActivity, fetchRecentAccounts } from "@/libs/getWorkspace";
 import { importRSAPrivateKey, decryptAESKeyWithRSA, decryptAccountData } from "@/libs/encryption";

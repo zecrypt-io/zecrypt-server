@@ -57,7 +57,7 @@ import {
 import { UpdatePasswordModal } from "@/components/update-password-modal"
 import { useRouter, usePathname } from "next/navigation"
 import { locales } from "@/libs/locales"
-import { useTranslations } from "next-intl"
+import { useTranslations } from "@/libs/intl-shim"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
 import { useUser } from '@stackframe/stack'
 import { getStoredUserData } from "@/libs/local-storage-utils"

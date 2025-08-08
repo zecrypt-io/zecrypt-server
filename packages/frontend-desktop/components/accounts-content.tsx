@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTranslator } from "@/hooks/use-translations";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { useFormatter } from "next-intl";
+import { useFormatter } from "@/libs/intl-shim";
 import { toast } from "@/components/ui/use-toast";
 import { getWebsiteIcon } from "@/libs/icon-mappings";
 import {
