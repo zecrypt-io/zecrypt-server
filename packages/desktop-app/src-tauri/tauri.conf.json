@@ -13,6 +13,7 @@
     "windows": [
       {
         "title": "Zecrypt Desktop",
+        "label": "main",
         "width": 1200,
         "height": 800,
         "resizable": true,
@@ -25,14 +26,13 @@
       "csp": null
     }
   },
-  "plugins": {
-    "deep-link": {
-      "mobile": [],
-      "desktop": {
-        "schemes": ["zecrypt"]
+      "plugins": {
+      "deep-link": {
+        "desktop": {
+          "schemes": ["zecrypt"]
+        }
       }
-    }
-  },
+    },
   "bundle": {
     "active": true,
     "targets": "all",

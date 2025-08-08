@@ -12,32 +12,45 @@ export default function SimpleLoginPage() {
   const [useRealAuth, setUseRealAuth] = useState(true);
   const router = useRouter();
 
+  // Listen for auth callbacks from deep links
   useEffect(() => {
-    // Listen for auth callback events from Tauri
     const setupAuthListener = async () => {
       try {
         const unlisten = await listen('auth-callback', (event: any) => {
           console.log('Auth callback received:', event.payload);
-          const authData = event.payload;
           
-          if (authData.error) {
-            setAuthStatus(`Authentication failed: ${authData.error}`);
-            setIsLoading(false);
-          } else if (authData.code || authData.access_token) {
-            setAuthStatus('Authentication successful! Redirecting...');
-            setTimeout(() => {
-              router.push('/simple-dashboard');
-            }, 1500);
+          const url = event.payload;
+          if (typeof url === 'string' && url.includes('zecrypt://auth/callback')) {
+            try {
+              const urlObj = new URL(url);
+              const access_token = urlObj.searchParams.get('access_token');
+              const email = urlObj.searchParams.get('email');
+              const code = urlObj.searchParams.get('code');
+              
+              if (access_token && code === 'success') {
+                setAuthStatus('Authentication successful! Redirecting...');
+                setIsLoading(false);
+                
+                setTimeout(() => {
+                  router.push('/simple-dashboard');
+                }, 1000);
+              } else {
+                setAuthStatus('Authentication failed. Please try again.');
+                setIsLoading(false);
+              }
+            } catch (error) {
+              console.error('Error parsing auth callback URL:', error);
+              setAuthStatus('Authentication failed. Please try again.');
+              setIsLoading(false);
+            }
           }
         });
-
-        // Cleanup function
+        
         return () => {
           unlisten();
         };
       } catch (error) {
-        console.log('Running in web mode, Tauri API not available');
-        setAuthStatus('Running in web mode - browser auth not available');
+        console.error('Failed to set up auth listener:', error);
       }
     };
 
@@ -60,11 +73,19 @@ export default function SimpleLoginPage() {
       
       await invoke('open_browser_auth');
       setAuthStatus('Please complete authentication in your browser...');
+      
+      // Start polling for authentication completion
+      startAuthPolling();
     } catch (error) {
       console.error('Failed to open browser:', error);
       setAuthStatus('Failed to open browser for authentication');
       setIsLoading(false);
     }
+  };
+
+  const startAuthPolling = () => {
+    // Start listening for deep link auth callbacks
+    setAuthStatus('Waiting for authentication...');
   };
 
   return (
