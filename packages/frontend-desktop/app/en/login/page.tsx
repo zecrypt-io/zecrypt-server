@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 // Force dynamic rendering to avoid static generation issues
 export const dynamic = 'force-dynamic';
 
-export default function DesktopLoginPage() {
+function DesktopLoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [authStatus, setAuthStatus] = useState('');
@@ -138,5 +138,20 @@ export default function DesktopLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DesktopLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+          <p className="mt-4 text-sm text-gray-600">Loading…</p>
+        </div>
+      }
+    >
+      <DesktopLoginPageInner />
+    </Suspense>
   );
 }

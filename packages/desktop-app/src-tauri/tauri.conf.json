@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.zecrypt.desktop",
   "build": {
-    "frontendDist": "../frontend-desktop/out",
+    "frontendDist": "../../frontend-desktop/out",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "pnpm --prefix ../frontend-desktop dev",
     "beforeBuildCommand": "pnpm --prefix ../frontend-desktop build"
