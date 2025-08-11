@@ -2,19 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { offlineDataStore } from '@/libs/offline-data-store';
 
 // Simple client-side routing for desktop app
 export default function RootPage() {
   const router = useRouter();
   
   useEffect(() => {
-    // Initialize sample offline data on first load
-    try {
-      offlineDataStore.initializeSampleData();
-    } catch (e) {
-      console.warn('Failed to initialize sample data', e);
-    }
     // For desktop app, go directly to simple login
     router.replace('/simple-login');
   }, [router]);

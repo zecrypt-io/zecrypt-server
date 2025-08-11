@@ -8,12 +8,20 @@ export interface Workspace {
   createdAt: string;
 }
 
+export interface ProjectFeatureState {
+  enabled: boolean;
+  is_client_side_encryption: boolean;
+}
+
 export interface Project {
   id: string;
   workspaceId: string;
   name: string;
   description?: string;
   createdAt: string;
+  color?: string;
+  isDefault?: boolean;
+  features?: Record<string, ProjectFeatureState>;
 }
 
 export interface WalletPhrase {
@@ -247,7 +255,13 @@ class OfflineDataStore {
       const sampleProject = this.createProject({
         workspaceId: sampleWorkspace.id,
         name: 'Personal Accounts',
-        description: 'Personal login credentials and accounts'
+        description: 'Personal login credentials and accounts',
+        color: '#4f46e5',
+        isDefault: true,
+        features: {
+          login: { enabled: true, is_client_side_encryption: false },
+          identity: { enabled: true, is_client_side_encryption: false },
+        }
       });
 
       this.createAccount({

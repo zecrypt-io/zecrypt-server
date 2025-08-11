@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { Switch } from "@/components/ui/switch";
+import { offlineDataStore } from "@/libs/offline-data-store";
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -573,7 +574,70 @@ function EditProjectDialog({ project, workspaceId, onClose }: EditProjectDialogP
 
   const handleSave = async () => {
     if (!accessToken) {
-      setError(translate("authentication_required", "dashboard"));
+      // Offline edit path
+      if (!workspaceId) {
+        setError(translate("no_workspace_selected", "dashboard"));
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Persist offline
+        offlineDataStore.updateProject(project.id, {
+          name: name.trim(),
+          description: description.trim(),
+          color,
+          isDefault,
+          features,
+        });
+
+        const updatedProject = {
+          project_id: project.id,
+          name: name.trim(),
+          lower_name: name.trim().toLowerCase(),
+          description: description.trim(),
+          color,
+          created_by: project.created_by,
+          created_at: project.created_at,
+          updated_at: new Date().toISOString(),
+          is_default: isDefault,
+          workspace_id: workspaceId,
+          features: { ...defaultFeatures, ...(features || {}) },
+        };
+
+        dispatch(
+          updateProject({
+            workspaceId,
+            project: updatedProject,
+          })
+        );
+
+        if (isDefault) {
+          const currentProjects = (workspaces
+            .find((ws) => ws.workspaceId === workspaceId)
+            ?.projects.filter((p) => p.project_id !== project.id && p.is_default) || []);
+
+          for (const otherProject of currentProjects) {
+            dispatch(
+              updateProject({
+                workspaceId,
+                project: { ...otherProject, is_default: false },
+              })
+            );
+            offlineDataStore.updateProject(otherProject.project_id, { isDefault: false });
+          }
+        }
+
+        document.dispatchEvent(new CustomEvent("project-updated"));
+        onClose();
+      } catch (err: any) {
+        console.error("EditProject offline error:", err);
+        setError(translate("error_updating_project", "dashboard"));
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
     if (!workspaceId) {
@@ -831,7 +895,77 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
 
   const handleCreate = async () => {
     if (!accessToken) {
-      setError(translate("authentication_required", "dashboard"));
+      // Offline create path
+      if (!workspaceId) {
+        setError(translate("no_workspace_selected", "dashboard"));
+        return;
+      }
+      if (!name.trim()) {
+        setError(translate("project_name_required", "dashboard"));
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const trimmedDescription = description.trim();
+
+        const offlineProject = offlineDataStore.createProject({
+          workspaceId,
+          name: name.trim(),
+          description: trimmedDescription,
+          color,
+          isDefault,
+          features,
+        });
+
+        const newProject = {
+          project_id: offlineProject.id,
+          name: offlineProject.name,
+          lower_name: offlineProject.name.toLowerCase(),
+          description: offlineProject.description || "",
+          color: offlineProject.color || color,
+          created_by: "offline",
+          created_at: offlineProject.createdAt,
+          updated_at: offlineProject.createdAt,
+          is_default: !!offlineProject.isDefault,
+          workspace_id: offlineProject.workspaceId,
+          features: { ...defaultFeatures, ...(offlineProject.features || features) },
+        };
+
+        dispatch(
+          addProject({
+            workspaceId,
+            project: newProject,
+          })
+        );
+
+        if (isDefault) {
+          const currentProjects = (workspaces
+            .find((ws) => ws.workspaceId === workspaceId)
+            ?.projects.filter((p) => p.project_id !== newProject.project_id && p.is_default) || []);
+
+          for (const otherProject of currentProjects) {
+            dispatch(
+              updateProject({
+                workspaceId,
+                project: { ...otherProject, is_default: false },
+              })
+            );
+            offlineDataStore.updateProject(otherProject.project_id, { isDefault: false });
+          }
+        }
+
+        dispatch(setSelectedProject({ projectId: newProject.project_id }));
+        document.dispatchEvent(new CustomEvent("project-updated"));
+        onClose();
+      } catch (err: any) {
+        console.error("CreateProject offline error:", err);
+        setError(translate("error_creating_project", "dashboard"));
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
     if (!workspaceId) {

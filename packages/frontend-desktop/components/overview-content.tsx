@@ -14,6 +14,7 @@ import { log } from "node:console";
 import { ProjectDialog } from "./project-dialog";
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "../libs/encryption";
 import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
+import { offlineDataStore } from "@/libs/offline-data-store";
 
 export function OverviewContent() {
   const user = useUser();
@@ -58,14 +59,81 @@ export function OverviewContent() {
     const fetchData = async () => {
       console.log("fetchData: Starting...");
       if (!accessToken) {
-        console.error("fetchData: No access token available in Redux, returning.");
-        dispatch(
-          setWorkspaceData({
-            workspaces: [],
-            selectedWorkspaceId: null,
-            selectedProjectId: null,
-          })
-        );
+        // OFFLINE MODE: load from local store
+        console.log("fetchData: No access token. Loading offline workspaces/projects.");
+        const existingWorkspaces = offlineDataStore.getWorkspaces();
+        let workspacesState: Workspace[] = [] as any;
+
+        let wsList = existingWorkspaces.length ? existingWorkspaces : offlineDataStore.getWorkspaces();
+        if (wsList.length > 0) {
+          const ws = wsList[0];
+          const projects = offlineDataStore.getProjects(ws.id).map(p => ({
+            project_id: p.id,
+            name: p.name,
+            lower_name: p.name.toLowerCase(),
+            description: p.description || "",
+            color: p.color || "#10b981",
+            created_by: "offline",
+            created_at: p.createdAt,
+            updated_at: p.createdAt,
+            is_default: !!p.isDefault,
+            workspace_id: ws.id,
+            features: (p.features as any) || {},
+          })) as any;
+
+          workspacesState = [
+            {
+              workspaceId: ws.id,
+              name: ws.name,
+              created_by: "offline",
+              created_at: ws.createdAt,
+              updated_at: ws.createdAt,
+              projects,
+            },
+          ] as any;
+
+          const defaultProj = projects.find((p: any) => p.is_default) || projects[0] || null;
+          dispatch(
+            setWorkspaceData({
+              workspaces: workspacesState,
+              selectedWorkspaceId: ws.id,
+              selectedProjectId: defaultProj?.project_id || null,
+            })
+          );
+
+          // Show create dialog if no projects
+          if (!projects.length) {
+            setForceCreateProject(true);
+            setShowProjectDialog(true);
+          }
+        } else {
+          // No workspace at all: create a local workspace so project can be created
+          const newWorkspace = offlineDataStore.createWorkspace({
+            name: 'Personal Workspace',
+            description: 'Local workspace',
+          });
+
+          const workspacesState: Workspace[] = [
+            {
+              workspaceId: newWorkspace.id,
+              name: newWorkspace.name,
+              created_by: 'offline',
+              created_at: newWorkspace.createdAt,
+              updated_at: newWorkspace.createdAt,
+              projects: [],
+            },
+          ] as any;
+
+          dispatch(
+            setWorkspaceData({
+              workspaces: workspacesState,
+              selectedWorkspaceId: newWorkspace.id,
+              selectedProjectId: null,
+            })
+          );
+          setForceCreateProject(true);
+          setShowProjectDialog(true);
+        }
         return;
       }
       console.log("fetchData: Access token available.");
