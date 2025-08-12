@@ -12,8 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvCodeEditor } from "@/components/ui/env-code-editor";
 
@@ -69,7 +68,7 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
     }
   }, [open, env]);
 
-  // Load the project key and decrypt environment variables when the component opens
+  // Desktop mode: show raw env data; no decryption
   useEffect(() => {
     let isMounted = true;
     let decryptionTimeout: NodeJS.Timeout | null = null;
@@ -80,71 +79,11 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
       }
       
       decryptionAttemptedRef.current = true;
-      setIsDecrypting(true);
-      
-      // Set a timeout to prevent infinite loading
-      decryptionTimeout = setTimeout(() => {
-        if (isMounted) {
-          setIsDecrypting(false);
-          setData(env.data || "");
-          toast({
-            title: "Error",
-            description: "Decryption timed out. Showing raw data.",
-            variant: "destructive",
-          });
-        }
-      }, 5000); // 5 second timeout
+      setIsDecrypting(false);
       
       try {
-        // Try to get the key from session storage first (faster)
-        const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-        let key = null;
-        
-        if (sessionKey) {
-          key = sessionKey;
-        } else {
-          // If not in session storage, try secure storage
-          key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          
-          // Cache in session storage for faster access
-          if (key) {
-            sessionStorage.setItem(`projectKey_${selectedProjectName}`, key);
-          }
-        }
-        
-        if (!isMounted) {
-          return;
-        }
-        
-        if (key) {
-          setProjectKey(key);
-          
-          // Only attempt decryption if data appears to be encrypted
-          if (env.data && env.data.includes('.')) {
-            try {
-              const decrypted = await decryptDataField(env.data, key);
-              if (!isMounted) return;
-              
-              setData(decrypted);
-            } catch (error) {
-              console.error("Failed to decrypt environment variables:", error);
-              if (!isMounted) return;
-              
-              toast({
-                title: "Error",
-                description: "Failed to decrypt environment variables",
-                variant: "destructive",
-              });
-              setData(env.data);
-            }
-          } else {
-            // Data is not encrypted
-            setData(env.data || "");
-          }
-        } else {
-          // No key found
-          setData(env.data || "");
-        }
+        setProjectKey(null);
+        setData(env.data || "");
       } catch (error) {
         console.error("Error loading project key:", error);
         if (!isMounted) return;
@@ -152,12 +91,7 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
         setProjectKey(null);
         setData(env.data || "");
       } finally {
-        if (isMounted) {
-          setIsDecrypting(false);
-          if (decryptionTimeout) {
-            clearTimeout(decryptionTimeout);
-          }
-        }
+        if (isMounted) { setIsDecrypting(false); }
       }
     };
     
@@ -165,9 +99,6 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
     
     return () => {
       isMounted = false;
-      if (decryptionTimeout) {
-        clearTimeout(decryptionTimeout);
-      }
     };
   }, [open, selectedProjectName, env.data]);
 
@@ -207,21 +138,9 @@ export function EditEnvDialog({ open, onOpenChange, onEnvUpdated, env }: EditEnv
     setError("");
 
     try {
-      let processedData = data;
-      if (projectKey) {
-        try {
-          // Encrypt the environment variables data
-          processedData = await encryptDataField(data, projectKey);
-        } catch (encryptError) {
-          console.error("Failed to encrypt environment variables:", encryptError);
-          // Fallback to unencrypted data
-          processedData = data;
-        }
-      }
-
       const payload = {
         title,
-        data: processedData,
+        data,
         notes: notes || null,
         tags,
       };

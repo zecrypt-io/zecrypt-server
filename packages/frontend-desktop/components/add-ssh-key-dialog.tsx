@@ -12,8 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface SSHKey {
@@ -166,28 +165,7 @@ export function AddSSHKeyDialog({
       // Convert to JSON string
       const jsonData = JSON.stringify(sshKeyData);
       
-      let encryptedData = jsonData;
-
-      // Encrypt if we have a project key
-      if (projectKey) {
-        try {
-          encryptedData = await encryptDataField(jsonData, projectKey);
-          console.log("Data encrypted successfully");
-        } catch (encryptError) {
-          console.error("Error encrypting data:", encryptError);
-          toast({
-            title: translate("encryption_error", "ssh_keys", { default: "Encryption Error" }),
-            description: translate("could_not_encrypt_data", "ssh_keys", {
-              default: "Could not encrypt data. Please try again.",
-            }),
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      } else {
-        console.warn("No project key available for encryption");
-      }
+      const encryptedData = jsonData;
 
       // Send to API
       const response = await axiosInstance.post(

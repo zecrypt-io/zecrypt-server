@@ -5,8 +5,7 @@ import axiosInstance from '@/libs/Middleware/axiosInstace';
 import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
-import { decryptAccountData, encryptAccountData } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/local-storage-utils';
+import { decryptAccountData } from '@/libs/encryption';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
 
 export interface Note {
@@ -75,22 +74,8 @@ export function useNoteManagement({
     let decryptedContent = "";
     try {
       if (note.data) {
-        const currentProject = workspaces
-          .find(ws => ws.workspaceId === selectedWorkspaceId)
-          ?.projects.find(p => p.project_id === selectedProjectId);
-        if (!currentProject) throw new Error("Project not found");
-        const projectKeyName = `projectKey_${currentProject.name}`;
-        const projectAesKey = await secureGetItem(projectKeyName);
-        if (!projectAesKey) throw new Error("Project encryption key not found");
-        try {
-          decryptedContent = await decryptAccountData(note.data, projectAesKey);
-        } catch (decryptError) {
-          try {
-            decryptedContent = JSON.parse(note.data);
-          } catch (parseError) {
-            decryptedContent = note.data;
-          }
-        }
+        // Desktop local mode: store plain content
+        decryptedContent = note.data;
       }
     } catch (error) {
       decryptedContent = note.data;
@@ -200,15 +185,7 @@ export function useNoteManagement({
       return;
     }
     try {
-      const currentProject = workspaces
-        .find(ws => ws.workspaceId === selectedWorkspaceId)
-        ?.projects.find(p => p.project_id === selectedProjectId);
-      if (!currentProject) throw new Error("Project not found");
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      if (!projectAesKey) throw new Error("Project encryption key not found");
-      const encryptedData = await encryptAccountData(note.data, projectAesKey);
-      const payload = { title: note.title, data: encryptedData, tags: note.tags || [] };
+      const payload = { title: note.title, data: note.data, tags: note.tags || [] };
       const response = await axiosInstance.post(`/${selectedWorkspaceId}/${selectedProjectId}/notes`, payload);
       if (response.status === 200 || response.status === 201) {
         fetchNotes();
@@ -227,15 +204,7 @@ export function useNoteManagement({
       return;
     }
     try {
-      const currentProject = workspaces
-        .find(ws => ws.workspaceId === selectedWorkspaceId)
-        ?.projects.find(p => p.project_id === selectedProjectId);
-      if (!currentProject) throw new Error("Project not found");
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      if (!projectAesKey) throw new Error("Project encryption key not found");
-      const encryptedData = await encryptAccountData(note.data, projectAesKey);
-      const payload = { title: note.title, data: encryptedData, tags: note.tags || [] };
+      const payload = { title: note.title, data: note.data, tags: note.tags || [] };
       const response = await axiosInstance.put(`/${selectedWorkspaceId}/${selectedProjectId}/notes/${doc_id}`, payload);
       if (response.status === 200) {
         fetchNotes();

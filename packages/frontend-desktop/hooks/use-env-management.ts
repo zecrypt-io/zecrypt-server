@@ -8,7 +8,6 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
-import { decryptDataField } from "@/libs/encryption";
 import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 
 interface EnvFromAPI {
@@ -80,27 +79,8 @@ export function useEnvManagement({
     return project?.name || null;
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
   
-  // Load the project key once when component mounts or project changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (selectedProjectName) {
-        try {
-          console.log("Loading project key for project:", selectedProjectName);
-          // Use project name to get encryption key
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      } else {
-        setProjectKey(null);
-      }
-    };
-    
-    loadProjectKey();
-  }, [selectedProjectName]);
+  // Desktop mode: don't load encryption key
+  useEffect(() => { setProjectKey(null); }, [selectedProjectName]);
 
   const fetchEnvs = useCallback(async () => {
     if (!selectedWorkspaceId || !selectedProjectId) {
@@ -122,38 +102,10 @@ export function useEnvManagement({
       if (response.status === 200 && response.data?.data) {
         const fetchedEnvs: EnvFromAPI[] = response.data.data;
         
-        // Try to get or verify project key if not already available
-        let effectiveProjectKey = projectKey;
-        if (!effectiveProjectKey && selectedProjectName) {
-          try {
-            const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-            if (rawProjectKey) {
-              effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-            }
-          } catch (error) {
-            console.error("Failed to get project key directly:", error);
-          }
-        }
-        
-        // Process env variables for metadata
-        let processedEnvs = fetchedEnvs;
-        
-        if (effectiveProjectKey) {
-          // We're just preserving metadata here - actual decryption happens in the UI components
-          processedEnvs = fetchedEnvs.map(env => {
-            if (env.data && env.data.includes('.')) {
-              return {
-                ...env,
-                raw_data: env.data, // Store original encrypted data
-              };
-            }
-            return env;
-          });
-        }
-        
-        setAllEnvs(processedEnvs);
+        // Desktop mode: passthrough
+        setAllEnvs(fetchedEnvs);
 
-        let processed = [...processedEnvs];
+        let processed = [...fetchedEnvs];
 
         // Apply search if there's a query
         if (searchQuery.trim()) {

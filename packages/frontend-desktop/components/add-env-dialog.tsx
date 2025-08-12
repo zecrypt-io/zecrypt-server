@@ -12,8 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvCodeEditor } from "@/components/ui/env-code-editor";
 
@@ -60,51 +59,7 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
     }
   }, [open]);
 
-  // Load the project key when the component opens or when project changes
-  useEffect(() => {
-    let isMounted = true;
-    
-    const loadProjectKey = async () => {
-      if (!open || !selectedProjectName || keyLoadAttemptedRef.current) {
-        return;
-      }
-      
-      keyLoadAttemptedRef.current = true;
-      
-      try {
-        // Try session storage first (faster)
-        const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-        let key = null;
-        
-        if (sessionKey) {
-          key = sessionKey;
-        } else {
-          // If not in session storage, try secure storage
-          key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          
-          // Cache in session storage for faster access
-          if (key) {
-            sessionStorage.setItem(`projectKey_${selectedProjectName}`, key);
-          }
-        }
-        
-        if (isMounted) {
-          setProjectKey(key);
-        }
-      } catch (error) {
-        console.error("Error loading project key:", error);
-        if (isMounted) {
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [open, selectedProjectName]);
+  useEffect(() => { setProjectKey(null); }, [open, selectedProjectName]);
 
   // Safely get translation with fallback
   const safeTranslate = (key: string, namespace: string, options?: any) => {
@@ -142,41 +97,7 @@ export function AddEnvDialog({ open, onOpenChange, onEnvAdded }: AddEnvDialogPro
     setError("");
 
     try {
-      // Use the project key we already have in state if available
-      let effectiveProjectKey = projectKey;
-      
-      // If not in state, try session storage (faster)
-      if (!effectiveProjectKey && selectedProjectName) {
-        const sessionKey = sessionStorage.getItem(`projectKey_${selectedProjectName}`);
-        if (sessionKey) {
-          effectiveProjectKey = sessionKey;
-        } else {
-          // Last resort: try localStorage
-          try {
-            const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-            if (rawProjectKey) {
-              effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-              // Cache for future use
-              if (effectiveProjectKey) {
-                sessionStorage.setItem(`projectKey_${selectedProjectName}`, effectiveProjectKey);
-              }
-            }
-          } catch (error) {
-            console.error("Failed to get project key:", error);
-          }
-        }
-      }
-      
-      let processedData = data;
-      if (effectiveProjectKey) {
-        try {
-          // Encrypt the environment variables data
-          processedData = await encryptDataField(data, effectiveProjectKey);
-        } catch (encryptError) {
-          console.error("Encryption failed:", encryptError);
-          processedData = data; // Fallback to unencrypted data
-        }
-      }
+      const processedData = data;
       
       const payload = {
         title,

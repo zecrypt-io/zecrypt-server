@@ -12,8 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { encryptAccountData, decryptAccountData } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+import { decryptAccountData } from "@/libs/encryption";
 
 interface Account {
   doc_id: string;
@@ -61,17 +60,17 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
           throw new Error("Project not found");
         }
 
-        // Get the project's AES key from session storage
-        const projectKeyName = `projectKey_${currentProject.name}`;
-        const projectAesKey = await secureGetItem(projectKeyName);
-        
-        if (!projectAesKey) {
-          throw new Error("Project encryption key not found");
-        }
-
-        // Try to decrypt the data field using the project's AES key
+        // Try to parse directly first (no encryption in desktop mode)
         try {
-          const decryptedData = await decryptAccountData(account.data, projectAesKey);
+          const parsedData = JSON.parse(account.data);
+          if (parsedData && typeof parsedData === 'object' && 'username' in parsedData && 'password' in parsedData) {
+            return parsedData;
+          }
+        } catch {}
+
+        // Fallback: attempt legacy decrypt path if needed
+        try {
+          const decryptedData = await decryptAccountData(account.data as string, '');
           // If decryption succeeds, parse the JSON
           const parsedData = JSON.parse(decryptedData);
           if (parsedData && typeof parsedData === 'object' && 'username' in parsedData && 'password' in parsedData) {
@@ -183,18 +182,10 @@ export function EditAccountDialog({ account, onClose, onAccountUpdated }: EditAc
       // Convert credentials object to JSON string
       const credentialsString = JSON.stringify(credentials);
 
-      // Get the project's AES key from session storage
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      
-      if (!projectAesKey) {
-        throw new Error(translate("encryption_key_not_found", "accounts"));
-      }
+      // Desktop mode: store plain JSON (no encryption for now)
+      const encryptedDataString = credentialsString;
 
-      // Encrypt the credentials string using the project's AES key
-      const encryptedDataString = await encryptAccountData(credentialsString, projectAesKey);
-
-      // Create payload with encrypted data
+      // Create payload with unencrypted data
       const payload = {
         title: name,
         data: encryptedDataString,

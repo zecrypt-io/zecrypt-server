@@ -9,8 +9,6 @@ import { ChevronDown, Eye, EyeOff, X, Plus, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { encryptAccountData } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface AddAccountDialogProps {
   open: boolean;
@@ -69,36 +67,14 @@ export function AddAccountDialog({ open, onOpenChange, onClose, onAccountAdded, 
     setError("");
 
     try {
-      const currentProject = workspaces
-        .find(ws => ws.workspaceId === selectedWorkspaceId)
-        ?.projects.find(p => p.project_id === selectedProjectId);
-      
-      if (!currentProject) {
-        throw new Error(translate("project_not_found", "accounts"));
-      }
-
-      const credentials = {
-        username: username || "",
-        password: password
-      };
-
-      const credentialsString = JSON.stringify(credentials);
-
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      
-      if (!projectAesKey) {
-        throw new Error(translate("encryption_key_not_found", "accounts"));
-      }
-
-      const encryptedDataString = await encryptAccountData(credentialsString, projectAesKey);
-
+      // Bypass encryption for desktop local mode
+      const credentials = { username: username || "", password };
       const payload = {
         title: name,
-        data: encryptedDataString,
+        data: JSON.stringify(credentials),
         url: website || null,
         tags,
-        notes: notes || null
+        notes: notes || null,
       };
 
       const response = await axiosInstance.post(

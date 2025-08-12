@@ -20,6 +20,7 @@ export const DASHBOARD_ROUTES = {
   NOTIFICATIONS: '/dashboard/notifications',
   USER_SETTINGS: '/dashboard/user-settings',
   API_KEYS: '/dashboard/api-keys',
+  ENVIRONMENTS: '/dashboard/environments',
   WORKSPACE_MANAGEMENT: '/dashboard/workspace-management',
   FAVOURITES: '/dashboard/favourites',
   SHARED: '/dashboard/shared',

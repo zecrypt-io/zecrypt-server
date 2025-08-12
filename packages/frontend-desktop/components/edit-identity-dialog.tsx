@@ -13,8 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 
 interface Identity {
   doc_id: string;
@@ -161,38 +160,9 @@ export function EditIdentityDialog({
         return;
       }
 
-      // Get the project's AES key from session storage
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      
-      if (!projectAesKey) {
-        toast({
-          title: translate("error", "actions"),
-          description: translate("encryption_key_not_found", "identity", { default: "Encryption key not found" }),
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Encrypt the data
-      let encryptedData;
-      try {
-        encryptedData = await encryptDataField(JSON.stringify(dataToEncrypt), projectAesKey);
-      } catch (encryptError) {
-        console.error("Failed to encrypt identity data:", encryptError);
-        toast({
-          title: translate("error", "actions"),
-          description: translate("encryption_failed", "identity", { default: "Failed to encrypt identity data" }),
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       const payload = {
         title,
-        data: encryptedData,
+        data: JSON.stringify(dataToEncrypt),
         notes: notes || null,
         tags: tags.length > 0 ? tags : undefined,
       };

@@ -13,9 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { hashData } from "@/libs/crypto";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -87,24 +85,7 @@ export function AddPassphraseDialog({
     return project?.name || null;
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
-  // Load the project key once when the dialog opens or project changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (open && selectedProjectName) {
-        try {
-          console.log("Loading project key for wallet passphrase:", selectedProjectName);
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-  }, [open, selectedProjectName]);
+  useEffect(() => { setProjectKey(null); }, [open, selectedProjectName]);
 
   // Add cleanup effect when dialog closes
   useEffect(() => {
@@ -226,46 +207,9 @@ export function AddPassphraseDialog({
     setError("");
 
     try {
-      // Try to get a project key if we don't have one
-      let effectiveProjectKey = projectKey;
-      if (!effectiveProjectKey && selectedProjectName) {
-        try {
-          console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
-          
-          // Try to decrypt it if found
-          if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
-          }
-        } catch (error) {
-          console.error("Failed to get project key directly:", error);
-        }
-      }
-      
-      // Process the data - encrypt if we have a project key
-      let processedData = data;
-      if (effectiveProjectKey) {
-        try {
-          // Create a JSON object with both passphrase and wallet address
-          const passphraseObject = { 
-            passphrase: data,
-            wallet_address: walletAddress 
-          };
-          const passphraseJson = JSON.stringify(passphraseObject);
-          console.log("Passphrase JSON prepared:", passphraseJson);
-          
-          processedData = await encryptDataField(passphraseJson, effectiveProjectKey);
-          console.log("Data encrypted successfully");
-        } catch (encryptError) {
-          console.error("Encryption failed:", encryptError);
-          // Fallback to plaintext if encryption fails
-          processedData = data;
-        }
-      } else {
-        console.warn("No encryption key found for project, storing passphrase unencrypted");
-      }
+      // Desktop mode: keep plain JSON data
+      const passphraseJson = JSON.stringify({ passphrase: data, wallet_address: walletAddress });
+      const processedData = passphraseJson;
 
       const payload = {
         title,

@@ -12,9 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { hashData } from "@/libs/crypto";
-import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
+import { decryptDataField } from "@/libs/encryption";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ApiKey {
@@ -65,25 +63,8 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
 
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
-  // Load project key once
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (open && selectedProjectName) {
-        try {
-          console.log("Loading project key for project:", selectedProjectName);
-          // Use project name to get encryption key
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-  }, [open, selectedProjectName]);
+  // Desktop mode: no project key loading
+  useEffect(() => { setProjectKey(null); }, [open, selectedProjectName]);
 
   // Handle decryption when apiKey changes or projectKey is loaded
   useEffect(() => {
@@ -97,24 +78,7 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
         setOriginalData(apiKey.data);
 
         // Try to decrypt the API key if it appears to be encrypted
-        if (apiKey.data && apiKey.data.includes('.') && projectKey) {
-          try {
-            const decrypted = await decryptDataField(apiKey.data, projectKey);
-            try {
-              // Try to parse as JSON
-              const apiKeyObject = JSON.parse(decrypted);
-              setData(apiKeyObject.key);
-            } catch (e) {
-              // If not valid JSON, use raw decrypted value
-              setData(decrypted);
-            }
-          } catch (error) {
-            console.error("Failed to decrypt API key:", error);
-            setData(apiKey.data);
-          }
-        } else {
-          setData(apiKey.data);
-        }
+        setData(apiKey.data);
       }
     };
     
@@ -165,29 +129,7 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
         const apiKeyObject = { key: data };
         const apiKeyJson = JSON.stringify(apiKeyObject);
         
-        // Try direct access if project key not in state
-        let effectiveProjectKey = projectKey;
-        if (!effectiveProjectKey && selectedProjectName) {
-          console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
-          
-          // Try to decrypt it if found
-          if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
-          }
-        }
-        
-        if (effectiveProjectKey) {
-          console.log("Encrypting API key data with project key");
-          // Encrypt the API key data
-          payload.data = await encryptDataField(apiKeyJson, effectiveProjectKey);
-          console.log("Data encrypted successfully:", payload.data);
-        } else {
-          console.warn("No encryption key found for project, storing API key unencrypted");
-          payload.data = data;
-        }
+        payload.data = data;
       }
 
       const response = await axiosInstance.put(

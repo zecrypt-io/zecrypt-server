@@ -20,8 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// import { encryptDataField } from "@/libs/encryption"; // Encryption disabled for desktop
+// import { secureGetItem } from "@/libs/local-storage-utils"; // Encryption disabled for desktop
 
 interface AddLicenseDialogProps {
   isOpen: boolean;
@@ -40,8 +40,7 @@ export function AddLicenseDialog({ isOpen, onClose, projectId, refetchLicenses }
   const [tags, setTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   
-  // Get project info for encryption
-  const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
+  // No encryption in desktop mode
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
 
   const resetForm = () => {
@@ -69,66 +68,45 @@ export function AddLicenseDialog({ isOpen, onClose, projectId, refetchLicenses }
     e.preventDefault();
     setSubmitting(true);
 
+    if (!selectedWorkspaceId || !projectId) {
+      toast({
+        title: translate("common.error"),
+        description: "Workspace or project not selected.",
+        variant: "destructive",
+      });
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      // Find current project for encryption
-      const currentProject = workspaces
-        .find(ws => ws.workspaceId === selectedWorkspaceId)
-        ?.projects.find(p => p.project_id === projectId);
-      
-      if (!currentProject) {
-        toast({
-          title: translate("common.error"),
-          description: translate("licenses.project_not_found"),
-          variant: "destructive"
-        });
-        setSubmitting(false);
-        return;
-      }
+      // Desktop mode: store data as plain JSON, no encryption
+      const licenseData = { license_key: licenseKey };
 
-      // Get project encryption key
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      
-      if (!projectAesKey) {
-        toast({
-          title: translate("common.error"),
-          description: translate("licenses.encryption_key_not_found"),
-          variant: "destructive"
-        });
-        setSubmitting(false);
-        return;
-      }
-
-      // Prepare data field with sensitive information and encrypt it
-      const licenseData = JSON.stringify({ license_key: licenseKey });
-      const encryptedData = await encryptDataField(licenseData, projectAesKey);
-
-      // Create license payload with encrypted data
       const payload = {
         title,
-        data: encryptedData,
+        data: JSON.stringify(licenseData),
         notes: notes.trim() || null,
         tags: tags.length ? tags : null,
         expires_at: expiryDate || null,
-        project_id: projectId
+        project_id: projectId,
       };
 
       await axiosInstance.post(`/${selectedWorkspaceId}/${projectId}/licenses`, payload);
-      
+
       toast({
         title: translate("common.success"),
-        description: translate("licenses.license_added_successfully")
+        description: translate("licenses.license_added_successfully"),
       });
-      
+
       resetForm();
       onClose();
-      refetchLicenses();
+      await refetchLicenses(); // Ensure refetch is awaited
     } catch (error) {
       console.error("Error adding license:", error);
       toast({
         title: translate("common.error"),
-        description: translate("licenses.encryption_failed"),
-        variant: "destructive"
+        description: translate("licenses.failed_to_add_license"),
+        variant: "destructive",
       });
     } finally {
       setSubmitting(false);

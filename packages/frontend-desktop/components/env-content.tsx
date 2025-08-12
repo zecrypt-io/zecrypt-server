@@ -38,7 +38,6 @@ import { AddEnvDialog } from "./add-env-dialog";
 import { EditEnvDialog } from "./edit-env-dialog";
 import { SortButton } from "@/components/ui/sort-button";
 import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
-import { decryptDataField } from "@/libs/encryption";
 import { EnvCodeEditor } from "@/components/ui/env-code-editor";
 import { formatDate } from "@/libs/utils";
 
@@ -107,25 +106,8 @@ export function EnvContent() {
     initialItemsPerPage: 5,
   });
 
-  // Load the project key once when selectedProjectName changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (selectedProjectName) {
-        try {
-          // Use project name to get encryption key
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      } else {
-        setProjectKey(null);
-      }
-    };
-    
-    loadProjectKey();
-  }, [selectedProjectName]);
+  // Desktop mode: no encryption key
+  useEffect(() => { setProjectKey(null); }, [selectedProjectName]);
 
   const handleAddEnv = () => {
     setShowAddEnv(true);
@@ -168,45 +150,8 @@ export function EnvContent() {
       return;
     }
     
-    // Otherwise decrypt it
-    let effectiveProjectKey = projectKey;
-    if (!effectiveProjectKey && selectedProjectName) {
-      try {
-        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-        if (rawProjectKey) {
-          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-        }
-      } catch (error) {
-        console.error("Failed to get project key directly:", error);
-      }
-    }
-    
-    if (latestEnv.data && latestEnv.data.includes('.') && effectiveProjectKey) {
-      try {
-        const decrypted = await decryptDataField(latestEnv.data, effectiveProjectKey);
-        setDecryptedEnvs(prev => ({ ...prev, [latestEnv.doc_id]: decrypted }));
-        setViewingEnv({
-          title: latestEnv.title,
-          data: decrypted
-        });
-      } catch (error) {
-        console.error("Failed to decrypt environment variables:", error);
-        toast({
-          title: translate("error", "actions"),
-          description: translate("failed_to_decrypt", "env", { default: "Failed to decrypt environment variables" }),
-          variant: "destructive",
-        });
-        setViewingEnv({
-          title: latestEnv.title,
-          data: latestEnv.data
-        });
-      }
-    } else {
-      setViewingEnv({
-        title: latestEnv.title,
-        data: latestEnv.data
-      });
-    }
+    // Desktop mode: view as-is
+    setViewingEnv({ title: latestEnv.title, data: latestEnv.data });
     
     setCodeEditorOpen(true);
   };
@@ -215,34 +160,7 @@ export function EnvContent() {
     async (doc_id: string, field: string, value: string) => {
       let textToCopy = value;
       
-      if (field === "data") {
-        if (decryptedEnvs[doc_id]) {
-          textToCopy = decryptedEnvs[doc_id];
-        } else if (value.includes('.')) {
-          let effectiveProjectKey = projectKey;
-          if (!effectiveProjectKey && selectedProjectName) {
-            try {
-              const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-              if (rawProjectKey) {
-                effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-              }
-            } catch (error) {
-              console.error("Failed to get project key directly:", error);
-            }
-          }
-          
-          if (effectiveProjectKey) {
-            try {
-              const decrypted = await decryptDataField(value, effectiveProjectKey);
-              textToCopy = decrypted;
-              setDecryptedEnvs(prev => ({ ...prev, [doc_id]: decrypted }));
-            } catch (error) {
-              console.error("Failed to decrypt environment variables for copying:", error);
-              textToCopy = value;
-            }
-          }
-        }
-      }
+      // Desktop mode: copy raw value
       
       try {
         await navigator.clipboard.writeText(textToCopy);

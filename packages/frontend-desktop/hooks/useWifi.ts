@@ -6,8 +6,7 @@ import { RootState } from "@/libs/Redux/store";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "../libs/Middleware/axiosInstace";
-import { decryptDataField } from "../libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import React from "react";
 import { sortItems, SortConfig } from "@/libs/utils";
 
@@ -82,64 +81,7 @@ export function useWifi({
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
 
   // Process Wi-Fi network data - decrypt passwords where needed
-  const processWifiData = useCallback(async (network: WifiNetwork): Promise<WifiNetwork> => {
-    try {
-      // If the data field doesn't exist or isn't a string, return the network as is
-      if (!network.data || typeof network.data !== 'string') {
-        return network;
-      }
-
-      // Try to determine if this is an encrypted password (has the format iv.encryptedData)
-      const isEncrypted = network.data.includes('.') && network.data.split('.').length === 2;
-
-      if (isEncrypted) {
-        try {
-          // Find the current project
-          const currentProject = workspaces
-            .find(ws => ws.workspaceId === selectedWorkspaceId)
-            ?.projects.find(p => p.project_id === selectedProjectId);
-          
-          if (!currentProject) {
-            throw new Error("Project not found");
-          }
-          
-          // Get the project's AES key from session storage
-          const projectKeyName = `projectKey_${currentProject.name}`;
-          const projectAesKey = await secureGetItem(projectKeyName);
-          
-          if (!projectAesKey) {
-            throw new Error("Project encryption key not found");
-          }
-          
-          // Decrypt the data field
-          const decryptedData = await decryptDataField(network.data, projectAesKey);
-          
-          // Parse the JSON to get the WiFi password
-          try {
-            const parsedData = JSON.parse(decryptedData);
-            if (parsedData && typeof parsedData === 'object' && parsedData["wifi-password"]) {
-              return {
-                ...network,
-                data: parsedData["wifi-password"]
-              };
-            }
-          } catch (parseError) {
-            console.error("Error parsing decrypted Wi-Fi data:", parseError);
-          }
-        } catch (decryptError) {
-          console.error("Error decrypting Wi-Fi data:", decryptError);
-          // If decryption fails, return the network as is - the data might be in the old format
-        }
-      }
-      
-      // If we reached here, either it wasn't encrypted or decryption failed
-      // In both cases, return the original network
-      return network;
-    } catch (error) {
-      console.error("Error processing Wi-Fi data:", error);
-      return network;
-    }
-  }, [selectedWorkspaceId, selectedProjectId, workspaces]);
+  const processWifiData = useCallback(async (network: WifiNetwork): Promise<WifiNetwork> => network, []);
 
   // Using a ref to track if the initial fetch was performed
   const initialFetchPerformed = React.useRef(false);

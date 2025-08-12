@@ -12,9 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { hashData } from "@/libs/crypto";
-import { encryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
+// encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface AddApiKeyProps {
@@ -47,25 +45,7 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
     return project?.name || null;
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
-  // Load the project key when the component opens or when project changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (open && selectedProjectName) {
-        try {
-          console.log("Loading project key for project:", selectedProjectName);
-          // Use project name instead of ID to get the key
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-  }, [open, selectedProjectName]);
+  useEffect(() => { setProjectKey(null); }, [open, selectedProjectName]);
 
   const predefinedTags = ["admin", "public", "read", "write", "delete"];
 
@@ -108,34 +88,7 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
       // Get the current project keys from storage
       console.log("All localStorage keys:", Object.keys(localStorage));
       
-      // Direct access to localStorage key - using project name
-      let effectiveProjectKey = projectKey;
-      if (!effectiveProjectKey && selectedProjectName) {
-        console.log("Project key not found in state, trying to load directly");
-        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
-        console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
-        
-        // Try to decrypt it if found
-        if (rawProjectKey) {
-          effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-          console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
-        }
-      }
-      
-      let processedData = data;
-      if (effectiveProjectKey) {
-        console.log("Encrypting API key data with project key");
-        try {
-          // Encrypt the API key data
-          processedData = await encryptDataField(apiKeyJson, effectiveProjectKey);
-          console.log("Data encrypted successfully:", processedData);
-        } catch (encryptError) {
-          console.error("Encryption failed:", encryptError);
-          processedData = data; // Fallback to unencrypted data
-        }
-      } else {
-        console.warn("No encryption key found for project, storing API key unencrypted");
-      }
+      let processedData = data; // Desktop mode: keep plain
 
       console.log("Sending data to server:", processedData);
       
