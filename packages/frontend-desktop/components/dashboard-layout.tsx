@@ -672,27 +672,30 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
             </Tooltip>
           </TooltipProvider>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                <Globe className="h-4 w-4" />
-                <span className="sr-only">Change language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Language</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {sortedLocales.map((loc) => (
-                <DropdownMenuItem
-                  key={loc}
-                  onClick={() => switchLanguage(loc)}
-                  className={loc === currentLocale ? "font-bold bg-accent/50" : ""}
-                >
-                  {languageLabels[loc] || loc}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/** Language switcher temporarily hidden per requirements (keep for later use)
+           *
+           * <DropdownMenu>
+           *   <DropdownMenuTrigger asChild>
+           *     <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+           *       <Globe className="h-4 w-4" />
+           *       <span className="sr-only">Change language</span>
+           *     </Button>
+           *   </DropdownMenuTrigger>
+           *   <DropdownMenuContent align="end">
+           *     <DropdownMenuLabel>Language</DropdownMenuLabel>
+           *     <DropdownMenuSeparator />
+           *     {sortedLocales.map((loc) => (
+           *       <DropdownMenuItem
+           *         key={loc}
+           *         onClick={() => switchLanguage(loc)}
+           *         className={loc === currentLocale ? "font-bold bg-accent/50" : ""}
+           *       >
+           *         {languageLabels[loc] || loc}
+           *       </DropdownMenuItem>
+           *     ))}
+           *   </DropdownMenuContent>
+           * </DropdownMenu>
+           */}
 
           <TooltipProvider>
             <Tooltip>

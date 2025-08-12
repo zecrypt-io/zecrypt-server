@@ -4,7 +4,7 @@
 // - Respects optional namespaces (e.g. useTranslations('auth'))
 
 import enMessages from '@/messages/en/common.json';
-import deMessages from '@/messages/de/common.json';
+// import deMessages from '@/messages/de/common.json'; // Temporarily unused
 
 type MessageCatalog = Record<string, unknown>;
 
@@ -12,7 +12,7 @@ const LOCALE_STORAGE_KEY = 'zecrypt.locale';
 
 const catalogsByLocale: Record<string, MessageCatalog> = {
   en: enMessages as MessageCatalog,
-  de: deMessages as MessageCatalog,
+  // de: deMessages as MessageCatalog,
 };
 
 function getCurrentLocale(): keyof typeof catalogsByLocale {
