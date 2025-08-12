@@ -1,11 +1,60 @@
-// Minimal i18n shim for desktop build without next-intl
-// Provides lightweight fallbacks used by components (useTranslations, useFormatter)
+// Lightweight i18n runtime for the desktop build (no next-intl, static export friendly)
+// - Loads JSON message catalogs at build time
+// - Supports dot-path lookup and simple {var} interpolation
+// - Respects optional namespaces (e.g. useTranslations('auth'))
 
-export function useTranslations() {
-  return (key: string, params?: Record<string, any>) => {
-    if (params && typeof params.default === 'string') return params.default;
-    return key;
-  };
+import enMessages from '@/messages/en/common.json';
+import deMessages from '@/messages/de/common.json';
+
+type MessageCatalog = Record<string, unknown>;
+
+const LOCALE_STORAGE_KEY = 'zecrypt.locale';
+
+const catalogsByLocale: Record<string, MessageCatalog> = {
+  en: enMessages as MessageCatalog,
+  de: deMessages as MessageCatalog,
+};
+
+function getCurrentLocale(): keyof typeof catalogsByLocale {
+  if (typeof window === 'undefined') return 'en';
+  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  return (stored && stored in catalogsByLocale ? stored : 'en') as keyof typeof catalogsByLocale;
+}
+
+export function setCurrentLocale(locale: keyof typeof catalogsByLocale) {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, String(locale));
+  }
+}
+
+function getByPath(obj: unknown, path: string): unknown {
+  if (!obj) return undefined;
+  return path.split('.').reduce<unknown>((acc, segment) => {
+    if (acc && typeof acc === 'object' && segment in (acc as any)) {
+      return (acc as any)[segment];
+    }
+    return undefined;
+  }, obj);
+}
+
+function format(template: string, params?: Record<string, unknown>): string {
+  if (!params) return template;
+  return template.replace(/\{(\w+)\}/g, (_, name: string) => String(params[name] ?? `{${name}}`));
+}
+
+function translateInternal(fullKey: string, params?: Record<string, unknown>): string {
+  if (params && typeof (params as any).default === 'string') return (params as any).default as string;
+  const locale = getCurrentLocale();
+  const catalog = catalogsByLocale[locale] ?? catalogsByLocale.en;
+  const value = getByPath(catalog, fullKey);
+  if (typeof value === 'string') return format(value, params);
+  return fullKey; // fallback to key when missing
+}
+
+// Returns a translator function; when namespace is provided it prefixes keys
+export function useTranslations(namespace?: string) {
+  const prefix = namespace ? `${namespace}.` : '';
+  return (key: string, params?: Record<string, unknown>) => translateInternal(`${prefix}${key}`, params);
 }
 
 export function useFormatter() {

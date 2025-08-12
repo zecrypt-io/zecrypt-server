@@ -1,5 +1,5 @@
 // Offline locale configuration for desktop app
-export const locales = ['en'] as const;
+export const locales = ['en', 'de'] as const;
 export const defaultLocale = 'en';
 
 export type Locale = typeof locales[number];
