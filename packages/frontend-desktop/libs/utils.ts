@@ -204,8 +204,12 @@ export async function logout({
     // 4. Completely clear session storage
     sessionStorage.clear();
     
-    // 5. Completely clear local storage
-    localStorage.clear();
+    // 5. Completely clear settings table (SQLite)
+    try {
+      const { getDb } = await import('./sqlite')
+      const db = await getDb()
+      await db.execute('DELETE FROM settings')
+    } catch {}
     
     // 6. Sign out from Stack auth
     if (user && typeof user.signOut === 'function') {

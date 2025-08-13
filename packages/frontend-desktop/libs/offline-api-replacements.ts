@@ -1,6 +1,6 @@
 'use client';
 
-import { offlineDataStore } from './offline-data-store';
+import { sqliteDataStore as offlineDataStore } from './sqlite-data-store';
 
 // Axios-like response helper
 function axiosResponse<T>(data: T, status: number = 200, delay: number = 50) {
@@ -51,24 +51,24 @@ export const offlineAxiosInstance = {
     console.log('Offline GET request to:', url);
     
     if (url.includes('/workspaces')) {
-      return axiosResponse({ data: offlineDataStore.getWorkspaces() });
+      return axiosResponse({ data: await offlineDataStore.getWorkspaces() });
     }
     
     if (url.includes('/projects')) {
       const workspaceId = extractWorkspaceId(url);
-      return axiosResponse({ data: offlineDataStore.getProjects(workspaceId) });
+      return axiosResponse({ data: await offlineDataStore.getProjects(workspaceId) });
     }
     
     if (url.includes('/accounts')) {
       const projectId = extractProjectId(url);
-      const accounts = offlineDataStore.getAccounts(projectId);
+      const accounts = await offlineDataStore.getAccounts(projectId);
       const mapped = accounts.map(mapLocalAccountToApi);
       return axiosResponse({ data: mapped });
     }
 
       if (url.includes('/wallet-phrases')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getWalletPhrases(projectId).map((w) => ({
+      const items = (await offlineDataStore.getWalletPhrases(projectId)).map((w) => ({
         doc_id: w.id,
         title: w.title,
         lower_title: (w.title || '').toLowerCase(),
@@ -88,7 +88,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/identity')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getIdentities(projectId).map((i: any) => ({
+      const items = (await offlineDataStore.getIdentities(projectId)).map((i: any) => ({
         doc_id: i.id,
         title: i.title,
         lower_name: (i.title || '').toLowerCase(),
@@ -113,7 +113,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/ssh-keys')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getSshKeys(projectId).map((s: any) => ({
+      const items = (await offlineDataStore.getSshKeys(projectId)).map((s: any) => ({
         doc_id: s.id,
         title: s.title || s.name,
         name: s.title || s.name,
@@ -132,7 +132,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/licenses')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getLicenses(projectId).map((l: any) => ({
+      const items = (await offlineDataStore.getLicenses(projectId)).map((l: any) => ({
         doc_id: l.id,
         title: l.title,
         lower_title: (l.title || '').toLowerCase(),
@@ -151,7 +151,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/env')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getEnvs(projectId).map((e: any) => ({
+      const items = (await offlineDataStore.getEnvs(projectId)).map((e: any) => ({
         doc_id: e.id,
         title: e.title,
         lower_title: (e.title || '').toLowerCase(),
@@ -169,7 +169,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/emails')) {
       const projectId = extractProjectId(url);
       // Map local -> API: pack fields into data JSON for parity
-      const items = offlineDataStore.getEmails(projectId).map((e) => ({
+      const items = (await offlineDataStore.getEmails(projectId)).map((e) => ({
         doc_id: e.id,
         title: e.title,
         lower_title: (e.title || '').toLowerCase(),
@@ -197,7 +197,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/cards')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getCards(projectId).map((c) => ({
+      const items = (await offlineDataStore.getCards(projectId)).map((c) => ({
         doc_id: c.id,
         title: c.title,
         lower_name: (c.title || '').toLowerCase(),
@@ -221,7 +221,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/notes')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getNotes(projectId).map((n) => ({
+      const items = (await offlineDataStore.getNotes(projectId)).map((n) => ({
         doc_id: n.id,
         title: n.title,
         data: n.data,
@@ -236,7 +236,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/wifi')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getWifiNetworks(projectId).map((w: any) => ({
+      const items = (await offlineDataStore.getWifiNetworks(projectId)).map((w: any) => ({
         doc_id: w.id,
         title: w.title,
         lower_title: (w.title || '').toLowerCase(),
@@ -254,7 +254,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/api-keys')) {
       const projectId = extractProjectId(url);
-      const items = offlineDataStore.getApiKeys(projectId).map((k: any) => ({
+      const items = (await offlineDataStore.getApiKeys(projectId)).map((k: any) => ({
         doc_id: k.id,
         title: k.title,
         lower_title: (k.title || '').toLowerCase(),
@@ -278,12 +278,12 @@ export const offlineAxiosInstance = {
     console.log('Offline POST request to:', url, body);
     
     if (url.includes('/workspaces')) {
-      const created = offlineDataStore.createWorkspace(body);
+      const created = await offlineDataStore.createWorkspace(body);
       return axiosResponse({ data: created }, 201);
     }
     
     if (url.includes('/projects')) {
-      const created = offlineDataStore.createProject(body);
+      const created = await offlineDataStore.createProject(body);
       return axiosResponse({ data: created }, 201);
     }
     
@@ -299,7 +299,7 @@ export const offlineAxiosInstance = {
           password = parsed?.password || '';
         }
       } catch {}
-      const created = offlineDataStore.createAccount({
+      const created = await offlineDataStore.createAccount({
         projectId: projectId || body.projectId,
         name: body.title || body.name || 'Untitled',
         username,
@@ -317,7 +317,7 @@ export const offlineAxiosInstance = {
       let passphrase = '';
       let wallet_address = '';
       try { const p = JSON.parse(body?.data || '{}'); passphrase = p.passphrase || ''; wallet_address = p.wallet_address || ''; } catch {}
-      const created = offlineDataStore.createWalletPhrase({
+      const created = await offlineDataStore.createWalletPhrase({
         projectId,
         title: body.title || 'Untitled',
         wallet_type: body.wallet_type || 'Other',
@@ -347,7 +347,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url)!;
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const created = offlineDataStore.createIdentity({
+      const created = await offlineDataStore.createIdentity({
         projectId,
         title: body.title || 'Untitled',
         ...parsed,
@@ -361,7 +361,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url)!;
       let ssh_key = '';
       try { const p = JSON.parse(body?.data || '{}'); ssh_key = p.ssh_key || ''; } catch {}
-      const created = offlineDataStore.createSshKey({
+      const created = await offlineDataStore.createSshKey({
         projectId,
         title: body.title || 'Untitled',
         ssh_key,
@@ -375,7 +375,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url)!;
       let license_key = '';
       try { const p = JSON.parse(body?.data || '{}'); license_key = p.license_key || ''; } catch {}
-      const created = offlineDataStore.createLicense({
+      const created = await offlineDataStore.createLicense({
         projectId,
         title: body.title || 'Untitled',
         license_key,
@@ -388,7 +388,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/env')) {
       const projectId = extractProjectId(url)!;
-      const created = offlineDataStore.createEnv({
+      const created = await offlineDataStore.createEnv({
         projectId,
         title: body.title || 'Untitled',
         data: body.data || '',
@@ -403,7 +403,7 @@ export const offlineAxiosInstance = {
       // body: { title, data(json), notes, tags }
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const created = offlineDataStore.createEmail({
+      const created = await offlineDataStore.createEmail({
         projectId: projectId!,
         title: body.title || 'Untitled',
         email_address: parsed.email_address || '',
@@ -437,7 +437,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url);
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const created = offlineDataStore.createCard({
+      const created = await offlineDataStore.createCard({
         projectId: projectId!,
         title: body.title || 'Untitled',
         brand: body.brand || 'other',
@@ -466,7 +466,7 @@ export const offlineAxiosInstance = {
 
     if (url.includes('/notes')) {
       const projectId = extractProjectId(url);
-      const created = offlineDataStore.createNote({
+      const created = await offlineDataStore.createNote({
         projectId: projectId!,
         title: body.title || 'Untitled',
         data: body.data || '',
@@ -488,7 +488,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url)!;
       let password = '';
       try { const p = JSON.parse(body?.data || '{}'); password = p['wifi-password'] || ''; } catch {}
-      const created = offlineDataStore.createWifiNetwork({
+      const created = await offlineDataStore.createWifiNetwork({
         projectId,
         title: body.title,
         security_type: body.security_type,
@@ -506,7 +506,7 @@ export const offlineAxiosInstance = {
       const projectId = extractProjectId(url)!;
       let key = '';
       try { const p = JSON.parse(body?.data || '{}'); key = p['api-key'] || ''; } catch {}
-      const created = offlineDataStore.createApiKey({
+      const created = await offlineDataStore.createApiKey({
         projectId,
         title: body.title,
         key,
@@ -529,12 +529,12 @@ export const offlineAxiosInstance = {
     const id = extractIdFromUrl(url);
     
     if (url.includes('/workspaces')) {
-      const updated = offlineDataStore.updateWorkspace(id, body);
+      const updated = await offlineDataStore.updateWorkspace(id, body);
       return axiosResponse({ data: updated });
     }
     
     if (url.includes('/projects')) {
-      const updated = offlineDataStore.updateProject(id, body);
+      const updated = await offlineDataStore.updateProject(id, body);
       return axiosResponse({ data: updated });
     }
     
@@ -548,7 +548,7 @@ export const offlineAxiosInstance = {
           password = parsed?.password;
         }
       } catch {}
-      const updated = offlineDataStore.updateAccount(id, {
+      const updated = await offlineDataStore.updateAccount(id, {
         name: body.title,
         url: body.url ?? body.website,
         notes: body.notes,
@@ -563,7 +563,7 @@ export const offlineAxiosInstance = {
       let passphrase: string | undefined;
       let wallet_address: string | undefined;
       try { const p = JSON.parse(body?.data || '{}'); passphrase = p.passphrase; wallet_address = p.wallet_address; } catch {}
-      const updated = offlineDataStore.updateWalletPhrase(id, {
+      const updated = await offlineDataStore.updateWalletPhrase(id, {
         title: body.title,
         wallet_type: body.wallet_type,
         ...(passphrase !== undefined ? { passphrase } : {}),
@@ -577,7 +577,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/identity')) {
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const updated = offlineDataStore.updateIdentity(id, {
+      const updated = await offlineDataStore.updateIdentity(id, {
         title: body.title,
         ...parsed,
         notes: body.notes,
@@ -589,7 +589,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/ssh-keys')) {
       let ssh_key: string | undefined;
       try { const p = JSON.parse(body?.data || '{}'); ssh_key = p.ssh_key; } catch {}
-      const updated = offlineDataStore.updateSshKey(id, {
+      const updated = await offlineDataStore.updateSshKey(id, {
         title: body.title,
         ...(ssh_key !== undefined ? { ssh_key } : {}),
         notes: body.notes,
@@ -601,7 +601,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/licenses')) {
       let license_key: string | undefined;
       try { const p = JSON.parse(body?.data || '{}'); license_key = p.license_key; } catch {}
-      const updated = offlineDataStore.updateLicense(id, {
+      const updated = await offlineDataStore.updateLicense(id, {
         title: body.title,
         ...(license_key !== undefined ? { license_key } : {}),
         notes: body.notes,
@@ -612,7 +612,7 @@ export const offlineAxiosInstance = {
     }
 
     if (url.includes('/env')) {
-      const updated = offlineDataStore.updateEnv(id, {
+      const updated = await offlineDataStore.updateEnv(id, {
         title: body.title,
         data: body.data,
         notes: body.notes,
@@ -624,7 +624,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/emails')) {
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const updated = offlineDataStore.updateEmail(id, {
+      const updated = await offlineDataStore.updateEmail(id, {
         title: body.title,
         email_address: parsed.email_address,
         imap_server: parsed.imap_server,
@@ -640,7 +640,7 @@ export const offlineAxiosInstance = {
     if (url.includes('/cards')) {
       let parsed: any = {};
       try { parsed = JSON.parse(body?.data || '{}'); } catch {}
-      const updated = offlineDataStore.updateCard(id, {
+      const updated = await offlineDataStore.updateCard(id, {
         title: body.title,
         brand: body.brand,
         card_holder_name: parsed.card_holder_name,
@@ -655,7 +655,7 @@ export const offlineAxiosInstance = {
     }
 
     if (url.includes('/notes')) {
-      const updated = offlineDataStore.updateNote(id, {
+      const updated = await offlineDataStore.updateNote(id, {
         title: body.title,
         data: body.data,
         tags: body.tags,
@@ -667,7 +667,7 @@ export const offlineAxiosInstance = {
       const id = extractIdFromUrl(url);
       let password: string | undefined;
       try { const p = JSON.parse(body?.data || '{}'); password = p['wifi-password']; } catch {}
-      const updated = offlineDataStore.updateWifiNetwork(id, {
+      const updated = await offlineDataStore.updateWifiNetwork(id, {
         title: body.title,
         security_type: body.security_type,
         ...(password !== undefined ? { password } : {}),
@@ -681,7 +681,7 @@ export const offlineAxiosInstance = {
       const id = extractIdFromUrl(url);
       let key: string | undefined;
       try { const p = JSON.parse(body?.data || '{}'); key = p['api-key']; } catch {}
-      const updated = offlineDataStore.updateApiKey(id, {
+      const updated = await offlineDataStore.updateApiKey(id, {
         title: body.title,
         ...(key !== undefined ? { key } : {}),
         env: body.env,
@@ -700,67 +700,67 @@ export const offlineAxiosInstance = {
     const id = extractIdFromUrl(url);
     
     if (url.includes('/workspaces')) {
-      const success = offlineDataStore.deleteWorkspace(id);
+      const success = await offlineDataStore.deleteWorkspace(id);
       return axiosResponse({ data: { success } });
     }
     
     if (url.includes('/projects')) {
-      const success = offlineDataStore.deleteProject(id);
+      const success = await offlineDataStore.deleteProject(id);
       return axiosResponse({ data: { success } });
     }
     
     if (url.includes('/accounts')) {
-      const success = offlineDataStore.deleteAccount(id);
+      const success = await offlineDataStore.deleteAccount(id);
       return axiosResponse({ data: { success } });
     }
     
     if (url.includes('/wallet-phrases')) {
-      const success = offlineDataStore.deleteWalletPhrase(id);
+      const success = await offlineDataStore.deleteWalletPhrase(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/identity')) {
-      const success = offlineDataStore.deleteIdentity(id);
+      const success = await offlineDataStore.deleteIdentity(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/ssh-keys')) {
-      const success = offlineDataStore.deleteSshKey(id);
+      const success = await offlineDataStore.deleteSshKey(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/licenses')) {
-      const success = offlineDataStore.deleteLicense(id);
+      const success = await offlineDataStore.deleteLicense(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/env')) {
-      const success = offlineDataStore.deleteEnv(id);
+      const success = await offlineDataStore.deleteEnv(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/emails')) {
-      const success = offlineDataStore.deleteEmail(id);
+      const success = await offlineDataStore.deleteEmail(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/cards')) {
-      const success = offlineDataStore.deleteCard(id);
+      const success = await offlineDataStore.deleteCard(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/notes')) {
-      const success = offlineDataStore.deleteNote(id);
+      const success = await offlineDataStore.deleteNote(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/wifi')) {
-      const success = offlineDataStore.deleteWifiNetwork(id);
+      const success = await offlineDataStore.deleteWifiNetwork(id);
       return axiosResponse({ data: { success } });
     }
 
     if (url.includes('/api-keys')) {
-      const success = offlineDataStore.deleteApiKey(id);
+      const success = await offlineDataStore.deleteApiKey(id);
       return axiosResponse({ data: { success } });
     }
 

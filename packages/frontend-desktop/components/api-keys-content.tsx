@@ -175,8 +175,11 @@ export function ApiKeysContent() {
     
     let effectiveProjectKey = projectKey;
     if (!effectiveProjectKey && selectedProjectName) {
-      try {
-        const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          try {
+            const { getDb } = await import('@/libs/sqlite')
+            const db = await getDb()
+            const rows = await db.select('SELECT value FROM settings WHERE key = $1', [`projectKey_${selectedProjectName}`])
+            const rawProjectKey = rows?.[0]?.value as string | undefined
         if (rawProjectKey) {
           effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
         }
@@ -221,7 +224,10 @@ export function ApiKeysContent() {
           let effectiveProjectKey = projectKey;
           if (!effectiveProjectKey && selectedProjectName) {
             try {
-              const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+              const { getDb } = await import('@/libs/sqlite')
+              const db = await getDb()
+              const rows = await db.select('SELECT value FROM settings WHERE key = $1', [`projectKey_${selectedProjectName}`])
+              const rawProjectKey = rows?.[0]?.value as string | undefined
               if (rawProjectKey) {
                 effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
               }

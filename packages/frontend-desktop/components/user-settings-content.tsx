@@ -114,8 +114,8 @@ export function UserSettingsContent() {
       setError(null);
       try {
         // Get access token from Redux or local storage
-        const accessToken = userData?.access_token || 
-          (getStoredUserData()?.access_token);
+        const stored = await getStoredUserData();
+        const accessToken = userData?.access_token || stored?.access_token;
         
         if (!accessToken) {
           console.error("No access token available");
@@ -298,7 +298,8 @@ export function UserSettingsContent() {
 
     try {
       // Get access token from user data in Redux store or local storage
-      const accessToken = userData?.access_token || getStoredUserData()?.access_token;
+      const stored = await getStoredUserData();
+      const accessToken = userData?.access_token || stored?.access_token;
 
       
       if (!accessToken) {

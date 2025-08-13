@@ -174,62 +174,44 @@ export function getProjectKey(projectId: string): string | null {
 }
 
 // Safe localStorage wrapper to handle SSR
-export const saveToLocalStorage = (key: string, value: string) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(key, value);
-  }
+import { getDb } from './sqlite'
+
+export const saveToLocalStorage = async (key: string, value: string) => {
+  const db = await getDb()
+  await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [key, value])
 };
 
 // Save user data to localStorage
-export const saveUserData = (userData: any) => {
-  if (typeof window === 'undefined' || !userData) return;
-  
-  if (userData.access_token) {
-    saveToLocalStorage('zecrypt_access_token', userData.access_token);
-  }
-  
-  if (userData.user_id) {
-    saveToLocalStorage('zecrypt_user_id', userData.user_id);
-  }
-  
-  if (userData.name) {
-    saveToLocalStorage('zecrypt_user_name', userData.name);
-  }
-  
-  if (userData.profile_url) {
-    saveToLocalStorage('zecrypt_profile_url', userData.profile_url);
-  }
-  
-  if (userData.language) {
-    saveToLocalStorage('zecrypt_language', userData.language);
-  }
+export const saveUserData = async (userData: any) => {
+  if (!userData) return;
+  if (userData.access_token) await saveToLocalStorage('zecrypt_access_token', userData.access_token)
+  if (userData.user_id) await saveToLocalStorage('zecrypt_user_id', userData.user_id)
+  if (userData.name) await saveToLocalStorage('zecrypt_user_name', userData.name)
+  if (userData.profile_url) await saveToLocalStorage('zecrypt_profile_url', userData.profile_url)
+  if (userData.language) await saveToLocalStorage('zecrypt_language', userData.language)
 };
 
 // Helper function to get stored user data
-export const getStoredUserData = () => {
-  if (typeof window === 'undefined') return null;
-  
+export const getStoredUserData = async () => {
+  const db = await getDb()
   try {
+    const rows = await db.select('SELECT key, value FROM settings WHERE key IN ("zecrypt_access_token","zecrypt_user_id","zecrypt_user_name","zecrypt_profile_url","zecrypt_language")')
+    const map = new Map<string, string>(rows.map((r: any) => [r.key, r.value]))
     return {
-      access_token: localStorage.getItem('zecrypt_access_token'),
-      user_id: localStorage.getItem('zecrypt_user_id'),
-      name: localStorage.getItem('zecrypt_user_name'),
-      profile_url: localStorage.getItem('zecrypt_profile_url'),
-      language: localStorage.getItem('zecrypt_language')
-    };
+      access_token: map.get('zecrypt_access_token') ?? null,
+      user_id: map.get('zecrypt_user_id') ?? null,
+      name: map.get('zecrypt_user_name') ?? null,
+      profile_url: map.get('zecrypt_profile_url') ?? null,
+      language: map.get('zecrypt_language') ?? null,
+    }
   } catch (err) {
-    console.error('Error reading from localStorage:', err);
-    return null;
+    console.error('Error reading settings from sqlite:', err)
+    return null
   }
 };
 
 // Remove user data from localStorage (for logout)
-export const clearUserData = () => {
-  if (typeof window === 'undefined') return;
-  
-  localStorage.removeItem('zecrypt_access_token');
-  localStorage.removeItem('zecrypt_user_id');
-  localStorage.removeItem('zecrypt_user_name');
-  localStorage.removeItem('zecrypt_profile_url');
-  localStorage.removeItem('zecrypt_language');
-}; 
+export const clearUserData = async () => {
+  const db = await getDb()
+  await db.execute('DELETE FROM settings WHERE key IN ("zecrypt_access_token","zecrypt_user_id","zecrypt_user_name","zecrypt_profile_url","zecrypt_language")')
+};

@@ -55,8 +55,14 @@ export function EncryptionUnlockModal({
     // Clear Redux state
     dispatch(clearUserData());
     
-    // Clear localStorage
-    localStorage.clear();
+    // Clear settings in SQLite and sessionStorage
+    ;(async () => {
+      try {
+        const { getDb } = await import('@/libs/sqlite')
+        const db = await getDb()
+        await db.execute('DELETE FROM settings')
+      } catch {}
+    })()
     sessionStorage.clear();
     
     // Clear cookies

@@ -9,22 +9,27 @@ import enMessages from '@/messages/en/common.json';
 type MessageCatalog = Record<string, unknown>;
 
 const LOCALE_STORAGE_KEY = 'zecrypt.locale';
+import { getDb } from './sqlite'
 
 const catalogsByLocale: Record<string, MessageCatalog> = {
   en: enMessages as MessageCatalog,
   // de: deMessages as MessageCatalog,
 };
 
-function getCurrentLocale(): keyof typeof catalogsByLocale {
-  if (typeof window === 'undefined') return 'en';
-  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return (stored && stored in catalogsByLocale ? stored : 'en') as keyof typeof catalogsByLocale;
+async function getCurrentLocaleAsync(): Promise<keyof typeof catalogsByLocale> {
+  try {
+    const db = await getDb()
+    const rows = await db.select('SELECT value FROM settings WHERE key = $1', [LOCALE_STORAGE_KEY])
+    const stored = rows?.[0]?.value
+    return (stored && stored in catalogsByLocale ? stored : 'en') as keyof typeof catalogsByLocale
+  } catch {
+    return 'en' as keyof typeof catalogsByLocale
+  }
 }
 
-export function setCurrentLocale(locale: keyof typeof catalogsByLocale) {
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, String(locale));
-  }
+export async function setCurrentLocale(locale: keyof typeof catalogsByLocale) {
+  const db = await getDb()
+  await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [LOCALE_STORAGE_KEY, String(locale)])
 }
 
 function getByPath(obj: unknown, path: string): unknown {
@@ -44,8 +49,8 @@ function format(template: string, params?: Record<string, unknown>): string {
 
 function translateInternal(fullKey: string, params?: Record<string, unknown>): string {
   if (params && typeof (params as any).default === 'string') return (params as any).default as string;
-  const locale = getCurrentLocale();
-  const catalog = catalogsByLocale[locale] ?? catalogsByLocale.en;
+  // Synchronously fall back to 'en' to avoid async in render paths
+  const catalog = catalogsByLocale.en;
   const value = getByPath(catalog, fullKey);
   if (typeof value === 'string') return format(value, params);
   return fullKey; // fallback to key when missing

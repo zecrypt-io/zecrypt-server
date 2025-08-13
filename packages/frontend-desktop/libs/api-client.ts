@@ -47,10 +47,12 @@ export async function getUserKeys(): Promise<GetKeyResponse> {
 // API call to update/set user's encryption keys
 export async function updateUserKeys(payload: UpdateKeyPayload): Promise<UpdateKeyResponse> {
   try {
-    // Save the public key to local storage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userPublicKey', payload.public_key);
-    }
+    // Save the public key to settings (SQLite)
+    try {
+      const { getDb } = await import('./sqlite')
+      const db = await getDb()
+      await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', ['userPublicKey', payload.public_key])
+    } catch {}
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';
     // NEXT_PUBLIC_API_URL already contains /api/v1/web, so we only need to append the endpoint name

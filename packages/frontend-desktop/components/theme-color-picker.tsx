@@ -5,6 +5,7 @@ import { Check, Palette } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { getDb } from "@/libs/sqlite"
 
 const themes = [
   { name: "Blue", value: "theme-blue" },
@@ -18,13 +19,21 @@ export function ThemeColorPicker() {
   const [currentTheme, setCurrentTheme] = React.useState("theme-blue")
 
   React.useEffect(() => {
-    // Get the current theme from localStorage or default to blue
-    const savedTheme = localStorage.getItem("color-theme") || "theme-blue"
-    setCurrentTheme(savedTheme)
-
-    // Apply the theme to the document
-    document.documentElement.classList.remove(...themes.map((t) => t.value))
-    document.documentElement.classList.add(savedTheme)
+    ;(async () => {
+      try {
+        const db = await getDb()
+        const rows = await db.select('SELECT value FROM settings WHERE key = $1', ['color-theme'])
+        const savedTheme = (rows?.[0]?.value as string) || 'theme-blue'
+        setCurrentTheme(savedTheme)
+        document.documentElement.classList.remove(...themes.map((t) => t.value))
+        document.documentElement.classList.add(savedTheme)
+      } catch {
+        const fallback = 'theme-blue'
+        setCurrentTheme(fallback)
+        document.documentElement.classList.remove(...themes.map((t) => t.value))
+        document.documentElement.classList.add(fallback)
+      }
+    })()
   }, [])
 
   const setTheme = (theme: string) => {
@@ -32,8 +41,11 @@ export function ThemeColorPicker() {
     document.documentElement.classList.remove(...themes.map((t) => t.value))
     document.documentElement.classList.add(theme)
 
-    // Save to localStorage
-    localStorage.setItem("color-theme", theme)
+    // Save to settings (SQLite)
+    ;(async () => {
+      const db = await getDb()
+      await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', ['color-theme', theme])
+    })()
     setCurrentTheme(theme)
   }
 

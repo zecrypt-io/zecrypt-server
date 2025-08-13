@@ -981,8 +981,11 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
     setError(null);
 
     try {
-      // Get the user's public key from localStorage instead of API
-      const userPublicKey = localStorage.getItem('userPublicKey');
+      // Get the user's public key from settings instead of localStorage
+      const { getDb } = await import('@/libs/sqlite')
+      const db = await getDb()
+      const rows = await db.select('SELECT value FROM settings WHERE key = $1', ['userPublicKey'])
+      const userPublicKey = rows?.[0]?.value as string | undefined
       
       if (!userPublicKey) {
         throw new Error("User's public key not available in localStorage");

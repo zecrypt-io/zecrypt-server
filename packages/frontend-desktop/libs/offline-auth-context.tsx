@@ -24,15 +24,17 @@ export function OfflineAuthProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     // Check for stored user on mount
-    const storedUser = localStorage.getItem('zecrypt_user');
-    if (storedUser) {
+    (async () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const { getDb } = await import('./sqlite')
+        const db = await getDb()
+        const rows = await db.select('SELECT value FROM settings WHERE key = $1', ['zecrypt_user'])
+        const stored = rows?.[0]?.value
+        if (stored) setUser(JSON.parse(stored))
       } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('zecrypt_user');
+        console.error('Error loading stored user from sqlite:', error);
       }
-    }
+    })()
     setIsLoading(false);
   }, []);
 
@@ -47,7 +49,9 @@ export function OfflineAuthProvider({ children }: { children: React.ReactNode })
       };
       
       setUser(mockUser);
-      localStorage.setItem('zecrypt_user', JSON.stringify(mockUser));
+      const { getDb } = await import('./sqlite')
+      const db = await getDb()
+      await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', ['zecrypt_user', JSON.stringify(mockUser)])
     } catch (error) {
       console.error('Sign in error:', error);
       throw new Error('Failed to sign in');
@@ -67,7 +71,9 @@ export function OfflineAuthProvider({ children }: { children: React.ReactNode })
       };
       
       setUser(mockUser);
-      localStorage.setItem('zecrypt_user', JSON.stringify(mockUser));
+      const { getDb } = await import('./sqlite')
+      const db = await getDb()
+      await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', ['zecrypt_user', JSON.stringify(mockUser)])
     } catch (error) {
       console.error('Sign up error:', error);
       throw new Error('Failed to sign up');
@@ -78,7 +84,9 @@ export function OfflineAuthProvider({ children }: { children: React.ReactNode })
 
   const signOut = async () => {
     setUser(null);
-    localStorage.removeItem('zecrypt_user');
+    const { getDb } = await import('./sqlite')
+    const db = await getDb()
+    await db.execute('DELETE FROM settings WHERE key = $1', ['zecrypt_user'])
   };
 
   return (

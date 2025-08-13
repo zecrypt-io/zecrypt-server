@@ -238,7 +238,10 @@ export function EditPassphraseDialog({
       if (!effectiveProjectKey && selectedProjectName) {
         try {
           console.log("Project key not found in state, trying to load directly");
-          const rawProjectKey = localStorage.getItem(`projectKey_${selectedProjectName}`);
+          const { getDb } = await import('@/libs/sqlite')
+          const db = await getDb()
+          const rows = await db.select('SELECT value FROM settings WHERE key = $1', [`projectKey_${selectedProjectName}`])
+          const rawProjectKey = rows?.[0]?.value as string | undefined
           console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
           
           if (rawProjectKey) {
