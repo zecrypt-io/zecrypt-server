@@ -231,19 +231,18 @@ export function WifiContent() {
           </div>
         ) : (
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">
-                  {translate("name", "wifi")}
-                </TableHead>
-                <TableHead>{translate("ssid", "wifi")}</TableHead>
-                <TableHead>{translate("password", "wifi")}</TableHead>
-                <TableHead>{translate("security_type", "wifi")}</TableHead>
-                <TableHead>{translate("tags", "wifi")}</TableHead>
-                <TableHead>{translate("last_modified", "wifi")}</TableHead>
-                <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
-              </TableRow>
-            </TableHeader>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">
+                {translate("name", "wifi")}
+              </TableHead>
+              <TableHead>{translate("security_type", "wifi")}</TableHead>
+              <TableHead>{translate("password", "wifi")}</TableHead>
+              <TableHead>{translate("tags", "wifi")}</TableHead>
+              <TableHead>{translate("last_modified", "wifi")}</TableHead>
+              <TableHead className="text-right">{translate("actions", "wifi")}</TableHead>
+            </TableRow>
+          </TableHeader>
             {paginatedWifiNetworks.length > 0 ? (
               <TableBody>
                 {paginatedWifiNetworks.map((network) => (
@@ -261,11 +260,20 @@ export function WifiContent() {
                         {network.security_type || "None"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{network.notes || "-"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-mono">
-                          {viewPassword === network.doc_id ? network.data : "••••••••"}
+                          {viewPassword === network.doc_id ? ((): string => {
+                            try {
+                              const parsed = typeof network.data === 'string' ? JSON.parse(network.data) : (network.data as any);
+                              if (parsed && typeof parsed === 'object') {
+                                return parsed["wifi-password"] ?? parsed.password ?? String(network.data ?? "");
+                              }
+                            } catch {
+                              // not JSON
+                            }
+                            return String(network.data ?? "");
+                          })() : "••••••••"}
                         </span>
                         <TooltipProvider>
                           <Tooltip>
@@ -295,7 +303,16 @@ export function WifiContent() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6"
-                                onClick={() => copyToClipboard(network.doc_id, "password", network.data)}
+                                onClick={() => {
+                                  let value = '';
+                                  try {
+                                    const parsed = typeof network.data === 'string' ? JSON.parse(network.data) : (network.data as any);
+                                    value = parsed && typeof parsed === 'object' ? (parsed["wifi-password"] ?? parsed.password ?? '') : String(network.data ?? '');
+                                  } catch {
+                                    value = String(network.data ?? '');
+                                  }
+                                  return copyToClipboard(network.doc_id, "password", value);
+                                }}
                               >
                                 {copiedField?.doc_id === network.doc_id && copiedField?.field === "password" ? (
                                   <Check className="h-3 w-3" />
