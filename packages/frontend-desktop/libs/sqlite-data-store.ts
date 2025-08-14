@@ -90,27 +90,40 @@ export class SqliteDataStore {
 		return db.select(`SELECT * FROM ${table} ORDER BY createdAt ASC`)
 	}
 
+	private transformPayloadForTable(table: string, payload: any) {
+		const transformed: any = { ...payload }
+		// Normalize tags -> tags_json (TEXT) for tables that store tags as JSON string
+		if (Object.prototype.hasOwnProperty.call(transformed, 'tags')) {
+			const value = transformed.tags
+			transformed.tags_json = Array.isArray(value) ? JSON.stringify(value) : (value ?? null)
+			delete transformed.tags
+		}
+		return transformed
+	}
+
 	private async createWithTimestamps(table: string, idPrefix: string, payload: any) {
 		const db = await getDb()
 		const id = this.generateId(idPrefix)
 		const now = new Date().toISOString()
-		const columns = Object.keys(payload)
+		const normalized = this.transformPayloadForTable(table, payload)
+		const columns = Object.keys(normalized)
 		const placeholders = columns.map((_, i) => `$${i + 2}`).join(',')
 		await db.execute(
 			`INSERT INTO ${table} (id, ${columns.join(',')}, createdAt, updatedAt) VALUES ($1, ${placeholders}, $${columns.length + 2}, $${columns.length + 3})`,
-			[id, ...columns.map(k => payload[k]), now, now]
+			[id, ...columns.map(k => normalized[k]), now, now]
 		)
-		return { id, ...payload, createdAt: now, updatedAt: now }
+		return { id, ...normalized, createdAt: now, updatedAt: now }
 	}
 
 	private async updateWithTimestamps(table: string, id: string, updates: any) {
 		const db = await getDb()
-		const columns = Object.keys(updates)
+		const normalized = this.transformPayloadForTable(table, updates)
+		const columns = Object.keys(normalized)
 		const setPieces = columns.map((k, i) => `${k} = COALESCE($${i + 2}, ${k})`).join(', ')
 		const now = new Date().toISOString()
 		await db.execute(
 			`UPDATE ${table} SET ${setPieces}${setPieces ? ', ' : ''}updatedAt = $${columns.length + 2} WHERE id = $1`,
-			[id, ...columns.map(k => updates[k]), now]
+			[id, ...columns.map(k => normalized[k]), now]
 		)
 		const rows = await db.select(`SELECT * FROM ${table} WHERE id = $1`, [id])
 		return rows[0] || null

@@ -117,6 +117,15 @@ async function bootstrap(db: any) {
 	)`)
 	await db.execute(`CREATE INDEX IF NOT EXISTS idx_wallet_phrases_project ON wallet_phrases(projectId)`) 
 
+	// Ensure identities has the new 'country' column for desktop usage
+	try {
+		const cols = await db.select('PRAGMA table_info(identities)')
+		const names = Array.isArray(cols) ? cols.map((c: any) => c.name) : []
+		if (names.length && !names.includes('country')) {
+			await db.execute('ALTER TABLE identities ADD COLUMN country TEXT')
+		}
+	} catch {}
+
 	await db.execute(`CREATE TABLE IF NOT EXISTS identities (
 		id TEXT PRIMARY KEY,
 		projectId TEXT NOT NULL,
@@ -126,6 +135,7 @@ async function bootstrap(db: any) {
 		email TEXT,
 		phone TEXT,
 		address TEXT,
+		country TEXT,
 		date_of_birth TEXT,
 		national_id TEXT,
 		notes TEXT,

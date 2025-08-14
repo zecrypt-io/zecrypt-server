@@ -38,6 +38,7 @@ export function AddIdentityDialog({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [country, setCountry] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [notes, setNotes] = useState("");
@@ -108,6 +109,7 @@ export function AddIdentityDialog({
         email: email,
         phone: phone,
         address: address,
+      country: country,
         date_of_birth: dateOfBirth,
         national_id: nationalId
       };
@@ -151,6 +153,7 @@ export function AddIdentityDialog({
       setEmail("");
       setPhone("");
       setAddress("");
+      setCountry("");
       setDateOfBirth("");
       setNationalId("");
       setNotes("");
@@ -264,6 +267,17 @@ export function AddIdentityDialog({
               placeholder={translate("address_placeholder", "identity", { default: "123 Main St, Anytown, CA 94001" })}
               rows={2}
               className="min-h-[60px]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="country" className="text-sm">{translate("country", "identity", { default: "Country" })}</Label>
+            <Input
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder={translate("country_placeholder", "identity", { default: "United States" })}
+              className="h-8"
             />
           </div>
 

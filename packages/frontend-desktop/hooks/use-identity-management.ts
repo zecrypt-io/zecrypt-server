@@ -101,60 +101,46 @@ export function useIdentityManagement({
     let address = '';
     let dateOfBirth = '';
     let nationalId = '';
+    let country: string | undefined = '';
     
     try {
       if (identityRaw.data) {
-        // Find the current project for encryption key lookup
+        // Attempt to decrypt if we have a project key; otherwise, fall back to plain JSON parse
         const currentProject = workspaces
           .find(ws => ws.workspaceId === selectedWorkspaceId)
           ?.projects.find(p => p.project_id === selectedProjectId);
-        
-        if (!currentProject) {
-          console.error("Project not found for identity data decryption");
-          throw new Error("Project not found");
-        }
 
-        // Get the project's AES key from session storage
-        const projectKeyName = `projectKey_${currentProject.name}`;
-        const projectAesKey = await secureGetItem(projectKeyName);
-        
-        if (!projectAesKey) {
-          console.error("Project encryption key not found for identity data decryption");
-          throw new Error("Project encryption key not found");
-        }
+        const projectKeyName = currentProject ? `projectKey_${currentProject.name}` : null;
+        const projectAesKey = projectKeyName ? await secureGetItem(projectKeyName) : null;
 
-        try {
-          // Try to decrypt the data using the project's AES key
-          const decryptedData = await decryptDataField(identityRaw.data, projectAesKey);
-          const parsedData = JSON.parse(decryptedData);
-          
-          if (parsedData) {
-            firstName = parsedData.first_name || '';
-            lastName = parsedData.last_name || '';
-            email = parsedData.email || '';
-            phone = parsedData.phone || '';
-            address = parsedData.address || '';
-            dateOfBirth = parsedData.date_of_birth || '';
-            nationalId = parsedData.national_id || '';
-          }
-        } catch (decryptError) {
-          // Fallback for legacy unencrypted data
-          console.error("Decryption failed for identity data, trying legacy JSON parse:", decryptError);
-          
+        let parsedData: any | null = null;
+
+        if (projectAesKey) {
           try {
-            const parsedData = JSON.parse(identityRaw.data);
-            if (parsedData) {
-              firstName = parsedData.first_name || '';
-              lastName = parsedData.last_name || '';
-              email = parsedData.email || '';
-              phone = parsedData.phone || '';
-              address = parsedData.address || '';
-              dateOfBirth = parsedData.date_of_birth || '';
-              nationalId = parsedData.national_id || '';
-            }
-          } catch (parseError) {
-            console.error("Error parsing identity data:", parseError);
+            const decryptedData = await decryptDataField(identityRaw.data, projectAesKey);
+            parsedData = JSON.parse(decryptedData);
+          } catch (decryptError) {
+            console.warn("Failed to decrypt identity data, will try plain JSON parse:", decryptError);
           }
+        }
+
+        if (!parsedData) {
+          try {
+            parsedData = JSON.parse(identityRaw.data);
+          } catch (parseError) {
+            console.error("Error parsing identity data as JSON:", parseError);
+          }
+        }
+
+        if (parsedData) {
+          firstName = parsedData.first_name || '';
+          lastName = parsedData.last_name || '';
+          email = parsedData.email || '';
+          phone = parsedData.phone || '';
+          address = parsedData.address || '';
+          dateOfBirth = parsedData.date_of_birth || '';
+          nationalId = parsedData.national_id || '';
+          country = parsedData.country || '';
         }
       }
     } catch (error) {
@@ -182,7 +168,8 @@ export function useIdentityManagement({
       phone: phone,
       address: address,
       date_of_birth: dateOfBirth,
-      national_id: nationalId
+      national_id: nationalId,
+      country
     };
   }, [selectedWorkspaceId, selectedProjectId, workspaces]);
 
