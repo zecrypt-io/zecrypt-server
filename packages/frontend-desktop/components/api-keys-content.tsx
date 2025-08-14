@@ -393,7 +393,20 @@ export function ApiKeysContent() {
                       <TableCell className="font-mono">
                         <div className="flex items-center gap-2">
                           <span>
-                            {viewKey === apiKey.doc_id ? (decryptedKeys[apiKey.doc_id] || "••••••••") : "••••••••"}
+                            {viewKey === apiKey.doc_id
+                              ? (() => {
+                                  const val = decryptedKeys[apiKey.doc_id] ?? apiKey.data;
+                                  try {
+                                    const parsed = typeof val === 'string' ? JSON.parse(val) : (val as any);
+                                    if (parsed && typeof parsed === 'object') {
+                                      return parsed['api-key'] ?? parsed.key ?? String(val ?? '');
+                                    }
+                                  } catch {
+                                    // not JSON
+                                  }
+                                  return String(val ?? '');
+                                })()
+                              : "••••••••"}
                           </span>
                           <TooltipProvider>
                             <Tooltip>
@@ -425,7 +438,17 @@ export function ApiKeysContent() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6"
-                                  onClick={() => copyToClipboard(apiKey.doc_id, "key", apiKey.data)}
+                                  onClick={() => {
+                                    let value = '';
+                                    const source = decryptedKeys[apiKey.doc_id] ?? apiKey.data;
+                                    try {
+                                      const parsed = typeof source === 'string' ? JSON.parse(source) : (source as any);
+                                      value = parsed && typeof parsed === 'object' ? (parsed['api-key'] ?? parsed.key ?? '') : String(source ?? '');
+                                    } catch {
+                                      value = String(source ?? '');
+                                    }
+                                    return copyToClipboard(apiKey.doc_id, "key", value);
+                                  }}
                                 >
                                   {copiedField?.doc_id === apiKey.doc_id && copiedField?.field === "key" ? (
                                     <Check className="h-3 w-3" />

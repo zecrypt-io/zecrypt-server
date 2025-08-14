@@ -125,11 +125,8 @@ export function EditApiKey({ apiKey, open, onOpenChange, onApiKeyUpdated }: Edit
 
       // Only process data if it has been changed
       if (data !== originalData) {
-        // Create a JSON object for the API key
-        const apiKeyObject = { key: data };
-        const apiKeyJson = JSON.stringify(apiKeyObject);
-        
-        payload.data = data;
+        // Desktop local mode: keep consistent JSON shape for storage
+        payload.data = JSON.stringify({ 'api-key': data });
       }
 
       const response = await axiosInstance.put(

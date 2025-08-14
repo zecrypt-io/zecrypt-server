@@ -80,18 +80,10 @@ export function AddApiKey({ open, onOpenChange, onApiKeyAdded }: AddApiKeyProps)
     setError("");
 
     try {
-      // Create a JSON object for the API key
-      const apiKeyObject = { key: data };
-      const apiKeyJson = JSON.stringify(apiKeyObject);
-      console.log("API key JSON prepared:", apiKeyJson);
-      
-      // Get the current project keys from storage
-      console.log("All localStorage keys:", Object.keys(localStorage));
-      
-      let processedData = data; // Desktop mode: keep plain
+      // Desktop local mode: store as JSON string with consistent shape
+      // to match offline store expectations and keep parity with server
+      const processedData = JSON.stringify({ 'api-key': data });
 
-      console.log("Sending data to server:", processedData);
-      
       const payload = {
         title,
         data: processedData,
