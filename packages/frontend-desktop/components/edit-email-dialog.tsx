@@ -14,6 +14,7 @@ import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 // encryption disabled for desktop local mode
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface Email {
   doc_id: string;
