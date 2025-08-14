@@ -20,7 +20,7 @@ function mapLocalAccountToApi(account: any) {
     website: account.url || null,
     url: account.url || null,
     notes: account.notes || null,
-    tags: account.tags || [],
+    tags: (() => { try { return account.tags || (account.tags_json ? JSON.parse(account.tags_json) : []) } catch { return [] } })(),
     created_at: account.createdAt,
     updated_at: account.updatedAt,
     created_by: 'offline',
@@ -308,6 +308,7 @@ export const offlineAxiosInstance = {
         encryptedPassword: password, // storing plain for now (no encryption)
         url: body.url || body.website || null,
         notes: body.notes || null,
+        tags: body.tags || [],
       });
       const mapped = mapLocalAccountToApi(created);
       return axiosResponse({ data: mapped }, 201);
@@ -573,6 +574,7 @@ export const offlineAxiosInstance = {
         name: body.title,
         url: body.url ?? body.website,
         notes: body.notes,
+        tags: body.tags,
         ...(username !== undefined ? { username } : {}),
         ...(password !== undefined ? { encryptedPassword: password } : {}),
       });

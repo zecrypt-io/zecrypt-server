@@ -92,52 +92,35 @@ export function useAccountManagement({
       }
 
       if (account.data && typeof account.data === 'string') {
+        // Desktop/offline mode: data may be plain JSON. Try decryption only if a project key exists.
         try {
-          // Find the current project using workspaces from the component scope
           const currentProject = workspaces
             .find(ws => ws.workspaceId === selectedWorkspaceId)
             ?.projects.find(p => p.project_id === selectedProjectId);
-          
-          if (!currentProject) {
-            throw new Error("Project not found");
-          }
 
-          // Get the project's AES key from session storage
-          const projectKeyName = `projectKey_${currentProject.name}`;
-          const projectAesKey = await secureGetItem(projectKeyName);
-          
-          if (!projectAesKey) {
-            throw new Error("Project encryption key not found");
-          }
+          const projectKeyName = currentProject ? `projectKey_${currentProject.name}` : null;
+          const projectAesKey = projectKeyName ? await secureGetItem(projectKeyName) : null;
 
-          // Try to decrypt the data field using the project's AES key
-          try {
-            const decryptedData = await decryptAccountData(account.data, projectAesKey);
-            // If decryption succeeds, parse the JSON
-            const parsedData = JSON.parse(decryptedData);
-            if (parsedData && typeof parsedData === 'object') {
-              finalUsername = parsedData.username || finalUsername;
-              finalPassword = parsedData.password || finalPassword;
-            }
-          } catch (decryptError) {
-            console.error("Decryption failed, trying legacy JSON parse:", decryptError);
-            
-            // Legacy fallback: Try to parse as unencrypted JSON
+          let parsedData: any | null = null;
+
+          if (projectAesKey) {
             try {
-              const parsedData = JSON.parse(account.data);
-              if (parsedData && typeof parsedData === 'object') {
-                finalUsername = parsedData.username || finalUsername;
-                finalPassword = parsedData.password || finalPassword;
-              }
-            } catch (parseError) {
-              // If not JSON, it might be an old format (just password) or a new hash (masked)
-              // For simplicity, if JSON parsing fails and no password field exists, mask it.
-              if (!finalPassword) finalPassword = "••••••••";
-              console.log("Error parsing data:", parseError);
+              const decryptedData = await decryptAccountData(account.data, projectAesKey);
+              parsedData = JSON.parse(decryptedData);
+            } catch (decryptError) {
+              console.warn("Account data decryption failed, falling back to plain JSON parse:", decryptError);
             }
+          }
+
+          if (!parsedData) {
+            try { parsedData = JSON.parse(account.data); } catch (parseError) { parsedData = null; }
+          }
+
+          if (parsedData && typeof parsedData === 'object') {
+            finalUsername = parsedData.username || finalUsername;
+            finalPassword = parsedData.password || finalPassword;
           }
         } catch (e) {
-          // If any error occurs in the project key retrieval or overall process
           console.error("Error processing account data:", e);
           if (!finalPassword) finalPassword = "••••••••";
         }
