@@ -7,6 +7,11 @@ export class SqliteDataStore {
 		return `${prefix}_${Date.now()}`
 	}
 
+	// Safe JSON parse helper
+	private parseOr<T>(value: any, fallback: T): T {
+		try { return value ? JSON.parse(value) as T : fallback } catch { return fallback }
+	}
+
 	// Workspaces
 	async getWorkspaces() {
 		const db = await getDb()
@@ -40,8 +45,14 @@ export class SqliteDataStore {
 	// Projects
 	async getProjects(workspaceId?: string) {
 		const db = await getDb()
-		if (workspaceId) return db.select('SELECT * FROM projects WHERE workspaceId = $1 ORDER BY createdAt ASC', [workspaceId])
-		return db.select('SELECT * FROM projects ORDER BY createdAt ASC')
+		const rows = workspaceId
+			? await db.select('SELECT * FROM projects WHERE workspaceId = $1 ORDER BY createdAt ASC', [workspaceId])
+			: await db.select('SELECT * FROM projects ORDER BY createdAt ASC')
+		return rows.map((r: any) => ({
+			...r,
+			isDefault: !!r.isDefault,
+			features: this.parseOr(r.features_json, {}),
+		}))
 	}
 
 	async createProject(project: { workspaceId: string; name: string; description?: string; color?: string; isDefault?: boolean; features?: any }) {

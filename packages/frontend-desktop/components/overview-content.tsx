@@ -14,7 +14,7 @@ import { log } from "node:console";
 import { ProjectDialog } from "./project-dialog";
 import { importRSAPrivateKey, decryptAESKeyWithRSA } from "../libs/encryption";
 import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
-import { offlineDataStore } from "@/libs/offline-data-store";
+import { sqliteDataStore } from "@/libs/sqlite-data-store";
 
 export function OverviewContent() {
   const user = useUser();
@@ -61,13 +61,13 @@ export function OverviewContent() {
       if (!accessToken) {
         // OFFLINE MODE: load from local store
         console.log("fetchData: No access token. Loading offline workspaces/projects.");
-        const existingWorkspaces = offlineDataStore.getWorkspaces();
+        const existingWorkspaces = await sqliteDataStore.getWorkspaces();
         let workspacesState: Workspace[] = [] as any;
 
-        let wsList = existingWorkspaces.length ? existingWorkspaces : offlineDataStore.getWorkspaces();
+        let wsList = existingWorkspaces.length ? existingWorkspaces : await sqliteDataStore.getWorkspaces();
         if (wsList.length > 0) {
           const ws = wsList[0];
-          const projects = offlineDataStore.getProjects(ws.id).map(p => ({
+          const projects = (await sqliteDataStore.getProjects(ws.id)).map(p => ({
             project_id: p.id,
             name: p.name,
             lower_name: p.name.toLowerCase(),
@@ -108,7 +108,7 @@ export function OverviewContent() {
           }
         } else {
           // No workspace at all: create a local workspace so project can be created
-          const newWorkspace = offlineDataStore.createWorkspace({
+          const newWorkspace = await sqliteDataStore.createWorkspace({
             name: 'Personal Workspace',
             description: 'Local workspace',
           });

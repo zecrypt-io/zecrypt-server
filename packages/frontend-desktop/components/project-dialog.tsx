@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { secureSetItem, secureGetItem } from '@/libs/local-storage-utils';
 import axiosInstance from "../libs/Middleware/axiosInstace";
 import { Switch } from "@/components/ui/switch";
-import { offlineDataStore } from "@/libs/offline-data-store";
+import { sqliteDataStore as offlineDataStore } from "@/libs/sqlite-data-store";
 
 interface ProjectDialogProps {
   onClose: () => void;
@@ -911,7 +911,7 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
       try {
         const trimmedDescription = description.trim();
 
-        const offlineProject = offlineDataStore.createProject({
+        const offlineProject = await offlineDataStore.createProject({
           workspaceId,
           name: name.trim(),
           description: trimmedDescription,
@@ -953,7 +953,7 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
                 project: { ...otherProject, is_default: false },
               })
             );
-            offlineDataStore.updateProject(otherProject.project_id, { isDefault: false });
+            await offlineDataStore.updateProject(otherProject.project_id, { isDefault: false });
           }
         }
 
