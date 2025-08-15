@@ -152,15 +152,19 @@ export function EnvCodeEditor({
         }
         
         .env-code-editor-textarea {
-          /* Fix cursor position */
-          caret-color: white;
-          outline: none !important; /* Remove default focus outline */
+          /* Ensure readable text on dark background */
+          color: #e5e7eb !important; /* slate-200 */
+          caret-color: #e5e7eb;
+          outline: none !important;
           white-space: pre !important;
+          background: transparent !important;
         }
 
         .env-code-editor-pre {
           z-index: 1;
           white-space: pre !important;
+          color: #e5e7eb !important; /* fallback color for non-tokenized text */
+          background: transparent !important;
         }
         
         /* Ensure proper scrolling behavior */
@@ -204,6 +208,14 @@ export function EnvCodeEditor({
         .token.comment {
           color: #7c7c7c; /* Brighter slategray for better visibility */
           font-style: italic;
+        }
+
+        /* Override Prism default code colors that may set black text */
+        pre[class*="language-"],
+        code[class*="language-"] {
+          color: #e5e7eb !important;
+          background: transparent !important;
+          text-shadow: none !important;
         }
       `}</style>
     </Dialog>

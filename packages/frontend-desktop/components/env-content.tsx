@@ -328,7 +328,7 @@ export function EnvContent() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {env.tags?.map((tag) => (
+                          {env.tags?.filter((t) => typeof t === 'string' && t.trim().length > 0).map((tag) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
                             </Badge>
