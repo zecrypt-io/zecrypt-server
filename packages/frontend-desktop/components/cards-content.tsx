@@ -139,11 +139,16 @@ export function CardsContent() {
   };
 
   const formatCardNumber = (number: string) => {
-    return number.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+    const raw = String(number ?? '').replace(/\D/g, '');
+    if (!raw) return '';
+    return raw.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
   };
 
   const formatExpiryDate = (month: string, year: string) => {
-    return `${month.padStart(2, '0')}/${year.slice(-2)}`;
+    const m = String(month ?? '').padStart(2, '0');
+    const y = String(year ?? '');
+    const yy = y.length >= 2 ? y.slice(-2) : y.padStart(2, '0');
+    return `${m}/${yy}`;
   };
 
   return (
