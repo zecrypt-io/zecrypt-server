@@ -54,7 +54,6 @@ export function EditSSHKeyDialog({
   const [error, setError] = useState("");
   const [nameExistsError, setNameExistsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [projectKey, setProjectKey] = useState<string | null>(null);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
@@ -67,25 +66,6 @@ export function EditSSHKeyDialog({
     const project = workspace.projects.find(p => p.project_id === selectedProjectId);
     return project?.name || null;
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
-
-  // Load the project key once when the dialog opens or project changes
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (open && selectedProjectName) {
-        try {
-          console.log("Loading project key for SSH key update:", selectedProjectName);
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-  }, [open, selectedProjectName]);
 
   const predefinedTags = ["github", "gitlab", "server", "development"];
 
