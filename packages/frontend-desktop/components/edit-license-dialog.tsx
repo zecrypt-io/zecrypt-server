@@ -20,8 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem } from "@/libs/local-storage-utils";
+// import { encryptDataField, decryptDataField } from "@/libs/encryption";
+// import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface License {
   doc_id: string;
@@ -93,43 +93,12 @@ export function EditLicenseDialog({ isOpen, onClose, license, refetchLicenses }:
     setSubmitting(true);
 
     try {
-      // Find current project for encryption
-      const currentProject = workspaces
-        .find(ws => ws.workspaceId === selectedWorkspaceId)
-        ?.projects.find(p => p.project_id === license.project_id);
-      
-      if (!currentProject) {
-        toast({
-          title: translate("common.error"),
-          description: translate("licenses.project_not_found"),
-          variant: "destructive"
-        });
-        setSubmitting(false);
-        return;
-      }
-
-      // Get project encryption key
-      const projectKeyName = `projectKey_${currentProject.name}`;
-      const projectAesKey = await secureGetItem(projectKeyName);
-      
-      if (!projectAesKey) {
-        toast({
-          title: translate("common.error"),
-          description: translate("licenses.encryption_key_not_found"),
-          variant: "destructive"
-        });
-        setSubmitting(false);
-        return;
-      }
-
-      // Prepare data field with sensitive information and encrypt it
+      // Desktop mode: Data is stored as plain JSON, not encrypted.
       const licenseData = JSON.stringify({ license_key: licenseKey });
-      const encryptedData = await encryptDataField(licenseData, projectAesKey);
 
-      // Create license payload with encrypted data
       const payload = {
         title,
-        data: encryptedData,
+        data: licenseData,
         notes: notes.trim() || null,
         tags: tags.length ? tags : null,
         expires_at: expiryDate || null,

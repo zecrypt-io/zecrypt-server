@@ -13,9 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
-import { hashData } from "@/libs/crypto";
-import { encryptDataField, decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface WalletPassphrase {
@@ -76,7 +73,6 @@ export function EditPassphraseDialog({
   const [passphraseExistsError, setPassphraseExistsError] = useState<string | null>(null);
   const [nameExistsError, setNameExistsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [projectKey, setProjectKey] = useState<string | null>(null);
 
   const selectedWorkspaceId = useSelector((state: RootState) => state.workspace.selectedWorkspaceId);
   const selectedProjectId = useSelector((state: RootState) => state.workspace.selectedProjectId);
@@ -91,24 +87,6 @@ export function EditPassphraseDialog({
   }, [workspaces, selectedWorkspaceId, selectedProjectId]);
 
   const predefinedTags = ["main", "trading", "defi", "staking"];
-
-  useEffect(() => {
-    const loadProjectKey = async () => {
-      if (open && selectedProjectName) {
-        try {
-          console.log("Loading project key for wallet passphrase edit:", selectedProjectName);
-          const key = await secureGetItem(`projectKey_${selectedProjectName}`);
-          console.log("Project key loaded:", key ? "Found" : "Not found");
-          setProjectKey(key);
-        } catch (error) {
-          console.error("Error loading project key:", error);
-          setProjectKey(null);
-        }
-      }
-    };
-    
-    loadProjectKey();
-  }, [open, selectedProjectName]);
 
   useEffect(() => {
     if (passphrase) {
@@ -234,25 +212,6 @@ export function EditPassphraseDialog({
     setError("");
 
     try {
-      let effectiveProjectKey = projectKey;
-      if (!effectiveProjectKey && selectedProjectName) {
-        try {
-          console.log("Project key not found in state, trying to load directly");
-          const { getDb } = await import('@/libs/sqlite')
-          const db = await getDb()
-          const rows = await db.select('SELECT value FROM settings WHERE key = $1', [`projectKey_${selectedProjectName}`])
-          const rawProjectKey = rows?.[0]?.value as string | undefined
-          console.log("Raw project key from localStorage:", rawProjectKey ? `Found (${rawProjectKey.length} chars)` : "Not found");
-          
-          if (rawProjectKey) {
-            effectiveProjectKey = await decryptFromLocalStorage(rawProjectKey);
-            console.log("Decrypted project key:", effectiveProjectKey ? "Found" : "Failed to decrypt");
-          }
-        } catch (error) {
-          console.error("Failed to get project key directly:", error);
-        }
-      }
-      
       const payload: any = {
         title,
         wallet_type: walletType,
@@ -261,25 +220,11 @@ export function EditPassphraseDialog({
       };
 
       if (data !== originalData || walletAddress !== passphrase.wallet_address) {
-        if (effectiveProjectKey) {
-          try {
-            const passphraseObject = { 
-              passphrase: data,
-              wallet_address: walletAddress 
-            };
-            const passphraseJson = JSON.stringify(passphraseObject);
-            console.log("Passphrase JSON prepared:", passphraseJson);
-            
-            payload.data = await encryptDataField(passphraseJson, effectiveProjectKey);
-            console.log("Data encrypted successfully");
-          } catch (encryptError) {
-            console.error("Encryption failed:", encryptError);
-            payload.data = data;
-          }
-        } else {
-          console.warn("No encryption key found for project, storing passphrase unencrypted");
-          payload.data = data;
-        }
+        // Desktop mode: store as plain JSON
+        payload.data = JSON.stringify({
+          passphrase: data,
+          wallet_address: walletAddress,
+        });
       }
 
       const response = await axiosInstance.put(
