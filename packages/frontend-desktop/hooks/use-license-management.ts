@@ -6,8 +6,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useTranslator } from '@/hooks/use-translations';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from '@/libs/utils';
-import { decryptDataField } from '@/libs/encryption';
-import { secureGetItem } from '@/libs/local-storage-utils';
+// import { decryptDataField } from '@/libs/encryption';
+// import { secureGetItem } from '@/libs/local-storage-utils';
 
 // Raw data structure from API GET /licenses
 interface LicenseFromAPI {
@@ -94,45 +94,10 @@ export function useLicenseManagement({
     let extractedLicenseKey = '';
     try {
       if (licenseRaw.data) {
-        // Find the current project for encryption key lookup
-        const currentProject = workspaces
-          .find(ws => ws.workspaceId === selectedWorkspaceId)
-          ?.projects.find(p => p.project_id === selectedProjectId);
-        
-        if (!currentProject) {
-          console.error("Project not found for license data decryption");
-          throw new Error("Project not found");
-        }
-
-        // Get the project's AES key from session storage
-        const projectKeyName = `projectKey_${currentProject.name}`;
-        const projectAesKey = await secureGetItem(projectKeyName);
-        
-        if (!projectAesKey) {
-          console.error("Project encryption key not found for license data decryption");
-          throw new Error("Project encryption key not found");
-        }
-
-        try {
-          // Try to decrypt the data using the project's AES key
-          const decryptedData = await decryptDataField(licenseRaw.data, projectAesKey);
-          const parsedData = JSON.parse(decryptedData);
-          
-          if (parsedData && typeof parsedData.license_key === 'string') {
-            extractedLicenseKey = parsedData.license_key;
-          }
-        } catch (decryptError) {
-          // Fallback for legacy unencrypted data
-          console.error("Decryption failed for license data, trying legacy JSON parse:", decryptError);
-          
-          try {
-            const parsedData = JSON.parse(licenseRaw.data);
-            if (parsedData && typeof parsedData.license_key === 'string') {
-              extractedLicenseKey = parsedData.license_key;
-            }
-          } catch (parseError) {
-            console.error("Error parsing license data:", parseError);
-          }
+        // Desktop mode: data is plain JSON, not encrypted. Parse it directly.
+        const parsedData = JSON.parse(licenseRaw.data);
+        if (parsedData && typeof parsedData.license_key === 'string') {
+          extractedLicenseKey = parsedData.license_key;
         }
       }
     } catch (error) {
