@@ -77,7 +77,7 @@ export const offlineAxiosInstance = {
         passphrase: w.passphrase,
         wallet_address: w.wallet_address,
         notes: w.notes || null,
-        tags: w.tags || [],
+        tags: (() => { try { return w.tags || (w.tags_json ? JSON.parse(w.tags_json) : []) } catch { return [] } })(),
         created_at: w.createdAt,
         updated_at: w.updatedAt,
         created_by: 'offline',

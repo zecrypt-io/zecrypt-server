@@ -8,8 +8,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
 import { useClientPagination } from "@/hooks/use-client-pagination";
 import { filterItemsByTag, sortItems, SortConfig, searchItemsMultiField } from "@/libs/utils";
-import { decryptDataField } from "@/libs/encryption";
-import { secureGetItem, decryptFromLocalStorage } from "@/libs/local-storage-utils";
+// Desktop mode: treat data as plain JSON; no decryption
+import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface WalletPassphrase {
   doc_id: string;
@@ -138,7 +138,7 @@ export function useWalletPassphraseManagement({
 
   const processWalletPassphrases = useCallback(async (
     rawPassphrases: any[], 
-    key: string | null
+    _key: string | null
   ) => {
     const processed: WalletPassphrase[] = [];
     
@@ -148,38 +148,17 @@ export function useWalletPassphraseManagement({
       
       // Check if data exists
       if (item.data) {
-        // Check if data is encrypted (has the format iv.encrypted)
-        if (key && typeof item.data === 'string' && item.data.includes('.')) {
-          try {
-            console.log("Attempting to decrypt data:", item.data.substring(0, 20) + "...");
-            const decrypted = await decryptDataField(item.data, key);
-            try {
-              // Try to parse as JSON
-              const passphraseObj = JSON.parse(decrypted);
-              // Use the passphrase and wallet_address fields from the JSON object
-              if (passphraseObj) {
-                decryptedData = passphraseObj.passphrase || '';
-                walletAddress = passphraseObj.wallet_address || '';
-                console.log("Successfully decrypted JSON passphrase and wallet address");
-              } else {
-                // If for some reason the JSON doesn't have required fields
-                decryptedData = decrypted;
-                console.log("Decrypted but found no passphrase/wallet_address fields in JSON");
-              }
-            } catch (parseError) {
-              // If not valid JSON, use the decrypted string directly
-              console.log("Decrypted but not valid JSON, using as plain text");
-              decryptedData = decrypted;
-            }
-          } catch (decryptError) {
-            console.error("Failed to decrypt:", decryptError);
-            // If decryption fails, fall back to using raw data
-            decryptedData = item.data;
+        // Desktop mode: parse plain JSON to extract fields
+        try {
+          const parsed = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+          if (parsed && typeof parsed === 'object') {
+            decryptedData = parsed.passphrase ?? '';
+            walletAddress = parsed.wallet_address ?? '';
+          } else {
+            decryptedData = String(item.data ?? '');
           }
-        } else {
-          // Not encrypted or no key available, use as is
-          console.log("Using unencrypted data");
-          decryptedData = item.data;
+        } catch {
+          decryptedData = String(item.data ?? '');
         }
       }
       

@@ -307,7 +307,19 @@ export function WalletPassphrasesContent() {
                       <TableCell className="font-mono">
                         <div className="flex items-center gap-2">
                           <span className="max-w-[200px] truncate">
-                            {viewPassphrase === passphrase.doc_id ? passphrase.passphrase : "••••••••"}
+                            {viewPassphrase === passphrase.doc_id
+                              ? (() => {
+                                  try {
+                                    const parsed = typeof passphrase.passphrase === 'string' && passphrase.passphrase.trim().startsWith('{')
+                                      ? JSON.parse(passphrase.passphrase)
+                                      : passphrase.passphrase;
+                                    if (parsed && typeof parsed === 'object') {
+                                      return parsed.passphrase ?? String(parsed ?? '');
+                                    }
+                                  } catch {}
+                                  return String(passphrase.passphrase ?? '');
+                                })()
+                              : "••••••••"}
                           </span>
                           <TooltipProvider>
                             <Tooltip>
@@ -358,7 +370,15 @@ export function WalletPassphrasesContent() {
                       <TableCell className="font-mono">
                         <div className="flex items-center gap-2">
                           <span className="max-w-[200px] truncate">
-                            {passphrase.wallet_address}
+                            {(() => {
+                              try {
+                                const parsed = typeof passphrase.data === 'string' ? JSON.parse(passphrase.data) : passphrase.data;
+                                if (parsed && typeof parsed === 'object' && parsed.wallet_address) {
+                                  return parsed.wallet_address;
+                                }
+                              } catch {}
+                              return String(passphrase.wallet_address ?? '');
+                            })()}
                           </span>
                           <TooltipProvider>
                             <Tooltip>
@@ -385,11 +405,22 @@ export function WalletPassphrasesContent() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {passphrase.tags?.map((tag: string) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+                          {(() => {
+                            let tags: string[] = Array.isArray(passphrase.tags) ? passphrase.tags : [];
+                            if (tags.length === 0 && typeof passphrase.data === 'string') {
+                              try {
+                                const parsed = JSON.parse(passphrase.data);
+                                if (parsed && Array.isArray(parsed.tags)) tags = parsed.tags as string[];
+                              } catch {}
+                            }
+                            return tags
+                              .filter((t) => typeof t === 'string' && t.trim().length > 0)
+                              .map((tag) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ));
+                          })()}
                         </div>
                       </TableCell>
                       <TableCell>
