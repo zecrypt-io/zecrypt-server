@@ -52,7 +52,7 @@ import { locales } from "@/libs/locales";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { clearUserData } from "@/libs/Redux/userSlice";
-import { useUser } from "@/libs/offline-auth-context";
+import { useUser } from "@/libs/master-password-auth";
 import { useTranslator } from "@/hooks/use-translations";
 import { secureSetItem } from '@/libs/local-storage-utils';
 import { SearchModal } from "@/components/search-modal";

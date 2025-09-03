@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/libs/offline-auth-context';
+import { useUser } from '@/libs/master-password-auth';
 import { RootState } from '@/libs/Redux/store';
 import { clearUserData, setAuthError } from '@/libs/Redux/userSlice';
 import { logout } from '@/libs/utils';

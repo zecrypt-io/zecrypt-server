@@ -2,7 +2,7 @@ import type React from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/libs/Redux/ReduxProvider";
-import { OfflineAuthProvider } from "@/libs/offline-auth-context";
+import { MasterPasswordAuthProvider } from "@/libs/master-password-auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,9 +21,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ReduxProvider>
-          <OfflineAuthProvider>
+          <MasterPasswordAuthProvider>
             {children}
-          </OfflineAuthProvider>
+          </MasterPasswordAuthProvider>
         </ReduxProvider>
       </body>
     </html>

@@ -25,7 +25,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { clearUserData } from "@/libs/Redux/userSlice";
 import { logout } from "@/libs/utils";
-import { SignIn } from "@stackframe/stack";
+// Stack Auth imports removed - using master password auth now
 
 interface EncryptionUnlockModalProps {
   isOpen: boolean;

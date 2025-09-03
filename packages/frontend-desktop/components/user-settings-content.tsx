@@ -54,12 +54,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { UpdatePasswordModal } from "@/components/update-password-modal"
+import { ChangeMasterPasswordDialog } from "@/components/change-master-password-dialog"
 import { useRouter, usePathname } from "next/navigation"
 import { locales } from "@/libs/locales"
 import { useTranslations } from "@/libs/intl-shim"
 import { fetchLoginHistory, formatDate, getDeviceInfo } from "@/libs/api-client"
-import { useUser } from '@stackframe/stack'
+import { useUser } from '@/libs/master-password-auth'
 import { getStoredUserData } from "@/libs/local-storage-utils"
 import { useSelector } from "react-redux"
 import { RootState } from "../libs/Redux/store"
@@ -352,10 +352,14 @@ export function UserSettingsContent() {
       {error && <div className="mb-4 text-red-500">{error}</div>}
       {success && <div className="mb-4 text-green-600">{success}</div>}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-[600px] grid-cols-3 mb-6">
+        <TabsList className="grid w-full max-w-[600px] grid-cols-4 mb-6">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
             {translate("profile", "user_settings")}
+          </TabsTrigger>
+          <TabsTrigger value="security">
+            <Shield className="mr-2 h-4 w-4" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="history">
             <Clock className="mr-2 h-4 w-4" />
@@ -428,6 +432,93 @@ export function UserSettingsContent() {
                   <Button className="w-full mt-6" onClick={handleSave} disabled={loading}>
                     {loading ? (translate("saving", "user_settings")) : (translate("save_changes", "user_settings"))}
                   </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>Manage your master password and security preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Master Password</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Change your master password used to unlock the application
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowPasswordModal(true)}
+                    className="shrink-0"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Auto-lock</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically lock the app when minimized or after inactivity
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">Clipboard Clear</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically clear clipboard after copying passwords
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h3 className="font-medium text-destructive">Danger Zone</h3>
+                <div className="flex items-center justify-between p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+                  <div className="space-y-1">
+                    <h4 className="font-medium text-destructive">Reset Application</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Clear all data and reset master password. This action cannot be undone.
+                    </p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="shrink-0">
+                        <AlertTriangle className="h-4 w-4 mr-2" />
+                        Reset App
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete all your saved passwords,
+                          notes, and other data from this device. You will need to set up a new master password.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Yes, reset everything
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
@@ -564,7 +655,10 @@ export function UserSettingsContent() {
           </Card>
         </TabsContent>
       </Tabs>
-      {showPasswordModal && <UpdatePasswordModal onClose={() => setShowPasswordModal(false)} />}
+      <ChangeMasterPasswordDialog 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
     </div>
   )
 }

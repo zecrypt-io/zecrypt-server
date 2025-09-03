@@ -26,13 +26,6 @@
       "csp": null
     }
   },
-      "plugins": {
-      "deep-link": {
-        "desktop": {
-          "schemes": ["zecrypt"]
-        }
-      }
-    },
   "bundle": {
     "active": true,
     "targets": "all",

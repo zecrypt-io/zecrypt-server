@@ -37,7 +37,7 @@ import { RootState, AppDispatch } from "@/libs/Redux/store";
 import { setWorkspaceData } from "@/libs/Redux/workspaceSlice";
 import { Workspace, Project } from "@/libs/Redux/workspaceSlice";
 import { useFormatter } from "@/libs/intl-shim";
-import { useUser } from "@stackframe/stack";
+import { useUser } from "@/libs/master-password-auth";
 import { loadInitialData, fetchProjects, fetchProjectKeys, fetchDashboardOverview, fetchRecentActivity, fetchRecentAccounts } from "@/libs/getWorkspace";
 import { importRSAPrivateKey, decryptAESKeyWithRSA, decryptAccountData } from "@/libs/encryption";
 import { ProjectDialog } from "./project-dialog";
