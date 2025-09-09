@@ -54,6 +54,7 @@ Before responding to any request, follow these steps:
 - Avoid enums; use const maps instead
 - Implement proper type safety and inference
 - Use `satisfies` operator for type validation
+- use pnpm instead of npm
 
 ## React 19 and Next.js 15 Best Practices
 
