@@ -1,6 +1,15 @@
 'use client'
 
 import { getDb } from './sqlite'
+import { invoke } from '@tauri-apps/api/core'
+
+async function tauriCall<T>(cmd: string, args?: Record<string, any>): Promise<T> {
+	const res: any = await invoke(cmd, args)
+	if (!res || res.success === false) {
+		throw new Error(res?.error || `${cmd} failed`)
+	}
+	return res.data as T
+}
 
 export class SqliteDataStore {
 	private generateId(prefix: string) {
@@ -135,71 +144,152 @@ export class SqliteDataStore {
 		return true
 	}
 
-	// Accounts
-	getAccounts(projectId?: string) { return this.listByProject('accounts', projectId) }
-	createAccount(payload: any) { return this.createWithTimestamps('accounts', 'acc', payload) }
-	updateAccount(id: string, updates: any) { return this.updateWithTimestamps('accounts', id, updates) }
-	deleteAccount(id: string) { return this.deleteById('accounts', id) }
+	// Accounts -> now backed by Tauri native commands (no plugin dependency)
+	getAccounts(projectId?: string) {
+		return tauriCall<any[]>('accounts_list', { projectId })
+	}
+	async createAccount(payload: any) {
+		const res = await tauriCall<any>('accounts_create', {
+			payload: {
+				projectId: payload.projectId ?? null,
+				name: payload.name,
+				username: payload.username ?? null,
+				email: payload.email ?? null,
+				encryptedPassword: payload.encryptedPassword ?? null,
+				url: payload.url ?? null,
+				notes: payload.notes ?? null,
+				tags: payload.tags ?? null,
+			},
+		})
+		return res
+	}
+	async updateAccount(id: string, updates: any) {
+		const res = await tauriCall<any>('accounts_update', {
+			id,
+			updates: {
+				name: updates.name ?? null,
+				username: updates.username ?? null,
+				email: updates.email ?? null,
+				encryptedPassword: updates.encryptedPassword ?? null,
+				url: updates.url ?? null,
+				notes: updates.notes ?? null,
+				tags: updates.tags ?? null,
+			},
+		})
+		return res
+	}
+	async deleteAccount(id: string) {
+		await tauriCall<void>('accounts_delete', { id })
+		return true
+	}
+
+	// Identities -> backed by Tauri native commands
+	getIdentities(projectId?: string) {
+		return tauriCall<any[]>('identities_list', { projectId })
+	}
+	async createIdentity(payload: any) {
+		const res = await tauriCall<any>('identities_create', {
+			payload: {
+				projectId: payload.projectId,
+				title: payload.title,
+				first_name: payload.first_name ?? null,
+				last_name: payload.last_name ?? null,
+				email: payload.email ?? null,
+				phone: payload.phone ?? null,
+				address: payload.address ?? null,
+				country: payload.country ?? null,
+				date_of_birth: payload.date_of_birth ?? null,
+				national_id: payload.national_id ?? null,
+				notes: payload.notes ?? null,
+				tags: payload.tags ?? null,
+			}
+		})
+		return res
+	}
+	async updateIdentity(id: string, updates: any) {
+		const res = await tauriCall<any>('identities_update', {
+			id,
+			updates: {
+				title: updates.title ?? null,
+				first_name: updates.first_name ?? null,
+				last_name: updates.last_name ?? null,
+				email: updates.email ?? null,
+				phone: updates.phone ?? null,
+				address: updates.address ?? null,
+				country: updates.country ?? null,
+				date_of_birth: updates.date_of_birth ?? null,
+				national_id: updates.national_id ?? null,
+				notes: updates.notes ?? null,
+				tags: updates.tags ?? null,
+			},
+		})
+		return res
+	}
+	async deleteIdentity(id: string) {
+		await tauriCall<void>('identities_delete', { id })
+		return true
+	}
+
+	// Generic DS helpers via Tauri
+	private dsList(table: string, projectId?: string) { return tauriCall<any[]>('ds_list', { table, projectId }) }
+	private dsCreate(table: string, idPrefix: string, payload: any) { return tauriCall<any>('ds_create', { args: { table, id_prefix: idPrefix, payload } }) }
+	private dsUpdate(table: string, id: string, updates: any) { return tauriCall<any>('ds_update', { args: { table, id, updates } }) }
+	private dsDelete(table: string, id: string) { return tauriCall<void>('ds_delete', { table, id }) }
 
 	// Emails
-	getEmails(projectId?: string) { return this.listByProject('emails', projectId) }
-	createEmail(payload: any) { return this.createWithTimestamps('emails', 'email', payload) }
-	updateEmail(id: string, updates: any) { return this.updateWithTimestamps('emails', id, updates) }
-	deleteEmail(id: string) { return this.deleteById('emails', id) }
+	getEmails(projectId?: string) { return this.dsList('emails', projectId) }
+	createEmail(payload: any) { return this.dsCreate('emails', 'email', payload) }
+	updateEmail(id: string, updates: any) { return this.dsUpdate('emails', id, updates) }
+	deleteEmail(id: string) { return this.dsDelete('emails', id).then(() => true) }
 
 	// Cards
-	getCards(projectId?: string) { return this.listByProject('cards', projectId) }
-	createCard(payload: any) { return this.createWithTimestamps('cards', 'card', payload) }
-	updateCard(id: string, updates: any) { return this.updateWithTimestamps('cards', id, updates) }
-	deleteCard(id: string) { return this.deleteById('cards', id) }
+	getCards(projectId?: string) { return this.dsList('cards', projectId) }
+	createCard(payload: any) { return this.dsCreate('cards', 'card', payload) }
+	updateCard(id: string, updates: any) { return this.dsUpdate('cards', id, updates) }
+	deleteCard(id: string) { return this.dsDelete('cards', id).then(() => true) }
 
 	// Notes
-	getNotes(projectId?: string) { return this.listByProject('notes', projectId) }
-	createNote(payload: any) { return this.createWithTimestamps('notes', 'note', payload) }
-	updateNote(id: string, updates: any) { return this.updateWithTimestamps('notes', id, updates) }
-	deleteNote(id: string) { return this.deleteById('notes', id) }
+	getNotes(projectId?: string) { return this.dsList('notes', projectId) }
+	createNote(payload: any) { return this.dsCreate('notes', 'note', payload) }
+	updateNote(id: string, updates: any) { return this.dsUpdate('notes', id, updates) }
+	deleteNote(id: string) { return this.dsDelete('notes', id).then(() => true) }
 
 	// Wallet phrases
-	getWalletPhrases(projectId?: string) { return this.listByProject('wallet_phrases', projectId) }
-	createWalletPhrase(payload: any) { return this.createWithTimestamps('wallet_phrases', 'wallet', payload) }
-	updateWalletPhrase(id: string, updates: any) { return this.updateWithTimestamps('wallet_phrases', id, updates) }
-	deleteWalletPhrase(id: string) { return this.deleteById('wallet_phrases', id) }
+	getWalletPhrases(projectId?: string) { return this.dsList('wallet_phrases', projectId) }
+	createWalletPhrase(payload: any) { return this.dsCreate('wallet_phrases', 'wallet', payload) }
+	updateWalletPhrase(id: string, updates: any) { return this.dsUpdate('wallet_phrases', id, updates) }
+	deleteWalletPhrase(id: string) { return this.dsDelete('wallet_phrases', id).then(() => true) }
 
-	// Identities
-	getIdentities(projectId?: string) { return this.listByProject('identities', projectId) }
-	createIdentity(payload: any) { return this.createWithTimestamps('identities', 'identity', payload) }
-	updateIdentity(id: string, updates: any) { return this.updateWithTimestamps('identities', id, updates) }
-	deleteIdentity(id: string) { return this.deleteById('identities', id) }
-
+	// Identities (already overridden above)
 	// SSH Keys
-	getSshKeys(projectId?: string) { return this.listByProject('ssh_keys', projectId) }
-	createSshKey(payload: any) { return this.createWithTimestamps('ssh_keys', 'ssh', payload) }
-	updateSshKey(id: string, updates: any) { return this.updateWithTimestamps('ssh_keys', id, updates) }
-	deleteSshKey(id: string) { return this.deleteById('ssh_keys', id) }
+	getSshKeys(projectId?: string) { return this.dsList('ssh_keys', projectId) }
+	createSshKey(payload: any) { return this.dsCreate('ssh_keys', 'ssh', payload) }
+	updateSshKey(id: string, updates: any) { return this.dsUpdate('ssh_keys', id, updates) }
+	deleteSshKey(id: string) { return this.dsDelete('ssh_keys', id).then(() => true) }
 
 	// Licenses
-	getLicenses(projectId?: string) { return this.listByProject('licenses', projectId) }
-	createLicense(payload: any) { return this.createWithTimestamps('licenses', 'license', payload) }
-	updateLicense(id: string, updates: any) { return this.updateWithTimestamps('licenses', id, updates) }
-	deleteLicense(id: string) { return this.deleteById('licenses', id) }
+	getLicenses(projectId?: string) { return this.dsList('licenses', projectId) }
+	createLicense(payload: any) { return this.dsCreate('licenses', 'license', payload) }
+	updateLicense(id: string, updates: any) { return this.dsUpdate('licenses', id, updates) }
+	deleteLicense(id: string) { return this.dsDelete('licenses', id).then(() => true) }
 
 	// Envs
-	getEnvs(projectId?: string) { return this.listByProject('envs', projectId) }
-	createEnv(payload: any) { return this.createWithTimestamps('envs', 'env', payload) }
-	updateEnv(id: string, updates: any) { return this.updateWithTimestamps('envs', id, updates) }
-	deleteEnv(id: string) { return this.deleteById('envs', id) }
+	getEnvs(projectId?: string) { return this.dsList('envs', projectId) }
+	createEnv(payload: any) { return this.dsCreate('envs', 'env', payload) }
+	updateEnv(id: string, updates: any) { return this.dsUpdate('envs', id, updates) }
+	deleteEnv(id: string) { return this.dsDelete('envs', id).then(() => true) }
 
 	// Wifi
-	getWifiNetworks(projectId?: string) { return this.listByProject('wifi_networks', projectId) }
-	createWifiNetwork(payload: any) { return this.createWithTimestamps('wifi_networks', 'wifi', payload) }
-	updateWifiNetwork(id: string, updates: any) { return this.updateWithTimestamps('wifi_networks', id, updates) }
-	deleteWifiNetwork(id: string) { return this.deleteById('wifi_networks', id) }
+	getWifiNetworks(projectId?: string) { return this.dsList('wifi_networks', projectId) }
+	createWifiNetwork(payload: any) { return this.dsCreate('wifi_networks', 'wifi', payload) }
+	updateWifiNetwork(id: string, updates: any) { return this.dsUpdate('wifi_networks', id, updates) }
+	deleteWifiNetwork(id: string) { return this.dsDelete('wifi_networks', id).then(() => true) }
 
 	// Api Keys
-	getApiKeys(projectId?: string) { return this.listByProject('api_keys', projectId) }
-	createApiKey(payload: any) { return this.createWithTimestamps('api_keys', 'apikey', payload) }
-	updateApiKey(id: string, updates: any) { return this.updateWithTimestamps('api_keys', id, updates) }
-	deleteApiKey(id: string) { return this.deleteById('api_keys', id) }
+	getApiKeys(projectId?: string) { return this.dsList('api_keys', projectId) }
+	createApiKey(payload: any) { return this.dsCreate('api_keys', 'apikey', payload) }
+	updateApiKey(id: string, updates: any) { return this.dsUpdate('api_keys', id, updates) }
+	deleteApiKey(id: string) { return this.dsDelete('api_keys', id).then(() => true) }
 }
 
 export const sqliteDataStore = new SqliteDataStore()

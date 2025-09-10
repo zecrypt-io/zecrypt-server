@@ -1,6 +1,15 @@
 use tauri::{Emitter, Manager, Listener};
 use tauri_plugin_deep_link::DeepLinkExt;
 
+// Import our modules
+mod crypto;
+mod database;
+mod vault;
+mod commands;
+mod settings;
+
+use vault::{initialize_vault_manager};
+
 #[derive(Clone, serde::Serialize)]
 struct AuthCallbackData {
     access_token: String,
@@ -87,8 +96,18 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_sql::Builder::new().build())
         .setup(|app| {
+            // Initialize vault manager in a spawn task
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = initialize_vault_manager(app_handle).await {
+                    log::error!("Failed to initialize vault manager: {}", e);
+                    std::process::exit(1);
+                }
+                log::info!("Vault manager initialized successfully");
+            });
+
+            // Tauri handles shutdown gracefully by default
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -136,7 +155,39 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             open_browser_auth,
-            handle_auth_success
+            handle_auth_success,
+            // Vault commands
+            commands::get_vault_status,
+            commands::initialize_vault,
+            commands::unlock_vault,
+            commands::lock_vault,
+            commands::change_master_password,
+            commands::is_vault_unlocked,
+            commands::validate_master_password,
+            commands::vault_health_check,
+            commands::emergency_vault_shutdown,
+            commands::get_vault_debug_info,
+            commands::test_encryption,
+            // Settings commands
+            commands::settings_get,
+            commands::settings_set,
+            commands::settings_delete,
+            commands::settings_clear,
+            // Accounts
+            commands::accounts_list,
+            commands::accounts_create,
+            commands::accounts_update,
+            commands::accounts_delete,
+            // Identities
+            commands::identities_list,
+            commands::identities_create,
+            commands::identities_update,
+            commands::identities_delete,
+            // Generic datastore
+            commands::ds_list,
+            commands::ds_create,
+            commands::ds_update,
+            commands::ds_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

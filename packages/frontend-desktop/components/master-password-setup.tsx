@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Lock, Shield, Check, X } from 'lucide-react';
 import { validatePasswordStrength, getPasswordStrengthScore, getPasswordStrengthLabel, getPasswordStrengthColor } from '@/libs/password-security';
-import { useMasterPasswordAuth } from '@/libs/master-password-auth';
+import { useTauriMasterPasswordAuth } from '@/libs/tauri-master-password-auth';
 
 interface MasterPasswordSetupProps {
   onComplete: () => void;
@@ -21,7 +21,7 @@ export function MasterPasswordSetup({ onComplete }: MasterPasswordSetupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { setupMasterPassword } = useMasterPasswordAuth();
+  const { setupMasterPassword } = useTauriMasterPasswordAuth();
 
   const passwordValidation = validatePasswordStrength(password);
   const strengthScore = getPasswordStrengthScore(password);

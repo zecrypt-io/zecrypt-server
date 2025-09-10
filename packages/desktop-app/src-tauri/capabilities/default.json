@@ -6,10 +6,6 @@
     "main"
   ],
   "permissions": [
-    "core:default",
-    "sql:allow-load",
-    "sql:allow-select",
-    "sql:allow-execute",
-    "sql:allow-close"
+    "core:default"
   ]
 }

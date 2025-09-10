@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MasterPasswordSetup } from '@/components/master-password-setup';
 import { MasterPasswordLogin } from '@/components/master-password-login';
-import { useMasterPasswordAuth } from '@/libs/master-password-auth';
+import { useTauriMasterPasswordAuth } from '@/libs/tauri-master-password-auth';
 
 export default function SimpleLoginPage() {
-  const { isLoading, isAuthenticated, hasPasswordSet } = useMasterPasswordAuth();
+  const { isLoading, isAuthenticated, hasPasswordSet } = useTauriMasterPasswordAuth();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -22,6 +22,9 @@ export default function SimpleLoginPage() {
     setIsRedirecting(true);
     router.push('/en/dashboard');
   };
+
+
+  
 
   if (isLoading || isRedirecting) {
     return (

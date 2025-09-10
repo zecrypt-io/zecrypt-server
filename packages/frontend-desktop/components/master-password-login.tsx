@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Lock, AlertCircle } from 'lucide-react';
-import { useMasterPasswordAuth } from '@/libs/master-password-auth';
+import { useTauriMasterPasswordAuth } from '@/libs/tauri-master-password-auth';
 
 interface MasterPasswordLoginProps {
   onSuccess: () => void;
@@ -19,7 +19,7 @@ export function MasterPasswordLogin({ onSuccess }: MasterPasswordLoginProps) {
   const [error, setError] = useState('');
   const [attemptCount, setAttemptCount] = useState(0);
 
-  const { authenticateWithPassword } = useMasterPasswordAuth();
+  const { authenticateWithMasterPassword } = useTauriMasterPasswordAuth();
 
   // Focus password input on mount
   useEffect(() => {
@@ -41,26 +41,27 @@ export function MasterPasswordLogin({ onSuccess }: MasterPasswordLoginProps) {
     setError('');
 
     try {
-      const isValid = await authenticateWithPassword(password);
-      
-      if (isValid) {
-        onSuccess();
-      } else {
-        setAttemptCount(prev => prev + 1);
-        setError('Incorrect master password. Please try again.');
-        setPassword(''); // Clear password field on failed attempt
-        
-        // Focus password input again
-        setTimeout(() => {
-          const passwordInput = document.getElementById('password');
-          if (passwordInput) {
-            passwordInput.focus();
-          }
-        }, 100);
-      }
+      await authenticateWithMasterPassword(password);
+      onSuccess();
     } catch (err) {
       console.error('Authentication error:', err);
-      setError('Authentication failed. Please try again.');
+      setAttemptCount(prev => prev + 1);
+      
+      if (err instanceof Error && err.message.includes('Invalid master password')) {
+        setError('Incorrect master password. Please try again.');
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
+      
+      setPassword(''); // Clear password field on failed attempt
+      
+      // Focus password input again
+      setTimeout(() => {
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+          passwordInput.focus();
+        }
+      }, 100);
     } finally {
       setIsLoading(false);
     }
