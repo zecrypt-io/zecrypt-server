@@ -526,7 +526,8 @@ impl Database {
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 description TEXT,
-                createdAt TEXT NOT NULL
+                createdAt TEXT NOT NULL,
+                updatedAt TEXT NOT NULL
             )
             "#
         ).execute(pool).await?;
@@ -541,7 +542,8 @@ impl Database {
                 color TEXT,
                 isDefault INTEGER,
                 features_json TEXT,
-                createdAt TEXT NOT NULL
+                createdAt TEXT NOT NULL,
+                updatedAt TEXT NOT NULL
             )
             "#
         ).execute(pool).await?;
@@ -693,6 +695,50 @@ impl Database {
             )
             "#
         ).execute(pool).await?;
+        // Ensure required columns exist on legacy tables
+        self.ensure_columns(pool).await.map_err(DatabaseError::Sqlite)?;
+        Ok(())
+    }
+
+    async fn ensure_columns(&self, pool: &SqlitePool) -> std::result::Result<(), sqlx::Error> {
+        // Helper list of tables that should have createdAt/updatedAt
+        let time_tables = [
+            "workspaces","projects","accounts","identities","emails","cards",
+            "notes","wallet_phrases","ssh_keys","licenses","envs","wifi_networks","api_keys"
+        ];
+        for t in time_tables.iter() {
+            self.ensure_column(pool, t, "createdAt", "TEXT").await?;
+            self.ensure_column(pool, t, "updatedAt", "TEXT").await?;
+        }
+        // Tables that should have tags_json
+        let tag_tables = [
+            "accounts","identities","emails","cards","notes","wallet_phrases",
+            "ssh_keys","licenses","envs","wifi_networks","api_keys"
+        ];
+        for t in tag_tables.iter() {
+            self.ensure_column(pool, t, "tags_json", "TEXT").await?;
+        }
+        // Projects specific columns
+        self.ensure_column(pool, "projects", "isDefault", "INTEGER").await?;
+        self.ensure_column(pool, "projects", "features_json", "TEXT").await?;
+        // Identities country column (desktop needs it)
+        self.ensure_column(pool, "identities", "country", "TEXT").await?;
+        Ok(())
+    }
+
+    async fn ensure_column(&self, pool: &SqlitePool, table: &str, column: &str, col_type: &str) -> std::result::Result<(), sqlx::Error> {
+        // PRAGMA table_info cannot be parameterized; table names are internal/whitelisted
+        let pragma = format!("PRAGMA table_info({})", table);
+        let rows = sqlx::query(&pragma).fetch_all(pool).await?;
+        let mut exists = false;
+        for r in rows {
+            let name: std::result::Result<String, _> = r.try_get("name");
+            if let Ok(n) = name { if n == column { exists = true; break; } }
+        }
+        if !exists {
+            let alter = format!("ALTER TABLE {} ADD COLUMN {} {}", table, column, col_type);
+            let _ = sqlx::query(&alter).execute(pool).await?;
+        }
         Ok(())
     }
 

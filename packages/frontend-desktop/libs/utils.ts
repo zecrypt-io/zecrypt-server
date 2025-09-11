@@ -204,11 +204,10 @@ export async function logout({
     // 4. Completely clear session storage
     sessionStorage.clear();
     
-    // 5. Completely clear settings table (SQLite)
+    // 5. Completely clear settings (via Tauri)
     try {
-      const { getDb } = await import('./sqlite')
-      const db = await getDb()
-      await db.execute('DELETE FROM settings')
+      const { settingsClear } = await import('./tauri-settings')
+      await settingsClear()
     } catch {}
     
     // 6. Sign out from Stack auth

@@ -9,7 +9,7 @@ import enMessages from '@/messages/en/common.json';
 type MessageCatalog = Record<string, unknown>;
 
 const LOCALE_STORAGE_KEY = 'zecrypt.locale';
-import { getDb } from './sqlite'
+import { settingsGet, settingsSet } from './tauri-settings'
 
 const catalogsByLocale: Record<string, MessageCatalog> = {
   en: enMessages as MessageCatalog,
@@ -18,9 +18,7 @@ const catalogsByLocale: Record<string, MessageCatalog> = {
 
 async function getCurrentLocaleAsync(): Promise<keyof typeof catalogsByLocale> {
   try {
-    const db = await getDb()
-    const rows = await db.select('SELECT value FROM settings WHERE key = $1', [LOCALE_STORAGE_KEY])
-    const stored = rows?.[0]?.value
+    const stored = await settingsGet(LOCALE_STORAGE_KEY)
     return (stored && stored in catalogsByLocale ? stored : 'en') as keyof typeof catalogsByLocale
   } catch {
     return 'en' as keyof typeof catalogsByLocale
@@ -28,8 +26,7 @@ async function getCurrentLocaleAsync(): Promise<keyof typeof catalogsByLocale> {
 }
 
 export async function setCurrentLocale(locale: keyof typeof catalogsByLocale) {
-  const db = await getDb()
-  await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [LOCALE_STORAGE_KEY, String(locale)])
+  await settingsSet(LOCALE_STORAGE_KEY, String(locale))
 }
 
 function getByPath(obj: unknown, path: string): unknown {

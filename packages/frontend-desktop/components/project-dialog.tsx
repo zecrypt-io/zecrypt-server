@@ -981,11 +981,9 @@ function CreateProjectDialog({ workspaceId, onClose, forceCreate = false }: Crea
     setError(null);
 
     try {
-      // Get the user's public key from settings instead of localStorage
-      const { getDb } = await import('@/libs/sqlite')
-      const db = await getDb()
-      const rows = await db.select('SELECT value FROM settings WHERE key = $1', ['userPublicKey'])
-      const userPublicKey = rows?.[0]?.value as string | undefined
+      // Get the user's public key from Tauri settings
+      const { settingsGet } = await import('@/libs/tauri-settings')
+      const userPublicKey = await settingsGet('userPublicKey') as string | null | undefined
       
       if (!userPublicKey) {
         throw new Error("User's public key not available in localStorage");

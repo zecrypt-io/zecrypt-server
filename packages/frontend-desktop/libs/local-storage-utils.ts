@@ -174,11 +174,10 @@ export function getProjectKey(projectId: string): string | null {
 }
 
 // Safe localStorage wrapper to handle SSR
-import { getDb } from './sqlite'
+import { settingsSet, settingsGet } from './tauri-settings'
 
 export const saveToLocalStorage = async (key: string, value: string) => {
-  const db = await getDb()
-  await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [key, value])
+  await settingsSet(key, value)
 };
 
 // Save user data to localStorage
@@ -193,10 +192,16 @@ export const saveUserData = async (userData: any) => {
 
 // Helper function to get stored user data
 export const getStoredUserData = async () => {
-  const db = await getDb()
   try {
-    const rows = await db.select('SELECT key, value FROM settings WHERE key IN ("zecrypt_access_token","zecrypt_user_id","zecrypt_user_name","zecrypt_profile_url","zecrypt_language")')
-    const map = new Map<string, string>(rows.map((r: any) => [r.key, r.value]))
+    const keys = [
+      'zecrypt_access_token',
+      'zecrypt_user_id',
+      'zecrypt_user_name',
+      'zecrypt_profile_url',
+      'zecrypt_language'
+    ]
+    const map = new Map<string, string | null>()
+    for (const k of keys) { map.set(k, await settingsGet(k)) }
     return {
       access_token: map.get('zecrypt_access_token') ?? null,
       user_id: map.get('zecrypt_user_id') ?? null,
@@ -212,6 +217,13 @@ export const getStoredUserData = async () => {
 
 // Remove user data from localStorage (for logout)
 export const clearUserData = async () => {
-  const db = await getDb()
-  await db.execute('DELETE FROM settings WHERE key IN ("zecrypt_access_token","zecrypt_user_id","zecrypt_user_name","zecrypt_profile_url","zecrypt_language")')
+  const keys = [
+    'zecrypt_access_token',
+    'zecrypt_user_id',
+    'zecrypt_user_name',
+    'zecrypt_profile_url',
+    'zecrypt_language'
+  ]
+  const { settingsDelete } = await import('./tauri-settings')
+  for (const k of keys) { try { await settingsDelete(k) } catch {} }
 };

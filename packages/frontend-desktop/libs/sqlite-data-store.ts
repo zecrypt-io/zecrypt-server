@@ -1,6 +1,5 @@
 'use client'
 
-import { getDb } from './sqlite'
 import { invoke } from '@tauri-apps/api/core'
 
 async function tauriCall<T>(cmd: string, args?: Record<string, any>): Promise<T> {
@@ -22,73 +21,65 @@ export class SqliteDataStore {
 	}
 
 	// Workspaces
-	async getWorkspaces() {
-		const db = await getDb()
-		return db.select('SELECT * FROM workspaces ORDER BY createdAt ASC')
-	}
+	getWorkspaces() { return this.dsList('workspaces') }
 
 	async createWorkspace(workspace: { name: string; description?: string }) {
-		const db = await getDb()
-		const id = this.generateId('ws')
-		const createdAt = new Date().toISOString()
-		await db.execute(
-			'INSERT INTO workspaces (id, name, description, createdAt) VALUES ($1,$2,$3,$4)',
-			[id, workspace.name, workspace.description ?? null, createdAt]
-		)
-		return { id, name: workspace.name, description: workspace.description, createdAt }
+		const res = await this.dsCreate('workspaces', 'ws', {
+			name: workspace.name,
+			description: workspace.description ?? null,
+		})
+		return res
 	}
 
 	async updateWorkspace(id: string, updates: any) {
-		const db = await getDb()
-		await db.execute('UPDATE workspaces SET name = COALESCE($2,name), description = COALESCE($3,description) WHERE id = $1', [id, updates.name ?? null, updates.description ?? null])
-		const rows = await db.select('SELECT * FROM workspaces WHERE id = $1', [id])
-		return rows[0] || null
+		const res = await this.dsUpdate('workspaces', id, {
+			name: updates.name ?? null,
+			description: updates.description ?? null,
+		})
+		return res
 	}
 
 	async deleteWorkspace(id: string) {
-		const db = await getDb()
-		await db.execute('DELETE FROM workspaces WHERE id = $1', [id])
+		await this.dsDelete('workspaces', id)
 		return true
 	}
 
 	// Projects
 	async getProjects(workspaceId?: string) {
-		const db = await getDb()
-		const rows = workspaceId
-			? await db.select('SELECT * FROM projects WHERE workspaceId = $1 ORDER BY createdAt ASC', [workspaceId])
-			: await db.select('SELECT * FROM projects ORDER BY createdAt ASC')
-		return rows.map((r: any) => ({
+		const rows = await this.dsList('projects')
+		const mapped = rows.map((r: any) => ({
 			...r,
 			isDefault: !!r.isDefault,
 			features: this.parseOr(r.features_json, {}),
 		}))
+		return workspaceId ? mapped.filter((r: any) => r.workspaceId === workspaceId) : mapped
 	}
 
 	async createProject(project: { workspaceId: string; name: string; description?: string; color?: string; isDefault?: boolean; features?: any }) {
-		const db = await getDb()
-		const id = this.generateId('proj')
-		const createdAt = new Date().toISOString()
-		await db.execute(
-			'INSERT INTO projects (id, workspaceId, name, description, color, isDefault, features_json, createdAt) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
-			[id, project.workspaceId, project.name, project.description ?? null, project.color ?? null, project.isDefault ? 1 : 0, project.features ? JSON.stringify(project.features) : null, createdAt]
-		)
-		return { id, workspaceId: project.workspaceId, name: project.name, description: project.description, color: project.color, isDefault: !!project.isDefault, features: project.features, createdAt }
+		const res = await this.dsCreate('projects', 'proj', {
+			workspaceId: project.workspaceId,
+			name: project.name,
+			description: project.description ?? null,
+			color: project.color ?? null,
+			isDefault: project.isDefault ? 1 : 0,
+			features_json: project.features ? JSON.stringify(project.features) : null,
+		})
+		return { ...res, isDefault: !!res.isDefault, features: this.parseOr(res.features_json, {}) }
 	}
 
 	async updateProject(id: string, updates: any) {
-		const db = await getDb()
-		await db.execute(
-			'UPDATE projects SET name = COALESCE($2,name), description = COALESCE($3,description), color = COALESCE($4,color), isDefault = COALESCE($5,isDefault), features_json = COALESCE($6,features_json) WHERE id = $1',
-			[id, updates.name ?? null, updates.description ?? null, updates.color ?? null, updates.isDefault === undefined ? null : (updates.isDefault ? 1 : 0), updates.features ? JSON.stringify(updates.features) : null]
-		)
-		const rows = await db.select('SELECT * FROM projects WHERE id = $1', [id])
-		if (rows[0]) rows[0].isDefault = !!rows[0].isDefault
-		return rows[0] || null
+		const res = await this.dsUpdate('projects', id, {
+			name: updates.name ?? null,
+			description: updates.description ?? null,
+			color: updates.color ?? null,
+			isDefault: updates.isDefault === undefined ? null : (updates.isDefault ? 1 : 0),
+			features_json: updates.features ? JSON.stringify(updates.features) : null,
+		})
+		return { ...res, isDefault: !!res.isDefault, features: this.parseOr(res.features_json, {}) }
 	}
 
 	async deleteProject(id: string) {
-		const db = await getDb()
-		await db.execute('DELETE FROM projects WHERE id = $1', [id])
+		await this.dsDelete('projects', id)
 		return true
 	}
 

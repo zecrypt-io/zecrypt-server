@@ -47,11 +47,10 @@ export async function getUserKeys(): Promise<GetKeyResponse> {
 // API call to update/set user's encryption keys
 export async function updateUserKeys(payload: UpdateKeyPayload): Promise<UpdateKeyResponse> {
   try {
-    // Save the public key to settings (SQLite)
+    // Save the public key to settings via Tauri
     try {
-      const { getDb } = await import('./sqlite')
-      const db = await getDb()
-      await db.execute('INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT(key) DO UPDATE SET value = excluded.value', ['userPublicKey', payload.public_key])
+      const { settingsSet } = await import('./tauri-settings')
+      await settingsSet('userPublicKey', payload.public_key)
     } catch {}
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.zecrypt.io';

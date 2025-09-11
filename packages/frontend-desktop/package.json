@@ -44,7 +44,7 @@
     "@tauri-apps/api": "^2.7.0",
     "@tauri-apps/plugin-deep-link": "^2.4.1",
     "@tauri-apps/plugin-opener": "^2.4.0",
-    "@tauri-apps/plugin-sql": "^2.2.0",
+    
     "@tiptap/core": "^2.22.3",
     "@tiptap/react": "^2.22.3",
     "@tiptap/starter-kit": "^2.22.3",
