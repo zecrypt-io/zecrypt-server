@@ -19,11 +19,21 @@
         "resizable": true,
         "fullscreen": false,
         "minWidth": 800,
-        "minHeight": 600
+        "minHeight": 600,
+        "center": true,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "closable": true,
+        "maximizable": true,
+        "minimizable": true
       }
     ],
     "security": {
       "csp": null
+    },
+    "trayIcon": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true
     }
   },
   "bundle": {
@@ -35,6 +45,26 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Zecrypt",
+    "category": "Productivity",
+    "shortDescription": "Secure password management for desktop",
+    "longDescription": "Zecrypt Desktop is a secure, offline-first password manager that keeps your credentials safe and accessible.",
+    "resources": [],
+    "externalBin": [],
+    "copyright": "Copyright © 2024 Zecrypt. All rights reserved.",
+    "licenseFile": "../../LICENSE.md",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.13",
+      "exceptionDomain": "",
+      "signingIdentity": null,
+      "entitlements": null
+    }
   }
 }
