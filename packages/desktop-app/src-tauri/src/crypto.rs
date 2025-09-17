@@ -2,7 +2,7 @@ use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Key, Nonce,
 };
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, Algorithm, Version, Params};
+use argon2::{Argon2, Algorithm, Version, Params};
 use rand::{RngCore, rngs::OsRng as RandOsRng};
 use thiserror::Error;
 
@@ -105,11 +105,13 @@ impl EncryptedDek {
     }
 
     /// Converts to hex string for database storage
+    #[allow(dead_code)]
     pub fn to_hex(&self) -> String {
         hex::encode(self.to_bytes())
     }
 
     /// Creates from hex string stored in database
+    #[allow(dead_code)]
     pub fn from_hex(hex_str: &str) -> Result<Self> {
         let bytes = hex::decode(hex_str)
             .map_err(|e| CryptoError::InvalidInput(format!("Invalid hex: {}", e)))?;
@@ -180,6 +182,7 @@ impl SecureDek {
         &self.data
     }
 
+    #[allow(dead_code)]
     pub fn as_hex(&self) -> String {
         hex::encode(&self.data)
     }

@@ -1,13 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Zecrypt Desktop",
+  "productName": "zecrypt-desktop",
   "version": "0.1.0",
   "identifier": "com.zecrypt.desktop",
   "build": {
     "frontendDist": "../../frontend-desktop/out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "pnpm --prefix ../frontend-desktop dev",
-    "beforeBuildCommand": "pnpm --prefix ../frontend-desktop build"
+    "beforeDevCommand": "pnpm --prefix ../frontend-desktop dev"
   },
   "app": {
     "windows": [
@@ -38,7 +37,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -50,8 +49,6 @@
     "category": "Productivity",
     "shortDescription": "Secure password management for desktop",
     "longDescription": "Zecrypt Desktop is a secure, offline-first password manager that keeps your credentials safe and accessible.",
-    "resources": [],
-    "externalBin": [],
     "copyright": "Copyright © 2024 Zecrypt. All rights reserved.",
     "licenseFile": "../../LICENSE.md",
     "windows": {

@@ -249,7 +249,7 @@ impl VaultManager {
         let new_encrypted_dek = encrypt_dek(&new_kek, dek.as_bytes())?;
         
         // Update vault metadata in database
-        let mut db_guard = self.database.write().await;
+        let db_guard = self.database.write().await;
         let pool = db_guard.pool()?;
         
         sqlx::query(
@@ -279,12 +279,6 @@ impl VaultManager {
     pub async fn is_unlocked(&self) -> bool {
         let state_guard = self.state.read().await;
         *state_guard == VaultState::Unlocked
-    }
-
-    /// Checks if the vault is initialized
-    pub async fn is_initialized(&self) -> Result<bool> {
-        let db_guard = self.database.read().await;
-        db_guard.is_initialized().await.map_err(VaultError::from)
     }
 
     /// Validates master password requirements
@@ -343,14 +337,6 @@ pub async fn get_vault_manager() -> Result<Arc<VaultManager>> {
             "Vault manager not initialized".to_string()
         )))
         .map(Arc::clone)
-}
-
-/// Shuts down the global vault manager
-pub async fn shutdown_vault_manager() -> Result<()> {
-    if let Some(manager) = VAULT_MANAGER.get() {
-        manager.shutdown().await?;
-    }
-    Ok(())
 }
 
 #[cfg(test)]

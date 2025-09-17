@@ -1,5 +1,5 @@
 use sqlx::{sqlite::{SqlitePool, SqliteConnectOptions, SqlitePoolOptions}, Row, SqliteConnection, Connection, Column};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use thiserror::Error;
 use crate::crypto::{SecureDek, EncryptedDek, CryptoError};
 use tauri::{AppHandle, Manager};
@@ -49,25 +49,31 @@ impl VaultMeta {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AccountRow {
     pub id: String,
-    pub projectId: Option<String>,
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
     pub name: String,
     pub username: Option<String>,
     pub email: Option<String>,
-    pub encryptedPassword: Option<String>,
+    #[serde(rename = "encryptedPassword")]
+    pub encrypted_password: Option<String>,
     pub url: Option<String>,
     pub notes: Option<String>,
     pub tags_json: Option<String>,
-    pub createdAt: String,
-    pub updatedAt: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct AccountCreatePayload {
-    pub projectId: Option<String>,
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
     pub name: String,
     pub username: Option<String>,
     pub email: Option<String>,
-    pub encryptedPassword: Option<String>,
+    #[serde(rename = "encryptedPassword")]
+    pub encrypted_password: Option<String>,
     pub url: Option<String>,
     pub notes: Option<String>,
     pub tags: Option<serde_json::Value>,
@@ -78,7 +84,8 @@ pub struct AccountUpdatePayload {
     pub name: Option<String>,
     pub username: Option<String>,
     pub email: Option<String>,
-    pub encryptedPassword: Option<String>,
+    #[serde(rename = "encryptedPassword")]
+    pub encrypted_password: Option<String>,
     pub url: Option<String>,
     pub notes: Option<String>,
     pub tags: Option<serde_json::Value>,
@@ -87,7 +94,8 @@ pub struct AccountUpdatePayload {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IdentityRow {
     pub id: String,
-    pub projectId: String,
+    #[serde(rename = "projectId")]
+    pub project_id: String,
     pub title: String,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -99,13 +107,16 @@ pub struct IdentityRow {
     pub national_id: Option<String>,
     pub notes: Option<String>,
     pub tags_json: Option<String>,
-    pub createdAt: String,
-    pub updatedAt: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct IdentityCreatePayload {
-    pub projectId: String,
+    #[serde(rename = "projectId")]
+    pub project_id: String,
     pub title: String,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -168,7 +179,7 @@ impl Database {
 
     /// Creates a new database manager at a specific path for testing.
     #[cfg(test)]
-    pub fn new_for_test(path: &Path) -> Self {
+    pub fn new_for_test(path: &PathBuf) -> Self {
         Self {
             pool: None,
             db_path: path.to_path_buf(),
@@ -912,16 +923,16 @@ impl Database {
         conn.close().await?;
         let mapped = rows.into_iter().map(|r| AccountRow {
             id: r.get("id"),
-            projectId: r.try_get("projectId").ok(),
+            project_id: r.try_get("projectId").ok(),
             name: r.get("name"),
             username: r.try_get("username").ok(),
             email: r.try_get("email").ok(),
-            encryptedPassword: r.try_get("encryptedPassword").ok(),
+            encrypted_password: r.try_get("encryptedPassword").ok(),
             url: r.try_get("url").ok(),
             notes: r.try_get("notes").ok(),
             tags_json: r.try_get("tags_json").ok(),
-            createdAt: r.get("createdAt"),
-            updatedAt: r.get("updatedAt"),
+            created_at: r.get("createdAt"),
+            updated_at: r.get("updatedAt"),
         }).collect();
         Ok(mapped)
     }
@@ -936,11 +947,11 @@ impl Database {
             "INSERT INTO accounts (id, projectId, name, username, email, encryptedPassword, url, notes, tags_json, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
         )
         .bind(&id)
-        .bind(&payload.projectId)
+        .bind(&payload.project_id)
         .bind(&payload.name)
         .bind(&payload.username)
         .bind(&payload.email)
-        .bind(&payload.encryptedPassword)
+        .bind(&payload.encrypted_password)
         .bind(&payload.url)
         .bind(&payload.notes)
         .bind(&tags_json)
@@ -950,16 +961,16 @@ impl Database {
         .await?;
         let row = AccountRow {
             id,
-            projectId: payload.projectId,
+            project_id: payload.project_id,
             name: payload.name,
             username: payload.username,
             email: payload.email,
-            encryptedPassword: payload.encryptedPassword,
+            encrypted_password: payload.encrypted_password,
             url: payload.url,
             notes: payload.notes,
             tags_json,
-            createdAt: now.clone(),
-            updatedAt: now,
+            created_at: now.clone(),
+            updated_at: now,
         };
         Ok(row)
     }
@@ -975,7 +986,7 @@ impl Database {
         let name: String = updates.name.unwrap_or_else(|| existing.get("name"));
         let username: Option<String> = updates.username.or_else(|| existing.try_get("username").ok());
         let email: Option<String> = updates.email.or_else(|| existing.try_get("email").ok());
-        let enc: Option<String> = updates.encryptedPassword.or_else(|| existing.try_get("encryptedPassword").ok());
+        let enc: Option<String> = updates.encrypted_password.or_else(|| existing.try_get("encryptedPassword").ok());
         let url: Option<String> = updates.url.or_else(|| existing.try_get("url").ok());
         let notes: Option<String> = updates.notes.or_else(|| existing.try_get("notes").ok());
         let tags_json: Option<String> = match updates.tags {
@@ -998,7 +1009,7 @@ impl Database {
         .await?;
         let project_id: Option<String> = existing.try_get("projectId").ok();
         conn.close().await?;
-        Ok(AccountRow { id, projectId: project_id, name, username, email, encryptedPassword: enc, url, notes, tags_json, createdAt: existing.get("createdAt"), updatedAt: now })
+        Ok(AccountRow { id, project_id: project_id, name, username, email, encrypted_password: enc, url, notes, tags_json, created_at: existing.get("createdAt"), updated_at: now })
     }
 
     pub async fn accounts_delete(&self, id: String) -> Result<()> {
@@ -1026,7 +1037,7 @@ impl Database {
         conn.close().await?;
         let mapped = rows.into_iter().map(|r| IdentityRow {
             id: r.get("id"),
-            projectId: r.get("projectId"),
+            project_id: r.get("projectId"),
             title: r.get("title"),
             first_name: r.try_get("first_name").ok(),
             last_name: r.try_get("last_name").ok(),
@@ -1038,8 +1049,8 @@ impl Database {
             national_id: r.try_get("national_id").ok(),
             notes: r.try_get("notes").ok(),
             tags_json: r.try_get("tags_json").ok(),
-            createdAt: r.get("createdAt"),
-            updatedAt: r.get("updatedAt"),
+            created_at: r.get("createdAt"),
+            updated_at: r.get("updatedAt"),
         }).collect();
         Ok(mapped)
     }
@@ -1054,7 +1065,7 @@ impl Database {
             "INSERT INTO identities (id, projectId, title, first_name, last_name, email, phone, address, country, date_of_birth, national_id, notes, tags_json, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
         )
         .bind(&id)
-        .bind(&payload.projectId)
+        .bind(&payload.project_id)
         .bind(&payload.title)
         .bind(&payload.first_name)
         .bind(&payload.last_name)
@@ -1070,7 +1081,7 @@ impl Database {
         .bind(&now)
         .execute(&pool)
         .await?;
-        Ok(IdentityRow { id, projectId: payload.projectId, title: payload.title, first_name: payload.first_name, last_name: payload.last_name, email: payload.email, phone: payload.phone, address: payload.address, country: payload.country, date_of_birth: payload.date_of_birth, national_id: payload.national_id, notes: payload.notes, tags_json, createdAt: now.clone(), updatedAt: now })
+        Ok(IdentityRow { id, project_id: payload.project_id, title: payload.title, first_name: payload.first_name, last_name: payload.last_name, email: payload.email, phone: payload.phone, address: payload.address, country: payload.country, date_of_birth: payload.date_of_birth, national_id: payload.national_id, notes: payload.notes, tags_json, created_at: now.clone(), updated_at: now })
     }
 
     pub async fn identities_update(&self, id: String, updates: IdentityUpdatePayload) -> Result<IdentityRow> {
@@ -1114,7 +1125,7 @@ impl Database {
         .await?;
         let project_id: String = existing.get("projectId");
         conn.close().await?;
-        Ok(IdentityRow { id, projectId: project_id, title, first_name, last_name, email, phone, address, country, date_of_birth, national_id, notes, tags_json, createdAt: existing.get("createdAt"), updatedAt: now })
+        Ok(IdentityRow { id, project_id: project_id, title, first_name, last_name, email, phone, address, country, date_of_birth, national_id, notes, tags_json, created_at: existing.get("createdAt"), updated_at: now })
     }
 
     pub async fn identities_delete(&self, id: String) -> Result<()> {
@@ -1128,6 +1139,7 @@ impl Database {
     }
 
     /// Encrypts data using the stored DEK
+    #[allow(dead_code)]
     pub fn encrypt_data(&self, plaintext: &str) -> Result<Vec<u8>> {
         let dek = self.dek.as_ref()
             .ok_or(DatabaseError::VaultNotInitialized)?;
@@ -1149,6 +1161,7 @@ impl Database {
     }
 
     /// Decrypts data using the stored DEK
+    #[allow(dead_code)]
     pub fn decrypt_data(&self, encrypted_data: &[u8]) -> Result<String> {
         let dek = self.dek.as_ref()
             .ok_or(DatabaseError::VaultNotInitialized)?;
@@ -1194,27 +1207,9 @@ impl Database {
     }
 
     /// Checks if the database is currently open
+    #[allow(dead_code)]
     pub fn is_open(&self) -> bool {
         self.pool.is_some() && self.dek.is_some()
-    }
-
-    /// Gets the database file path
-    pub fn db_path(&self) -> &Path {
-        &self.db_path
-    }
-
-    /// Executes a query that returns no results
-    pub async fn execute(&self, query: &str) -> Result<u64> {
-        let pool = self.pool()?;
-        let result = sqlx::query(query).execute(pool).await?;
-        Ok(result.rows_affected())
-    }
-
-    /// Begins a database transaction
-    pub async fn begin_transaction(&self) -> Result<sqlx::Transaction<'_, sqlx::Sqlite>> {
-        let pool = self.pool()?;
-        let tx = pool.begin().await?;
-        Ok(tx)
     }
 }
 
@@ -1237,7 +1232,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test_vault.db");
         
-        let db = Database::new_for_test(&db_path);
+        let db = Database::new_for_test(&db_path.to_path_buf());
         
         (db, temp_dir)
     }
