@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Secure your digital life with Zecrypt's open-source password manager. End-to-end encrypted storage for passwords, files, and credentials. Zero-knowledge architecture with AES-256 encryption. Free to use." />
+  <meta name="keywords" content="password manager, encrypted storage, end-to-end encryption, secure vault, identity manager, API key vault, SSH key manager, email encryption, encrypted drive, zero-knowledge security, credit card vault, secure notes, data privacy, Zecrypt, open source password manager, AES-256 encryption, secure document storage" />
+  <meta name="author" content="Zecrypt Labs" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="bingbot" content="index, follow" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Zecrypt - Zero-Knowledge Password Manager & Encrypted Storage" />
+  <meta property="og:description" content="Open-source password manager with end-to-end encryption. Store passwords, files, and credentials securely with zero-knowledge architecture." />
+  <meta property="og:image" content="https://zecrypt.io/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://zecrypt.io" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Zecrypt" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Zecrypt - Zero-Knowledge Password Manager" />
+  <meta name="twitter:description" content="Open-source password manager with end-to-end encryption. Secure your digital life with zero-knowledge architecture." />
+  <meta name="twitter:image" content="https://zecrypt.io/twitter-card.jpg" />
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Zecrypt - Zero-Knowledge Password Manager & Encrypted File Storage | Open Source</title>
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Zecrypt",
+    "description": "Zero-knowledge password manager and encrypted file storage platform",
+    "url": "https://zecrypt.io",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Web, iOS, Android",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "150"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Zecrypt Labs",
+      "url": "https://zecrypt.io"
+    },
+    "featureList": [
+      "End-to-end encryption",
+      "Zero-knowledge architecture",
+      "AES-256 encryption",
+      "Open source",
+      "Cross-platform access"
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="logo.png" as="image">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            'gray-950': '#0a0a0a',
+            'gray-900': '#111111',
+            'gray-800': '#1f1f1f',
+            'gray-700': '#2e2e2e',
+            'gray-600': '#4b4b4b',
+            'gray-500': '#6b7280',
+            'gray-400': '#9ca3af'
+          },
+          borderRadius: {
+            'xl': '1rem',
+            '2xl': '1.5rem',
+            '3xl': '2rem'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      background-color: #050505;
+      color: white;
+      overflow-x: hidden;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .animate-delay-100 {
+      animation-delay: 0.1s;
+    }
+    
+    .animate-delay-200 {
+      animation-delay: 0.2s;
+    }
+    
+    .animate-delay-300 {
+      animation-delay: 0.3s;
+    }
+    
+    .animate-delay-400 {
+      animation-delay: 0.4s;
+    }
+    
+    /* Card hover effect */
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Step animation */
+    .step-item {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .step-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Dashboard screenshot styling */
+    .dashboard-preview {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    
+    .dashboard-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .dashboard-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: brightness(1.1) contrast(1.05) saturate(1.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-gray-950 to-black text-white">
+  <!-- Background Canvas -->
+  <canvas id="particles-canvas" class="fixed inset-0 z-0 opacity-30"></canvas>
+
+  <!-- Navigation -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-6">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between">
+         <a href="/" class="flex items-center space-x-2">
+          <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <a href="#features" class="text-sm text-gray-400 hover:text-white transition-colors">Features</a>
+          <a href="#security" class="text-sm text-gray-400 hover:text-white transition-colors">Security</a>
+          <!-- <a href="#pricing" class="text-sm text-gray-400 hover:text-white transition-colors">Pricing</a> -->
+        </nav>
+
+        <!-- Desktop CTA -->
+        <div class="hidden md:flex items-center space-x-4">
+          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            <span>GitHub</span>
+          </a>
+          <button class="border border-white/20 text-white hover:border-white/50 transition-colors px-4 py-2 rounded-xl text-sm" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+            Open App
+          </button>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-button" class="md:hidden text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden bg-gray-900 absolute top-full left-0 right-0 p-4 shadow-lg hidden">
+      <nav class="flex flex-col space-y-4 mb-6">
+        <a href="#features" class="text-gray-400 hover:text-white transition-colors py-2">Features</a>
+        <a href="#security" class="text-gray-400 hover:text-white transition-colors py-2">Security</a>
+      </nav>
+      <div class="flex flex-col space-y-3">
+        <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <button class="bg-white text-black hover:bg-gray-200 transition-colors px-4 py-2 rounded-xl text-sm w-full" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+          Open App
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-32 pb-32 overflow-hidden">
+    <div class="container px-4 mx-auto relative z-10">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-block px-3 py-1 mb-6 text-xs font-medium text-white bg-white/10 rounded-xl animate-fade-in-up">
+          End-to-End Encrypted Storage
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in-up animate-delay-100">
+          Secure Storage, <span class="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Simplified</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up animate-delay-200">
+          Store your passwords, emails, and confidential documents with absolute confidence. Our fully open-source platform uses cutting-edge Zero-Knowledge protocols combined with AES-GCM encryption.        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16 animate-fade-in-up animate-delay-300">
+          <button class="bg-white text-black hover:bg-gray-200 transition-colors px-6 py-3 rounded-xl text-sm" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+            Get Started
+          </button>
+          <button class="border border-white/20 text-white hover:border-white/50 transition-colors px-6 py-3 rounded-xl text-sm" onclick="window.open('https://github.com/zecrypt-io/zecrypt-server', '_blank', 'noopener,noreferrer')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2 h-4 w-4">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            View on GitHub
+          </button>
+        </div>
+        <div class="relative animate-fade-in-up animate-delay-400">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <!-- Security Stats Card -->
+            <div class="bg-gradient-to-br from-blue-500/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="bg-blue-500/20 p-3 rounded-xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <span class="text-2xl font-bold text-blue-400">256-bit</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">AES Encryption</h3>
+              <p class="text-sm text-gray-400">Military-grade encryption protecting your data</p>
+            </div>
+
+            <!-- Zero Knowledge Card -->
+            <div class="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-6 backdrop-blur-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="bg-green-500/20 p-3 rounded-xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </div>
+                <span class="text-2xl font-bold text-green-400">100%</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Zero Knowledge</h3>
+              <p class="text-sm text-gray-400">Only you can access your encrypted data</p>
+            </div>
+
+            <!-- Open Source Card -->
+            <div class="bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 rounded-2xl p-6 backdrop-blur-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="bg-orange-500/20 p-3 rounded-xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                </div>
+                <span class="text-2xl font-bold text-orange-400">Open</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Source Code</h3>
+              <p class="text-sm text-gray-400">Transparent and auditable by the community</p>
+            </div>
+          </div>
+
+          <!-- Feature Preview -->
+          <div class="mt-12 bg-gradient-to-r from-gray-900/50 to-gray-800/50 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 class="text-2xl font-bold mb-4">Everything You Need to Stay Secure</h3>
+                <div class="space-y-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                    <span class="text-gray-300">Password & API Key Management</span>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                    <span class="text-gray-300">Secure File Storage</span>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                    <span class="text-gray-300">Credit Card & Identity Protection</span>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                    <span class="text-gray-300">Project Organization</span>
+                  </div>
+                </div>
+              </div>
+              <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl"></div>
+                <div class="relative bg-gray-900/80 border border-white/10 rounded-xl p-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                    <span class="text-xs text-gray-400">Secure Vault</span>
+                  </div>
+                  <div class="space-y-3">
+                    <div class="bg-white/5 rounded-lg p-3">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-300">••••••••••••••••</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-3">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-300">••••••••••••••••</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-3">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-300">••••••••••••••••</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                          <path d="M20 7h-3a2 2 0 0 1-2-2V2"></path>
+                          <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path>
+                          <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-24 relative z-10 bg-black/50">
+    <div class="container px-4 mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">
+          Everything you need to keep your digital life secure and organized
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature Card 1 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <path d="M20 7h-3a2 2 0 0 1-2-2V2"></path>
+                <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path>
+                <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">Project Organization</h3>
+          </div>
+          <p class="text-gray-400">Create multiple projects to organize different types of credentials. Keep work, personal, and family passwords separate.</p>
+        </div>
+        
+        <!-- Feature Card 2 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">All Credential Types</h3>
+          </div>
+          <p class="text-gray-400">Store any type of sensitive information: passwords, API keys, credit cards, banking details, Wi-Fi credentials, and more.</p>
+        </div>
+        
+        <!-- Feature Card 3 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">End-to-End Encryption</h3>
+          </div>
+          <p class="text-gray-400">Your data is encrypted on your device before it reaches our servers. Only you have the keys to decrypt your information.</p>
+        </div>
+        
+        <!-- Feature Card 4 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">Secure Sharing (Coming Soon)</h3>
+          </div>
+          <p class="text-gray-400">Share credentials with team members or family without compromising security. Control access and revoke at any time.</p>
+        </div>
+        
+        <!-- Feature Card 5 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">Breach Alerts (Coming Soon)</h3>
+          </div>
+          <p class="text-gray-400">Get notified if your credentials appear in data breaches. Stay one step ahead of potential security threats.</p>
+        </div>
+        
+        <!-- Feature Card 6 -->
+        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
+          <div class="flex items-center mb-4">
+            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold">Cross-Platform Access (Coming Soon)</h3>
+          </div>
+          <p class="text-gray-400">Access your credentials from any device. Our platform works seamlessly across desktop, mobile, and browser extensions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security Section -->
+  <section id="security" class="py-24 relative z-10">
+    <div class="container px-4 mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <div class="inline-block px-3 py-1 mb-6 text-xs font-medium text-white bg-white/10 rounded-xl">
+            Security First
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold mb-6">Fortress-Grade Security for Your Data</h2>
+          <p class="text-gray-400 mb-8">
+            Experience unparalleled protection with our advanced security architecture, combining Zero-Knowledge protocols and AES-GCM encryption to safeguard your sensitive information.          </p>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>End-to-End Encryption - </strong> Data is encrypted on your device before transmission, ensuring privacy throughout its journey.</p>
+            </li>
+            
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>Zero-Knowledge Architecture - </strong> Only you possess the keys to decrypt your data; we have no access to your unencrypted information.</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>AES-256 - </strong> Utilized by governments and financial institutions, AES-256 offers top-tier security.</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>Galois/Counter Mode (GCM) - </strong> Provides authenticated encryption, ensuring data integrity and confidentiality.</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>Two-Factor Authentication (2FA) - </strong> Adds an extra layer of security to your account access.</p>
+            </li>
+            <li class="flex items-start">
+              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400"><strong>Open Source Transparency - </strong> Our codebase is publicly available, allowing for community-driven security audits and trust.</p>
+            </li>
+          </ul>
+        </div>
+        <div class="relative">
+          <div class="absolute -inset-1 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur opacity-30"></div>
+          <div class="bg-gray-900/70 border border-gray-800/50 overflow-hidden rounded-2xl">
+            <pre class="text-sm text-gray-400 p-6 overflow-x-auto">
+              <code>// Client-side encryption
+const encryptData = async (data, userKey) => {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encryptionKey = await deriveKey(userKey);
+  
+  const encryptedData = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    encryptionKey,
+    new TextEncoder().encode(JSON.stringify(data))
+  );
+  
+  return {
+    iv: arrayBufferToBase64(iv),
+    data: arrayBufferToBase64(encryptedData)
+  };
+};</code>
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 relative z-10 bg-gradient-to-b from-black/50 to-gray-900/30">
+    <div class="container px-4 mx-auto text-center">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to secure your digital life?</h2>
+        <p class="text-xl text-gray-400 mb-10">
+          Join thousands of users who trust Zecrypt with their most sensitive information.
+        </p>
+        <button class="bg-white text-black hover:bg-gray-200 transition-colors px-6 py-3 text-lg rounded-xl"  onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+          Get Started
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simplified Footer -->
+  <footer class="bg-black py-12 relative z-10 border-t border-white/10">
+    <div class="container px-4 mx-auto">
+      <div class="flex flex-col items-center justify-center text-center">
+        <div class="flex items-center space-x-2 mb-4">
+          <a href="/">
+            <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
+          </a>
+        </div>
+        <p class="text-gray-400 text-sm max-w-md mb-6">
+          Experience unparalleled privacy with SecureVault, the open-source platform designed to protect your sensitive information through robust end-to-end encryption.        </p>
+        <div class="flex space-x-6">
+          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            <span class="sr-only">GitHub</span>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+            </svg>
+            <span class="sr-only">Twitter</span>
+          </a>
+          <a href="https://www.linkedin.com/company/zecrypt-labs" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+              <rect x="2" y="9" width="4" height="12"></rect>
+              <circle cx="4" cy="4" r="2"></circle>
+            </svg>
+            <span class="sr-only">LinkedIn</span>
+          </a>
+        </div>
+        <p class="mt-8 text-gray-500 text-sm">© <script>document.write(new Date().getFullYear())</script> Zecrypt Labs. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript for animations -->
+  <script type="module">
+
+      // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSh6uAtVEEpiVxe4-Orzri-n5DLtwQAyU",
+      authDomain: "zecrypt-io.firebaseapp.com",
+      projectId: "zecrypt-io",
+      storageBucket: "zecrypt-io.firebasestorage.app",
+      messagingSenderId: "416558187150",
+      appId: "1:416558187150:web:1e174a70ed1e616902bfdf",
+      measurementId: "G-DJNLQM2H0K"
+    };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 10) {
+        navbar.classList.add('bg-black/80', 'backdrop-blur-md', 'py-3', 'shadow-md');
+        navbar.classList.remove('py-6', 'bg-transparent');
+      } else {
+        navbar.classList.remove('bg-black/80', 'backdrop-blur-md', 'py-3', 'shadow-md');
+        navbar.classList.add('py-6', 'bg-transparent');
+      }
+    });
+    
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    mobileMenuButton.addEventListener('click', function() {
+      mobileMenu.classList.toggle('hidden');
+      
+      // Change icon based on menu state
+      if (mobileMenu.classList.contains('hidden')) {
+        mobileMenuButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        `;
+      } else {
+        mobileMenuButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        `;
+      }
+    });
+    
+    // Close mobile menu when clicking on a link
+    const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+    mobileMenuLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.add('hidden');
+        mobileMenuButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        `;
+      });
+    });
+    
+    // Particle animation
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      // Particle class
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2 + 0.5;
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = (Math.random() - 0.5) * 0.5;
+          this.opacity = Math.random() * 0.5 + 0.1;
+          this.color = `rgba(255, 255, 255, ${this.opacity})`;
+        }
+        
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          
+          // Reset if out of bounds
+          if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.reset();
+          }
+        }
+        
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      // Create particles
+      const particles = [];
+      const particleCount = 100;
+      
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+      
+      // Animation loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Update and draw particles
+        particles.forEach(particle => {
+          particle.update();
+          particle.draw();
+        });
+        
+        // Draw connections between particles
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - distance / 100)})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    });
+  </script>
+</body>
+</html>
