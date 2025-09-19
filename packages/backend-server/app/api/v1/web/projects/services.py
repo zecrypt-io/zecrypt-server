@@ -1,11 +1,12 @@
 from app.utils.date_utils import create_timestamp
 from app.utils.utils import create_uuid, response_helper, filter_payload
+from app.managers.collection_names import PROJECT_KEYS
+
 from app.managers import (
     project as project_manager,
-    project_keys as project_keys_manager,
     secrets as secrets_manager,
 )
-
+from app.framework.mongo_db import base_manager as db_manager
 from app.utils.i8ns import translate
 
 
@@ -133,8 +134,8 @@ def get_tags(db, project_id):
 
 
 def add_project_key(db, user_id, project_id, workspace_id, project_key):
-    project_keys_manager.insert_one(
-        db,
+    db_manager.insert_one(
+        db, PROJECT_KEYS,
         {
             "doc_id": create_uuid(),
             "project_id": project_id,
@@ -148,8 +149,9 @@ def add_project_key(db, user_id, project_id, workspace_id, project_key):
 def get_project_keys(request, user):
     db = user.get("db")
     user_id = user.get("user_id")
-    project_keys = project_keys_manager.find(
+    project_keys = db_manager.find(
         db,
+        PROJECT_KEYS,
         {"user_id": user_id, "workspace_id": request.path_params.get("workspace_id")},
     )
     final_project_keys = []

@@ -4,7 +4,9 @@ from app.utils.date_utils import create_timestamp
 def insert_one(db, collection_name, data):
     data["created_at"] = create_timestamp()
     data["updated_at"] = create_timestamp()
-    return db[collection_name].insert_one(data)
+    db[collection_name].insert_one(data)
+    data.pop("_id", None)
+    return data
 
 
 def insert_many(db, collection_name, data_list):
