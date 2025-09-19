@@ -102,13 +102,14 @@
       background-color: #050505;
       color: white;
       overflow-x: hidden;
+      font-feature-settings: "rlig" 1, "calt" 1;
     }
     
-    /* Animations */
+    /* Enhanced Animations */
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
       }
       to {
         opacity: 1;
@@ -116,8 +117,56 @@
       }
     }
     
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
     .animate-fade-in-up {
-      animation: fadeInUp 0.6s ease forwards;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    .animate-slide-in-left {
+      animation: slideInLeft 0.8s ease forwards;
+    }
+    
+    .animate-slide-in-right {
+      animation: slideInRight 0.8s ease forwards;
     }
     
     .animate-delay-100 {
@@ -136,55 +185,189 @@
       animation-delay: 0.4s;
     }
     
-    /* Card hover effect */
+    .animate-delay-500 {
+      animation-delay: 0.5s;
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Enhanced Card hover effects */
     .card-hover {
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
     }
     
     .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .feature-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+      border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-4px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }
     
-    /* Step animation */
-    .step-item {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .mobile-padding {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      
+      .mobile-text-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+      
+      .mobile-text-lg {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+      }
+      
+      .mobile-text-xl {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+      }
+      
+      .mobile-text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+      }
+      
+      .mobile-text-3xl {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+      }
+      
+      .mobile-text-4xl {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+      }
+      
+      .mobile-grid-1 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .mobile-space-y-4 > * + * {
+        margin-top: 1rem;
+      }
+      
+      .mobile-space-y-6 > * + * {
+        margin-top: 1.5rem;
+      }
+      
+      .mobile-space-y-8 > * + * {
+        margin-top: 2rem;
+      }
     }
     
-    .step-item.visible {
-      opacity: 1;
-      transform: translateY(0);
+    /* Gradient text effects */
+    .gradient-text {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-
-    /* Dashboard screenshot styling */
-    .dashboard-preview {
+    
+    .gradient-text-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Button enhancements */
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
     }
     
-    .dashboard-preview::before {
+    .btn-primary::before {
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
-      pointer-events: none;
-      z-index: 1;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
     }
     
-    .dashboard-preview img {
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Glass morphism effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6a6a6a;
+    }
+    
+    /* Loading states */
+    .loading {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
       width: 100%;
-      height: auto;
-      display: block;
-      filter: brightness(1.1) contrast(1.05) saturate(1.1);
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+      0% {
+        left: -100%;
+      }
+      100% {
+        left: 100%;
+      }
     }
   </style>
 </head>
@@ -192,36 +375,41 @@
   <!-- Background Canvas -->
   <canvas id="particles-canvas" class="fixed inset-0 z-0 opacity-30"></canvas>
 
-  <!-- Navigation -->
-  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-6">
-    <div class="container mx-auto px-4">
+  <!-- Enhanced Navigation -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 md:py-6">
+    <div class="container mx-auto px-4 mobile-padding">
       <div class="flex items-center justify-between">
-         <a href="/" class="flex items-center space-x-2">
-          <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
+        <a href="/" class="flex items-center space-x-2 group">
+          <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10 transition-transform group-hover:scale-105">
         </a>
 
         <!-- Desktop Navigation -->
         <nav class="hidden md:flex items-center space-x-8">
-          <a href="#features" class="text-sm text-gray-400 hover:text-white transition-colors">Features</a>
-          <a href="#security" class="text-sm text-gray-400 hover:text-white transition-colors">Security</a>
-          <!-- <a href="#pricing" class="text-sm text-gray-400 hover:text-white transition-colors">Pricing</a> -->
+          <a href="#features" class="text-sm text-gray-400 hover:text-white transition-all duration-300 hover:scale-105 relative group">
+            Features
+            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 group-hover:w-full"></span>
+          </a>
+          <a href="#security" class="text-sm text-gray-400 hover:text-white transition-all duration-300 hover:scale-105 relative group">
+            Security
+            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 group-hover:w-full"></span>
+          </a>
         </nav>
 
         <!-- Desktop CTA -->
         <div class="hidden md:flex items-center space-x-4">
-          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-400 hover:text-white transition-all duration-300 hover:scale-105 group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 group-hover:rotate-12 transition-transform">
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
             <span>GitHub</span>
           </a>
-          <button class="border border-white/20 text-white hover:border-white/50 transition-colors px-4 py-2 rounded-xl text-sm" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+          <button class="btn-primary px-6 py-2.5 rounded-xl text-sm font-semibold" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
             Open App
           </button>
         </div>
 
         <!-- Mobile Menu Button -->
-        <button id="mobile-menu-button" class="md:hidden text-white">
+        <button id="mobile-menu-button" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -231,94 +419,95 @@
       </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="md:hidden bg-gray-900 absolute top-full left-0 right-0 p-4 shadow-lg hidden">
-      <nav class="flex flex-col space-y-4 mb-6">
-        <a href="#features" class="text-gray-400 hover:text-white transition-colors py-2">Features</a>
-        <a href="#security" class="text-gray-400 hover:text-white transition-colors py-2">Security</a>
+    <!-- Enhanced Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden glass absolute top-full left-0 right-0 p-6 shadow-2xl hidden animate-fade-in-up">
+      <nav class="flex flex-col space-y-6 mb-8">
+        <a href="#features" class="text-gray-300 hover:text-white transition-colors py-3 text-lg font-medium border-b border-white/10 hover:border-blue-400/50">Features</a>
+        <a href="#security" class="text-gray-300 hover:text-white transition-colors py-3 text-lg font-medium border-b border-white/10 hover:border-blue-400/50">Security</a>
       </nav>
-      <div class="flex flex-col space-y-3">
-        <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors py-2">
+      <div class="flex flex-col space-y-4">
+        <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors py-3 px-4 rounded-lg hover:bg-white/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
             <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
           </svg>
-          <span>GitHub</span>
+          <span>View on GitHub</span>
         </a>
-        <button class="bg-white text-black hover:bg-gray-200 transition-colors px-4 py-2 rounded-xl text-sm w-full" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
-          Open App
+        <button class="btn-primary px-6 py-3 rounded-xl text-sm font-semibold w-full" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+          Get Started Free
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="relative pt-32 pb-32 overflow-hidden">
-    <div class="container px-4 mx-auto relative z-10">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="inline-block px-3 py-1 mb-6 text-xs font-medium text-white bg-white/10 rounded-xl animate-fade-in-up">
-          End-to-End Encrypted Storage
+  <!-- Enhanced Hero Section -->
+  <section class="relative pt-24 md:pt-32 pb-16 md:pb-32 overflow-hidden">
+    <div class="container px-4 mx-auto relative z-10 mobile-padding">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="inline-block px-4 py-2 mb-6 md:mb-8 text-sm font-medium text-white bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-full backdrop-blur-sm animate-fade-in-up">
+          🔒 End-to-End Encrypted Storage
         </div>
-        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in-up animate-delay-100">
-          Your Digital Life, <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Secured</span>
+        <h1 class="mobile-text-4xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 leading-tight animate-fade-in-up animate-delay-100">
+          Your Digital Life, <br class="md:hidden">
+          <span class="gradient-text-blue animate-float">Secured</span>
         </h1>
-        <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up animate-delay-200">
+        <p class="mobile-text-lg md:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed animate-fade-in-up animate-delay-200">
           Store passwords, API keys, and confidential documents with military-grade encryption. Our open-source platform uses Zero-Knowledge architecture and AES-256 encryption to keep your data truly private.
         </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16 animate-fade-in-up animate-delay-300">
-          <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 px-8 py-4 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
-            Get Started Free
+        <div class="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 mb-12 md:mb-16 animate-fade-in-up animate-delay-300">
+          <button class="btn-primary px-8 py-4 md:py-5 rounded-xl text-sm md:text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+            🚀 Get Started Free
           </button>
-          <button class="border border-white/20 text-white hover:border-white/50 hover:bg-white/5 transition-all duration-300 px-8 py-4 rounded-xl text-sm font-semibold backdrop-blur-sm" onclick="window.open('https://github.com/zecrypt-io/zecrypt-server', '_blank', 'noopener,noreferrer')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2 h-4 w-4">
+          <button class="glass text-white hover:bg-white/10 transition-all duration-300 px-8 py-4 md:py-5 rounded-xl text-sm md:text-base font-semibold backdrop-blur-sm w-full sm:w-auto group" onclick="window.open('https://github.com/zecrypt-io/zecrypt-server', '_blank', 'noopener,noreferrer')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2 h-4 w-4 group-hover:rotate-12 transition-transform">
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
             View on GitHub
           </button>
         </div>
         <div class="relative animate-fade-in-up animate-delay-400">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div class="grid mobile-grid-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
             <!-- Security Stats Card -->
-            <div class="bg-gradient-to-br from-blue-500/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-sm hover:scale-105 transition-transform duration-300">
-              <div class="flex flex-col items-center text-center space-y-4">
-                <div class="bg-blue-500/20 p-4 rounded-xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+            <div class="feature-card rounded-2xl p-4 md:p-6 card-hover group">
+              <div class="flex flex-col items-center text-center space-y-3 md:space-y-4">
+                <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/30 p-3 md:p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 md:w-8 md:h-8">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </div>
                 <div class="space-y-2">
-                  <h3 class="text-xl font-bold text-blue-400">256-bit AES Encryption</h3>
-                  <p class="text-sm text-gray-400 leading-relaxed">Military-grade encryption protecting your data with industry-standard security</p>
+                  <h3 class="mobile-text-lg md:text-xl font-bold text-blue-400">256-bit AES Encryption</h3>
+                  <p class="mobile-text-sm text-gray-400 leading-relaxed">Military-grade encryption protecting your data with industry-standard security</p>
                 </div>
               </div>
             </div>
 
             <!-- Zero Knowledge Card -->
-            <div class="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-6 backdrop-blur-sm hover:scale-105 transition-transform duration-300">
-              <div class="flex flex-col items-center text-center space-y-4">
-                <div class="bg-green-500/20 p-4 rounded-xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+            <div class="feature-card rounded-2xl p-4 md:p-6 card-hover group">
+              <div class="flex flex-col items-center text-center space-y-3 md:space-y-4">
+                <div class="bg-gradient-to-br from-green-500/20 to-green-600/30 p-3 md:p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400 md:w-8 md:h-8">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   </svg>
                 </div>
                 <div class="space-y-2">
-                  <h3 class="text-xl font-bold text-green-400">100% Zero Knowledge</h3>
-                  <p class="text-sm text-gray-400 leading-relaxed">Only you can access your encrypted data - we never see your information</p>
+                  <h3 class="mobile-text-lg md:text-xl font-bold text-green-400">100% Zero Knowledge</h3>
+                  <p class="mobile-text-sm text-gray-400 leading-relaxed">Only you can access your encrypted data - we never see your information</p>
                 </div>
               </div>
             </div>
 
             <!-- Open Source Card -->
-            <div class="bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 rounded-2xl p-6 backdrop-blur-sm hover:scale-105 transition-transform duration-300">
-              <div class="flex flex-col items-center text-center space-y-4">
-                <div class="bg-orange-500/20 p-4 rounded-xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400">
+            <div class="feature-card rounded-2xl p-4 md:p-6 card-hover group">
+              <div class="flex flex-col items-center text-center space-y-3 md:space-y-4">
+                <div class="bg-gradient-to-br from-orange-500/20 to-orange-600/30 p-3 md:p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400 md:w-8 md:h-8">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                   </svg>
                 </div>
                 <div class="space-y-2">
-                  <h3 class="text-xl font-bold text-orange-400">Open Source Code</h3>
-                  <p class="text-sm text-gray-400 leading-relaxed">Transparent and auditable by the community for complete trust</p>
+                  <h3 class="mobile-text-lg md:text-xl font-bold text-orange-400">Open Source Code</h3>
+                  <p class="mobile-text-sm text-gray-400 leading-relaxed">Transparent and auditable by the community for complete trust</p>
                 </div>
               </div>
             </div>
@@ -413,174 +602,196 @@
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section id="features" class="py-24 relative z-10 bg-black/50">
-    <div class="container px-4 mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">
+  <!-- Enhanced Features Section -->
+  <section id="features" class="py-16 md:py-24 relative z-10 bg-black/50">
+    <div class="container px-4 mx-auto mobile-padding">
+      <div class="text-center mb-12 md:mb-16">
+        <h2 class="mobile-text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 gradient-text">Key Features</h2>
+        <p class="mobile-text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
           Everything you need to keep your digital life secure and organized
         </p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid mobile-grid-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         <!-- Feature Card 1 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
                 <path d="M20 7h-3a2 2 0 0 1-2-2V2"></path>
                 <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path>
                 <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">Project Organization</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">Project Organization</h3>
           </div>
-          <p class="text-gray-400">Create multiple projects to organize different types of credentials. Keep work, personal, and family passwords separate.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Create multiple projects to organize different types of credentials. Keep work, personal, and family passwords separate.</p>
         </div>
         
         <!-- Feature Card 2 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-green-500/20 to-green-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">All Credential Types</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">All Credential Types</h3>
           </div>
-          <p class="text-gray-400">Store any type of sensitive information: passwords, API keys, credit cards, banking details, Wi-Fi credentials, and more.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Store any type of sensitive information: passwords, API keys, credit cards, banking details, Wi-Fi credentials, and more.</p>
         </div>
         
         <!-- Feature Card 3 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-purple-500/20 to-purple-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">End-to-End Encryption</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">End-to-End Encryption</h3>
           </div>
-          <p class="text-gray-400">Your data is encrypted on your device before it reaches our servers. Only you have the keys to decrypt your information.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Your data is encrypted on your device before it reaches our servers. Only you have the keys to decrypt your information.</p>
         </div>
         
         <!-- Feature Card 4 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-orange-500/20 to-orange-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">Secure Sharing (Coming Soon)</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">Secure Sharing <span class="text-orange-400 text-sm">(Coming Soon)</span></h3>
           </div>
-          <p class="text-gray-400">Share credentials with team members or family without compromising security. Control access and revoke at any time.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Share credentials with team members or family without compromising security. Control access and revoke at any time.</p>
         </div>
         
         <!-- Feature Card 5 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-red-500/20 to-red-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                 <line x1="12" y1="9" x2="12" y2="13"></line>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">Breach Alerts (Coming Soon)</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">Breach Alerts <span class="text-red-400 text-sm">(Coming Soon)</span></h3>
           </div>
-          <p class="text-gray-400">Get notified if your credentials appear in data breaches. Stay one step ahead of potential security threats.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Get notified if your credentials appear in data breaches. Stay one step ahead of potential security threats.</p>
         </div>
         
         <!-- Feature Card 6 -->
-        <div class="bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:translate-y-[-4px] rounded-xl p-6 card-hover">
-          <div class="flex items-center mb-4">
-            <div class="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+        <div class="feature-card rounded-xl p-4 md:p-6 card-hover group">
+          <div class="flex items-start md:items-center mb-4 space-x-3">
+            <div class="bg-gradient-to-br from-cyan-500/20 to-cyan-600/30 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
                 <line x1="12" y1="18" x2="12.01" y2="18"></line>
               </svg>
             </div>
-            <h3 class="text-xl font-bold">Cross-Platform Access (Coming Soon)</h3>
+            <h3 class="mobile-text-lg md:text-xl font-bold text-white">Cross-Platform Access <span class="text-cyan-400 text-sm">(Coming Soon)</span></h3>
           </div>
-          <p class="text-gray-400">Access your credentials from any device. Our platform works seamlessly across desktop, mobile, and browser extensions.</p>
+          <p class="mobile-text-sm text-gray-400 leading-relaxed">Access your credentials from any device. Our platform works seamlessly across desktop, mobile, and browser extensions.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Security Section -->
-  <section id="security" class="py-24 relative z-10">
-    <div class="container px-4 mx-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <div class="inline-block px-3 py-1 mb-6 text-xs font-medium text-white bg-white/10 rounded-xl">
-            Security First
+  <!-- Enhanced Security Section -->
+  <section id="security" class="py-16 md:py-24 relative z-10">
+    <div class="container px-4 mx-auto mobile-padding">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
+        <div class="order-2 lg:order-1">
+          <div class="inline-block px-4 py-2 mb-6 text-sm font-medium text-white bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/30 rounded-full backdrop-blur-sm">
+            🛡️ Security First
           </div>
-          <h2 class="text-3xl md:text-4xl font-bold mb-6">Fortress-Grade Security for Your Data</h2>
-          <p class="text-gray-400 mb-8">
-            Experience unparalleled protection with our advanced security architecture, combining Zero-Knowledge protocols and AES-GCM encryption to safeguard your sensitive information.          </p>
-          <ul class="space-y-4">
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+          <h2 class="mobile-text-3xl md:text-4xl lg:text-5xl font-bold mb-6 gradient-text">Fortress-Grade Security</h2>
+          <p class="mobile-text-lg text-gray-400 mb-8 leading-relaxed">
+            Experience unparalleled protection with our advanced security architecture, combining Zero-Knowledge protocols and AES-GCM encryption to safeguard your sensitive information.
+          </p>
+          <ul class="mobile-space-y-4 space-y-4">
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-blue-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>End-to-End Encryption - </strong> Data is encrypted on your device before transmission, ensuring privacy throughout its journey.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-blue-400">End-to-End Encryption</span> - Data is encrypted on your device before transmission, ensuring privacy throughout its journey.</p>
+              </div>
             </li>
             
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-green-500/20 to-green-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-green-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>Zero-Knowledge Architecture - </strong> Only you possess the keys to decrypt your data; we have no access to your unencrypted information.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-green-400">Zero-Knowledge Architecture</span> - Only you possess the keys to decrypt your data; we have no access to your unencrypted information.</p>
+              </div>
             </li>
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-purple-500/20 to-purple-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-purple-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>AES-256 - </strong> Utilized by governments and financial institutions, AES-256 offers top-tier security.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-purple-400">AES-256</span> - Utilized by governments and financial institutions, AES-256 offers top-tier security.</p>
+              </div>
             </li>
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-orange-500/20 to-orange-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-orange-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>Galois/Counter Mode (GCM) - </strong> Provides authenticated encryption, ensuring data integrity and confidentiality.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-orange-400">Galois/Counter Mode (GCM)</span> - Provides authenticated encryption, ensuring data integrity and confidentiality.</p>
+              </div>
             </li>
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-red-500/20 to-red-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-red-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>Two-Factor Authentication (2FA) - </strong> Adds an extra layer of security to your account access.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-red-400">Two-Factor Authentication (2FA)</span> - Adds an extra layer of security to your account access.</p>
+              </div>
             </li>
-            <li class="flex items-start">
-              <div class="mr-3 mt-1 bg-white/10 p-1 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            
+            <li class="flex items-start space-x-3">
+              <div class="bg-gradient-to-br from-cyan-500/20 to-cyan-600/30 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-cyan-400">
                   <path d="M20 7h-8m0 0H4m8 0v14m-4 0h8"></path>
                 </svg>
               </div>
-              <p class="text-gray-400"><strong>Open Source Transparency - </strong> Our codebase is publicly available, allowing for community-driven security audits and trust.</p>
+              <div>
+                <p class="mobile-text-sm text-gray-400 leading-relaxed"><span class="font-semibold text-cyan-400">Open Source Transparency</span> - Our codebase is publicly available, allowing for community-driven security audits and trust.</p>
+              </div>
             </li>
           </ul>
         </div>
-        <div class="relative">
-          <div class="absolute -inset-1 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur opacity-30"></div>
-          <div class="bg-gray-900/70 border border-gray-800/50 overflow-hidden rounded-2xl">
-            <pre class="text-sm text-gray-400 p-6 overflow-x-auto">
-              <code>// Client-side encryption
+        <div class="relative order-1 lg:order-2">
+          <div class="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-30"></div>
+          <div class="glass rounded-2xl overflow-hidden">
+            <div class="bg-gray-800/50 px-4 py-3 border-b border-white/10 flex items-center space-x-2">
+              <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span class="text-xs text-gray-400 ml-4">encryption.js</span>
+            </div>
+            <pre class="mobile-text-xs text-gray-300 p-4 md:p-6 overflow-x-auto"><code>// Client-side encryption
 const encryptData = async (data, userKey) => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encryptionKey = await deriveKey(userKey);
@@ -595,63 +806,76 @@ const encryptData = async (data, userKey) => {
     iv: arrayBufferToBase64(iv),
     data: arrayBufferToBase64(encryptedData)
   };
-};</code>
-            </pre>
+};</code></pre>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="py-24 relative z-10 bg-gradient-to-b from-black/50 to-gray-900/30">
-    <div class="container px-4 mx-auto text-center">
-      <div class="max-w-3xl mx-auto">
-        <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to secure your digital life?</h2>
-        <p class="text-xl text-gray-400 mb-10">
+  <!-- Enhanced CTA Section -->
+  <section class="py-16 md:py-24 relative z-10 bg-gradient-to-b from-black/50 to-gray-900/30">
+    <div class="container px-4 mx-auto text-center mobile-padding">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="mobile-text-3xl md:text-4xl lg:text-5xl font-bold mb-6 md:mb-8 gradient-text">Ready to secure your digital life?</h2>
+        <p class="mobile-text-lg md:text-xl text-gray-400 mb-8 md:mb-12 leading-relaxed">
           Join thousands of users who trust Zecrypt with their most sensitive information. Start protecting your data today.
         </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-          <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
-            Get Started Free
+        <div class="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 mb-8">
+          <button class="btn-primary px-8 py-4 md:py-5 rounded-xl text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto" onclick="window.open('https://app.zecrypt.io', '_blank', 'noopener,noreferrer')">
+            🚀 Get Started Free
           </button>
-          <button class="border border-white/20 text-white hover:border-white/50 hover:bg-white/5 transition-all duration-300 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-sm" onclick="window.open('https://github.com/zecrypt-io/zecrypt-server', '_blank', 'noopener,noreferrer')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2 h-5 w-5">
+          <button class="glass text-white hover:bg-white/10 transition-all duration-300 px-8 py-4 md:py-5 rounded-xl text-base md:text-lg font-semibold backdrop-blur-sm w-full sm:w-auto group" onclick="window.open('https://github.com/zecrypt-io/zecrypt-server', '_blank', 'noopener,noreferrer')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2 h-5 w-5 group-hover:rotate-12 transition-transform">
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
             View on GitHub
           </button>
         </div>
-        <p class="mt-6 text-sm text-gray-500">No credit card required • Open source forever • 100% free</p>
+        <div class="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-sm text-gray-500">
+          <span class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span>No credit card required</span>
+          </span>
+          <span class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span>Open source forever</span>
+          </span>
+          <span class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+            <span>100% free</span>
+          </span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Simplified Footer -->
-  <footer class="bg-black py-12 relative z-10 border-t border-white/10">
-    <div class="container px-4 mx-auto">
+  <!-- Enhanced Footer -->
+  <footer class="bg-black py-12 md:py-16 relative z-10 border-t border-white/10">
+    <div class="container px-4 mx-auto mobile-padding">
       <div class="flex flex-col items-center justify-center text-center">
-        <div class="flex items-center space-x-2 mb-4">
-          <a href="/">
-            <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10">
+        <div class="flex items-center space-x-3 mb-6 group">
+          <a href="/" class="flex items-center space-x-3 group">
+            <img src="logo.png" alt="Zecrypt Logo" class="h-8 md:h-10 transition-transform group-hover:scale-105">
           </a>
         </div>
-        <p class="text-gray-400 text-sm max-w-md mb-6">
-          Experience unparalleled privacy with SecureVault, the open-source platform designed to protect your sensitive information through robust end-to-end encryption.        </p>
-        <div class="flex space-x-6">
-          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+        <p class="mobile-text-sm text-gray-400 max-w-md mb-8 leading-relaxed">
+          Experience unparalleled privacy with Zecrypt, the open-source platform designed to protect your sensitive information through robust end-to-end encryption.
+        </p>
+        <div class="flex space-x-6 mb-8">
+          <a href="https://github.com/zecrypt-io/zecrypt-server" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 p-2 rounded-lg hover:bg-white/5">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
             <span class="sr-only">GitHub</span>
           </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 p-2 rounded-lg hover:bg-white/5">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
               <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
             </svg>
             <span class="sr-only">Twitter</span>
           </a>
-          <a href="https://www.linkedin.com/company/zecrypt-labs" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+          <a href="https://www.linkedin.com/company/zecrypt-labs" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110 p-2 rounded-lg hover:bg-white/5">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
               <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
               <rect x="2" y="9" width="4" height="12"></rect>
@@ -660,7 +884,9 @@ const encryptData = async (data, userKey) => {
             <span class="sr-only">LinkedIn</span>
           </a>
         </div>
-        <p class="mt-8 text-gray-500 text-sm">© <script>document.write(new Date().getFullYear())</script> Zecrypt Labs. All rights reserved.</p>
+        <div class="w-full pt-6 border-t border-white/10">
+          <p class="text-gray-500 text-xs md:text-sm">© <script>document.write(new Date().getFullYear())</script> Zecrypt Labs. All rights reserved. Built with ❤️ for security.</p>
+        </div>
       </div>
     </div>
   </footer>
