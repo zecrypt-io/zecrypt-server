@@ -40,7 +40,7 @@ def create_uuid():
 
 def get_origins(env):
     data = {
-        "production": ["https://app.zecrypt.io"],
+        "production": ["https://app.zecrypt.io", "http://localhost:3000"],
         "dev": ["http://localhost:3000", "https://preview.app.zecrypt.io", "chrome-extension://*"],
     }
     return data.get(env, ["*"])
