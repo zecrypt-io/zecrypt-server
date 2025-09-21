@@ -11,3 +11,7 @@ class RenameFolder(BaseModel):
     name: str
     folder_id: str
     parent_id: Optional[str] = None
+
+class MoveFolder(BaseModel):
+    folder_ids: List[str]
+    parent_id: str

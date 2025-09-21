@@ -87,3 +87,11 @@ async def rename_folder(user, payload):
         
     db_manager.update_one(db, FOLDERS, {"doc_id": payload.get("folder_id"),"created_by": user_id}, {"$set": {"name": payload.get("name")}, "lower_name":lower_name})
     return response_helper(200, translate("folder.renamed"))
+
+async def move_folder(user, payload):
+    db = user.get("db")
+    user_id = user.get("user_id")
+    folder_ids = payload.get("folder_ids")
+    parent_id = payload.get("parent_id")
+    db_manager.update_many(db, FOLDERS, {"doc_id":{"$in": folder_ids},"created_by": user_id}, {"$set": {"parent_id": parent_id}})
+    return response_helper(200, translate("folder.moved"))
