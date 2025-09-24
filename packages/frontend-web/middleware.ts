@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Available locales
-export const locales = ['en', 'de', 'fr', 'es','af','ar', 'ca'];
+export const locales = ['en', 'de', 'fr', 'es','af','ar', 'ca','cs'];
 export const defaultLocale = 'en';
 
 // Protected routes that require authentication
