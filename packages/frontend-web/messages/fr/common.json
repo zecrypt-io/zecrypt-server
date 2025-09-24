@@ -402,7 +402,9 @@
     "no_accounts_create": "Aucun compte trouvé. Créez-en un pour commencer.",
     "adjust_search_filter": "Essayez d'ajuster vos critères de recherche ou de filtre",
     "no_recent_activity": "Aucune activité récente",
-    "no_projects_available": "Aucun projet disponible"
+    "no_projects_available": "Aucun projet disponible",
+    "no_workspace_selected": "Aucun espace de travail sélectionné"
+
   },
   "activity": {
     "password_updated": "Mot de passe mis à jour",

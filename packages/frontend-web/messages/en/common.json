@@ -402,7 +402,8 @@
     "no_accounts_create": "No accounts found. Create one to get started.",
     "adjust_search_filter": "Try adjusting your search or filter criteria",
     "no_recent_activity": "No recent activity",
-    "no_projects_available": "No projects available"
+    "no_projects_available": "No projects available",
+    "no_workspace_selected": "No workspace selected"
   },
   "activity": {
     "password_updated": "Password updated",
