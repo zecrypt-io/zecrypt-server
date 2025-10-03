@@ -145,6 +145,13 @@
     "dashboard":{
         "overview": "Dashboard overview loaded successfully",
         "recent_activity": "Recent activity loaded successfully"
+    },
+    "drive":{
+        "folders":{
+                "created": "Folder created successfully",
+                "deleted": "Folder deleted successfully",
+                "already_exists": "Folder already exists"
+        }
     }
 }
 

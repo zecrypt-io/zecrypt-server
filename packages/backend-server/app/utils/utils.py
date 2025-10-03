@@ -1,9 +1,12 @@
 from uuid_extensions import uuid7
-
+from datetime import datetime
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 import hashlib
 import json
+from datetime import datetime
+import pytz
+
 
 
 def response_helper(
@@ -56,3 +59,7 @@ def generate_query_hash(query, projection=None):
     combined_str = query_string + projection_str
 
     return hashlib.md5(combined_str.encode()).hexdigest()
+
+
+def create_timestamp():
+    return datetime.now(pytz.utc)
