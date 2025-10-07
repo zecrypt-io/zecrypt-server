@@ -4,7 +4,7 @@ from datetime import datetime
 
 class CreateFolder(BaseModel):
     name: str
-    parent_id: Optional[str]
+    parent_id: Optional[str]= None
     
 class RenameFolder(BaseModel):
     name: str
