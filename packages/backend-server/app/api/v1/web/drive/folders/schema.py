@@ -1,10 +1,11 @@
+from token import OP
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
 class CreateFolder(BaseModel):
     name: str
-    parent_id: str
+    parent_id: Optional[str]
     
 class RenameFolder(BaseModel):
     name: str
