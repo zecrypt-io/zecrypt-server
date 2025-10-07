@@ -57,9 +57,9 @@ export function useDriveManagement({
     
     try {
       // TODO: Replace with actual GET endpoint when available
-      // Recommended endpoint: GET /api/v1/web/drive/folder/list
+      // Recommended endpoint: GET /drive/folder/list
       // const response = await axiosInstance.get(
-      //   `/api/v1/web/drive/folder/list`,
+      //   `/drive/folder/list`,
       //   {
       //     params: {
       //       workspace_id: selectedWorkspaceId,
@@ -109,7 +109,7 @@ export function useDriveManagement({
         }
 
         await axiosInstance.post(
-          `/api/v1/web/drive/folder/create`,
+          `/drive/folder/create`,
           payload
         );
 
@@ -150,7 +150,7 @@ export function useDriveManagement({
         }
 
         await axiosInstance.post(
-          `/api/v1/web/drive/folder/rename`,
+          `/drive/folder/rename`,
           payload
         );
 
@@ -182,7 +182,7 @@ export function useDriveManagement({
     async (folderIds: string[], parentId: string) => {
       try {
         await axiosInstance.post(
-          `/api/v1/web/drive/folder/move`,
+          `/drive/folder/move`,
           {
             folder_ids: folderIds,
             parent_id: parentId,
@@ -217,7 +217,7 @@ export function useDriveManagement({
     async (folderIds: string[]) => {
       try {
         await axiosInstance.delete(
-          `/api/v1/web/drive/folder/delete`,
+          `/drive/folder/delete`,
           {
             data: { folder_ids: folderIds }
           }
