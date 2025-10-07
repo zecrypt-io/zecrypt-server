@@ -86,7 +86,7 @@ export function useDriveManagement({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedWorkspaceId, selectedProjectId, translate]);
+  }, [selectedWorkspaceId, selectedProjectId]);
 
   // Create folder
   const createFolder = useCallback(
@@ -134,7 +134,7 @@ export function useDriveManagement({
         throw error;
       }
     },
-    [selectedWorkspaceId, selectedProjectId, fetchFolders, translate]
+    [selectedWorkspaceId, selectedProjectId, fetchFolders]
   );
 
   // Rename folder
@@ -174,7 +174,7 @@ export function useDriveManagement({
         throw error;
       }
     },
-    [fetchFolders, translate]
+    [fetchFolders]
   );
 
   // Move folder(s)
@@ -209,7 +209,7 @@ export function useDriveManagement({
         throw error;
       }
     },
-    [fetchFolders, translate]
+    [fetchFolders]
   );
 
   // Delete folder(s)
@@ -243,7 +243,7 @@ export function useDriveManagement({
         throw error;
       }
     },
-    [fetchFolders, translate]
+    [fetchFolders]
   );
 
   // Get breadcrumb path for a folder
