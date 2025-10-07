@@ -15,6 +15,11 @@ class Settings(BaseSettings):
 
     VALKEY_URL: str
 
+    DO_SPACES_KEY:str
+    DO_SPACES_SECRET:str
+    DO_SPACES_REGION:str
+    DO_SPACES_BUCKET:str
+    DO_SPACES_ENDPOINT:str
     class Config:
         case_sensitive = True
         env_file = ".env"

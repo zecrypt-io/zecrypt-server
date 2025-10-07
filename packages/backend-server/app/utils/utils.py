@@ -6,7 +6,9 @@ import hashlib
 import json
 from datetime import datetime
 import pytz
+import os
 
+from pathlib import Path
 
 
 def response_helper(
@@ -63,3 +65,12 @@ def generate_query_hash(query, projection=None):
 
 def create_timestamp():
     return datetime.now(pytz.utc)
+
+def get_file_extension(filename):
+    _, ext = os.path.splitext(filename)
+    return ext.lstrip(".")
+
+
+
+def get_folders_from_path(path: str):
+    return [part for part in Path(path).parent.parts]
