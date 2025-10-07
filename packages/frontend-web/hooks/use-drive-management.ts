@@ -103,7 +103,7 @@ export function useDriveManagement({
       }
 
       try {
-        const payload: any = { name };
+        const payload: { name: string; parent_id?: string } = { name };
         if (parentId) {
           payload.parent_id = parentId;
         }
@@ -141,7 +141,7 @@ export function useDriveManagement({
   const renameFolder = useCallback(
     async (folderId: string, newName: string, parentId: string | null = null) => {
       try {
-        const payload: any = {
+        const payload: { name: string; folder_id: string; parent_id?: string } = {
           name: newName,
           folder_id: folderId,
         };
