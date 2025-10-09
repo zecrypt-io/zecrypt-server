@@ -13,6 +13,7 @@ import {
   Pencil,
   Move,
   Trash2,
+  Upload as UploadIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,6 +36,11 @@ import { useDriveManagement } from "@/hooks/use-drive-management";
 import { AddFolderDialog } from "./add-folder-dialog";
 import { RenameFolderDialog } from "./rename-folder-dialog";
 import { MoveFolderDialog } from "./move-folder-dialog";
+import { UploadFileDialog } from "./upload-file-dialog";
+import { FileCard } from "./file-card";
+import { RenameFileDialog } from "./rename-file-dialog";
+import { MoveFileDialog } from "./move-file-dialog";
+import { DeleteFileDialog } from "./delete-file-dialog";
 
 interface Folder {
   folder_id: string;
@@ -42,6 +48,21 @@ interface Folder {
   parent_id: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+interface DriveFile {
+  file_id: string;
+  name: string;
+  size: number;
+  original_size: number;
+  type: string;
+  iv: string;
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string | null;
+  created_by: string;
+  workspace_id: string;
+  project_id: string;
 }
 
 export function DriveContent() {
@@ -55,6 +76,7 @@ export function DriveContent() {
 
   const {
     folders,
+    files,
     isLoading,
     createFolder,
     renameFolder,
@@ -65,6 +87,12 @@ export function DriveContent() {
     setCurrentFolder,
     getFolderPath,
     getSubfolders,
+    uploadFile,
+    renameFile,
+    moveFile,
+    deleteFiles,
+    isUploading,
+    uploadProgress,
   } = useDriveManagement({
     selectedWorkspaceId,
     selectedProjectId,
@@ -77,8 +105,18 @@ export function DriveContent() {
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [isProcessingDelete, setIsProcessingDelete] = useState(false);
 
+  // File dialog states
+  const [showUploadFile, setShowUploadFile] = useState(false);
+  const [showRenameFile, setShowRenameFile] = useState(false);
+  const [showMoveFile, setShowMoveFile] = useState(false);
+  const [showDeleteFile, setShowDeleteFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
+
   // Get current subfolders to display
   const currentSubfolders = getSubfolders(currentFolder?.folder_id || null);
+
+  // Get current files to display
+  const currentFiles = files.filter(f => f.parent_id === (currentFolder?.folder_id || null));
 
   // Breadcrumb path
   const breadcrumbPath = getFolderPath(currentFolder?.folder_id || null);
@@ -132,6 +170,26 @@ export function DriveContent() {
     } finally {
       setIsProcessingDelete(false);
     }
+  };
+
+  // File handlers
+  const handleUploadFile = () => {
+    setShowUploadFile(true);
+  };
+
+  const handleRenameFile = (file: DriveFile) => {
+    setSelectedFile(file);
+    setShowRenameFile(true);
+  };
+
+  const handleMoveFile = (file: DriveFile) => {
+    setSelectedFile(file);
+    setShowMoveFile(true);
+  };
+
+  const handleDeleteFile = (file: DriveFile) => {
+    setSelectedFile(file);
+    setShowDeleteFile(true);
   };
 
   // Keyboard shortcuts
@@ -216,6 +274,10 @@ export function DriveContent() {
               {translate("back", "drive", { default: "Back" })}
             </Button>
           )}
+          <Button onClick={handleUploadFile} variant="outline" className="gap-2">
+            <UploadIcon className="h-4 w-4" />
+            {translate("upload_file", "drive", { default: "Upload File" })}
+          </Button>
           <Button onClick={handleCreateFolder} className="gap-2">
             <Plus className="h-4 w-4" />
             {translate("new_folder", "drive", { default: "New Folder" })}
@@ -223,16 +285,17 @@ export function DriveContent() {
         </div>
       </div>
 
-      {/* Folders Grid */}
+      {/* Folders and Files Grid */}
       <div className="border border-border/30 rounded-md p-6">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">
-              {translate("loading_folders", "drive", { default: "Loading folders..." })}
+              {translate("loading", "drive", { default: "Loading..." })}
             </p>
           </div>
-        ) : currentSubfolders.length > 0 ? (
+        ) : currentSubfolders.length > 0 || currentFiles.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {/* Folders */}
             {currentSubfolders.map((folder) => (
               <div
                 key={folder.folder_id}
@@ -285,24 +348,41 @@ export function DriveContent() {
                 </DropdownMenu>
               </div>
             ))}
+
+            {/* Files */}
+            {currentFiles.map((file) => (
+              <FileCard
+                key={file.file_id}
+                file={file}
+                onRename={handleRenameFile}
+                onMove={handleMoveFile}
+                onDelete={handleDeleteFile}
+              />
+            ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
             <FolderIcon className="h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">
-              {translate("no_folders", "drive", {
-                default: "No folders in this location",
+              {translate("no_items", "drive", {
+                default: "No items in this location",
               })}
             </p>
-            <Button onClick={handleCreateFolder} className="gap-2">
-              <Plus className="h-4 w-4" />
-              {translate("create_folder", "drive", { default: "Create Folder" })}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleUploadFile} variant="outline" className="gap-2">
+                <UploadIcon className="h-4 w-4" />
+                {translate("upload_file", "drive", { default: "Upload File" })}
+              </Button>
+              <Button onClick={handleCreateFolder} className="gap-2">
+                <Plus className="h-4 w-4" />
+                {translate("create_folder", "drive", { default: "Create Folder" })}
+              </Button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Dialogs */}
+      {/* Folder Dialogs */}
       <AddFolderDialog
         open={showAddFolder}
         onOpenChange={setShowAddFolder}
@@ -328,6 +408,43 @@ export function DriveContent() {
             selectedFolders={[selectedFolder]}
             allFolders={folders}
             onMoveFolder={moveFolder}
+          />
+        </>
+      )}
+
+      {/* File Dialogs */}
+      <UploadFileDialog
+        open={showUploadFile}
+        onOpenChange={setShowUploadFile}
+        onFileUploaded={fetchFolders}
+        currentFolder={currentFolder}
+        uploadFile={uploadFile}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+      />
+
+      {selectedFile && (
+        <>
+          <RenameFileDialog
+            open={showRenameFile}
+            onOpenChange={setShowRenameFile}
+            file={selectedFile}
+            onRename={renameFile}
+          />
+
+          <MoveFileDialog
+            open={showMoveFile}
+            onOpenChange={setShowMoveFile}
+            file={selectedFile}
+            folders={folders}
+            onMove={moveFile}
+          />
+
+          <DeleteFileDialog
+            open={showDeleteFile}
+            onOpenChange={setShowDeleteFile}
+            file={selectedFile}
+            onDelete={deleteFiles}
           />
         </>
       )}
