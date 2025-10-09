@@ -1,8 +1,8 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,Query
 from app.api.v1.web.drive.folders.schema import CreateFolder, RenameFolder, MoveFolder, DeleteFolders
 from app.api.v1.web.auth.schema import UserDetails
 from app.framework.permission_services.service import get_current_user
-from app.api.v1.web.drive.folders.services import create_folder,delete_folders,rename_folder, move_folders
+from app.api.v1.web.drive.folders.services import create_folder,delete_folders,rename_folder, move_folders, get_folders_list
 
 FOLDER_URL ="/folder"
 router = APIRouter()
@@ -26,3 +26,7 @@ async def rename_folder_api(payload: RenameFolder, user: UserDetails = Depends(g
 async def move_folder_api(payload: MoveFolder, user: UserDetails = Depends(get_current_user)):
     return await move_folders(user, payload.model_dump())
 
+
+@router.get(FOLDER_URL+"/list")
+async def get_all_folders_api(parent_id: str = Query(None, description="Parent folder ID", ge=1), user: UserDetails = Depends(get_current_user)):
+    return await get_folders_list(user, parent_id)

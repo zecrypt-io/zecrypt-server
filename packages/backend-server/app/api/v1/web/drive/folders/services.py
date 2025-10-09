@@ -73,3 +73,22 @@ async def move_folders(user, payload):
     db_manager.update_many(db, FOLDERS, {"doc_id": {"$in":folder_ids}, "created_by": user.get("user_id")}, {"$set": {"parent_id": parent_id}})
     return response_helper(200, translate("drive.folders.moved"), folders_moved=folders_moved)
 
+async def get_folders_list(user, parent_id):
+    db = user.get("db")
+    query = {"created_by": user.get("user_id")}
+    if parent_id:
+        query["parent_id"] = parent_id
+    
+    folders = db_manager.find(db, FOLDERS, query)
+    
+    for folder in folders:
+        parent_query={"parent_id": folder.get("doc_id"),"created_by": user.get("user_id")}
+        files = db_manager.find(db, FILES,parent_query )
+        folder["files"] = files
+        folder["sub_folders"] = db_manager.find(db, FOLDERS, parent_query)
+    
+    data= {
+        "folders": folders,
+        "files": db_manager.find(db, FILES, query)
+    }
+    return response_helper(200, translate("drive.folders.list"), data=data)
