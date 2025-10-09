@@ -56,23 +56,30 @@ export function useDriveManagement({
     setIsLoading(true);
     
     try {
-      // TODO: Replace with actual GET endpoint when available
-      // Recommended endpoint: GET /drive/folder/list
-      // const response = await axiosInstance.get(
-      //   `/drive/folder/list`,
-      //   {
-      //     params: {
-      //       workspace_id: selectedWorkspaceId,
-      //       project_id: selectedProjectId,
-      //     },
-      //   }
-      // );
-      // setFolders(response.data.data || []);
-      
       console.log("Fetching folders for workspace", selectedWorkspaceId, "project", selectedProjectId);
       
-      // For now, use empty array until API is ready
-      setFolders([]);
+      // Fetch all folders (parent_id is optional, omitting it returns all folders)
+      const response = await axiosInstance.get(`/drive/folder/list`);
+      
+      console.log("API Response:", response.data);
+      
+      // The API returns folders at response.data.data.folders
+      const apiFolders = response.data?.data?.folders || [];
+      
+      // Map API response to match our Folder interface (doc_id -> folder_id)
+      const mappedFolders: Folder[] = apiFolders.map((folder: any) => ({
+        folder_id: folder.doc_id,
+        name: folder.name,
+        parent_id: folder.parent_id,
+        created_at: folder.created_at,
+        updated_at: folder.updated_at,
+        created_by: folder.created_by,
+        workspace_id: folder.workspace_id || selectedWorkspaceId,
+        project_id: folder.project_id || selectedProjectId,
+      }));
+      
+      console.log("Mapped folders:", mappedFolders);
+      setFolders(mappedFolders);
     } catch (error) {
       console.error("Error fetching folders:", error);
       toast({
