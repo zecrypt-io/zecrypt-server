@@ -3,6 +3,7 @@ from app.framework.mongo_db import base_manager as db_manager
 from app.managers.collection_names import FILES, FOLDERS
 from app.utils.utils import response_helper, create_uuid, create_timestamp
 from app.utils.i8ns import translate
+from app.api.v1.web.drive.files.services import get_files_list
 
 async def create_folder(user, payload):
     db = user.get("db")
@@ -74,21 +75,28 @@ async def move_folders(user, payload):
     return response_helper(200, translate("drive.folders.moved"), folders_moved=folders_moved)
 
 async def get_folders_list(user, parent_id):
-    db = user.get("db")
     query = {"created_by": user.get("user_id")}
     if parent_id:
         query["parent_id"] = parent_id
     
-    folders = db_manager.find(db, FOLDERS, query)
+    folders = get_folders(user, parent_id)
     
     for folder in folders:
-        parent_query={"parent_id": folder.get("doc_id"),"created_by": user.get("user_id")}
-        files = db_manager.find(db, FILES,parent_query )
-        folder["files"] = files
-        folder["sub_folders"] = db_manager.find(db, FOLDERS, parent_query)
+        folder["files"] = get_files_list(user, folder.get("doc_id"))
+        folder["sub_folders"] = get_folders(user, folder.get("doc_id"))
     
     data= {
         "folders": folders,
-        "files": db_manager.find(db, FILES, query)
+        "files": get_files_list(user, parent_id)
     }
     return response_helper(200, translate("drive.folders.list"), data=data)
+
+
+
+def get_folders(user, parent_id=None):
+    db = user.get("db")
+    query = {"created_by": user.get("user_id")}
+    if parent_id:
+        query["parent_id"] = parent_id
+    folders = db_manager.find(db, FOLDERS, query)
+    return folders

@@ -2,7 +2,19 @@ from app.framework.mongo_db import base_manager as db_manager
 from app.managers.collection_names import FILES, FOLDERS
 from app.utils.utils import response_helper, create_uuid, get_file_extension, get_folders_from_path, create_timestamp
 from app.utils.i8ns import translate
-from app.utils.s3_utils import generate_upload_url
+from app.utils.s3_utils import generate_upload_url, generate_download_url
+
+
+
+def get_files_list(user, parent_id=None):
+    db = user.get("db")
+    query = {"created_by": user.get("user_id")}
+    if parent_id:
+        query["parent_id"] = parent_id
+    files = db_manager.find(db, FILES, query)
+    for file in files:
+        file["file_url"]= generate_download_url(file.get("key"), 360000)
+    return files 
 
 async def get_presigned_url(user, payload):
     db = user.get("db")
