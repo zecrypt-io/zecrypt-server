@@ -102,7 +102,7 @@ export function useDriveManagement({
       const mappedFolders: Folder[] = apiFolders.map((folder: any) => ({
         folder_id: folder.doc_id,
         name: folder.name,
-        parent_id: folder.parent_id,
+        parent_id: folder.parent_id || null, // Normalize empty string to null
         created_at: folder.created_at,
         updated_at: folder.updated_at,
         created_by: folder.created_by,
@@ -118,7 +118,7 @@ export function useDriveManagement({
         original_size: file.original_size || file.size,
         type: file.type || 'application/octet-stream',
         iv: file.iv || '',
-        parent_id: file.parent_id,
+        parent_id: file.parent_id || null, // Normalize empty string to null
         created_at: file.created_at,
         updated_at: file.updated_at,
         created_by: file.created_by,
@@ -430,13 +430,23 @@ export function useDriveManagement({
         // 7. Refresh file list
         await fetchFolders();
         setUploadProgress(100);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error uploading file:", error);
+        
+        // Check if it's a "file already exists" error
+        const isFileExistsError = 
+          error?.response?.data?.status_code === 400 &&
+          error?.response?.data?.message?.toLowerCase().includes("file already exists");
+        
         toast({
           title: translate("error", "drive", { default: "Error" }),
-          description: translate("error_uploading_file", "drive", {
-            default: "Failed to upload file",
-          }),
+          description: isFileExistsError
+            ? translate("file_already_exists", "drive", {
+                default: "A file with this name already exists in this location",
+              })
+            : translate("error_uploading_file", "drive", {
+                default: "Failed to upload file",
+              }),
           variant: "destructive",
         });
         throw error;
