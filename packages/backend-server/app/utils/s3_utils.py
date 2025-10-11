@@ -33,6 +33,6 @@ def generate_download_url(file_name,expires_in=3600):
             Params={"Bucket": BUCKET_NAME, "Key": file_name},
             ExpiresIn=expires_in,
         )
-        return {"download_url": url}
+        return url
     except Exception as e:
-        return {"error": str(e)}
+        return None
