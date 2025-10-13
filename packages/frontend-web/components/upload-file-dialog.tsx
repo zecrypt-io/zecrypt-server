@@ -125,8 +125,9 @@ export function UploadFileDialog({
             <span className="block">
               {currentFolder
                 ? translate("upload_to_folder", "drive", {
-                    default: `Upload a file to ${currentFolder.name}`,
-                  }).replace("${currentFolder.name}", currentFolder.name)
+                    default: "Upload to {folderName}",
+                    folderName: currentFolder.name,
+                  })
                 : translate("upload_to_root", "drive", {
                     default: "Upload a file to root",
                   })}

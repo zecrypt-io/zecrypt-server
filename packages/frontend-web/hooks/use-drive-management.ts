@@ -6,7 +6,7 @@ import { RootState } from "@/libs/Redux/store";
 import axiosInstance from "@/libs/Middleware/axiosInstace";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslator } from "@/hooks/use-translations";
-import { encryptFileBlob, validateFileSize } from "@/libs/file-encryption";
+import { encryptFileBlob, validateFileSize, decryptAndDownloadFile, downloadFileFromUrl, decryptFileBlob, saveDecryptedFile } from "@/libs/file-encryption";
 import { secureGetItem } from "@/libs/local-storage-utils";
 
 interface Folder {
@@ -34,6 +34,7 @@ interface DriveFile {
   workspace_id: string;
   project_id: string;
   encrypted_data?: string; // base64 encoded encrypted blob (from API)
+  download_url?: string; // presigned URL from Digital Ocean
 }
 
 interface UseDriveManagementProps {
@@ -58,8 +59,12 @@ interface UseDriveManagementReturn {
   renameFile: (fileId: string, newName: string) => Promise<void>;
   moveFile: (fileIds: string[], parentId: string) => Promise<void>;
   deleteFiles: (fileIds: string[]) => Promise<void>;
+  downloadFile: (fileId: string) => Promise<void>;
+  downloadFolder: (folderId: string | null) => Promise<void>;
   isUploading: boolean;
   uploadProgress: number;
+  isDownloading: boolean;
+  downloadProgress: string;
 }
 
 export function useDriveManagement({
@@ -73,6 +78,8 @@ export function useDriveManagement({
   const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState('');
   
   // Get workspaces from Redux store for project name lookup
   const workspaces = useSelector((state: RootState) => state.workspace.workspaces);
@@ -87,16 +94,12 @@ export function useDriveManagement({
     setIsLoading(true);
     
     try {
-      console.log("Fetching folders for workspace", selectedWorkspaceId, "project", selectedProjectId);
-      
       // Fetch all folders (parent_id is optional, omitting it returns all folders)
       const response = await axiosInstance.get(`/drive/folder/list`);
       
-      console.log("API Response:", response.data);
-      
       // The API returns folders at response.data.data.folders
       const apiFolders = response.data?.data?.folders || [];
-      const apiFiles = response.data?.data?.files || [];
+      const rootLevelFiles = response.data?.data?.files || [];
       
       // Map API response to match our Folder interface (doc_id -> folder_id)
       const mappedFolders: Folder[] = apiFolders.map((folder: any) => ({
@@ -110,8 +113,18 @@ export function useDriveManagement({
         project_id: folder.project_id || selectedProjectId,
       }));
       
+      // Extract all files from both root level and inside folders
+      const allApiFiles: any[] = [...rootLevelFiles];
+      
+      // Also extract files from inside each folder
+      apiFolders.forEach((folder: any) => {
+        if (folder.files && Array.isArray(folder.files)) {
+          allApiFiles.push(...folder.files);
+        }
+      });
+      
       // Map files from API response
-      const mappedFiles: DriveFile[] = apiFiles.map((file: any) => ({
+      const mappedFiles: DriveFile[] = allApiFiles.map((file: any) => ({
         file_id: file.doc_id,
         name: file.name,
         size: file.size,
@@ -125,10 +138,9 @@ export function useDriveManagement({
         workspace_id: file.workspace_id || selectedWorkspaceId,
         project_id: file.project_id || selectedProjectId,
         encrypted_data: file.data,
+        download_url: file.file_url, // file_url is directly the URL string
       }));
       
-      console.log("Mapped folders:", mappedFolders);
-      console.log("Mapped files:", mappedFiles);
       setFolders(mappedFolders);
       setFiles(mappedFiles);
     } catch (error) {
@@ -406,18 +418,60 @@ export function useDriveManagement({
         const presignedResponse = await axiosInstance.post('/drive/file/get-presigned-url', payload);
 
         console.log("Presigned response:", presignedResponse);
-        const presignedUrl = presignedResponse.data;
+        console.log("Presigned response data:", presignedResponse.data);
+        
+        // Extract presigned URL from response
+        // Backend might return either direct URL string or nested in data.data or data.url
+        let presignedUrl: string;
+        if (typeof presignedResponse.data === 'string') {
+          presignedUrl = presignedResponse.data;
+        } else if (presignedResponse.data?.data) {
+          presignedUrl = typeof presignedResponse.data.data === 'string' 
+            ? presignedResponse.data.data 
+            : presignedResponse.data.data?.upload_url || presignedResponse.data.data?.url || presignedResponse.data.data?.presigned_url;
+        } else if (presignedResponse.data?.upload_url) {
+          presignedUrl = presignedResponse.data.upload_url;
+        } else if (presignedResponse.data?.url) {
+          presignedUrl = presignedResponse.data.url;
+        } else if (presignedResponse.data?.presigned_url) {
+          presignedUrl = presignedResponse.data.presigned_url;
+        } else {
+          console.error("Could not extract presigned URL from response:", presignedResponse.data);
+          throw new Error("Invalid presigned URL response from server");
+        }
+        
+        console.log("Extracted presigned URL:", presignedUrl);
+        
+        if (!presignedUrl || typeof presignedUrl !== 'string') {
+          throw new Error("Invalid presigned URL received from server");
+        }
         
         setUploadProgress(50);
 
         // 6. Upload encrypted blob to presigned URL
-        console.log("Uploading encrypted file to presigned URL");
-        await fetch(presignedUrl, {
+        console.log("Uploading encrypted file to presigned URL:", presignedUrl);
+        console.log("Encrypted blob size:", encryptedBlob.size);
+        
+        const uploadResponse = await fetch(presignedUrl, {
           method: 'PUT',
           body: encryptedBlob,
-          headers: { 'Content-Type': 'application/octet-stream' },
+          // Don't set Content-Type explicitly - let browser handle it to avoid CORS preflight
         });
 
+        console.log("Upload response status:", uploadResponse.status, uploadResponse.statusText);
+
+        // Critical: Check if upload was successful
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error("Upload failed:", {
+            status: uploadResponse.status,
+            statusText: uploadResponse.statusText,
+            error: errorText
+          });
+          throw new Error(`Failed to upload file to storage: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        }
+
+        console.log("File successfully uploaded to Digital Ocean");
         setUploadProgress(90);
 
         toast({
@@ -556,11 +610,202 @@ export function useDriveManagement({
   // Effect to fetch data when dependencies change
   useEffect(() => {
     if (selectedWorkspaceId && selectedProjectId) {
-      console.log("Running fetchFolders effect");
       fetchFolders();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWorkspaceId, selectedProjectId]);
+
+  // Helper function to get all files recursively in a folder
+  const getAllFilesInFolder = useCallback((folderId: string | null): { file: DriveFile; path: string }[] => {
+    const result: { file: DriveFile; path: string }[] = [];
+    
+    const traverse = (parentId: string | null, currentPath: string = '') => {
+      // Get files in current folder
+      const folderFiles = files.filter(f => f.parent_id === parentId);
+      folderFiles.forEach(file => {
+        result.push({
+          file,
+          path: currentPath ? `${currentPath}/${file.name}` : file.name
+        });
+      });
+      
+      // Get subfolders and recurse
+      const subfolders = folders.filter(f => f.parent_id === parentId);
+      subfolders.forEach(folder => {
+        const newPath = currentPath ? `${currentPath}/${folder.name}` : folder.name;
+        traverse(folder.folder_id, newPath);
+      });
+    };
+    
+    traverse(folderId);
+    return result;
+  }, [files, folders]);
+
+  // Download single file
+  const downloadFile = useCallback(async (fileId: string) => {
+    const file = files.find(f => f.file_id === fileId);
+    
+    if (!file) {
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("file_not_found", "drive", { default: "File not found" }),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file.download_url) {
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("download_url_missing", "drive", { default: "Download URL not available" }),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      // Get project info for key lookup
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error("Project not found");
+      }
+
+      // Get project AES key using project name
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectKey = await secureGetItem(projectKeyName);
+      
+      if (!projectKey) {
+        throw new Error("Project key not found");
+      }
+
+      toast({
+        title: translate("downloading", "drive", { default: "Downloading..." }),
+        description: file.name,
+      });
+
+      await decryptAndDownloadFile(
+        file.download_url,
+        file.name,
+        file.type,
+        file.iv,
+        projectKey
+      );
+
+      toast({
+        title: translate("download_success", "drive", { default: "Download completed" }),
+        description: file.name,
+      });
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("download_error", "drive", { default: "Failed to download file" }),
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [files, workspaces, selectedWorkspaceId, selectedProjectId, translate]);
+
+  // Download folder as zip
+  const downloadFolder = useCallback(async (folderId: string | null) => {
+    const folderName = folderId 
+      ? folders.find(f => f.folder_id === folderId)?.name || 'folder'
+      : 'root';
+
+    // Get all files in folder
+    const allFiles = getAllFilesInFolder(folderId);
+    
+    if (allFiles.length === 0) {
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("no_files_in_folder", "drive", { default: "Folder is empty" }),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      // Get project info for key lookup
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error("Project not found");
+      }
+
+      // Get project AES key using project name
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectKey = await secureGetItem(projectKeyName);
+      if (!projectKey) {
+        throw new Error("Project key not found");
+      }
+
+      // Import JSZip
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      // Download and decrypt each file
+      for (let i = 0; i < allFiles.length; i++) {
+        const { file, path } = allFiles[i];
+        
+        setDownloadProgress(`${i + 1} of ${allFiles.length}`);
+        
+        toast({
+          title: translate("downloading_progress", "drive", { 
+            default: "Downloading {current} of {total} files...",
+            current: (i + 1).toString(),
+            total: allFiles.length.toString()
+          }),
+        });
+
+        try {
+          if (!file.download_url) continue;
+          
+          // Download and decrypt
+          const encryptedBlob = await downloadFileFromUrl(file.download_url);
+          const decryptedBlob = await decryptFileBlob(encryptedBlob, file.iv, projectKey);
+          
+          // Add to zip with proper path
+          zip.file(path, decryptedBlob);
+        } catch (error) {
+          console.error(`Error downloading file ${file.name}:`, error);
+          // Continue with other files
+        }
+      }
+
+      // Generate zip
+      toast({
+        title: translate("creating_zip", "drive", { default: "Creating zip archive..." }),
+      });
+      
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      // Download zip
+      saveDecryptedFile(zipBlob, `${folderName}.zip`, 'application/zip');
+
+      toast({
+        title: translate("download_success", "drive", { default: "Download completed" }),
+        description: `${allFiles.length} files downloaded`,
+      });
+    } catch (error) {
+      console.error("Error downloading folder:", error);
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("download_error", "drive", { default: "Failed to download folder" }),
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+      setDownloadProgress('');
+    }
+  }, [folders, files, workspaces, getAllFilesInFolder, selectedWorkspaceId, selectedProjectId, translate]);
 
   return {
     folders,
@@ -579,8 +824,12 @@ export function useDriveManagement({
     renameFile,
     moveFile,
     deleteFiles,
+    downloadFile,
+    downloadFolder,
     isUploading,
     uploadProgress,
+    isDownloading,
+    downloadProgress,
   };
 }
 

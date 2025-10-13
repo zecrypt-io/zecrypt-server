@@ -1486,6 +1486,8 @@
     "file_too_large": "File is too large. Maximum size is 50MB",
     "no_file_selected": "No file selected",
     "file_already_exists": "A file with this name already exists in this location",
+    "file_name": "File Name",
+    "enter_file_name": "Enter file name",
     "rename_file": "Rename File",
     "move_file": "Move File",
     "delete_file": "Delete File",
@@ -1495,6 +1497,21 @@
     "file_deleted": "File(s) deleted successfully",
     "error_renaming_file": "Failed to rename file",
     "error_moving_file": "Failed to move file(s)",
-    "error_deleting_file": "Failed to delete file(s)"
+    "error_deleting_file": "Failed to delete file(s)",
+    "download": "Download",
+    "downloading": "Downloading...",
+    "download_file": "Download file",
+    "download_folder": "Download folder",
+    "downloading_file": "Downloading file...",
+    "downloading_folder": "Downloading folder...",
+    "download_success": "Download completed",
+    "download_error": "Failed to download",
+    "preparing_download": "Preparing download...",
+    "downloading_progress": "Downloading {current} of {total} files...",
+    "creating_zip": "Creating zip archive...",
+    "no_files_in_folder": "Folder is empty",
+    "decrypting_files": "Decrypting files...",
+    "file_not_found": "File not found",
+    "download_url_missing": "Download URL not available"
   }
 }

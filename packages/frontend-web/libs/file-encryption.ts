@@ -137,3 +137,55 @@ export function formatBytes(bytes: number, decimals: number = 2): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+/**
+ * Download file from URL
+ */
+export async function downloadFileFromUrl(url: string): Promise<Blob> {
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('File not found in storage. The file may have been deleted or never uploaded.');
+    }
+    throw new Error(`Failed to download file: ${response.statusText}`);
+  }
+  
+  const blob = await response.blob();
+  return blob;
+}
+
+/**
+ * Save decrypted blob as file download
+ */
+export function saveDecryptedFile(blob: Blob, fileName: string, mimeType: string): void {
+  const blobWithType = new Blob([blob], { type: mimeType });
+  const url = URL.createObjectURL(blobWithType);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download, decrypt and save a file
+ */
+export async function decryptAndDownloadFile(
+  downloadUrl: string,
+  fileName: string,
+  mimeType: string,
+  ivHex: string,
+  projectAesKey: string
+): Promise<void> {
+  // 1. Download encrypted file
+  const encryptedBlob = await downloadFileFromUrl(downloadUrl);
+  
+  // 2. Decrypt the file
+  const decryptedBlob = await decryptFileBlob(encryptedBlob, ivHex, projectAesKey);
+  
+  // 3. Trigger download
+  saveDecryptedFile(decryptedBlob, fileName, mimeType);
+}
+

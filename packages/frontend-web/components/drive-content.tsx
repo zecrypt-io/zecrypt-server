@@ -14,6 +14,7 @@ import {
   Move,
   Trash2,
   Upload as UploadIcon,
+  Download,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -91,8 +92,12 @@ export function DriveContent() {
     renameFile,
     moveFile,
     deleteFiles,
+    downloadFile,
+    downloadFolder,
     isUploading,
     uploadProgress,
+    isDownloading,
+    downloadProgress,
   } = useDriveManagement({
     selectedWorkspaceId,
     selectedProjectId,
@@ -190,6 +195,14 @@ export function DriveContent() {
   const handleDeleteFile = (file: DriveFile) => {
     setSelectedFile(file);
     setShowDeleteFile(true);
+  };
+
+  const handleDownloadFile = async (file: DriveFile) => {
+    await downloadFile(file.file_id);
+  };
+
+  const handleDownloadFolder = async (folder: Folder) => {
+    await downloadFolder(folder.folder_id);
   };
 
   // Keyboard shortcuts
@@ -337,6 +350,10 @@ export function DriveContent() {
                       <Move className="mr-2 h-4 w-4" />
                       {translate("move", "drive", { default: "Move" })}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDownloadFolder(folder)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      {translate("download", "drive", { default: "Download" })}
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => confirmDelete(folder)}
@@ -357,6 +374,7 @@ export function DriveContent() {
                 onRename={handleRenameFile}
                 onMove={handleMoveFile}
                 onDelete={handleDeleteFile}
+                onDownload={handleDownloadFile}
               />
             ))}
           </div>

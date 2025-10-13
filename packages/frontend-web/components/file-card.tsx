@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Edit2, Move, Trash2 } from "lucide-react";
+import { MoreVertical, Edit2, Move, Trash2, Download } from "lucide-react";
 import { getFileIcon, getFileIconColor } from "@/libs/file-icon-mappings";
 import { formatBytes } from "@/libs/utils";
 import { formatDate } from "@/libs/utils";
@@ -30,9 +30,10 @@ interface FileCardProps {
   onRename: (file: DriveFile) => void;
   onMove: (file: DriveFile) => void;
   onDelete: (file: DriveFile) => void;
+  onDownload: (file: DriveFile) => void;
 }
 
-export function FileCard({ file, onRename, onMove, onDelete }: FileCardProps) {
+export function FileCard({ file, onRename, onMove, onDelete, onDownload }: FileCardProps) {
   const { translate } = useTranslator();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -90,6 +91,15 @@ export function FileCard({ file, onRename, onMove, onDelete }: FileCardProps) {
               >
                 <Move className="h-4 w-4 mr-2" />
                 {translate("move", "actions", { default: "Move" })}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  onDownload(file);
+                  setShowMenu(false);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {translate("download", "actions", { default: "Download" })}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
