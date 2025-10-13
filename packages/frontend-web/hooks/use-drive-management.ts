@@ -123,8 +123,17 @@ export function useDriveManagement({
         }
       });
       
+      // Remove duplicates based on doc_id (file_id)
+      const uniqueApiFiles = allApiFiles.reduce((acc: any[], file: any) => {
+        const exists = acc.find(f => f.doc_id === file.doc_id);
+        if (!exists) {
+          acc.push(file);
+        }
+        return acc;
+      }, []);
+      
       // Map files from API response
-      const mappedFiles: DriveFile[] = allApiFiles.map((file: any) => ({
+      const mappedFiles: DriveFile[] = uniqueApiFiles.map((file: any) => ({
         file_id: file.doc_id,
         name: file.name,
         size: file.size,
