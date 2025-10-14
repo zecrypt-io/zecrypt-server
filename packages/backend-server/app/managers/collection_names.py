@@ -12,3 +12,7 @@ USER_KEYS = "user_keys"
 PROJECT_KEYS = "project_keys"
 PASSWORD_HISTORY = "password_history"
 PROJECT_ACTIVITY = "project_activity"
+
+
+FOLDERS = "folders"
+FILES = "files"

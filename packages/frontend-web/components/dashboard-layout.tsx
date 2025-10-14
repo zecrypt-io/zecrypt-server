@@ -260,7 +260,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const [currentLocale, setCurrentLocale] = useState(locale);
 
   const languageLabels: Record<string, string> = {
-    af: "Afrikaans",
+    af: "Afrikaans (Afrikaans)",
     ar: "Arabic (عربى)",
     ca: "Catalan (Català)",
     cs: "Czech (Čeština)",
