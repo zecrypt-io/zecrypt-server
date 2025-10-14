@@ -78,6 +78,7 @@ async def get_presigned_url(user, payload):
         "key": final_file_path,
         "parent_id": parent_id,
         "created_by": user_id,
+        "iv": payload.get("iv"),
     }
     db_manager.insert_one(db, FILES, file_data)
     
