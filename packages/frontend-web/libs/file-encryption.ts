@@ -94,12 +94,23 @@ export async function decryptFileBlob(
   projectAesKey: string
 ): Promise<Blob> {
   try {
+    // Validate IV
+    if (!ivHex || typeof ivHex !== 'string' || ivHex.trim() === '') {
+      console.error('Invalid IV:', ivHex);
+      throw new Error('Missing or invalid IV (initialization vector). The file may not have been properly encrypted during upload.');
+    }
+
     // 1. Read encrypted blob as ArrayBuffer
     const encryptedBuffer = await encryptedBlob.arrayBuffer();
 
     // 2. Convert hex IV to Uint8Array
+    const ivMatch = ivHex.match(/.{1,2}/g);
+    if (!ivMatch) {
+      throw new Error(`Invalid IV format: "${ivHex}". Expected hex string.`);
+    }
+    
     const iv = new Uint8Array(
-      ivHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+      ivMatch.map((byte) => parseInt(byte, 16))
     );
 
     // 3. Import the AES key

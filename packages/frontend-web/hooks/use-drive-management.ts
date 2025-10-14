@@ -133,22 +133,29 @@ export function useDriveManagement({
       }, []);
       
       // Map files from API response
-      const mappedFiles: DriveFile[] = uniqueApiFiles.map((file: any) => ({
-        file_id: file.doc_id,
-        name: file.name,
-        size: file.size,
-        original_size: file.original_size || file.size,
-        type: file.type || 'application/octet-stream',
-        iv: file.iv || '',
-        parent_id: file.parent_id || null, // Normalize empty string to null
-        created_at: file.created_at,
-        updated_at: file.updated_at,
-        created_by: file.created_by,
-        workspace_id: file.workspace_id || selectedWorkspaceId,
-        project_id: file.project_id || selectedProjectId,
-        encrypted_data: file.data,
-        download_url: file.file_url, // file_url is directly the URL string
-      }));
+      const mappedFiles: DriveFile[] = uniqueApiFiles.map((file: any) => {
+        // Log if IV is missing - critical for decryption
+        if (!file.iv) {
+          console.warn(`⚠️ File "${file.name}" is missing IV (initialization vector). This file cannot be decrypted!`, file);
+        }
+        
+        return {
+          file_id: file.doc_id,
+          name: file.name,
+          size: file.size,
+          original_size: file.original_size || file.size,
+          type: file.type || 'application/octet-stream',
+          iv: file.iv || '',
+          parent_id: file.parent_id || null, // Normalize empty string to null
+          created_at: file.created_at,
+          updated_at: file.updated_at,
+          created_by: file.created_by,
+          workspace_id: file.workspace_id || selectedWorkspaceId,
+          project_id: file.project_id || selectedProjectId,
+          encrypted_data: file.data,
+          download_url: file.file_url, // file_url is directly the URL string
+        };
+      });
       
       setFolders(mappedFolders);
       setFiles(mappedFiles);
@@ -400,6 +407,9 @@ export function useDriveManagement({
         // 4. Encrypt file blob
         console.log("Encrypting file:", file.name);
         const { encryptedBlob, iv, originalSize } = await encryptFileBlob(file, projectKey);
+        
+        console.log("✅ Encryption complete. IV generated:", iv);
+        console.log("Original size:", originalSize, "Encrypted size:", encryptedBlob.size);
         
         setUploadProgress(40);
 
