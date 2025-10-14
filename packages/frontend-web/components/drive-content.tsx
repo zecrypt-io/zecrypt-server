@@ -42,6 +42,7 @@ import { FileCard } from "./file-card";
 import { RenameFileDialog } from "./rename-file-dialog";
 import { MoveFileDialog } from "./move-file-dialog";
 import { DeleteFileDialog } from "./delete-file-dialog";
+import { FilePreviewModal } from "./file-preview-modal";
 
 interface Folder {
   folder_id: string;
@@ -94,6 +95,7 @@ export function DriveContent() {
     deleteFiles,
     downloadFile,
     downloadFolder,
+    previewFile,
     isUploading,
     uploadProgress,
     isDownloading,
@@ -116,6 +118,11 @@ export function DriveContent() {
   const [showMoveFile, setShowMoveFile] = useState(false);
   const [showDeleteFile, setShowDeleteFile] = useState(false);
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
+  
+  // Preview states
+  const [showPreviewFile, setShowPreviewFile] = useState(false);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [previewingFile, setPreviewingFile] = useState<DriveFile | null>(null);
 
   // Get current subfolders to display
   const currentSubfolders = getSubfolders(currentFolder?.folder_id || null);
@@ -203,6 +210,32 @@ export function DriveContent() {
 
   const handleDownloadFolder = async (folder: Folder) => {
     await downloadFolder(folder.folder_id);
+  };
+
+  const handlePreviewFile = async (file: DriveFile) => {
+    setPreviewingFile(file);
+    setShowPreviewFile(true);
+    const result = await previewFile(file.file_id);
+    if (result) {
+      setPreviewBlobUrl(result.blobUrl);
+    }
+  };
+
+  const handlePreviewClose = (open: boolean) => {
+    if (!open && previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+      setPreviewBlobUrl(null);
+    }
+    setShowPreviewFile(open);
+    if (!open) {
+      setPreviewingFile(null);
+    }
+  };
+
+  const handleDownloadFromPreview = () => {
+    if (previewingFile) {
+      downloadFile(previewingFile.file_id);
+    }
   };
 
   // Keyboard shortcuts
@@ -375,6 +408,7 @@ export function DriveContent() {
                 onMove={handleMoveFile}
                 onDelete={handleDeleteFile}
                 onDownload={handleDownloadFile}
+                onPreview={handlePreviewFile}
               />
             ))}
           </div>
@@ -466,6 +500,15 @@ export function DriveContent() {
           />
         </>
       )}
+
+      {/* File Preview Modal */}
+      <FilePreviewModal
+        open={showPreviewFile}
+        onOpenChange={handlePreviewClose}
+        file={previewingFile}
+        blobUrl={previewBlobUrl}
+        onDownload={handleDownloadFromPreview}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>

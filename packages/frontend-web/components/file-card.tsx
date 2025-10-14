@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Edit2, Move, Trash2, Download } from "lucide-react";
+import { MoreVertical, Edit2, Move, Trash2, Download, Eye } from "lucide-react";
 import { getFileIcon, getFileIconColor } from "@/libs/file-icon-mappings";
 import { formatBytes } from "@/libs/utils";
 import { formatDate } from "@/libs/utils";
@@ -31,9 +31,10 @@ interface FileCardProps {
   onMove: (file: DriveFile) => void;
   onDelete: (file: DriveFile) => void;
   onDownload: (file: DriveFile) => void;
+  onPreview: (file: DriveFile) => void;
 }
 
-export function FileCard({ file, onRename, onMove, onDelete, onDownload }: FileCardProps) {
+export function FileCard({ file, onRename, onMove, onDelete, onDownload, onPreview }: FileCardProps) {
   const { translate } = useTranslator();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -41,7 +42,10 @@ export function FileCard({ file, onRename, onMove, onDelete, onDownload }: FileC
   const iconColor = getFileIconColor(file.type);
 
   return (
-    <div className="group relative p-4 border rounded-lg hover:shadow-md transition-all bg-card hover:bg-accent/50">
+    <div 
+      className="group relative p-4 border rounded-lg hover:shadow-md transition-all bg-card hover:bg-accent/50 cursor-pointer"
+      onDoubleClick={() => onPreview(file)}
+    >
       <div className="flex flex-col items-center gap-3">
         {/* File icon */}
         <div className={`${iconColor}`}>
@@ -91,6 +95,15 @@ export function FileCard({ file, onRename, onMove, onDelete, onDownload }: FileC
               >
                 <Move className="h-4 w-4 mr-2" />
                 {translate("move", "actions", { default: "Move" })}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  onPreview(file);
+                  setShowMenu(false);
+                }}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {translate("preview", "actions", { default: "Preview" })}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {

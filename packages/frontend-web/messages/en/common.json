@@ -306,7 +306,8 @@
     "error": "Error",
     "view": "View",
     "rename": "Rename",
-    "move": "Move"
+    "move": "Move",
+    "preview": "Preview"
   },
   "dashboard": {
     "project_limit_reached": "Project limit reached",
@@ -1512,6 +1513,9 @@
     "no_files_in_folder": "Folder is empty",
     "decrypting_files": "Decrypting files...",
     "file_not_found": "File not found",
-    "download_url_missing": "Download URL not available"
+    "download_url_missing": "Download URL not available",
+    "preview_error": "Failed to preview file",
+    "preview_not_available": "Preview not available",
+    "preview_unsupported_type": "This file type cannot be previewed in the browser"
   }
 }

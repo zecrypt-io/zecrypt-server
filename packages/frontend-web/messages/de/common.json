@@ -238,7 +238,10 @@
     "create": "Create",
     "update": "Update",
     "remove": "Remove",
-    "view": "View"
+    "view": "View",
+    "rename": "Umbenennen",
+    "move": "Verschieben",
+    "preview": "Vorschau"
   },
   "dashboard": {
     "welcome_back": "Willkommen zurück in Ihrem sicheren Arbeitsbereich",

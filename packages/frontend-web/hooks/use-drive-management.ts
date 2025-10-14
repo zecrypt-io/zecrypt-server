@@ -61,6 +61,7 @@ interface UseDriveManagementReturn {
   deleteFiles: (fileIds: string[]) => Promise<void>;
   downloadFile: (fileId: string) => Promise<void>;
   downloadFolder: (folderId: string | null) => Promise<void>;
+  previewFile: (fileId: string) => Promise<{ blobUrl: string; file: DriveFile } | null>;
   isUploading: boolean;
   uploadProgress: number;
   isDownloading: boolean;
@@ -826,6 +827,70 @@ export function useDriveManagement({
     }
   }, [folders, files, workspaces, getAllFilesInFolder, selectedWorkspaceId, selectedProjectId, translate]);
 
+  // Preview file
+  const previewFile = useCallback(async (fileId: string): Promise<{ blobUrl: string; file: DriveFile } | null> => {
+    const file = files.find(f => f.file_id === fileId);
+    
+    if (!file) {
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("file_not_found", "drive", { default: "File not found" }),
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    if (!file.download_url) {
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("download_url_missing", "drive", { default: "Download URL not available" }),
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    try {
+      // Get project info for key lookup
+      const currentProject = workspaces
+        .find(ws => ws.workspaceId === selectedWorkspaceId)
+        ?.projects.find(p => p.project_id === selectedProjectId);
+      
+      if (!currentProject) {
+        throw new Error("Project not found");
+      }
+
+      // Get project AES key using project name
+      const projectKeyName = `projectKey_${currentProject.name}`;
+      const projectKey = await secureGetItem(projectKeyName);
+      
+      if (!projectKey) {
+        throw new Error("Project key not found");
+      }
+
+      // Download encrypted file
+      const encryptedBlob = await downloadFileFromUrl(file.download_url);
+      
+      // Decrypt the file
+      const decryptedBlob = await decryptFileBlob(encryptedBlob, file.iv, projectKey);
+      
+      // Create blob with proper MIME type
+      const blobWithType = new Blob([decryptedBlob], { type: file.type || 'application/octet-stream' });
+      
+      // Create object URL
+      const blobUrl = URL.createObjectURL(blobWithType);
+
+      return { blobUrl, file };
+    } catch (error) {
+      console.error("Error previewing file:", error);
+      toast({
+        title: translate("error", "drive", { default: "Error" }),
+        description: translate("preview_error", "drive", { default: "Failed to preview file" }),
+        variant: "destructive",
+      });
+      return null;
+    }
+  }, [files, workspaces, selectedWorkspaceId, selectedProjectId, translate]);
+
   return {
     folders,
     files,
@@ -845,6 +910,7 @@ export function useDriveManagement({
     deleteFiles,
     downloadFile,
     downloadFolder,
+    previewFile,
     isUploading,
     uploadProgress,
     isDownloading,
