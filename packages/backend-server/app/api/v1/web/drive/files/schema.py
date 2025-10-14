@@ -21,3 +21,4 @@ class GetPresignedUrl(BaseModel):
     size: int = Field(..., description="File size")
     file_path: str = Field(..., description="File path")
     parent_id: Optional[str] = Field(None, description="Parent folder ID")
+    iv: str = Field(..., description="IV")
