@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Clock,
   FileText,
+  Folder,
   Globe,
   HardDrive,
   Home,
@@ -178,6 +179,13 @@ const navigationCategories: NavigationCategory[] = [
           </svg>
         ),
         feature_key: "notes"
+      },
+      {
+        key: "drive",
+        labelKey: "drive",
+        path: "/dashboard/drive",
+        icon: <Folder className="h-4 w-4" />,
+        feature_key: "drive"
       }
     ]
   },
@@ -352,7 +360,9 @@ const defaultFeatures = {
   software_license: { enabled: false, is_client_side_encryption: false },
   email: { enabled: false, is_client_side_encryption: false },
   ssh_key: { enabled: false, is_client_side_encryption: false },
-  env: { enabled: false, is_client_side_encryption: false }
+  env: { enabled: false, is_client_side_encryption: false },
+  notes: { enabled: false, is_client_side_encryption: false },
+  drive: { enabled: false, is_client_side_encryption: false }
 }
 
 export function SidebarNav({

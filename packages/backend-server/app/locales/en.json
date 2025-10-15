@@ -145,6 +145,24 @@
     "dashboard":{
         "overview": "Dashboard overview loaded successfully",
         "recent_activity": "Recent activity loaded successfully"
+    },
+    "drive":{
+        "folders":{
+                "created": "Folder created successfully",
+                "deleted": "Folder deleted successfully",
+                "renamed": "Folder renamed successfully",
+                "moved": "Folder moved successfully",
+                "already_exists": "Folder already exists"
+        },
+        "files":{
+                "deleted": "File deleted successfully",
+                "renamed": "File renamed successfully",
+                "moved": "File moved successfully",
+                "already_exists": "File already exists"
+        }
+    },
+    "file":{
+        "get_presigned_url": "Presigned URL generated successfully"
     }
 }
 

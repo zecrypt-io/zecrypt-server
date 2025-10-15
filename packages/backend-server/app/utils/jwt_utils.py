@@ -22,7 +22,7 @@ def create_jwt_token(
     return encoded_jwt
 
 
-def encode_token(userid, days=30, ttl=None, device_id=None):
+def encode_token(userid, days=60, ttl=None, device_id=None):
     user_id = userid
     payload = {
         "user": str(user_id),
