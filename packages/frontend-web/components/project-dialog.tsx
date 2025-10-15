@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Edit, Trash, Check, ChevronRight, User } from "lucide-react";
+import { Plus, Edit, Trash, Check, ChevronRight, User, Folder } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +54,7 @@ const defaultFeatures = {
   ssh_key: { enabled: false, is_client_side_encryption: false },
   env: { enabled: false, is_client_side_encryption: false },
   notes: { enabled: false, is_client_side_encryption: false },
+  drive: { enabled: false, is_client_side_encryption: false },
 };
 
 // Define featureMenuItems to include icons for each module
@@ -297,6 +298,12 @@ const featureMenuItems: {
         <line x1="9" y1="17" x2="13" y2="17" />
       </svg>
     ),
+  },
+  {
+    key: "drive",
+    labelKey: "drive",
+    path: "/dashboard/drive",
+    icon: <Folder className="h-4 w-4" />,
   },
 ];
 
