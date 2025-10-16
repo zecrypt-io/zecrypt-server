@@ -90,6 +90,7 @@ export function DriveContent() {
     getFolderPath,
     getSubfolders,
     uploadFile,
+    uploadFolder,
     renameFile,
     moveFile,
     deleteFiles,
@@ -98,6 +99,7 @@ export function DriveContent() {
     previewFile,
     isUploading,
     uploadProgress,
+    uploadStatusMessage,
     isDownloading,
     downloadProgress,
   } = useDriveManagement({
@@ -322,7 +324,7 @@ export function DriveContent() {
           )}
           <Button onClick={handleUploadFile} variant="outline" className="gap-2">
             <UploadIcon className="h-4 w-4" />
-            {translate("upload_file", "drive", { default: "Upload File" })}
+            {translate("upload", "drive", { default: "Upload" })}
           </Button>
           <Button onClick={handleCreateFolder} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -423,7 +425,7 @@ export function DriveContent() {
             <div className="flex gap-2">
               <Button onClick={handleUploadFile} variant="outline" className="gap-2">
                 <UploadIcon className="h-4 w-4" />
-                {translate("upload_file", "drive", { default: "Upload File" })}
+                {translate("upload", "drive", { default: "Upload" })}
               </Button>
               <Button onClick={handleCreateFolder} className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -471,8 +473,10 @@ export function DriveContent() {
         onFileUploaded={fetchFolders}
         currentFolder={currentFolder}
         uploadFile={uploadFile}
+        uploadFolder={uploadFolder}
         isUploading={isUploading}
         uploadProgress={uploadProgress}
+        uploadStatusMessage={uploadStatusMessage}
       />
 
       {selectedFile && (

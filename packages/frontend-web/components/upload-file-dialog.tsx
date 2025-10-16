@@ -27,8 +27,10 @@ interface UploadFileDialogProps {
   onFileUploaded: () => void;
   currentFolder: Folder | null;
   uploadFile: (file: File, parentId?: string | null) => Promise<void>;
+  uploadFolder: (files: FileList, parentId?: string | null) => Promise<void>;
   isUploading: boolean;
   uploadProgress: number;
+  uploadStatusMessage: string;
 }
 
 export function UploadFileDialog({
@@ -37,32 +39,43 @@ export function UploadFileDialog({
   onFileUploaded,
   currentFolder,
   uploadFile,
+  uploadFolder,
   isUploading,
   uploadProgress,
+  uploadStatusMessage,
 }: UploadFileDialogProps) {
   const { translate } = useTranslator();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [isFolder, setIsFolder] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const handleFileSelect = useCallback((file: File | null) => {
+  const handleFilesSelect = useCallback((files: FileList | null) => {
     setError("");
     
-    if (!file) {
-      setSelectedFile(null);
+    if (!files || files.length === 0) {
+      setSelectedFiles(null);
+      setIsFolder(false);
       return;
     }
 
-    // Validate file size (50MB max)
-    if (!validateFileSize(file, 50)) {
-      setError(translate("file_too_large", "drive", {
-        default: "File size exceeds 50MB limit",
-      }));
-      setSelectedFile(null);
-      return;
+    // Check if it's a folder upload (files have webkitRelativePath)
+    const firstFile = files[0] as any;
+    const hasRelativePath = firstFile.webkitRelativePath && firstFile.webkitRelativePath.includes('/');
+    setIsFolder(hasRelativePath);
+
+    // For individual file uploads, validate size
+    if (!hasRelativePath && files.length === 1) {
+      if (!validateFileSize(files[0], 50)) {
+        setError(translate("file_too_large", "drive", {
+          default: "File size exceeds 50MB limit",
+        }));
+        setSelectedFiles(null);
+        return;
+      }
     }
 
-    setSelectedFile(file);
+    setSelectedFiles(files);
   }, [translate]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -80,23 +93,30 @@ export function UploadFileDialog({
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFilesSelect(e.dataTransfer.files);
     }
-  }, [handleFileSelect]);
+  }, [handleFilesSelect]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFilesSelect(e.target.files);
     }
-  }, [handleFileSelect]);
+  }, [handleFilesSelect]);
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFiles) return;
 
     try {
-      await uploadFile(selectedFile, currentFolder?.folder_id || null);
-      setSelectedFile(null);
+      if (isFolder || selectedFiles.length > 1) {
+        // Upload folder or multiple files
+        await uploadFolder(selectedFiles, currentFolder?.folder_id || null);
+      } else {
+        // Upload single file
+        await uploadFile(selectedFiles[0], currentFolder?.folder_id || null);
+      }
+      setSelectedFiles(null);
+      setIsFolder(false);
       setError("");
       onFileUploaded();
       onOpenChange(false);
@@ -108,7 +128,8 @@ export function UploadFileDialog({
 
   const handleCancel = () => {
     if (!isUploading) {
-      setSelectedFile(null);
+      setSelectedFiles(null);
+      setIsFolder(false);
       setError("");
       onOpenChange(false);
     }
@@ -119,7 +140,7 @@ export function UploadFileDialog({
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>
-            {translate("upload_file", "drive", { default: "Upload File" })}
+            {translate("upload_file", "drive", { default: "Upload Files or Folder" })}
           </DialogTitle>
           <DialogDescription className="space-y-1">
             <span className="block">
@@ -129,11 +150,11 @@ export function UploadFileDialog({
                     folderName: currentFolder.name,
                   })
                 : translate("upload_to_root", "drive", {
-                    default: "Upload a file to root",
+                    default: "Upload files or folders to root",
                   })}
             </span>
             <span className="text-xs text-muted-foreground block">
-              {translate("max_file_size", "drive", { default: "Maximum file size: 50MB" })}
+              {translate("max_file_size", "drive", { default: "Maximum file size: 50MB per file" })}
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -157,6 +178,8 @@ export function UploadFileDialog({
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               onChange={handleInputChange}
               disabled={isUploading}
+              multiple
+              {...({ webkitdirectory: "", directory: "" } as any)}
             />
             
             <div className="space-y-2">
@@ -166,7 +189,7 @@ export function UploadFileDialog({
                   htmlFor="file-upload"
                   className="font-medium text-primary cursor-pointer hover:underline"
                 >
-                  {translate("choose_file", "drive", { default: "Choose a file" })}
+                  {translate("choose_file", "drive", { default: "Choose files or folder" })}
                 </label>
                 <span className="text-muted-foreground">
                   {" "}
@@ -176,20 +199,39 @@ export function UploadFileDialog({
             </div>
           </div>
 
-          {/* Selected file display */}
-          {selectedFile && !isUploading && (
+          {/* Selected files display */}
+          {selectedFiles && !isUploading && (
             <div className="flex items-center gap-2 p-3 bg-muted rounded-lg min-w-0">
               <FileIcon className="h-6 w-6 text-muted-foreground flex-shrink-0" />
               <div className="flex-1 min-w-0 overflow-hidden">
-                <p className="text-sm font-medium truncate" title={selectedFile.name}>
-                  {selectedFile.name}
-                </p>
-                <p className="text-xs text-muted-foreground">{formatBytes(selectedFile.size)}</p>
+                {isFolder ? (
+                  <>
+                    <p className="text-sm font-medium">
+                      Folder selected
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedFiles.length} files
+                    </p>
+                  </>
+                ) : selectedFiles.length === 1 ? (
+                  <>
+                    <p className="text-sm font-medium truncate" title={selectedFiles[0].name}>
+                      {selectedFiles[0].name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{formatBytes(selectedFiles[0].size)}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium">
+                      {selectedFiles.length} files selected
+                    </p>
+                  </>
+                )}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleFileSelect(null)}
+                onClick={() => handleFilesSelect(null)}
                 className="flex-shrink-0 h-8 w-8 p-0"
               >
                 <X className="h-4 w-4" />
@@ -202,16 +244,11 @@ export function UploadFileDialog({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {translate("uploading", "drive", { default: "Uploading..." })}
+                  {uploadStatusMessage || translate("uploading", "drive", { default: "Uploading..." })}
                 </span>
                 <span className="font-medium">{uploadProgress}%</span>
               </div>
               <Progress value={uploadProgress} className="h-2" />
-              {selectedFile && (
-                <p className="text-xs text-muted-foreground truncate" title={selectedFile.name}>
-                  {selectedFile.name}
-                </p>
-              )}
             </div>
           )}
 
@@ -233,7 +270,7 @@ export function UploadFileDialog({
           </Button>
           <Button
             onClick={handleUpload}
-            disabled={!selectedFile || isUploading}
+            disabled={!selectedFiles || isUploading}
           >
             {isUploading
               ? translate("uploading", "drive", { default: "Uploading..." })

@@ -56,6 +56,7 @@ interface UseDriveManagementReturn {
   getFolderPath: (folderId: string | null) => Folder[];
   getSubfolders: (parentId: string | null) => Folder[];
   uploadFile: (file: File, parentId?: string | null) => Promise<void>;
+  uploadFolder: (files: FileList, parentId?: string | null) => Promise<void>;
   renameFile: (fileId: string, newName: string) => Promise<void>;
   moveFile: (fileIds: string[], parentId: string) => Promise<void>;
   deleteFiles: (fileIds: string[]) => Promise<void>;
@@ -64,6 +65,7 @@ interface UseDriveManagementReturn {
   previewFile: (fileId: string) => Promise<{ blobUrl: string; file: DriveFile } | null>;
   isUploading: boolean;
   uploadProgress: number;
+  uploadStatusMessage: string;
   isDownloading: boolean;
   downloadProgress: string;
 }
@@ -79,6 +81,7 @@ export function useDriveManagement({
   const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatusMessage, setUploadStatusMessage] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState('');
   
@@ -527,10 +530,327 @@ export function useDriveManagement({
       } finally {
         setIsUploading(false);
         setUploadProgress(0);
+        setUploadStatusMessage('');
       }
     },
     [selectedWorkspaceId, selectedProjectId, workspaces, fetchFolders, translate]
   );
+
+  // Folder structure parsing interface
+  interface FolderNode {
+    name: string;
+    path: string;
+    parentPath: string | null;
+    files: File[];
+  }
+
+  // Parse folder structure from FileList
+  const parseFolderStructure = useCallback((fileList: FileList): FolderNode[] => {
+    const folderMap = new Map<string, FolderNode>();
+    
+    // Process all files
+    Array.from(fileList).forEach(file => {
+      // Get the relative path (e.g., "folder/subfolder/file.txt")
+      const relativePath = (file as any).webkitRelativePath || file.name;
+      const pathParts = relativePath.split('/');
+      
+      // Build folder hierarchy
+      if (pathParts.length > 1) {
+        // File is inside folders
+        let currentPath = '';
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          const folderName = pathParts[i];
+          const parentPath = currentPath || null;
+          currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+          
+          if (!folderMap.has(currentPath)) {
+            folderMap.set(currentPath, {
+              name: folderName,
+              path: currentPath,
+              parentPath: parentPath,
+              files: [],
+            });
+          }
+        }
+        
+        // Add file to its parent folder
+        const folderNode = folderMap.get(currentPath);
+        if (folderNode) {
+          folderNode.files.push(file);
+        }
+      }
+    });
+    
+    // Convert map to array and sort by depth (parents first)
+    return Array.from(folderMap.values()).sort((a, b) => {
+      const depthA = a.path.split('/').length;
+      const depthB = b.path.split('/').length;
+      return depthA - depthB;
+    });
+  }, []);
+
+  // Upload folder with all files
+  const uploadFolder = useCallback(
+    async (fileList: FileList, parentId: string | null = null) => {
+      if (!selectedWorkspaceId || !selectedProjectId) {
+        toast({
+          title: translate("error", "drive", { default: "Error" }),
+          description: translate("missing_workspace_project", "drive", {
+            default: "Missing workspace or project",
+          }),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadProgress(0);
+      setUploadStatusMessage('');
+
+      try {
+        // 1. Parse folder structure
+        const folderNodes = parseFolderStructure(fileList);
+        
+        if (folderNodes.length === 0) {
+          toast({
+            title: translate("error", "drive", { default: "Error" }),
+            description: "No folders found to upload",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // 2. Get project info and key (reuse for all files)
+        const currentProject = workspaces
+          .find(ws => ws.workspaceId === selectedWorkspaceId)
+          ?.projects.find(p => p.project_id === selectedProjectId);
+        
+        if (!currentProject) {
+          throw new Error("Project not found");
+        }
+
+        const projectKeyName = `projectKey_${currentProject.name}`;
+        const projectKey = await secureGetItem(projectKeyName);
+        
+        if (!projectKey) {
+          throw new Error("Project encryption key not found");
+        }
+
+        // 3. Create folder structure level by level (to get IDs after each level)
+        const folderIdMap = new Map<string, string>();
+        setUploadStatusMessage('Creating folders...');
+        
+        console.log('📁 Creating folder structure:', folderNodes);
+        
+        // Group folders by depth level
+        const foldersByLevel = new Map<number, typeof folderNodes>();
+        folderNodes.forEach(node => {
+          const depth = node.path.split('/').length;
+          if (!foldersByLevel.has(depth)) {
+            foldersByLevel.set(depth, []);
+          }
+          foldersByLevel.get(depth)!.push(node);
+        });
+        
+        const maxDepth = Math.max(...Array.from(foldersByLevel.keys()));
+        console.log(`📊 Folder structure has ${maxDepth} level(s)`);
+        
+        // Helper function to fetch and build folder ID map
+        const updateFolderIdMap = async () => {
+          const foldersResponse = await axiosInstance.get('/drive/folder/list');
+          const apiFolders = foldersResponse.data?.data?.folders || [];
+          
+          // Recursively build folder paths from the API response
+          const buildFolderPaths = (folders: any[], currentParentId: string | null, pathPrefix: string = '') => {
+            folders
+              .filter((f: any) => (f.parent_id || null) === currentParentId)
+              .forEach((folder: any) => {
+                const folderPath = pathPrefix ? `${pathPrefix}/${folder.name}` : folder.name;
+                const folderId = folder.doc_id;
+                
+                folderIdMap.set(folderPath, folderId);
+                console.log(`  📂 Mapped: ${folderPath} -> ${folderId}`);
+                
+                // Recursively map child folders
+                buildFolderPaths(folders, folderId, folderPath);
+              });
+          };
+          
+          buildFolderPaths(apiFolders, parentId);
+        };
+        
+        // Create folders level by level
+        for (let level = 1; level <= maxDepth; level++) {
+          const levelFolders = foldersByLevel.get(level) || [];
+          console.log(`\n📁 Creating level ${level} (${levelFolders.length} folders)...`);
+          
+          // Create all folders at this level
+          for (const folderNode of levelFolders) {
+            try {
+              // Determine parent folder ID from previous levels
+              let folderParentId = parentId;
+              if (folderNode.parentPath) {
+                folderParentId = folderIdMap.get(folderNode.parentPath) || parentId;
+              }
+
+              console.log(`  Creating: ${folderNode.name} (parent: ${folderParentId || 'root'})`);
+
+              // Create folder via API
+              const payload: { name: string; parent_id?: string } = { name: folderNode.name };
+              if (folderParentId) {
+                payload.parent_id = folderParentId;
+              }
+
+              await axiosInstance.post('/drive/folder/create', payload);
+              console.log(`  ✅ Created: ${folderNode.name}`);
+            } catch (error: any) {
+              console.error(`  ❌ Error creating folder ${folderNode.name}:`, error?.response?.data?.message || error.message);
+              // Continue with other folders even if one fails
+            }
+          }
+          
+          // After creating this level, fetch folder list to get their IDs
+          console.log(`📥 Fetching folder list to get IDs for level ${level}...`);
+          await updateFolderIdMap();
+        }
+        
+        console.log('\n📊 Final folder ID map:', Object.fromEntries(folderIdMap));
+
+        // 4. Count total files to upload
+        const allFiles = Array.from(fileList);
+        let uploadedCount = 0;
+        let skippedCount = 0;
+        const skippedFiles: string[] = [];
+
+        // 5. Upload all files with progress tracking
+        for (const file of allFiles) {
+          try {
+            // Validate file size
+            if (!validateFileSize(file, 50)) {
+              skippedCount++;
+              skippedFiles.push(file.name);
+              console.warn(`Skipping ${file.name}: exceeds 50MB limit`);
+              continue;
+            }
+
+            // Determine parent folder for this file
+            const relativePath = (file as any).webkitRelativePath || file.name;
+            const pathParts = relativePath.split('/');
+            let fileParentId = parentId;
+            
+            if (pathParts.length > 1) {
+              // File is inside a folder
+              const folderPath = pathParts.slice(0, -1).join('/');
+              fileParentId = folderIdMap.get(folderPath) || parentId;
+              console.log(`📄 File: ${file.name}, folderPath: ${folderPath}, parent: ${fileParentId || 'root'}`);
+            } else {
+              console.log(`📄 File: ${file.name} (no folder), parent: ${fileParentId || 'root'}`);
+            }
+
+            // Update status
+            const progress = Math.round(((uploadedCount + 1) / allFiles.length) * 100);
+            setUploadProgress(progress);
+            setUploadStatusMessage(`Uploading file ${uploadedCount + 1} of ${allFiles.length}`);
+
+            // Encrypt file
+            const { encryptedBlob, iv, originalSize } = await encryptFileBlob(file, projectKey);
+
+            // Get presigned URL
+            const payload: any = {
+              file_type: file.type || 'application/octet-stream',
+              name: file.name,
+              file_path: file.name,
+              size: encryptedBlob.size.toString(),
+              iv: iv,
+              parent_id: fileParentId || '',
+            };
+
+            const presignedResponse = await axiosInstance.post('/drive/file/get-presigned-url', payload);
+
+            // Extract presigned URL
+            let presignedUrl: string;
+            if (typeof presignedResponse.data === 'string') {
+              presignedUrl = presignedResponse.data;
+            } else if (presignedResponse.data?.data) {
+              presignedUrl = typeof presignedResponse.data.data === 'string' 
+                ? presignedResponse.data.data 
+                : presignedResponse.data.data?.upload_url || presignedResponse.data.data?.url || presignedResponse.data.data?.presigned_url;
+            } else if (presignedResponse.data?.upload_url) {
+              presignedUrl = presignedResponse.data.upload_url;
+            } else if (presignedResponse.data?.url) {
+              presignedUrl = presignedResponse.data.url;
+            } else if (presignedResponse.data?.presigned_url) {
+              presignedUrl = presignedResponse.data.presigned_url;
+            } else {
+              throw new Error("Invalid presigned URL response from server");
+            }
+
+            if (!presignedUrl || typeof presignedUrl !== 'string') {
+              throw new Error("Invalid presigned URL received from server");
+            }
+
+            // Upload to Digital Ocean
+            const uploadResponse = await fetch(presignedUrl, {
+              method: 'PUT',
+              body: encryptedBlob,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error(`Failed to upload file to storage: ${uploadResponse.status}`);
+            }
+
+            uploadedCount++;
+          } catch (error: any) {
+            console.error(`Error uploading file ${file.name}:`, error);
+            skippedCount++;
+            skippedFiles.push(file.name);
+            // Continue with other files
+          }
+        }
+
+        // 6. Show completion message
+        setUploadProgress(100);
+        
+        let successMessage = `${uploadedCount} file(s) uploaded successfully`;
+        if (skippedCount > 0) {
+          successMessage += `. ${skippedCount} file(s) skipped`;
+        }
+
+        toast({
+          title: translate("success", "drive", { default: "Success" }),
+          description: successMessage,
+        });
+
+        // Show detailed skipped files if any
+        if (skippedFiles.length > 0 && skippedFiles.length <= 5) {
+          toast({
+            title: "Skipped files",
+            description: skippedFiles.join(', '),
+            variant: "destructive",
+          });
+        }
+
+        // 7. Refresh folder list
+        await fetchFolders();
+      } catch (error: any) {
+        console.error("Error uploading folder:", error);
+        toast({
+          title: translate("error", "drive", { default: "Error" }),
+          description: "Failed to upload folder",
+          variant: "destructive",
+        });
+        throw error;
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+        setUploadStatusMessage('');
+      }
+    },
+    [selectedWorkspaceId, selectedProjectId, workspaces, parseFolderStructure, fetchFolders, translate]
+  );
+  
+  // Remove parseFolderStructure interface definition to avoid confusion
+  // It's already defined above
 
   // Rename file
   const renameFile = useCallback(
@@ -905,6 +1225,7 @@ export function useDriveManagement({
     getFolderPath,
     getSubfolders,
     uploadFile,
+    uploadFolder,
     renameFile,
     moveFile,
     deleteFiles,
@@ -913,6 +1234,7 @@ export function useDriveManagement({
     previewFile,
     isUploading,
     uploadProgress,
+    uploadStatusMessage,
     isDownloading,
     downloadProgress,
   };
