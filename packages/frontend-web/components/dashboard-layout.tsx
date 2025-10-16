@@ -59,7 +59,6 @@ import { secureSetItem } from '@/libs/local-storage-utils';
 import { SearchModal } from "@/components/search-modal";
 import { logout } from "@/libs/utils";
 import { SidebarNav } from "@/components/sidebar-nav";
-import { ChatWidget } from "@/components/chat-widget";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -607,7 +606,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   return (
     <div className="flex min-h-screen bg-background">
       <ExtensionMessenger />
-      <ChatWidget />
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
