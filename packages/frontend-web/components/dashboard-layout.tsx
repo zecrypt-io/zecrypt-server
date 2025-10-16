@@ -30,6 +30,7 @@ import {
   FileText,
   PanelLeftClose,
   PanelLeftOpen,
+  Folder,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -503,6 +504,13 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       labelKey: "overview",
       path: "/dashboard",
       icon: <Home className="h-4 w-4" />
+    });
+
+    enabledModules.push({
+      key: "drive",
+      labelKey: "drive",
+      path: "/dashboard/drive",
+      icon: <Folder className="h-4 w-4" />
     });
     
     if (selectedProject.features.login?.enabled) {
