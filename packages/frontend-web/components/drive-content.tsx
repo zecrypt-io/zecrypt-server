@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/Redux/store";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Folder as FolderIcon,
@@ -69,6 +70,10 @@ interface DriveFile {
 
 export function DriveContent() {
   const { translate } = useTranslator();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
   const selectedWorkspaceId = useSelector(
     (state: RootState) => state.workspace.selectedWorkspaceId
   );
@@ -126,6 +131,28 @@ export function DriveContent() {
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [previewingFile, setPreviewingFile] = useState<DriveFile | null>(null);
 
+  // Sync currentFolder with URL parameter
+  useEffect(() => {
+    const folderId = searchParams.get('folder');
+    
+    if (!folderId) {
+      // No folder parameter means we're at root
+      setCurrentFolder(null);
+    } else if (folders.length > 0) {
+      // Find the folder by ID
+      const folder = folders.find(f => f.folder_id === folderId);
+      
+      // Only update if the folder exists and is different from current
+      if (folder && folder.folder_id !== currentFolder?.folder_id) {
+        setCurrentFolder(folder);
+      } else if (!folder && currentFolder) {
+        // Folder doesn't exist, reset to root
+        setCurrentFolder(null);
+        router.replace(pathname);
+      }
+    }
+  }, [searchParams, folders, currentFolder, router, pathname, setCurrentFolder]);
+
   // Get current subfolders to display
   const currentSubfolders = getSubfolders(currentFolder?.folder_id || null);
 
@@ -136,22 +163,22 @@ export function DriveContent() {
   const breadcrumbPath = getFolderPath(currentFolder?.folder_id || null);
 
   const handleFolderClick = (folder: Folder) => {
-    setCurrentFolder(folder);
+    // Update URL with folder parameter to create browser history entry
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('folder', folder.folder_id);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleBackClick = () => {
     if (!currentFolder) return;
     
-    if (currentFolder.parent_id) {
-      const parentFolder = folders.find(f => f.folder_id === currentFolder.parent_id);
-      setCurrentFolder(parentFolder || null);
-    } else {
-      setCurrentFolder(null);
-    }
+    // Use browser back to navigate through history
+    router.back();
   };
 
   const handleHomeClick = () => {
-    setCurrentFolder(null);
+    // Navigate to root by removing folder parameter
+    router.push(pathname);
   };
 
   const handleCreateFolder = () => {
@@ -302,7 +329,11 @@ export function DriveContent() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentFolder(folder)}
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set('folder', folder.folder_id);
+                  router.push(`${pathname}?${params.toString()}`);
+                }}
               >
                 {folder.name}
               </Button>
