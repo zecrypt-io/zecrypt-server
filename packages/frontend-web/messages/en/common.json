@@ -1480,6 +1480,8 @@
     "max_file_size": "Maximum file size: 50MB",
     "loading": "Loading...",
     "choose_file": "Choose a file",
+      "choose_files": "Choose Files",
+      "choose_folder": "Choose Folder",
     "or_drag_drop": "or drag and drop here",
     "uploading": "Uploading...",
     "error_uploading_file": "Failed to upload file",
