@@ -509,23 +509,10 @@ export function useDriveManagement({
         setUploadProgress(100);
       } catch (error: any) {
         console.error("Error uploading file:", error);
+        console.error("Error response:", error?.response);
+        console.error("Error response data:", error?.response?.data);
         
-        // Check if it's a "file already exists" error
-        const isFileExistsError = 
-          error?.response?.data?.status_code === 400 &&
-          error?.response?.data?.message?.toLowerCase().includes("file already exists");
-        
-        toast({
-          title: translate("error", "drive", { default: "Error" }),
-          description: isFileExistsError
-            ? translate("file_already_exists", "drive", {
-                default: "A file with this name already exists in this location",
-              })
-            : translate("error_uploading_file", "drive", {
-                default: "Failed to upload file",
-              }),
-          variant: "destructive",
-        });
+        // Re-throw error to be handled by the upload dialog
         throw error;
       } finally {
         setIsUploading(false);
@@ -834,11 +821,10 @@ export function useDriveManagement({
         await fetchFolders();
       } catch (error: any) {
         console.error("Error uploading folder:", error);
-        toast({
-          title: translate("error", "drive", { default: "Error" }),
-          description: "Failed to upload folder",
-          variant: "destructive",
-        });
+        console.error("Error response:", error?.response);
+        console.error("Error response data:", error?.response?.data);
+        
+        // Re-throw error to be handled by the upload dialog
         throw error;
       } finally {
         setIsUploading(false);

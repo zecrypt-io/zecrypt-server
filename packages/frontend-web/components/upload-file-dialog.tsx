@@ -108,6 +108,7 @@ export function UploadFileDialog({
     if (!selectedFiles) return;
 
     try {
+      setError(""); // Clear any previous errors
       if (isFolder || selectedFiles.length > 1) {
         // Upload folder or multiple files
         await uploadFolder(selectedFiles, currentFolder?.folder_id || null);
@@ -120,9 +121,25 @@ export function UploadFileDialog({
       setError("");
       onFileUploaded();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error:", error);
-      // Error is handled in the hook with a toast
+      
+      // Extract error message from API response
+      const errorData = error?.response?.data;
+      const isFileExistsError = 
+        (errorData?.status_code === 400 || error?.response?.status === 400) &&
+        (errorData?.message?.toLowerCase().includes("file already exists") ||
+         errorData?.message?.toLowerCase().includes("already exists"));
+      
+      const errorMessage = isFileExistsError
+        ? translate("file_already_exists", "drive", {
+            default: "A file with this name already exists in this location",
+          })
+        : errorData?.message || translate("error_uploading_file", "drive", {
+            default: "Failed to upload file. Please try again.",
+          });
+      
+      setError(errorMessage);
     }
   };
 
