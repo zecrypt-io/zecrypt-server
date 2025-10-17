@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Upload, X, FileIcon } from "lucide-react";
+import { Upload, X, FileIcon, FolderIcon } from "lucide-react";
 import { useTranslator } from "@/hooks/use-translations";
 import { validateFileSize, formatBytes } from "@/libs/file-encryption";
 
@@ -172,29 +172,55 @@ export function UploadFileDialog({
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <input
-              type="file"
-              id="file-upload"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              onChange={handleInputChange}
-              disabled={isUploading}
-              multiple
-              {...({ webkitdirectory: "", directory: "" } as any)}
-            />
-            
-            <div className="space-y-2">
+            <div className="space-y-4">
               <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
-              <div className="text-sm px-2">
-                <label
-                  htmlFor="file-upload"
-                  className="font-medium text-primary cursor-pointer hover:underline"
-                >
-                  {translate("choose_file", "drive", { default: "Choose files or folder" })}
-                </label>
-                <span className="text-muted-foreground">
-                  {" "}
-                  {translate("or_drag_drop", "drive", { default: "or drag and drop" })}
-                </span>
+              <div className="text-sm text-muted-foreground">
+                {translate("or_drag_drop", "drive", { default: "Drag and drop files or folders here" })}
+              </div>
+              
+              {/* Two separate upload buttons */}
+              <div className="flex gap-3 justify-center">
+                {/* Upload Files Button */}
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    className="sr-only"
+                    onChange={handleInputChange}
+                    disabled={isUploading}
+                    multiple
+                  />
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    disabled={isUploading}
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                  >
+                    <FileIcon className="h-4 w-4" />
+                    {translate("choose_files", "drive", { default: "Choose Files" })}
+                  </Button>
+                </div>
+
+                {/* Upload Folder Button */}
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="folder-upload"
+                    className="sr-only"
+                    onChange={handleInputChange}
+                    disabled={isUploading}
+                    {...({ webkitdirectory: "", directory: "" } as any)}
+                  />
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    disabled={isUploading}
+                    onClick={() => document.getElementById('folder-upload')?.click()}
+                  >
+                    <FolderIcon className="h-4 w-4" />
+                    {translate("choose_folder", "drive", { default: "Choose Folder" })}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
