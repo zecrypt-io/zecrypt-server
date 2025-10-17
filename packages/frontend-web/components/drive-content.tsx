@@ -365,7 +365,7 @@ export function DriveContent() {
       </div>
 
       {/* Folders and Files Grid */}
-      <div className="border border-border/30 rounded-md p-6">
+      <div className="border border-border/30 rounded-md p-6 min-h-[calc(100vh-16rem)]">
         {isLoading ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">
