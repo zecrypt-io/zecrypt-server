@@ -179,13 +179,6 @@ const navigationCategories: NavigationCategory[] = [
           </svg>
         ),
         feature_key: "notes"
-      },
-      {
-        key: "drive",
-        labelKey: "drive",
-        path: "/dashboard/drive",
-        icon: <Folder className="h-4 w-4" />,
-        feature_key: "drive"
       }
     ]
   },
@@ -361,8 +354,7 @@ const defaultFeatures = {
   email: { enabled: false, is_client_side_encryption: false },
   ssh_key: { enabled: false, is_client_side_encryption: false },
   env: { enabled: false, is_client_side_encryption: false },
-  notes: { enabled: false, is_client_side_encryption: false },
-  drive: { enabled: false, is_client_side_encryption: false }
+  notes: { enabled: false, is_client_side_encryption: false }
 }
 
 export function SidebarNav({
@@ -497,6 +489,20 @@ export function SidebarNav({
             >
               <Home className="h-4 w-4" />
               {!isCollapsed && translate("overview", "dashboard")}
+            </Link>
+
+            <Link
+              href={`/${currentLocale}/dashboard/drive`}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                pathname === `/${currentLocale}/dashboard/drive`
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isCollapsed && "justify-center"
+              )}
+            >
+              <Folder className="h-4 w-4" />
+              {!isCollapsed && translate("drive", "dashboard")}
             </Link>
 
             {visibleCategories.map((category) => (

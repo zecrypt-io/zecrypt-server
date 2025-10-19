@@ -30,6 +30,8 @@ import {
   FileText,
   PanelLeftClose,
   PanelLeftOpen,
+  Folder,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { GeneratePasswordDialog } from "@/components/generate-password-dialog";
@@ -58,7 +60,7 @@ import { secureSetItem } from '@/libs/local-storage-utils';
 import { SearchModal } from "@/components/search-modal";
 import { logout } from "@/libs/utils";
 import { SidebarNav } from "@/components/sidebar-nav";
-import { ChatWidget } from "@/components/chat-widget";
+import { SupportModal } from "@/components/support-modal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -257,6 +259,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
   const [favoriteTags, setFavoriteTags] = useState(["Personal", "Work", "Banking"]);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [currentLocale, setCurrentLocale] = useState(locale);
 
   const languageLabels: Record<string, string> = {
@@ -504,6 +507,13 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
       path: "/dashboard",
       icon: <Home className="h-4 w-4" />
     });
+
+    enabledModules.push({
+      key: "drive",
+      labelKey: "drive",
+      path: "/dashboard/drive",
+      icon: <Folder className="h-4 w-4" />
+    });
     
     if (selectedProject.features.login?.enabled) {
       enabledModules.push({
@@ -599,7 +609,6 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
   return (
     <div className="flex min-h-screen bg-background">
       <ExtensionMessenger />
-      <ChatWidget />
       <SearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
@@ -702,6 +711,23 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
               <TooltipContent>Toggle theme</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowSupportModal(true)}
+                  className="rounded-full h-8 w-8"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="sr-only">Support</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Support & Queries</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </header>
 
         <main className="flex flex-1">
@@ -711,6 +737,7 @@ export function DashboardLayout({ children, locale = "en" }: DashboardLayoutProp
 
       {showGeneratePassword && <GeneratePasswordDialog onClose={() => setShowGeneratePassword(false)} />}
       {showProjectDialog && <ProjectDialog onClose={() => setShowProjectDialog(false)} />}
+      {showSupportModal && <SupportModal onClose={() => setShowSupportModal(false)} />}
     </div>
   );
 }
