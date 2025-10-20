@@ -39,7 +39,7 @@
     "name": "Nimi",
     "env_value": "Arvo",
     "tags": "Tunnisteet",
-    "created_at": "Created At",
+    "created_at": "Luotu",
     "actions": "Toiminnot",
     "no_env_yet": "Ympäristömuuttujia ei ole vielä lisätty",
     "no_matching_env": "Vastaavia ympäristömuuttujia ei löytynyt",
