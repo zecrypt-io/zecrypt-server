@@ -304,7 +304,10 @@
     "update": "Actualitzar",
     "remove": "Eliminar",
     "error": "Error",
-    "view": "Veure"
+    "view": "Veure",
+    "rename": "Renombrar",
+    "move": "Mover",
+    "preview": "Vista prèvia"
   },
   "dashboard": {
     "project_limit_reached": "Límit de projectes assolit",
