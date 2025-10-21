@@ -405,7 +405,6 @@
     "no_recent_activity": "Sin actividad reciente",
     "no_projects_available": "No hay proyectos disponibles",
     "no_workspace_selected": "No hay espacio de trabajo seleccionado"
-
   },
   "activity": {
     "password_updated": "Contraseña actualizada",
@@ -1425,7 +1424,7 @@
     "rose": "Rosa"
   },
   "drive": {
-    "drive": "Drive",
+    "drive": "Unidad",
     "manage_your_folders": "Organiza y administra tus carpetas",
     "create_folder": "Crear carpeta",
     "new_folder": "Nueva carpeta",
