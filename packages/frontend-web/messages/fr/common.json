@@ -405,7 +405,6 @@
     "no_recent_activity": "Aucune activité récente",
     "no_projects_available": "Aucun projet disponible",
     "no_workspace_selected": "Aucun espace de travail sélectionné"
-
   },
   "activity": {
     "password_updated": "Mot de passe mis à jour",
@@ -1425,7 +1424,7 @@
     "rose": "Rose"
   },
   "drive": {
-    "drive": "Drive",
+    "drive": "Lecteur",
     "manage_your_folders": "Organisez et gérez vos dossiers",
     "create_folder": "Créer un dossier",
     "new_folder": "Nouveau dossier",
