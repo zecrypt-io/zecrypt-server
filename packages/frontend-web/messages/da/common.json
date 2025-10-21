@@ -304,7 +304,10 @@
     "update": "Opdater",
     "remove": "Fjern",
     "error": "Fejl",
-    "view": "Vis"
+    "view": "Vis",
+    "rename": "Omdøb",
+    "move": "Flyt",
+    "preview": "Forhåndsvisning"
   },
   "dashboard": {
     "project_limit_reached": "Projektgrænse nået",
