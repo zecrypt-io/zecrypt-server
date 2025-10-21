@@ -304,7 +304,10 @@
     "update": "Mettre à jour",
     "remove": "Supprimer",
     "error": "Erreur",
-    "view": "Voir"
+    "view": "Voir",
+    "rename": "Renommer",
+    "move": "Déplacer",
+    "preview": "Aperçu"
   },
   "dashboard": {
     "project_limit_reached": "Limite de projet atteinte",
