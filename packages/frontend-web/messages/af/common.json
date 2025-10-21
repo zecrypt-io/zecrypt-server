@@ -304,7 +304,10 @@
     "update": "Dateer op",
     "remove": "Verwyder",
     "error": "Fout",
-    "view": "Bekyk"
+    "view": "Bekyk",
+    "rename": "Hernoem",
+    "move": "Verplaas",
+    "preview": "Voorskou"
   },
   "dashboard": {
     "project_limit_reached": "Projek limiet bereik",
