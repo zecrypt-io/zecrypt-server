@@ -304,7 +304,10 @@
     "update": "Aktualizovat",
     "remove": "Odebrat",
     "error": "Chyba",
-    "view": "Zobrazit"
+    "view": "Zobrazit",
+    "rename": "Přejmenovat",
+    "move": "Přesunout",
+    "preview": "Náhled"
   },
   "dashboard": {
     "project_limit_reached": "Dosažen limit projektů",
