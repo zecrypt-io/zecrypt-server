@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     STACK_AUTH_CLIENT_SECRET: str
     TOTP_SECRET: str
 
-    VALKEY_URL: str
 
     DO_SPACES_KEY:str
     DO_SPACES_SECRET:str
